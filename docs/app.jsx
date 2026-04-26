@@ -2501,7 +2501,7 @@ function TakeoffIcon() {
 
       {/* 활주로 */}
       <div style={{
-        position:'absolute', top:47, left:'50%',
+        position:'absolute', top:52, left:'50%',
         zIndex:2, pointerEvents:'none',
       }}>
         <div style={{

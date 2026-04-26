@@ -5289,7 +5289,7 @@ function TakeoffIcon() {
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
-      top: 47,
+      top: 52,
       left: '50%',
       zIndex: 2,
       pointerEvents: 'none'
