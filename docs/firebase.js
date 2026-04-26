@@ -96,6 +96,17 @@ window.fbListenGroup = (groupId, cb) =>
       err => { console.warn('fbListenGroup error:', err.code); cb(null); }
     );
 
+// ─── 디버그용: 직접 get() 호출 ────────────────────────────────
+window.fbDebugRead = async (groupId) => {
+  try {
+    const snap = await _fbDb.collection('groups').doc(groupId).get();
+    if (snap.exists) return { ok: true, title: snap.data().title || '(제목없음)', days: (snap.data().days||[]).length };
+    return { ok: false, reason: 'document does not exist' };
+  } catch(e) {
+    return { ok: false, reason: e.code + ': ' + e.message };
+  }
+};
+
 window.fbSaveGroup = (groupId, patch) =>
   _fbDb.collection('groups').doc(groupId).set(patch, { merge: true });
 

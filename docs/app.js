@@ -5865,28 +5865,29 @@ function App() {
     });
   }, []);
 
-  // ── 여행 목록: groups/{uid} 실시간 리스너 ─────────────────
+  // ── 여행 목록 로드 ────────────────────────────────────────
   const [tripsError, setTripsError] = React.useState('');
   React.useEffect(() => {
     if (!authUser?.uid) return;
+    var uid = authUser.uid;
     setTripsLoading(true);
     setTripsError('');
-    var uid = authUser.uid;
-    var unsub = fbListenGroup(uid, function(data) {
-      setTripsLoading(false);
-      if (data) {
-        var primaryTrip = Object.assign({ id: uid }, data);
-        setUserTrips(function(prev) {
-          var rest = prev.filter(function(t) { return t.id !== uid; });
-          return [primaryTrip].concat(rest);
+    // fbDebugRead로 먼저 상태 확인
+    fbDebugRead(uid).then(function(result) {
+      if (result.ok) {
+        setTripsError('read OK: ' + result.title + ' / ' + result.days + 'days');
+        // 성공하면 실시간 리스너로 전환
+        fbListenGroup(uid, function(data) {
+          setTripsLoading(false);
+          if (data) {
+            setUserTrips([Object.assign({ id: uid }, data)]);
+          }
         });
       } else {
-        // 문서가 없음 — fbGetOrCreateUser가 생성 중이므로 잠시 후 재시도
-        setTripsError('groups/' + uid + ' not found');
-        console.warn('[TripLikeJ] groups/' + uid + ' 문서 없음');
+        setTripsError('FAIL: ' + result.reason);
+        setTripsLoading(false);
       }
     });
-    return unsub;
   }, [authUser?.uid]);
 
   // ── Firestore: shared group listener ──────────────────────
