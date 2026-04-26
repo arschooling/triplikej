@@ -75,7 +75,13 @@ if('serviceWorker' in navigator) {
 </script>
 </head>
 <body>
-<script>window._splashStart=Date.now();</script>
+<script>
+window._splashStart=Date.now();
+// 이미 로그인된 상태면 스플래시 없이 바로 앱 표시
+if(localStorage.getItem('tlj_authed')){
+  document.write('<style>#splash{display:none!important}</style>');
+}
+</script>
 <div id="splash">
   <div id="splash-title">Trip Like J</div>
   <div id="splash-dest"><span id="splash-dest-text">✈ 여행을 준비하고 있어요</span></div>

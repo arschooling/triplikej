@@ -5731,6 +5731,7 @@ function App() {
           fbGetOrCreateUser(fbUser).then(setUserData).catch(() => {});
         }
         setLoginError('');
+        localStorage.setItem('tlj_authed', '1');
         setAuthState('in');
       } else {
         setAuthUser(null);
@@ -5741,6 +5742,7 @@ function App() {
           docs: [],
           pack: []
         });
+        localStorage.removeItem('tlj_authed');
         setAuthState('out');
       }
     });
@@ -6266,7 +6268,24 @@ function App() {
   const dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
 
   // ── Auth gating ───────────────────────────────────────────
-  if (authState === 'loading') return null;
+  if (authState === 'loading') return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: '100vh',
+      background: COLORS.bg,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 28,
+      height: 28,
+      border: `3px solid ${COLORS.line}`,
+      borderTopColor: COLORS.accent,
+      borderRadius: '50%',
+      animation: 'ptr-spin 0.8s linear infinite'
+    }
+  }));
   if (authState === 'out') return /*#__PURE__*/React.createElement(LoginScreen, {
     errorMsg: loginError
   });

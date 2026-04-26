@@ -2730,10 +2730,12 @@ function App() {
           fbGetOrCreateUser(fbUser).then(setUserData).catch(() => {});
         }
         setLoginError('');
+        localStorage.setItem('tlj_authed', '1');
         setAuthState('in');
       } else {
         setAuthUser(null); setUserData(null);
         setTrip(null); setPrep({ checklist:[], docs:[], pack:[] });
+        localStorage.removeItem('tlj_authed');
         setAuthState('out');
       }
     });
@@ -3058,7 +3060,12 @@ function App() {
   const dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
 
   // ── Auth gating ───────────────────────────────────────────
-  if (authState === 'loading') return null;
+  if (authState === 'loading') return (
+    <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ width:28, height:28, border:`3px solid ${COLORS.line}`, borderTopColor:COLORS.accent,
+        borderRadius:'50%', animation:'ptr-spin 0.8s linear infinite' }}/>
+    </div>
+  );
   if (authState === 'out') return <LoginScreen errorMsg={loginError}/>;
   if (!trip) return (
     <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
