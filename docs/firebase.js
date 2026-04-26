@@ -40,6 +40,7 @@ window.fbGetOrCreateUser = async (fbUser) => {
       email       : fbUser.email       || '',
       photoURL    : fbUser.photoURL    || '',
       groupId     : fbUser.uid,
+      tripIds     : [fbUser.uid],
       createdAt   : firebase.firestore.FieldValue.serverTimestamp(),
     };
     await ref.set(data);
@@ -58,7 +59,14 @@ window.fbGetOrCreateUser = async (fbUser) => {
     });
     return { ...data, uid: fbUser.uid };
   }
-  return { uid: fbUser.uid, ...snap.data() };
+  const existing = snap.data();
+  // 기존 사용자에게 tripIds가 없으면 마이그레이션 (groupId 기준으로 생성)
+  if (!existing.tripIds || existing.tripIds.length === 0) {
+    const gid = existing.groupId || fbUser.uid;
+    await ref.update({ tripIds: [gid] });
+    return { uid: fbUser.uid, ...existing, tripIds: [gid] };
+  }
+  return { uid: fbUser.uid, ...existing };
 };
 
 // ─── Shared group ─────────────────────────────────────────────

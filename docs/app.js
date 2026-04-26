@@ -5889,22 +5889,36 @@ function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanio
           style: { padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 12 }
         },
           trips.map(function(t) {
+            const hue = (t.days && t.days[0] && t.days[0].hero) ? (t.days[0].hero.hue || 25) : 25;
+            const label = (t.days && t.days[0] && t.days[0].hero && t.days[0].hero.label)
+              ? t.days[0].hero.label
+              : (t.title ? t.title.toUpperCase() : 'TRIP');
             return /*#__PURE__*/React.createElement("div", {
               key: t.id, onClick: function() { onSelect(t.id); },
-              style: { background: 'white', borderRadius: 20, padding: '22px 24px',
-                cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }
+              style: { background: COLORS.card, borderRadius: 20, overflow: 'hidden',
+                cursor: 'pointer', border: '1px solid ' + COLORS.line }
             },
-              /*#__PURE__*/React.createElement("div", {
-                style: { fontFamily: SERIF, fontSize: 24, color: COLORS.ink, marginBottom: 6 }
-              }, t.title || '새 여행'),
-              t.dates && /*#__PURE__*/React.createElement("div", {
-                style: { fontFamily: MONO, fontSize: 12, color: COLORS.mute }
-              }, t.dates),
-              /*#__PURE__*/React.createElement("div", {
-                style: { fontFamily: MONO, fontSize: 11, color: COLORS.mute, marginTop: 8, letterSpacing: '0.08em' }
-              }, (t.days || []).length + ' DAYS · ' + (t.days || []).reduce(function(s, d) { return s + (d.items || []).length; }, 0) + ' STOPS')
+              /*#__PURE__*/React.createElement(Photo, { hue: hue, label: label, height: 130 }),
+              /*#__PURE__*/React.createElement("div", { style: { padding: '14px 18px 16px' } },
+                /*#__PURE__*/React.createElement("div", {
+                  style: { fontFamily: MONO, fontSize: 10, color: COLORS.accent, letterSpacing: '0.14em' }
+                }, (t.days || []).length + ' DAYS' + (t.dates ? ' · ' + t.dates : '')),
+                /*#__PURE__*/React.createElement("div", {
+                  style: { marginTop: 4, fontFamily: SERIF, fontSize: 28, lineHeight: 1.1, color: COLORS.ink, letterSpacing: '-0.015em' }
+                }, t.title || '새 여행')
+              )
             );
-          })
+          }),
+          /*#__PURE__*/React.createElement("button", {
+            onClick: onAdd,
+            style: { marginTop: 4, padding: '18px 16px', background: 'transparent',
+              border: '1.5px dashed ' + COLORS.line, borderRadius: 20, color: COLORS.mute, cursor: 'pointer',
+              display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
+              fontFamily: SANS, fontSize: 13.5 }
+          },
+            /*#__PURE__*/React.createElement(Icon, { name: 'plus', size: 15, color: COLORS.mute, stroke: 2 }),
+            "새 여행 추가"
+          )
         )
   );
 }
@@ -6030,7 +6044,9 @@ function App() {
   // ── 여행 목록 로드 ─────────────────────────────────────────
   React.useEffect(() => {
     if (!userData?.uid) return;
-    const tripIds = userData.tripIds || [userData.groupId];
+    const tripIds = (userData.tripIds && userData.tripIds.length > 0)
+      ? userData.tripIds
+      : [userData.groupId || userData.uid];
     setTripsLoading(true);
     fbLoadTrips(tripIds).then(function(trips) {
       setUserTrips(trips);
