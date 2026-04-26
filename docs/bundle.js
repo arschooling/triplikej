@@ -7149,7 +7149,7 @@ function LoginScreen({
       lineHeight: 1.5,
       animation: 'charPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 1.38s both'
     }
-  }, "\uC5EC\uD589 \uC77C\uC815 \uB9CC\uB4E4\uACE0 \uAC04\uD3B8\uD558\uAC8C \uACF5\uC720\uD574 \uBCF4\uC138\uC694."), /*#__PURE__*/React.createElement("button", {
+  }, "\uC5EC\uD589 \uC77C\uC815\uC744 J\uCC98\uB7FC \uB9CC\uB4E4\uACE0 \uAC04\uD3B8\uD558\uAC8C \uACF5\uC720\uD574 \uBCF4\uC138\uC694."), /*#__PURE__*/React.createElement("button", {
     onClick: handleLogin,
     disabled: loading,
     style: {

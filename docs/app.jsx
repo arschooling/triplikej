@@ -2564,7 +2564,7 @@ function LoginScreen({ errorMsg, onLoginStart }) {
       </div>
       <div style={{ fontFamily:SANS, fontSize:15, color:COLORS.mute, marginBottom:56, lineHeight:1.5,
         animation:'charPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 1.38s both' }}>
-        여행 일정 만들고 간편하게 공유해 보세요.
+        여행 일정을 J처럼 만들고 간편하게 공유해 보세요.
       </div>
       <button onClick={handleLogin} disabled={loading}
         style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 28px',
