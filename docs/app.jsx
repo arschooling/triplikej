@@ -2714,7 +2714,6 @@ function App() {
     return fbOnAuth(async (fbUser) => {
       if (fbUser) {
         setAuthUser(fbUser);
-        // Firestore 실패해도 auth 정보만으로 일단 진입
         const fallback = {
           uid: fbUser.uid,
           displayName: fbUser.displayName || '여행자',
@@ -2722,6 +2721,11 @@ function App() {
           photoURL: fbUser.photoURL || '',
           groupId: fbUser.uid,
         };
+        // fallback 즉시 세팅 → fbListenGroup + fbListenPrep 동시 시작
+        setUserData(fallback);
+        setLoginError('');
+        setAuthState('in');
+        // 백그라운드에서 실제 유저 데이터 확인 (groupId 다를 경우 업데이트)
         try {
           const ud = await Promise.race([
             fbGetOrCreateUser(fbUser),
@@ -2730,12 +2734,8 @@ function App() {
           setUserData(ud);
         } catch(e) {
           console.warn('Firestore 연결 실패, auth 정보로 진행:', e.message);
-          setUserData(fallback);
-          // 백그라운드에서 재시도
           fbGetOrCreateUser(fbUser).then(setUserData).catch(() => {});
         }
-        setLoginError('');
-        setAuthState('in');
       } else {
         setAuthUser(null); setUserData(null);
         setTrip(null); setPrep({ checklist:[], docs:[], pack:[] });
