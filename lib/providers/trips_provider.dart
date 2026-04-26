@@ -16,6 +16,9 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
     _load();
   }
 
+  TripsNotifier.preloaded(this._repo, List<Trip> trips)
+      : super(AsyncValue.data(trips));
+
   Future<void> _load() async {
     try {
       final trips = await _repo.load();
