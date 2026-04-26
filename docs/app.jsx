@@ -3051,7 +3051,12 @@ function App() {
   // ── Auth gating ───────────────────────────────────────────
   if (authState === 'loading') return null;
   if (authState === 'out') return <LoginScreen errorMsg={loginError}/>;
-  if (!trip) return null;
+  if (!trip) return (
+    <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ width:28, height:28, border:`3px solid ${COLORS.line}`, borderTopColor:COLORS.accent,
+        borderRadius:'50%', animation:'ptr-spin 0.8s linear infinite' }}/>
+    </div>
+  );
 
   // Figure out what "back" means in the current state, for swipe-from-edge.
   let swipeBack = null;
