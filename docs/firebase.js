@@ -1,0 +1,150 @@
+// ─── Firebase init ───────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyDZgy4WNxA8C0MnZk0PfilDPSkReDJADLE",
+  authDomain: "travelapp-b194c.firebaseapp.com",
+  projectId: "travelapp-b194c",
+  storageBucket: "travelapp-b194c.firebasestorage.app",
+  messagingSenderId: "796464477738",
+  appId: "1:796464477738:web:6821d8097fab04c6d63553",
+};
+firebase.initializeApp(firebaseConfig);
+const fbAuth = firebase.auth();
+const fbDb   = firebase.firestore();
+
+// ─── Auth ────────────────────────────────────────────────────
+const _googleProvider = new firebase.auth.GoogleAuthProvider();
+window.fbSignIn = () =>
+  fbAuth.signInWithPopup(_googleProvider);
+window.fbSignInRedirect = () =>
+  fbAuth.signInWithRedirect(_googleProvider);
+window.fbSignOut = () => fbAuth.signOut();
+window.fbOnAuth  = (cb) => fbAuth.onAuthStateChanged(cb);
+
+// redirect 결과 처리 (페이지 로드 시 자동 호출)
+fbAuth.getRedirectResult().catch(e => console.warn('getRedirectResult:', e.code));
+
+// ─── User document ───────────────────────────────────────────
+window.fbGetOrCreateUser = async (fbUser) => {
+  const ref  = fbDb.collection('users').doc(fbUser.uid);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    const def  = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+    const data = {
+      displayName : fbUser.displayName || '여행자',
+      email       : fbUser.email       || '',
+      photoURL    : fbUser.photoURL    || '',
+      groupId     : fbUser.uid,
+      createdAt   : firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    await ref.set(data);
+    // shared trip group (solo = own uid)
+    await fbDb.collection('groups').doc(fbUser.uid).set({
+      title   : def.title,
+      dates   : def.dates,
+      hotel   : def.hotel || '',
+      days    : def.days,
+      hotels  : def.hotels  || [],
+      food    : def.food    || [],
+      members : [fbUser.uid],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    // private prep
+    await fbDb.collection('preps').doc(fbUser.uid).set({
+      prep: def.prep || { checklist:[], docs:[], pack:[] },
+    });
+    return { ...data, uid: fbUser.uid };
+  }
+  return { uid: fbUser.uid, ...snap.data() };
+};
+
+// ─── Shared group (days / hotels / food) ─────────────────────
+window.fbListenGroup = (groupId, cb) =>
+  fbDb.collection('groups').doc(groupId)
+    .onSnapshot(s => { if (s.exists) cb(s.data()); });
+
+window.fbSaveGroup = (groupId, patch) =>
+  fbDb.collection('groups').doc(groupId).set(patch, { merge: true });
+
+// ─── Private prep ────────────────────────────────────────────
+window.fbListenPrep = (uid, cb) =>
+  fbDb.collection('preps').doc(uid)
+    .onSnapshot(s => cb(s.exists ? (s.data().prep || {}) : {}));
+
+window.fbSavePrep = (uid, prep) =>
+  fbDb.collection('preps').doc(uid).set({ prep }, { merge: true });
+
+// ─── User lookup ─────────────────────────────────────────────
+window.fbSearchUser = async (email) => {
+  const snap = await fbDb.collection('users').where('email','==',email.trim()).get();
+  if (snap.empty) return null;
+  return { uid: snap.docs[0].id, ...snap.docs[0].data() };
+};
+
+// ─── Companion invites ───────────────────────────────────────
+window.fbSendInvite = async (fromUser, toEmail) => {
+  const toUser = await fbSearchUser(toEmail);
+  if (!toUser)                    return { error: '가입된 사용자가 없습니다.' };
+  if (toUser.uid === fromUser.uid) return { error: '자기 자신에게는 초대할 수 없습니다.' };
+  const ex = await fbDb.collection('invites')
+    .where('fromUid','==',fromUser.uid).where('toUid','==',toUser.uid)
+    .where('status','==','pending').get();
+  if (!ex.empty) return { error: '이미 초대를 보냈습니다.' };
+  await fbDb.collection('invites').add({
+    fromUid  : fromUser.uid,
+    fromName : fromUser.displayName,
+    fromEmail: fromUser.email,
+    fromPhoto: fromUser.photoURL || '',
+    toUid    : toUser.uid,
+    groupId  : fromUser.groupId,
+    status   : 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+  return { success: true, toName: toUser.displayName };
+};
+
+window.fbListenInvites = (uid, cb) =>
+  fbDb.collection('invites')
+    .where('toUid','==',uid).where('status','==','pending')
+    .onSnapshot(s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+window.fbAcceptInvite = async (invite, myUid) => {
+  await fbDb.collection('invites').doc(invite.id).update({ status:'accepted' });
+  await fbDb.collection('users').doc(myUid).update({ groupId: invite.groupId });
+  await fbDb.collection('groups').doc(invite.groupId).update({
+    members: firebase.firestore.FieldValue.arrayUnion(myUid),
+  });
+  return invite.groupId;
+};
+
+window.fbRejectInvite = (id) =>
+  fbDb.collection('invites').doc(id).update({ status:'rejected' });
+
+// ─── Companions list ─────────────────────────────────────────
+window.fbGetCompanions = async (groupId, myUid) => {
+  const snap = await fbDb.collection('groups').doc(groupId).get();
+  if (!snap.exists) return [];
+  const uids = (snap.data().members || []).filter(u => u !== myUid);
+  const res  = await Promise.all(uids.map(async uid => {
+    const s = await fbDb.collection('users').doc(uid).get();
+    return s.exists ? { uid, ...s.data() } : null;
+  }));
+  return res.filter(Boolean);
+};
+
+window.fbLeaveGroup = async (userData) => {
+  const { uid, groupId } = userData;
+  if (groupId === uid) return;
+  await fbDb.collection('groups').doc(groupId).update({
+    members: firebase.firestore.FieldValue.arrayRemove(uid),
+  });
+  // copy current group data to new solo group
+  const gs = await fbDb.collection('groups').doc(groupId).get();
+  await fbDb.collection('groups').doc(uid).set(
+    gs.exists ? { ...gs.data(), members:[uid] } : { members:[uid] }
+  );
+  await fbDb.collection('users').doc(uid).update({ groupId: uid });
+};
+
+// update userData groupId in memory helper
+window.fbUpdateUserGroupId = (uid, groupId) =>
+  fbDb.collection('users').doc(uid).update({ groupId });
