@@ -5637,7 +5637,6 @@ function App() {
   const [companionOpen, setCompanionOpen] = React.useState(false);
   const [loginError, setLoginError] = React.useState('');
   const tripRef = React.useRef(null); // for loop-prevention
-  const splashStart = React.useRef(Date.now());
 
   // ── UI nav state ───────────────────────────────────────────
   const [tab, setTab] = React.useState(_nav.tab || 'home');
@@ -5682,7 +5681,7 @@ function App() {
   React.useEffect(() => {
     const ready = authState === 'out' || (authState === 'in' && trip !== null);
     if (ready) {
-      const delay = Math.max(0, 4000 - (Date.now() - splashStart.current));
+      const delay = Math.max(0, 4000 - (Date.now() - (window._splashStart || Date.now())));
       setTimeout(() => {
         const splash = document.getElementById('splash');
         if (!splash) return;
