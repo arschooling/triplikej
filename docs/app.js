@@ -5703,6 +5703,8 @@ function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanio
       /*#__PURE__*/React.createElement("div", null, 'trips: ' + trips.length),
       /*#__PURE__*/React.createElement("div", null, 'loading: ' + loading),
       /*#__PURE__*/React.createElement("div", null, 'error: ' + (tripsError || 'none')),
+      /*#__PURE__*/React.createElement("div", null, 'ver: APP-V11'),
+      /*#__PURE__*/React.createElement("div", null, 'fbDebugRead: ' + typeof window.fbDebugRead),
       /*#__PURE__*/React.createElement("div", null, new Date().toLocaleTimeString('ko-KR'))
     ),
     loading
