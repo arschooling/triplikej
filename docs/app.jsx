@@ -2693,7 +2693,7 @@ function App() {
   React.useEffect(() => {
     const ready = authState === 'out' || (authState === 'in' && trip !== null);
     if (ready) {
-      const delay = Math.max(0, 1000 - (Date.now() - splashStart.current));
+      const delay = Math.max(0, 4000 - (Date.now() - splashStart.current));
       setTimeout(() => {
         const splash = document.getElementById('splash');
         if (!splash) return;
