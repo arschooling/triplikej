@@ -60,7 +60,10 @@ window.fbGetOrCreateUser = async (fbUser) => {
 // ─── Shared group ─────────────────────────────────────────────
 window.fbListenGroup = (groupId, cb) =>
   _fbDb.collection('groups').doc(groupId)
-    .onSnapshot(s => { if (s.exists) cb(s.data()); });
+    .onSnapshot(
+      s => cb(s.exists ? s.data() : null),
+      err => { console.warn('fbListenGroup error:', err.code); cb(null); }
+    );
 
 window.fbSaveGroup = (groupId, patch) =>
   _fbDb.collection('groups').doc(groupId).set(patch, { merge: true });

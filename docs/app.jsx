@@ -2746,9 +2746,24 @@ function App() {
   }, []);
 
   // ── Firestore: shared group listener ──────────────────────
+  const groupCreateRef = React.useRef(false);
   React.useEffect(() => {
     if (!userData?.groupId) return;
+    groupCreateRef.current = false;
     return fbListenGroup(userData.groupId, (data) => {
+      if (data === null) {
+        // groups 문서가 없으면 기본값으로 생성 (한 번만)
+        if (groupCreateRef.current) return;
+        groupCreateRef.current = true;
+        const def = window.TRIP_DEFAULT || {};
+        fbSaveGroup(userData.groupId, {
+          title: def.title || '새 여행', dates: def.dates || '',
+          hotel: def.hotel || '', days: def.days || [],
+          hotels: def.hotels || [], food: def.food || [],
+          members: [userData.uid],
+        });
+        return;
+      }
       setTrip(prev => {
         if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
         tripRef.current = data;
