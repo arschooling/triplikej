@@ -7804,15 +7804,19 @@ function App() {
   // ── 여행 목록 로드 ─────────────────────────────────────────
   React.useEffect(() => {
     if (!userData?.uid) return;
-    const tripIds = (userData.tripIds && userData.tripIds.length > 0)
-      ? userData.tripIds
-      : [userData.groupId || userData.uid];
+    // uid는 항상 포함 (groups/{uid}에 원본 여행 데이터가 있음)
+    const idSet = new Set([userData.uid]);
+    if (userData.groupId) idSet.add(userData.groupId);
+    if (userData.tripIds && userData.tripIds.length > 0) {
+      userData.tripIds.forEach(function(id) { idSet.add(id); });
+    }
+    const tripIds = Array.from(idSet);
     setTripsLoading(true);
     fbLoadTrips(tripIds).then(function(trips) {
       setUserTrips(trips);
       setTripsLoading(false);
     }).catch(function() { setTripsLoading(false); });
-  }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
+  }, [userData?.uid, userData?.groupId, JSON.stringify(userData?.tripIds)]);
 
   // ── Firestore: shared group listener ──────────────────────
   const groupCreateRef = React.useRef(false);
