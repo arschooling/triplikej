@@ -7046,7 +7046,7 @@ function TakeoffIcon() {
       width: 700,
       height: 3,
       background: 'white',
-      borderRadius: 2,
+      borderRadius: '50%',
       transformOrigin: 'center center',
       animation: 'runwaySpring 0.6s linear 0.93s both'
     }
