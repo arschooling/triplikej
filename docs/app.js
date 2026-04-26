@@ -6508,6 +6508,16 @@ function App() {
       background: '#F5F2EC'
     }
   },
+  tab === 'home' && dayIdx === null && hotelIdx === null && /*#__PURE__*/React.createElement("button", {
+    onClick: function() { setActiveTripId(null); setTrip(null); setEditing(false); },
+    style: {
+      position: 'fixed', top: 'calc(env(safe-area-inset-top) + 14px)', left: 12, zIndex: 300,
+      width: 36, height: 36, borderRadius: 18,
+      background: 'rgba(245,242,236,0.85)', backdropFilter: 'blur(8px)',
+      border: 'none', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }
+  }, /*#__PURE__*/React.createElement(Icon, { name: 'chevron-left', size: 18, color: COLORS.ink, stroke: 2 })),
   /*#__PURE__*/React.createElement(SwipeBackLayer, {
     onBack: swipeBack
   }, screen), /*#__PURE__*/React.createElement(TabBar, {
