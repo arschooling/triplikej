@@ -5872,22 +5872,34 @@ function App() {
     var uid = authUser.uid;
     setTripsLoading(true);
     setTripsError('');
-    // fbDebugRead로 먼저 상태 확인
-    fbDebugRead(uid).then(function(result) {
-      if (result.ok) {
-        setTripsError('read OK: ' + result.title + ' / ' + result.days + 'days');
-        // 성공하면 실시간 리스너로 전환
-        fbListenGroup(uid, function(data) {
+    // firebase.js 로드 확인
+    if (typeof fbDebugRead !== 'function') {
+      setTripsError('firebase.js 로드 실패 — fbDebugRead 없음');
+      setTripsLoading(false);
+      return;
+    }
+    if (typeof fbListenGroup !== 'function') {
+      setTripsError('firebase.js 로드 실패 — fbListenGroup 없음');
+      setTripsLoading(false);
+      return;
+    }
+    fbDebugRead(uid)
+      .then(function(result) {
+        if (result.ok) {
+          setTripsError('read OK: ' + result.title + ' (' + result.days + 'days)');
+          fbListenGroup(uid, function(data) {
+            setTripsLoading(false);
+            if (data) setUserTrips([Object.assign({ id: uid }, data)]);
+          });
+        } else {
+          setTripsError('FAIL: ' + result.reason);
           setTripsLoading(false);
-          if (data) {
-            setUserTrips([Object.assign({ id: uid }, data)]);
-          }
-        });
-      } else {
-        setTripsError('FAIL: ' + result.reason);
+        }
+      })
+      .catch(function(err) {
+        setTripsError('THROW: ' + (err && err.message ? err.message : String(err)));
         setTripsLoading(false);
-      }
-    });
+      });
   }, [authUser?.uid]);
 
   // ── Firestore: shared group listener ──────────────────────
