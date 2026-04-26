@@ -5862,14 +5862,9 @@ function TripsScreen({ trips, onSelect, onAdd, loading }) {
       paddingTop: 'calc(env(safe-area-inset-top) + 64px)', paddingBottom: 100 }
   },
     /*#__PURE__*/React.createElement("div", {
-      style: { padding: '0 24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }
+      style: { padding: '0 24px 32px' }
     },
-      /*#__PURE__*/React.createElement("div", { style: { fontFamily: SERIF, fontSize: 30, color: COLORS.ink } }, "My Trips"),
-      /*#__PURE__*/React.createElement("button", {
-        onClick: onAdd,
-        style: { background: COLORS.ink, color: COLORS.bg, border: 'none', borderRadius: 20,
-          padding: '8px 18px', fontFamily: SANS, fontSize: 13, fontWeight: 500, cursor: 'pointer' }
-      }, "+ New Trip")
+      /*#__PURE__*/React.createElement("div", { style: { fontFamily: SERIF, fontSize: 30, color: COLORS.ink } }, "My Trips")
     ),
     loading
       ? /*#__PURE__*/React.createElement("div", {

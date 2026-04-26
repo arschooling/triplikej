@@ -854,12 +854,8 @@ function TripsScreen({ trips, onSelect, onAdd, loading }) {
   return (
     <div style={{ minHeight:'100vh', background:COLORS.bg,
       paddingTop:'calc(env(safe-area-inset-top) + 64px)', paddingBottom:100 }}>
-      <div style={{ padding:'0 24px 32px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+      <div style={{ padding:'0 24px 32px' }}>
         <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink }}>My Trips</div>
-        <button onClick={onAdd} style={{ background:COLORS.ink, color:COLORS.bg, border:'none',
-          borderRadius:20, padding:'8px 18px', fontFamily:SANS, fontSize:13, fontWeight:500, cursor:'pointer' }}>
-          + 새 여행
-        </button>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
