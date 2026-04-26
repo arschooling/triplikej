@@ -60,7 +60,26 @@ window.fbGetOrCreateUser = async (fbUser) => {
     return { ...data, uid: fbUser.uid };
   }
   const existing = snap.data();
-  // 기존 사용자: tripIds에 uid가 없으면 추가 (groups/{uid}에 원본 여행이 있음)
+
+  // groups/{uid} 문서가 없으면 생성 (데이터가 사라진 경우 복구)
+  const groupRef  = _fbDb.collection('groups').doc(fbUser.uid);
+  const groupSnap = await groupRef.get();
+  if (!groupSnap.exists) {
+    console.warn('[TripLikeJ] groups/' + fbUser.uid + ' 없음 → 새로 생성');
+    const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+    await groupRef.set({
+      title   : def.title || '내 여행',
+      dates   : def.dates || '',
+      hotel   : def.hotel || '',
+      days    : def.days  || [],
+      hotels  : def.hotels  || [],
+      food    : def.food    || [],
+      members : [fbUser.uid],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+
+  // tripIds에 uid가 없으면 추가
   if (!existing.tripIds || !existing.tripIds.includes(fbUser.uid)) {
     const tripIds = [fbUser.uid, ...(existing.tripIds || [])];
     await ref.update({ tripIds });

@@ -5669,7 +5669,7 @@ function _readCache() {
     return null;
   }
 }
-function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanion, authUser }) {
+function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanion, authUser, tripsError }) {
   return /*#__PURE__*/React.createElement("div", {
     style: { minHeight: '100vh', background: COLORS.bg,
       paddingTop: 'calc(env(safe-area-inset-top) + 64px)', paddingBottom: 100 }
@@ -5701,7 +5701,9 @@ function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanio
     },
       /*#__PURE__*/React.createElement("div", null, 'uid: ' + (authUser ? authUser.uid : 'null')),
       /*#__PURE__*/React.createElement("div", null, 'trips: ' + trips.length),
-      /*#__PURE__*/React.createElement("div", null, 'loading: ' + loading)
+      /*#__PURE__*/React.createElement("div", null, 'loading: ' + loading),
+      /*#__PURE__*/React.createElement("div", null, 'error: ' + (tripsError || 'none')),
+      /*#__PURE__*/React.createElement("div", null, new Date().toLocaleTimeString('ko-KR'))
     ),
     loading
       ? /*#__PURE__*/React.createElement("div", {
@@ -5864,10 +5866,11 @@ function App() {
   }, []);
 
   // ── 여행 목록: groups/{uid} 실시간 리스너 ─────────────────
-  // fbListenGroup은 이전부터 뉴욕 일정 불러오던 바로 그 함수
+  const [tripsError, setTripsError] = React.useState('');
   React.useEffect(() => {
     if (!authUser?.uid) return;
     setTripsLoading(true);
+    setTripsError('');
     var uid = authUser.uid;
     var unsub = fbListenGroup(uid, function(data) {
       setTripsLoading(false);
@@ -5878,6 +5881,8 @@ function App() {
           return [primaryTrip].concat(rest);
         });
       } else {
+        // 문서가 없음 — fbGetOrCreateUser가 생성 중이므로 잠시 후 재시도
+        setTripsError('groups/' + uid + ' not found');
         console.warn('[TripLikeJ] groups/' + uid + ' 문서 없음');
       }
     });
@@ -6418,6 +6423,7 @@ function App() {
       loading: tripsLoading,
       userData: userData,
       authUser: authUser,
+      tripsError: tripsError,
       onOpenCompanion: function() { setCompanionOpen(true); },
       onSelect: function(id) {
         setActiveTripId(id);
