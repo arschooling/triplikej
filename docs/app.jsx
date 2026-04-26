@@ -2704,16 +2704,28 @@ function App() {
     return fbOnAuth(async (fbUser) => {
       if (fbUser) {
         setAuthUser(fbUser);
+        // Firestore 실패해도 auth 정보만으로 일단 진입
+        const fallback = {
+          uid: fbUser.uid,
+          displayName: fbUser.displayName || '여행자',
+          email: fbUser.email || '',
+          photoURL: fbUser.photoURL || '',
+          groupId: fbUser.uid,
+        };
         try {
-          const ud = await fbGetOrCreateUser(fbUser);
+          const ud = await Promise.race([
+            fbGetOrCreateUser(fbUser),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000)),
+          ]);
           setUserData(ud);
-          setLoginError('');
-          setAuthState('in');
         } catch(e) {
-          console.error('fbGetOrCreateUser error:', e);
-          setLoginError('계정 데이터를 불러오는 데 실패했습니다: ' + (e.message || e.code || ''));
-          setAuthState('out');
+          console.warn('Firestore 연결 실패, auth 정보로 진행:', e.message);
+          setUserData(fallback);
+          // 백그라운드에서 재시도
+          fbGetOrCreateUser(fbUser).then(setUserData).catch(() => {});
         }
+        setLoginError('');
+        setAuthState('in');
       } else {
         setAuthUser(null); setUserData(null);
         setTrip(null); setPrep({ checklist:[], docs:[], pack:[] });
