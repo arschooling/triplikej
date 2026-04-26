@@ -5856,11 +5856,26 @@ function _readCache() {
     return null;
   }
 }
-function TripsScreen({ trips, onSelect, onAdd, loading }) {
+function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanion }) {
   return /*#__PURE__*/React.createElement("div", {
     style: { minHeight: '100vh', background: COLORS.bg,
       paddingTop: 'calc(env(safe-area-inset-top) + 64px)', paddingBottom: 100 }
   },
+    /*#__PURE__*/React.createElement("button", {
+      onClick: onOpenCompanion,
+      style: {
+        position: 'fixed', top: 'calc(14px + env(safe-area-inset-top,0px))', right: 16, zIndex: 300,
+        width: 38, height: 38, borderRadius: 19,
+        background: userData && userData.photoURL ? 'transparent' : COLORS.softer,
+        border: '2px solid ' + COLORS.line, padding: 0, cursor: 'pointer', overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 1px 6px rgba(0,0,0,0.10)',
+      }
+    },
+      userData && userData.photoURL
+        ? /*#__PURE__*/React.createElement("img", { src: userData.photoURL, alt: "profile", style: { width: '100%', height: '100%', objectFit: 'cover' } })
+        : /*#__PURE__*/React.createElement(Icon, { name: "user", size: 18, color: COLORS.mute })
+    ),
     /*#__PURE__*/React.createElement("div", {
       style: { padding: '0 24px 32px' }
     },
@@ -6551,28 +6566,39 @@ function App() {
   });
 
   // ── 여행 목록 화면 ─────────────────────────────────────────
-  if (!activeTripId) return /*#__PURE__*/React.createElement(TripsScreen, {
-    trips: userTrips,
-    loading: tripsLoading,
-    onSelect: function(id) {
-      setActiveTripId(id);
-      setTab('home');
-      setDayIdx(null);
-      setHotelIdx(null);
-      setEditing(false);
-    },
-    onAdd: async function() {
-      const title = prompt('여행 이름을 입력해 주세요\n(예: 뉴욕, 파리 7박)');
-      if (!title) return;
-      const tripId = await fbCreateNewTrip(userData.uid, title);
-      const newTrip = { id: tripId, title, dates: '', days: [], hotels: [] };
-      setUserTrips(prev => [...prev, newTrip]);
-      setActiveTripId(tripId);
-      setTab('home');
-      setDayIdx(null);
-      setHotelIdx(null);
-    }
-  });
+  if (!activeTripId) return /*#__PURE__*/React.createElement(React.Fragment, null,
+    /*#__PURE__*/React.createElement(TripsScreen, {
+      trips: userTrips,
+      loading: tripsLoading,
+      userData: userData,
+      onOpenCompanion: function() { setCompanionOpen(true); },
+      onSelect: function(id) {
+        setActiveTripId(id);
+        setTab('home');
+        setDayIdx(null);
+        setHotelIdx(null);
+        setEditing(false);
+      },
+      onAdd: async function() {
+        const title = prompt('여행 이름을 입력해 주세요\n(예: 뉴욕, 파리 7박)');
+        if (!title) return;
+        const tripId = await fbCreateNewTrip(userData.uid, title);
+        const newTrip = { id: tripId, title, dates: '', days: [], hotels: [] };
+        setUserTrips(prev => [...prev, newTrip]);
+        setActiveTripId(tripId);
+        setTab('home');
+        setDayIdx(null);
+        setHotelIdx(null);
+      }
+    }),
+    /*#__PURE__*/React.createElement(CompanionSheet, {
+      open: companionOpen,
+      onClose: function() { setCompanionOpen(false); },
+      authUser: authUser,
+      userData: userData,
+      onUserDataUpdate: function(ud) { setUserData(ud); }
+    })
+  );
 
   if (!trip) return null;
 
