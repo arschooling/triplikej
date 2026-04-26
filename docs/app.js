@@ -5302,7 +5302,8 @@ function LoginScreen({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 32
+      marginBottom: 32,
+      animation: 'charPop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0s both'
     }
   }, /*#__PURE__*/React.createElement("svg", {
     width: "36",
@@ -5320,13 +5321,26 @@ function LoginScreen({
       lineHeight: 1.1,
       marginBottom: 14
     }
-  }, "Trip", /*#__PURE__*/React.createElement("br", null), "Like J."), /*#__PURE__*/React.createElement("div", {
+  }, [...'Trip'].map((ch, i) => /*#__PURE__*/React.createElement("span", {
+    key: 't' + i,
+    style: {
+      display: 'inline-block',
+      animation: `charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.055}s both`
+    }
+  }, ch)), /*#__PURE__*/React.createElement("br", null), [...'Like J.'].map((ch, i) => /*#__PURE__*/React.createElement("span", {
+    key: 'l' + i,
+    style: {
+      display: 'inline-block',
+      animation: `charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${(4 + i) * 0.055 + 0.04}s both`
+    }
+  }, ch === ' ' ? ' ' : ch))), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SANS,
       fontSize: 15,
       color: COLORS.mute,
       marginBottom: 56,
-      lineHeight: 1.5
+      lineHeight: 1.5,
+      animation: 'charPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.62s both'
     }
   }, "\uC5EC\uD589 \uC77C\uC815 \uB9CC\uB4E4\uACE0 \uAC04\uD3B8\uD558\uAC8C \uACF5\uC720\uD574 \uBCF4\uC138\uC694."), /*#__PURE__*/React.createElement("button", {
     onClick: handleLogin,

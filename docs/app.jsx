@@ -2511,15 +2511,27 @@ function LoginScreen({ errorMsg, onLoginStart }) {
     <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', flexDirection:'column',
       alignItems:'center', justifyContent:'center', padding:'48px 36px', textAlign:'center' }}>
       <div style={{ width:72, height:72, borderRadius:18, background:COLORS.accent,
-        display:'flex', alignItems:'center', justifyContent:'center', marginBottom:32 }}>
+        display:'flex', alignItems:'center', justifyContent:'center', marginBottom:32,
+        animation:'charPop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0s both' }}>
         <svg width="36" height="36" viewBox="0 0 24 24" fill="white">
           <path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.67c.81-.23 1.28-1.05 1.07-1.85z"/>
         </svg>
       </div>
       <div style={{ fontFamily:SERIF, fontSize:56, color:COLORS.ink, letterSpacing:'-0.02em', lineHeight:1.1, marginBottom:14 }}>
-        Trip<br/>Like J.
+        {[...'Trip'].map((ch, i) => (
+          <span key={'t'+i} style={{ display:'inline-block',
+            animation:`charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${i*0.055}s both` }}>{ch}</span>
+        ))}
+        <br/>
+        {[...'Like J.'].map((ch, i) => (
+          <span key={'l'+i} style={{ display:'inline-block',
+            animation:`charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${(4+i)*0.055 + 0.04}s both` }}>
+            {ch === ' ' ? ' ' : ch}
+          </span>
+        ))}
       </div>
-      <div style={{ fontFamily:SANS, fontSize:15, color:COLORS.mute, marginBottom:56, lineHeight:1.5 }}>
+      <div style={{ fontFamily:SANS, fontSize:15, color:COLORS.mute, marginBottom:56, lineHeight:1.5,
+        animation:'charPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.62s both' }}>
         여행 일정 만들고 간편하게 공유해 보세요.
       </div>
       <button onClick={handleLogin} disabled={loading}
