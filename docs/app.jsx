@@ -2493,10 +2493,9 @@ function TakeoffIcon() {
         display:'flex', alignItems:'center', justifyContent:'center',
       }}/>
 
-      {/* 활주로 — 아이콘 중심 기준 좌우 350px씩, 아이콘 앞(zIndex:2)
-          top:47 = 아이콘 내 땅선 중심(48px)에 맞춤 (height:3 → center at 48.5≈48) */}
+      {/* 활주로 — top:52 = 비행기 30% 확대 후 땅선 위치 + 간격 조정 */}
       <div style={{
-        position:'absolute', top:47, left:'50%',
+        position:'absolute', top:52, left:'50%',
         zIndex:2, pointerEvents:'none',
       }}>
         <div style={{
@@ -2507,14 +2506,14 @@ function TakeoffIcon() {
         }}/>
       </div>
 
-      {/* 흰 비행기 — 가속 이륙 후 코 들리며 멈춤 (사라지지 않음), zIndex:3 */}
+      {/* 흰 비행기 — 30% 확대 (36→47px), 중앙 정렬 보정 */}
       <div style={{
         position:'absolute', top:'50%', left:'50%',
         zIndex:3, pointerEvents:'none',
       }}>
         <div style={{ animation:'planeFly 0.95s linear 0s both' }}>
-          <svg width="36" height="36" viewBox="0 0 24 24"
-            style={{ display:'block', transform:'translate(-18px,-18px)' }}>
+          <svg width="47" height="47" viewBox="0 0 24 24"
+            style={{ display:'block', transform:'translate(-23.5px,-23.5px)' }}>
             <path fill="white" d={PLANE_BODY}/>
           </svg>
         </div>

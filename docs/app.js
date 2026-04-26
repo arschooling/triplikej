@@ -5274,7 +5274,7 @@ function TakeoffIcon() {
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
-      top: 47,
+      top: 52,
       left: '50%',
       zIndex: 2,
       pointerEvents: 'none'
@@ -5303,12 +5303,12 @@ function TakeoffIcon() {
       animation: 'planeFly 0.95s linear 0s both'
     }
   }, /*#__PURE__*/React.createElement("svg", {
-    width: "36",
-    height: "36",
+    width: "47",
+    height: "47",
     viewBox: "0 0 24 24",
     style: {
       display: 'block',
-      transform: 'translate(-18px,-18px)'
+      transform: 'translate(-23.5px,-23.5px)'
     }
   }, /*#__PURE__*/React.createElement("path", {
     fill: "white",
