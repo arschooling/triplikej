@@ -2478,65 +2478,49 @@ function SplashScreen({ visible }) {
   );
 }
 
-// ─── Paint Splat Icon ────────────────────────────────────────
-// 물감 파티클: 비행기 착지(~0.84s) 직후 튀어나감
-const PAINTS = [
-  { angle:   0, w: 7,  h:12, color:'#C14F2E', delay:0.84 },
-  { angle:  38, w: 5,  h: 9, color:'#F5C842', delay:0.88 },
-  { angle:  72, w: 9,  h:13, color:'#4A8FE7', delay:0.85 },
-  { angle: 108, w: 6,  h:10, color:'#5DBB6A', delay:0.90 },
-  { angle: 145, w: 8,  h:12, color:'#E87FAA', delay:0.86 },
-  { angle: 180, w: 5,  h: 9, color:'#9B72CF', delay:0.89 },
-  { angle: 215, w: 9,  h:13, color:'#F5C842', delay:0.83 },
-  { angle: 252, w: 6,  h:10, color:'#C14F2E', delay:0.87 },
-  { angle: 288, w: 8,  h:11, color:'#4A8FE7', delay:0.91 },
-  { angle: 325, w: 5,  h: 9, color:'#5DBB6A', delay:0.93 },
-];
-// 비행기 날개+동체만 (활주선 제외)
+// ─── Takeoff Icon ─────────────────────────────────────────────
+// 비행기 동체 (땅선 제외)
 const PLANE_BODY = 'M22.07 9.64c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.67c.81-.23 1.28-1.05 1.07-1.85z';
 
-function PaintSplatIcon() {
+function TakeoffIcon() {
   return (
     <div style={{ position:'relative', width:72, height:72, marginBottom:32 }}>
-      {/* 물감 파티클 — 착지 순간 사방으로 튀어나감 */}
-      {PAINTS.map((p, i) => (
-        <div key={i} style={{
-          position:'absolute', top:'50%', left:'50%',
-          width:0, height:0,
-          transform:`rotate(${p.angle}deg)`,
-          pointerEvents:'none',
-        }}>
-          <div style={{
-            position:'absolute', left:-p.w/2, top:-p.h,
-            width:p.w, height:p.h, background:p.color,
-            borderRadius:'50% 50% 42% 42% / 58% 58% 42% 42%',
-            animation:`paintFly 0.52s cubic-bezier(0.2,0.6,0.4,1) ${p.delay}s both`,
-          }}/>
-        </div>
-      ))}
 
-      {/* 아이콘 박스 — 처음부터 중앙 고정, 내부 비행기는 처음엔 없음 */}
+      {/* 활주로 — 아이콘 왼쪽으로 길게 뻗어 있다가 비행기 이륙 후 줄어듦
+          top:45 = 아이콘 내 땅선 y위치, right:32 = 오른쪽 끝이 아이콘 박스 내부(빨간 배경에 가려짐)
+          width:350 = 왼쪽으로 ~310px 뻗어나감, zIndex:0 = 아이콘 박스 뒤에 있음 */}
+      <div style={{
+        position:'absolute', top:45, height:3,
+        right:32, width:350,
+        background:'white',
+        borderRadius:'2px 0 0 2px',
+        transformOrigin:'right center',
+        animation:'runwayShrink 0.95s linear 0s both',
+        zIndex:0,
+      }}/>
+
+      {/* 아이콘 박스 — 처음부터 중앙 고정, 비행기는 나중에 나타남 */}
       <div style={{
         position:'relative', zIndex:1,
         width:72, height:72, borderRadius:18, background:COLORS.accent,
         display:'flex', alignItems:'center', justifyContent:'center',
       }}>
-        {/* 흰 비행기 — 주황 비행기 착지 후 나타남 */}
+        {/* 흰 비행기 + 땅선 — 비행기 착지 후 페이드인 */}
         <svg width="36" height="36" viewBox="0 0 24 24"
-          style={{ animation:'planeFadeIn 0.15s ease 0.88s both' }}>
+          style={{ animation:'planeFadeIn 0.15s ease 0.90s both' }}>
           <path fill="white" d={'M2.5 19h19v2h-19z ' + PLANE_BODY}/>
         </svg>
       </div>
 
-      {/* 주황 비행기 — 왼쪽 수평 이동 → 이륙 자세로 착지 → 사라짐 */}
+      {/* 흰 비행기 — 활주로에서 가속해 이륙, 아이콘에서 멈춘 뒤 사라짐 */}
       <div style={{
         position:'absolute', top:'50%', left:'50%',
         zIndex:3, pointerEvents:'none',
       }}>
-        <div style={{ animation:'planeFly 0.9s cubic-bezier(0.25,0.46,0.45,0.94) 0s both' }}>
+        <div style={{ animation:'planeFly 0.95s linear 0s both' }}>
           <svg width="36" height="36" viewBox="0 0 24 24"
             style={{ display:'block', transform:'translate(-18px,-18px)' }}>
-            <path fill="#ffa500" d={PLANE_BODY}/>
+            <path fill="white" d={PLANE_BODY}/>
           </svg>
         </div>
       </div>
@@ -2576,7 +2560,7 @@ function LoginScreen({ errorMsg, onLoginStart }) {
   return (
     <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', flexDirection:'column',
       alignItems:'center', justifyContent:'center', padding:'48px 36px', textAlign:'center' }}>
-      <PaintSplatIcon/>
+      <TakeoffIcon/>
       <div style={{ fontFamily:SERIF, fontSize:56, color:COLORS.ink, letterSpacing:'-0.02em', lineHeight:1.1, marginBottom:14 }}>
         {[...'Trip'].map((ch, i) => (
           <span key={'t'+i} style={{ display:'inline-block',

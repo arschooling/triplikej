@@ -5248,72 +5248,10 @@ function SplashScreen({
   }));
 }
 
-// ─── Paint Splat Icon ────────────────────────────────────────
-// 물감 파티클: 비행기 착지(~0.84s) 직후 튀어나감
-const PAINTS = [{
-  angle: 0,
-  w: 7,
-  h: 12,
-  color: '#C14F2E',
-  delay: 0.84
-}, {
-  angle: 38,
-  w: 5,
-  h: 9,
-  color: '#F5C842',
-  delay: 0.88
-}, {
-  angle: 72,
-  w: 9,
-  h: 13,
-  color: '#4A8FE7',
-  delay: 0.85
-}, {
-  angle: 108,
-  w: 6,
-  h: 10,
-  color: '#5DBB6A',
-  delay: 0.90
-}, {
-  angle: 145,
-  w: 8,
-  h: 12,
-  color: '#E87FAA',
-  delay: 0.86
-}, {
-  angle: 180,
-  w: 5,
-  h: 9,
-  color: '#9B72CF',
-  delay: 0.89
-}, {
-  angle: 215,
-  w: 9,
-  h: 13,
-  color: '#F5C842',
-  delay: 0.83
-}, {
-  angle: 252,
-  w: 6,
-  h: 10,
-  color: '#C14F2E',
-  delay: 0.87
-}, {
-  angle: 288,
-  w: 8,
-  h: 11,
-  color: '#4A8FE7',
-  delay: 0.91
-}, {
-  angle: 325,
-  w: 5,
-  h: 9,
-  color: '#5DBB6A',
-  delay: 0.93
-}];
-// 비행기 날개+동체만 (활주선 제외)
+// ─── Takeoff Icon ─────────────────────────────────────────────
+// 비행기 동체 (땅선 제외)
 const PLANE_BODY = 'M22.07 9.64c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.67c.81-.23 1.28-1.05 1.07-1.85z';
-function PaintSplatIcon() {
+function TakeoffIcon() {
   return /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative',
@@ -5321,29 +5259,20 @@ function PaintSplatIcon() {
       height: 72,
       marginBottom: 32
     }
-  }, PAINTS.map((p, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      width: 0,
-      height: 0,
-      transform: `rotate(${p.angle}deg)`,
-      pointerEvents: 'none'
-    }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
-      left: -p.w / 2,
-      top: -p.h,
-      width: p.w,
-      height: p.h,
-      background: p.color,
-      borderRadius: '50% 50% 42% 42% / 58% 58% 42% 42%',
-      animation: `paintFly 0.52s cubic-bezier(0.2,0.6,0.4,1) ${p.delay}s both`
+      top: 45,
+      height: 3,
+      right: 32,
+      width: 350,
+      background: 'white',
+      borderRadius: '2px 0 0 2px',
+      transformOrigin: 'right center',
+      animation: 'runwayShrink 0.95s linear 0s both',
+      zIndex: 0
     }
-  }))), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative',
       zIndex: 1,
@@ -5360,7 +5289,7 @@ function PaintSplatIcon() {
     height: "36",
     viewBox: "0 0 24 24",
     style: {
-      animation: 'planeFadeIn 0.15s ease 0.88s both'
+      animation: 'planeFadeIn 0.15s ease 0.90s both'
     }
   }, /*#__PURE__*/React.createElement("path", {
     fill: "white",
@@ -5375,7 +5304,7 @@ function PaintSplatIcon() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      animation: 'planeFly 0.9s cubic-bezier(0.25,0.46,0.45,0.94) 0s both'
+      animation: 'planeFly 0.95s linear 0s both'
     }
   }, /*#__PURE__*/React.createElement("svg", {
     width: "36",
@@ -5386,7 +5315,7 @@ function PaintSplatIcon() {
       transform: 'translate(-18px,-18px)'
     }
   }, /*#__PURE__*/React.createElement("path", {
-    fill: "#ffa500",
+    fill: "white",
     d: PLANE_BODY
   })))));
 }
@@ -5436,7 +5365,7 @@ function LoginScreen({
       padding: '48px 36px',
       textAlign: 'center'
     }
-  }, /*#__PURE__*/React.createElement(PaintSplatIcon, null), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(TakeoffIcon, null), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SERIF,
       fontSize: 56,
