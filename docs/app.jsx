@@ -855,7 +855,7 @@ function TripsScreen({ trips, onSelect, onAdd, loading }) {
     <div style={{ minHeight:'100vh', background:COLORS.bg,
       paddingTop:'calc(env(safe-area-inset-top) + 64px)', paddingBottom:100 }}>
       <div style={{ padding:'0 24px 32px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink }}>내 여행</div>
+        <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink }}>My Trips</div>
         <button onClick={onAdd} style={{ background:COLORS.ink, color:COLORS.bg, border:'none',
           borderRadius:20, padding:'8px 18px', fontFamily:SANS, fontSize:13, fontWeight:500, cursor:'pointer' }}>
           + 새 여행
@@ -3230,7 +3230,7 @@ function App() {
           display:'flex', alignItems:'center', gap:3,
           fontFamily:SANS, fontSize:13, color:COLORS.mute,
         }}>
-          <Icon name="chevron-left" size={14} color={COLORS.mute} stroke={2}/>내 여행
+          <Icon name="chevron-left" size={14} color={COLORS.mute} stroke={2}/>My Trips
         </button>
       )}
       <SwipeBackLayer onBack={swipeBack}>

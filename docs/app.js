@@ -1995,7 +1995,7 @@ function TripsScreen({
     size: 15,
     color: COLORS.mute,
     stroke: 2
-  }), "\uC0C8 \uC5EC\uD589 \uCD94\uAC00")));
+  }), "New Trip")));
 }
 
 // ─── 날짜 변환 유틸 (앱 전역) ─────────────────────────────────
@@ -5864,17 +5864,17 @@ function TripsScreen({ trips, onSelect, onAdd, loading }) {
     /*#__PURE__*/React.createElement("div", {
       style: { padding: '0 24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }
     },
-      /*#__PURE__*/React.createElement("div", { style: { fontFamily: SERIF, fontSize: 30, color: COLORS.ink } }, "내 여행"),
+      /*#__PURE__*/React.createElement("div", { style: { fontFamily: SERIF, fontSize: 30, color: COLORS.ink } }, "My Trips"),
       /*#__PURE__*/React.createElement("button", {
         onClick: onAdd,
         style: { background: COLORS.ink, color: COLORS.bg, border: 'none', borderRadius: 20,
           padding: '8px 18px', fontFamily: SANS, fontSize: 13, fontWeight: 500, cursor: 'pointer' }
-      }, "+ 새 여행")
+      }, "+ New Trip")
     ),
     loading
       ? /*#__PURE__*/React.createElement("div", {
           style: { textAlign: 'center', padding: 60, color: COLORS.mute, fontFamily: SANS, fontSize: 14 }
-        }, "로딩 중...")
+        }, "Loading...")
       : /*#__PURE__*/React.createElement("div", {
           style: { padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 12 }
         },
@@ -6612,7 +6612,7 @@ function App() {
     }
   },
     /*#__PURE__*/React.createElement(Icon, { name: 'chevron-left', size: 14, color: COLORS.mute, stroke: 2 }),
-    "내 여행"
+    "My Trips"
   ),
   /*#__PURE__*/React.createElement(SwipeBackLayer, {
     onBack: swipeBack
