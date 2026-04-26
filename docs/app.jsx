@@ -2694,7 +2694,7 @@ function App() {
     }
   };
 
-  // ── 스플래시 숨기기 (auth + trip 준비 후 최소 1초 표시) ────────
+  // ── 스플래시 숨기기 (auth + trip 준비 후 최소 4초 표시) ────────
   React.useEffect(() => {
     const ready = authState === 'out' || (authState === 'in' && trip !== null);
     if (ready) {
@@ -2702,16 +2702,9 @@ function App() {
       setTimeout(() => {
         const splash = document.getElementById('splash');
         if (!splash) return;
-        const bar = document.getElementById('splash-bar');
-        if (bar) {
-          bar.style.transition = 'width 0.2s ease';
-          bar.style.width = '100%';
-        }
-        setTimeout(() => {
-          splash.style.animation = 'none';
-          splash.classList.add('hide');
-          setTimeout(() => splash.remove(), 350);
-        }, 220);
+        splash.style.animation = 'none';
+        splash.classList.add('hide');
+        setTimeout(() => splash.remove(), 200);
       }, delay);
     }
   }, [authState, trip]);
