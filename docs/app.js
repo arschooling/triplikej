@@ -6405,7 +6405,7 @@ function App() {
     visible: tabBarVisible,
     editing: editing,
     onToggleEdit: handleEditToggle
-  }), tab === 'home' && dayIdx === null && hotelIdx === null && /*#__PURE__*/React.createElement("button", {
+  }), /*#__PURE__*/React.createElement("button", {
     onClick: () => setCompanionOpen(true),
     style: {
       position: 'fixed',

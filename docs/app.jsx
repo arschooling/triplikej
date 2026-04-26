@@ -3152,23 +3152,21 @@ function App() {
         {screen}
       </SwipeBackLayer>
       <TabBar tab={tab} setTab={(t)=>{setTab(t); setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);}} visible={tabBarVisible} editing={editing} onToggleEdit={handleEditToggle}/>
-      {/* 프로필 / 동행인 버튼 — 메인 홈에서만 표시 */}
-      {tab === 'home' && dayIdx === null && hotelIdx === null && (
-        <button onClick={() => setCompanionOpen(true)} style={{
-          position:'fixed', top:'calc(14px + env(safe-area-inset-top,0px))', right:16, zIndex:90,
-          width:38, height:38, borderRadius:19,
-          background: userData?.photoURL ? 'transparent' : COLORS.softer,
-          border:`2px solid ${COLORS.line}`,
-          padding:0, cursor:'pointer', overflow:'hidden',
-          display:'flex', alignItems:'center', justifyContent:'center',
-          boxShadow:'0 1px 6px rgba(0,0,0,0.10)',
-        }}>
-          {userData?.photoURL
-            ? <img src={userData.photoURL} alt="profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-            : <Icon name="user" size={18} color={COLORS.mute}/>
-          }
-        </button>
-      )}
+      {/* 프로필 / 동행인 버튼 — 항상 오른쪽 상단 고정 */}
+      <button onClick={() => setCompanionOpen(true)} style={{
+        position:'fixed', top:'calc(14px + env(safe-area-inset-top,0px))', right:16, zIndex:90,
+        width:38, height:38, borderRadius:19,
+        background: userData?.photoURL ? 'transparent' : COLORS.softer,
+        border:`2px solid ${COLORS.line}`,
+        padding:0, cursor:'pointer', overflow:'hidden',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        boxShadow:'0 1px 6px rgba(0,0,0,0.10)',
+      }}>
+        {userData?.photoURL
+          ? <img src={userData.photoURL} alt="profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+          : <Icon name="user" size={18} color={COLORS.mute}/>
+        }
+      </button>
       <StopSheet open={openStop} dayHue={dayHue}
         onClose={() => setOpenStop(null)} onSave={saveStop}/>
       {cityPicker && (
