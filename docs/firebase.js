@@ -1,11 +1,11 @@
 // ─── Firebase init ───────────────────────────────────────────
 const firebaseConfig = {
-  apiKey: "AIzaSyDZgy4WNxA8C0MnZk0PfilDPSkReDJADLE",
-  authDomain: "travelapp-b194c.firebaseapp.com",
-  projectId: "travelapp-b194c",
-  storageBucket: "travelapp-b194c.firebasestorage.app",
-  messagingSenderId: "796464477738",
-  appId: "1:796464477738:web:6821d8097fab04c6d63553",
+  apiKey: "AIzaSyBwWcPIioHZDMoNzd_9UJiwmhwKT1TTYTM",
+  authDomain: "triplikej.firebaseapp.com",
+  projectId: "triplikej",
+  storageBucket: "triplikej.firebasestorage.app",
+  messagingSenderId: "1045914771780",
+  appId: "1:1045914771780:web:7adef948e46137073e7711",
 };
 firebase.initializeApp(firebaseConfig);
 const fbAuth = firebase.auth();
