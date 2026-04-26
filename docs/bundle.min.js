@@ -7787,16 +7787,6 @@ function App() {
     });
   }, []);
 
-  // ── 캐시된 여행이 1개면 자동 진입 (이전 동작 복원) ──────────
-  React.useEffect(() => {
-    if (!activeTripId && _cachedTrips.length === 1 && userData?.uid) {
-      setActiveTripId(_cachedTrips[0].id);
-      // 캐시된 trip 데이터도 즉시 세팅 (Firestore 응답 전까지 표시용)
-      if (_cachedTrips[0].days && _cachedTrips[0].days.length > 0) {
-        setTrip(_cachedTrips[0]);
-      }
-    }
-  }, [userData?.uid]);
 
   // ── 여행 목록 로드 ────────────────────────────────────────
   const [tripsError, setTripsError] = React.useState('');
