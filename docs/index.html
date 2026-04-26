@@ -18,54 +18,11 @@
 <style>
   html, body { margin:0; padding:0; background:#F5F2EC; overflow-x:hidden; }
   #root { min-height:100%; background:#F5F2EC; }
-  @keyframes ptr-spin { to { transform:rotate(360deg); } }
-
-  /* ── 스플래시 ── */
-  #splash {
-    position:fixed; inset:0; background:#F5F2EC;
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    z-index:9999; transition:opacity 0.2s ease;
-  }
-  #splash.hide { opacity:0; pointer-events:none; }
-
-  #splash-title {
-    font-family:'Instrument Serif',Georgia,serif;
-    font-size:34px; color:#1A1816; letter-spacing:-0.5px;
-    animation:splashIn 0.6s ease both;
-  }
-  #splash-dest {
-    margin-top:14px; height:22px; overflow:hidden;
-    font-family:-apple-system,sans-serif;
-    font-size:13px; color:#7A756D; letter-spacing:0.04em;
-    text-align:center;
-  }
-  #splash-dest span {
-    display:block;
-    animation:destSlide 0.45s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  #splash-dest-text { animation-delay:0.35s; }
-  #splash-bar {
-    position:absolute; bottom:0; left:0; height:2px;
-    background:#C14F2E;
-    animation:barGrow 2.2s cubic-bezier(0.4,0,0.2,1) forwards;
-    border-radius:0 2px 2px 0;
-  }
-
-  @keyframes splashIn {
-    from { opacity:0; transform:translateY(6px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-  @keyframes destSlide {
-    from { opacity:0; transform:translateY(10px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-  @keyframes barGrow {
-    0%   { width:0%; }
-    40%  { width:55%; }
-    70%  { width:75%; }
-    100% { width:88%; }
-  }
+  @keyframes ptr-spin  { to { transform:rotate(360deg); } }
+  @keyframes splashIn  { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes destSlide { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes barGrow   { 0%{width:0%} 40%{width:55%} 70%{width:75%} 100%{width:88%} }
+  @keyframes splashOut { to { opacity:0; } }
 </style>
 <!-- 서비스 워커 등록 (두 번째 방문부터 즉시 로드) -->
 <script>
@@ -75,37 +32,7 @@ if('serviceWorker' in navigator) {
 </script>
 </head>
 <body>
-<script>
-window._splashStart=Date.now();
-// 이미 로그인된 상태면 스플래시 없이 바로 앱 표시
-if(localStorage.getItem('tlj_authed')){
-  document.write('<style>#splash{display:none!important}</style>');
-}
-</script>
-<div id="splash">
-  <div id="splash-title">Trip Like J</div>
-  <div id="splash-dest"><span id="splash-dest-text">✈ 여행을 준비하고 있어요</span></div>
-  <div id="splash-bar"></div>
-</div>
 <div id="root"></div>
-
-<script>
-// 여행지 이름 순환
-(function(){
-  var places=['✈ New York','🗼 Paris','🗾 Tokyo','🌉 San Francisco','🏝 Bali','🎡 London'];
-  var i=0;
-  var el=document.getElementById('splash-dest');
-  if(!el) return;
-  var timer=setInterval(function(){
-    var span=document.createElement('span');
-    span.textContent=places[i];
-    el.innerHTML='';
-    el.appendChild(span);
-    if(++i>=places.length) clearInterval(timer);
-  }, 571);
-})();
-</script>
-
 <script src="react.min.js"></script>
 <script src="react-dom.min.js"></script>
 <script src="firebase-sdk.min.js"></script>

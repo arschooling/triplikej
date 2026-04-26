@@ -5111,15 +5111,88 @@ function saveNav(state) {
   } catch (e) {}
 }
 
+// ─── Splash Screen (로그인 후 로딩 중 표시) ──────────────────
+const SPLASH_PLACES = ['✈ New York', '🗼 Paris', '🗾 Tokyo', '🌉 San Francisco', '🏝 Bali', '🎡 London'];
+function SplashScreen({
+  visible
+}) {
+  const [idx, setIdx] = React.useState(0);
+  const [animKey, setAnimKey] = React.useState(0);
+  const [hiding, setHiding] = React.useState(false);
+  React.useEffect(() => {
+    const t = setInterval(() => {
+      setIdx(i => (i + 1) % SPLASH_PLACES.length);
+      setAnimKey(k => k + 1);
+    }, 700);
+    return () => clearInterval(t);
+  }, []);
+  React.useEffect(() => {
+    if (!visible) setHiding(true);
+  }, [visible]);
+  if (!visible && !hiding) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      background: '#F5F2EC',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+      opacity: hiding ? 0 : 1,
+      transition: hiding ? 'opacity 0.3s ease' : 'none'
+    },
+    onTransitionEnd: () => setHiding(false)
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Instrument Serif',Georgia,serif",
+      fontSize: 34,
+      color: '#1A1816',
+      letterSpacing: '-0.5px',
+      animation: 'splashIn 0.5s ease both'
+    }
+  }, "Trip Like J"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      height: 22,
+      overflow: 'hidden',
+      fontFamily: '-apple-system,sans-serif',
+      fontSize: 13,
+      color: '#7A756D',
+      letterSpacing: '0.04em',
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    key: animKey,
+    style: {
+      display: 'block',
+      animation: 'destSlide 0.45s cubic-bezier(0.22,1,0.36,1) both'
+    }
+  }, SPLASH_PLACES[idx])), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      height: 2,
+      background: '#C14F2E',
+      animation: 'barGrow 2.2s cubic-bezier(0.4,0,0.2,1) forwards',
+      borderRadius: '0 2px 2px 0'
+    }
+  }));
+}
+
 // ─── Login Screen ────────────────────────────────────────────
 function LoginScreen({
-  errorMsg
+  errorMsg,
+  onLoginStart
 }) {
   const [loading, setLoading] = React.useState(false);
   const [errLocal, setErrLocal] = React.useState('');
   const handleLogin = async () => {
     setLoading(true);
     setErrLocal('');
+    if (onLoginStart) onLoginStart();
     try {
       await fbSignIn();
       // popup success — auth listener will transition the screen
@@ -5672,6 +5745,7 @@ function App() {
   });
   const [companionOpen, setCompanionOpen] = React.useState(false);
   const [loginError, setLoginError] = React.useState('');
+  const [loginPending, setLoginPending] = React.useState(false); // 로그인 버튼 누른 후 로딩 중
   const tripRef = React.useRef(null); // for loop-prevention
 
   // ── UI nav state ───────────────────────────────────────────
@@ -5713,14 +5787,12 @@ function App() {
     }
   };
 
-  // ── 스플래시 즉시 숨기기 (로그아웃 상태일 때만 표시됨) ─────────
+  // ── 앱 준비되면 loginPending 해제 ────────────────────────────
   React.useEffect(() => {
-    const splash = document.getElementById('splash');
-    if (splash) {
-      splash.classList.add('hide');
-      setTimeout(() => splash.remove(), 350);
+    if (loginPending && authState === 'in' && trip !== null) {
+      setLoginPending(false);
     }
-  }, []);
+  }, [loginPending, authState, trip]);
 
   // ── 로컬 캐시 저장 (새로고침 시 즉시 표시용) ──────────────────
   React.useEffect(() => {
@@ -6290,45 +6362,17 @@ function App() {
   const dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
 
   // ── Auth gating ───────────────────────────────────────────
-  if (authState === 'loading') return /*#__PURE__*/React.createElement("div", {
-    style: {
-      minHeight: '100vh',
-      background: COLORS.bg,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 28,
-      height: 28,
-      border: `3px solid ${COLORS.line}`,
-      borderTopColor: COLORS.accent,
-      borderRadius: '50%',
-      animation: 'ptr-spin 0.8s linear infinite'
-    }
-  }));
-  if (authState === 'out') return /*#__PURE__*/React.createElement(LoginScreen, {
-    errorMsg: loginError
+  // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
+  const showSplash = loginPending && (authState !== 'in' || trip === null);
+  if (showSplash) return /*#__PURE__*/React.createElement(SplashScreen, {
+    visible: true
   });
-  if (!trip) return /*#__PURE__*/React.createElement("div", {
-    style: {
-      minHeight: '100vh',
-      background: COLORS.bg,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 28,
-      height: 28,
-      border: `3px solid ${COLORS.line}`,
-      borderTopColor: COLORS.accent,
-      borderRadius: '50%',
-      animation: 'ptr-spin 0.8s linear infinite'
-    }
-  }));
+  if (authState === 'loading') return null; // 짧은 초기 로딩 (캐시 없을 때)
+  if (authState === 'out') return /*#__PURE__*/React.createElement(LoginScreen, {
+    errorMsg: loginError,
+    onLoginStart: () => setLoginPending(true)
+  });
+  if (!trip) return null; // 캐시 있으면 거의 발생 안 함
 
   // Figure out what "back" means in the current state, for swipe-from-edge.
   let swipeBack = null;
