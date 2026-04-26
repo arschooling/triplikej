@@ -31,15 +31,15 @@
     100% { opacity:1; transform:translateY(0) scale(1); }
   }
   /* 비행기: 천천히 출발 → 가속 → 코 들리며 서서히 멈춤 (사라지지 않음) */
-  /* 비행기: 활주로에서 평평(28deg)하게 출발 → 가속하며 코가 서서히 들려 0deg로 안착 */
+  /* 비행기: 평평(28deg) 출발 → 가속 → 서서히 감속하며 스무스하게 멈춤 */
   @keyframes planeFly {
     0%   { transform:translateX(-310px) translateY(12px) rotate(28deg); }
     15%  { transform:translateX(-265px) translateY(12px) rotate(24deg); }
     32%  { transform:translateX(-185px) translateY(10px) rotate(18deg); }
     50%  { transform:translateX(-75px)  translateY(5px)  rotate(11deg); }
-    63%  { transform:translateX(-12px)  translateY(2px)  rotate(5deg); }
-    74%  { transform:translateX(3px)    translateY(0px)  rotate(2deg); }
-    84%  { transform:translateX(-1px)   translateY(0px)  rotate(1deg); }
+    65%  { transform:translateX(-20px)  translateY(2px)  rotate(5deg); }
+    80%  { transform:translateX(-6px)   translateY(0px)  rotate(2deg); }
+    90%  { transform:translateX(-2px)   translateY(0px)  rotate(1deg); }
     100% { transform:translateX(0)      translateY(0)    rotate(0deg); }
   }
   /* 땅선: 비행기 착지 후 페이드인 */
