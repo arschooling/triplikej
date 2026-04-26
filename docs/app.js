@@ -5249,66 +5249,67 @@ function SplashScreen({
 }
 
 // ─── Paint Splat Icon ────────────────────────────────────────
+// 물감 파티클은 비행기가 착지(~0.85s)한 직후에 튀도록 delay 설정
 const PAINTS = [{
   angle: 0,
   w: 7,
   h: 12,
   color: '#C14F2E',
-  delay: 0.13
+  delay: 0.86
 }, {
   angle: 38,
   w: 5,
   h: 9,
   color: '#F5C842',
-  delay: 0.17
+  delay: 0.90
 }, {
   angle: 72,
   w: 9,
   h: 13,
   color: '#4A8FE7',
-  delay: 0.14
+  delay: 0.87
 }, {
   angle: 108,
   w: 6,
   h: 10,
   color: '#5DBB6A',
-  delay: 0.19
+  delay: 0.92
 }, {
   angle: 145,
   w: 8,
   h: 12,
   color: '#E87FAA',
-  delay: 0.15
+  delay: 0.88
 }, {
   angle: 180,
   w: 5,
   h: 9,
   color: '#9B72CF',
-  delay: 0.18
+  delay: 0.91
 }, {
   angle: 215,
   w: 9,
   h: 13,
   color: '#F5C842',
-  delay: 0.12
+  delay: 0.85
 }, {
   angle: 252,
   w: 6,
   h: 10,
   color: '#C14F2E',
-  delay: 0.16
+  delay: 0.89
 }, {
   angle: 288,
   w: 8,
   h: 11,
   color: '#4A8FE7',
-  delay: 0.20
+  delay: 0.93
 }, {
   angle: 325,
   w: 5,
   h: 9,
   color: '#5DBB6A',
-  delay: 0.22
+  delay: 0.95
 }];
 function PaintSplatIcon() {
   return /*#__PURE__*/React.createElement("div", {
@@ -5351,7 +5352,7 @@ function PaintSplatIcon() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      animation: 'iconStamp 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.05s both'
+      animation: 'planeTaxi 0.9s cubic-bezier(0.25,0.46,0.45,0.94) 0s both'
     }
   }, /*#__PURE__*/React.createElement("svg", {
     width: "36",
@@ -5421,13 +5422,13 @@ function LoginScreen({
     key: 't' + i,
     style: {
       display: 'inline-block',
-      animation: `charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.055}s both`
+      animation: `charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${0.78 + i * 0.055}s both`
     }
   }, ch)), /*#__PURE__*/React.createElement("br", null), [...'Like J.'].map((ch, i) => /*#__PURE__*/React.createElement("span", {
     key: 'l' + i,
     style: {
       display: 'inline-block',
-      animation: `charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${(4 + i) * 0.055 + 0.04}s both`
+      animation: `charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${0.78 + (4 + i) * 0.055 + 0.04}s both`
     }
   }, ch === ' ' ? ' ' : ch))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -5436,7 +5437,7 @@ function LoginScreen({
       color: COLORS.mute,
       marginBottom: 56,
       lineHeight: 1.5,
-      animation: 'charPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.62s both'
+      animation: 'charPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 1.38s both'
     }
   }, "\uC5EC\uD589 \uC77C\uC815 \uB9CC\uB4E4\uACE0 \uAC04\uD3B8\uD558\uAC8C \uACF5\uC720\uD574 \uBCF4\uC138\uC694."), /*#__PURE__*/React.createElement("button", {
     onClick: handleLogin,
