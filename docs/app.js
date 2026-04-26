@@ -6657,10 +6657,13 @@ function App() {
     if (hotelIdx !== null) swipeBack = () => {
       navGoingBack.current = true;
       setHotelIdx(null);
-    };else if (dayIdx !== null) swipeBack = () => {
+    }; else if (dayIdx !== null) swipeBack = () => {
       navGoingBack.current = true;
       setDayIdx(null);
-    };
+    }; else {
+      // 홈 화면에서 오른쪽 스와이프 → My Trips
+      swipeBack = () => { setActiveTripId(null); setTrip(null); setEditing(false); };
+    }
   }
   return /*#__PURE__*/React.createElement("div", {
     style: {
