@@ -5669,7 +5669,7 @@ function _readCache() {
     return null;
   }
 }
-function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanion }) {
+function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanion, authUser }) {
   return /*#__PURE__*/React.createElement("div", {
     style: { minHeight: '100vh', background: COLORS.bg,
       paddingTop: 'calc(env(safe-area-inset-top) + 64px)', paddingBottom: 100 }
@@ -5693,6 +5693,15 @@ function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanio
       style: { padding: '0 24px 32px' }
     },
       /*#__PURE__*/React.createElement("div", { style: { fontFamily: SERIF, fontSize: 30, color: COLORS.ink } }, "My Trips")
+    ),
+    /* ── 디버그 패널 (나중에 삭제) ── */
+    /*#__PURE__*/React.createElement("div", {
+      style: { margin: '0 16px 16px', padding: 12, background: '#fff3cd', borderRadius: 12,
+        fontFamily: MONO, fontSize: 11, color: '#333', lineHeight: 1.6 }
+    },
+      /*#__PURE__*/React.createElement("div", null, 'uid: ' + (authUser ? authUser.uid : 'null')),
+      /*#__PURE__*/React.createElement("div", null, 'trips: ' + trips.length),
+      /*#__PURE__*/React.createElement("div", null, 'loading: ' + loading)
     ),
     loading
       ? /*#__PURE__*/React.createElement("div", {
@@ -6408,6 +6417,7 @@ function App() {
       trips: userTrips,
       loading: tripsLoading,
       userData: userData,
+      authUser: authUser,
       onOpenCompanion: function() { setCompanionOpen(true); },
       onSelect: function(id) {
         setActiveTripId(id);
