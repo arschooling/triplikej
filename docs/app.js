@@ -5289,25 +5289,6 @@ function TakeoffIcon() {
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
-      top: 47,
-      left: '50%',
-      zIndex: 2,
-      pointerEvents: 'none'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'absolute',
-      left: -350,
-      width: 700,
-      height: 3,
-      background: 'white',
-      borderRadius: '50%',
-      transformOrigin: 'center center',
-      animation: 'runwaySpring 0.6s linear 0.93s both'
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'absolute',
       top: '50%',
       left: '50%',
       zIndex: 3,
