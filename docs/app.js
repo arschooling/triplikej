@@ -5276,7 +5276,6 @@ function TakeoffIcon() {
     height: "36",
     viewBox: "0 0 24 24",
     style: {
-      position: 'absolute',
       animation: 'planeFadeIn 0.12s ease 0.95s both'
     }
   }, /*#__PURE__*/React.createElement("path", {
@@ -5285,7 +5284,7 @@ function TakeoffIcon() {
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
-      top: 45,
+      top: 47,
       left: '50%',
       zIndex: 2,
       pointerEvents: 'none'
