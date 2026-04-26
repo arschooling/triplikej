@@ -2415,12 +2415,11 @@ function LoginScreen({ errorMsg }) {
 
   return (
     <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', flexDirection:'column',
-      justifyContent:'center', padding:'48px 36px' }}>
+      alignItems:'center', justifyContent:'center', padding:'48px 36px', textAlign:'center' }}>
       <div style={{ width:72, height:72, borderRadius:18, background:COLORS.accent,
         display:'flex', alignItems:'center', justifyContent:'center', marginBottom:32 }}>
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17.8 19.2 16 11l3.5-3.5a2.12 2.12 0 0 0-3-3L13 8 4.8 6.2a.5.5 0 0 0-.5.8l4 5-3 3h2l3 2 5 4 .5-.8Z"/>
-          <path d="M3 20h18"/>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="white">
+          <path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.67c.81-.23 1.28-1.05 1.07-1.85z"/>
         </svg>
       </div>
       <div style={{ fontFamily:SERIF, fontSize:56, color:COLORS.ink, letterSpacing:'-0.02em', lineHeight:1.1, marginBottom:14 }}>
