@@ -6412,12 +6412,3 @@ function App() {
   }, "\uC800\uC7A5")))), document.body));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));
-const splash = document.getElementById('splash');
-if (splash) splash.animate([{
-  opacity: 1
-}, {
-  opacity: 0
-}], {
-  duration: 400,
-  fill: 'forwards'
-}).onfinish = () => splash.remove();

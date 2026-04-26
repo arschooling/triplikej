@@ -16,23 +16,9 @@
   html, body { margin: 0; padding: 0; background: #F5F2EC; overflow-x: hidden; }
   #root { min-height: 100%; background: #F5F2EC; }
   @keyframes ptr-spin { to { transform: rotate(360deg); } }
-  #splash {
-    position: fixed; inset: 0; background: #F5F2EC;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px; z-index: 9999;
-    font-family: -apple-system, sans-serif;
-  }
-  #splash-title {
-    font-size: 32px; color: #1A1816; letter-spacing: -0.5px;
-    font-family: 'Instrument Serif', Georgia, serif;
-  }
 </style>
 </head>
 <body>
-<div id="splash">
-  <div id="splash-title">Trip Like J</div>
-</div>
 <div id="root"></div>
 
 <script src="react.min.js"></script>
