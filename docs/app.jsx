@@ -2688,16 +2688,17 @@ function App() {
     }
   };
 
-  // ── 스플래시 숨기기 (auth 상태 확인되면) ─────────────────────
+  // ── 스플래시 숨기기 (auth + trip 데이터 준비되면) ─────────────
   React.useEffect(() => {
-    if (authState !== 'loading') {
+    const ready = authState === 'out' || (authState === 'in' && trip !== null);
+    if (ready) {
       const splash = document.getElementById('splash');
       if (splash) {
         splash.classList.add('hide');
         setTimeout(() => splash.remove(), 350);
       }
     }
-  }, [authState]);
+  }, [authState, trip]);
 
   // ── Firebase auth listener ─────────────────────────────────
   React.useEffect(() => {
@@ -3038,23 +3039,9 @@ function App() {
   const dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
 
   // ── Auth gating ───────────────────────────────────────────
-  if (authState === 'loading') {
-    return (
-      <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
-        <div style={{ width:32, height:32, borderRadius:16, border:`2.5px solid ${COLORS.line}`,
-          borderTopColor:COLORS.accent, animation:'ptr-spin 0.8s linear infinite' }}/>
-      </div>
-    );
-  }
+  if (authState === 'loading') return null;
   if (authState === 'out') return <LoginScreen errorMsg={loginError}/>;
-  if (!trip) {
-    return (
-      <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
-        <div style={{ width:32, height:32, borderRadius:16, border:`2.5px solid ${COLORS.line}`,
-          borderTopColor:COLORS.accent, animation:'ptr-spin 0.8s linear infinite' }}/>
-      </div>
-    );
-  }
+  if (!trip) return null;
 
   // Figure out what "back" means in the current state, for swipe-from-edge.
   let swipeBack = null;
