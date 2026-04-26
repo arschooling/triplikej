@@ -2486,33 +2486,33 @@ function TakeoffIcon() {
   return (
     <div style={{ position:'relative', width:72, height:72, marginBottom:32 }}>
 
-      {/* 활주로 — 아이콘 왼쪽으로 길게 뻗어 있다가 비행기 이륙 후 줄어듦
-          top:45 = 아이콘 내 땅선 y위치, right:32 = 오른쪽 끝이 아이콘 박스 내부(빨간 배경에 가려짐)
-          width:350 = 왼쪽으로 ~310px 뻗어나감, zIndex:0 = 아이콘 박스 뒤에 있음 */}
-      <div style={{
-        position:'absolute', top:45, height:3,
-        right:32, width:350,
-        background:'white',
-        borderRadius:'2px 0 0 2px',
-        transformOrigin:'right center',
-        animation:'runwayShrink 0.95s linear 0s both',
-        zIndex:0,
-      }}/>
-
-      {/* 아이콘 박스 — 처음부터 중앙 고정, 비행기는 나중에 나타남 */}
+      {/* 아이콘 박스 — 처음부터 중앙 고정, zIndex:1 */}
       <div style={{
         position:'relative', zIndex:1,
         width:72, height:72, borderRadius:18, background:COLORS.accent,
         display:'flex', alignItems:'center', justifyContent:'center',
       }}>
-        {/* 흰 비행기 + 땅선 — 비행기 착지 후 페이드인 */}
+        {/* 땅선만 — 비행기 착지 후 페이드인 */}
         <svg width="36" height="36" viewBox="0 0 24 24"
-          style={{ animation:'planeFadeIn 0.15s ease 0.90s both' }}>
-          <path fill="white" d={'M2.5 19h19v2h-19z ' + PLANE_BODY}/>
+          style={{ position:'absolute', animation:'planeFadeIn 0.12s ease 0.95s both' }}>
+          <path fill="white" d="M2.5 19h19v2h-19z"/>
         </svg>
       </div>
 
-      {/* 흰 비행기 — 활주로에서 가속해 이륙, 아이콘에서 멈춘 뒤 사라짐 */}
+      {/* 활주로 — 아이콘 중심 기준 좌우 350px씩, 아이콘 앞(zIndex:2) */}
+      <div style={{
+        position:'absolute', top:45, left:'50%',
+        zIndex:2, pointerEvents:'none',
+      }}>
+        <div style={{
+          position:'absolute', left:-350, width:700, height:3,
+          background:'white', borderRadius:2,
+          transformOrigin:'center center',
+          animation:'runwaySpring 0.6s linear 0.93s both',
+        }}/>
+      </div>
+
+      {/* 흰 비행기 — 가속 이륙 후 코 들리며 멈춤 (사라지지 않음), zIndex:3 */}
       <div style={{
         position:'absolute', top:'50%', left:'50%',
         zIndex:3, pointerEvents:'none',

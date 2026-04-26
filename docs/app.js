@@ -5261,19 +5261,6 @@ function TakeoffIcon() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      position: 'absolute',
-      top: 45,
-      height: 3,
-      right: 32,
-      width: 350,
-      background: 'white',
-      borderRadius: '2px 0 0 2px',
-      transformOrigin: 'right center',
-      animation: 'runwayShrink 0.95s linear 0s both',
-      zIndex: 0
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
       position: 'relative',
       zIndex: 1,
       width: 72,
@@ -5289,12 +5276,32 @@ function TakeoffIcon() {
     height: "36",
     viewBox: "0 0 24 24",
     style: {
-      animation: 'planeFadeIn 0.15s ease 0.90s both'
+      position: 'absolute',
+      animation: 'planeFadeIn 0.12s ease 0.95s both'
     }
   }, /*#__PURE__*/React.createElement("path", {
     fill: "white",
-    d: 'M2.5 19h19v2h-19z ' + PLANE_BODY
+    d: "M2.5 19h19v2h-19z"
   }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      top: 45,
+      left: '50%',
+      zIndex: 2,
+      pointerEvents: 'none'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      left: -350,
+      width: 700,
+      height: 3,
+      background: 'white',
+      borderRadius: 2,
+      transformOrigin: 'center center',
+      animation: 'runwaySpring 0.6s linear 0.93s both'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
       top: '50%',

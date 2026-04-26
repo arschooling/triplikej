@@ -1,3 +1,1114 @@
+// Real NYC trip data, parsed from the uploaded itinerary
+window.TRIP_DEFAULT = {
+  title: 'New York',
+  subtitleKo: '뉴욕 · 10일',
+  dates: 'May 4 — May 13, 2025',
+  travelers: 'Solo trip',
+  hotel: 'Kimpton Theta New York (Times Square)',
+  hotels: [
+    {
+      name: 'Kimpton Theta New York',
+      area: 'Times Square',
+      checkin: 'May 4, 2025',
+      checkinTime: '15:00',
+      checkout: 'May 9, 2025',
+      checkoutTime: '12:00',
+      nights: 5,
+      price: '$289/박',
+      address: '125 W 48th St, New York, NY 10036',
+      phone: '+1 212-354-2323',
+      confirmation: '73378565985208',
+      amenities: ['Free WiFi', 'Fitness Center', 'Pet Friendly', 'Bar', '24h Front Desk'],
+      note: '타임스퀘어에서 도보 3분. 체크인 15시, 체크아웃 12시. 프론트에서 룸 업그레이드 요청 가능.',
+      rating: 4.3,
+      hue: 25,
+    },
+    {
+      name: 'Royal Sonesta Washington DC Capitol Hill',
+      area: 'Capitol Hill, D.C.',
+      checkin: 'May 9, 2025',
+      checkinTime: '16:00',
+      checkout: 'May 11, 2025',
+      checkoutTime: '11:00',
+      nights: 2,
+      address: '20 Massachusetts Ave NW, Washington, DC 20001',
+      phone: '+1 202-888-1850',
+      confirmation: '73392131862879',
+      amenities: ['Free WiFi', 'Fitness Center', 'Restaurant', 'Bar', 'Pet Friendly', 'Valet Parking'],
+      note: '체크인 16시, 체크아웃 11시. 캐피톨 힐 인근. 발레파킹 가능.',
+      rating: 4.0,
+      hue: 200,
+    },
+    {
+      name: 'Hotel RIU Plaza Manhattan Times Square',
+      area: 'Times Square',
+      checkin: 'May 11, 2025',
+      checkinTime: '15:00',
+      checkout: 'May 14, 2025',
+      checkoutTime: '12:00',
+      nights: 3,
+      address: '145 W 47th St, New York, NY 10036',
+      phone: '+1 646-864-1100',
+      confirmation: '73382367193804',
+      amenities: ['Free WiFi', 'Fitness Center', 'Restaurant', 'Bar', 'Free Breakfast', 'Business Center'],
+      note: '체크인 15시, 체크아웃 12시. 조식 포함. 타임스퀘어 도보 1분.',
+      rating: 4.0,
+      hue: 40,
+    },
+  ],
+  days: [
+    {
+      n: 1, date: 'May 4', weekday: 'Mon',
+      title: '도착, 타임스퀘어',
+      titleEn: 'Arrival & Midtown',
+      hero: { hue: 25, label: 'TIMES SQUARE' },
+      weather: '맑음 · 18°',
+      items: [
+        { time: '10:00', cat: 'flight', title: 'JFK 공항 도착',   en: 'Arrive at JFK Airport', loc: 'JFK International',
+          note: '지하철로 이동\n맨해튼까지 60분\nair train(엘리베이터level 2)-jamaica station(빨간색방향)-내려서 엘리베이터로L2층(Concourse)- 에어트레인 이용료8.25달러결제-표지판: 머리 위에 있는 \'Subway E J Z\'-엘리베이터 위치: 보통 계단 옆쪽이나 구석에 \'Elevator to E Train\' 표지판-엘리베이터\'Lower Level (E Train Platform)\' 버튼-(탑승전3달러결제)E선 열차 탑승-방향 확인: \'Manhattan Bound\' 또는 \'World Trade Center\' 행이라고 적힌 전광판-E선(파란색 동그라미)-40분 걸려50th Street 역 도착-지상' },
+        { time: '14:00', cat: 'hotel',  title: '호텔 짐 맡기기',    en: 'Kimpton Theta New York', loc: 'Times Square by IHG',
+          note: '체크인/프론트에 짐 맡기기\n"Hi, I\'m a bit early for check-in. Is it possible to leave my luggage here for a while?"' },
+        { time: '14:30', cat: 'food',   title: '점심: 피자 or 타코', en: "Joe's Pizza / Los Tacos No.1", loc: 'Midtown',
+          note: "Joe's Pizza (뉴욕 정통 조각 피자)\nLos Tacos No.1 (타코 맛집)", price: '$' },
+        { time: '15:30', cat: 'sight',  title: '뉴욕 공립 도서관',   en: 'New York Public Library', loc: '5th Ave @ 42nd',
+          note: '도서관 입구의 두마리 사자상(인내, 용기)\n1층 아스토 홀(Astor Hall)\n1층 treasures exhibition트레저스 엑시비션:구텐바르크 성경, 토마스 제퍼슨의 \'독립선언서\' 사본, 찰스디킨스의 필기구..\n맥그로우 로툰다(McGraw Rotunda): 로즈 메인 리딩 룸 들어가기전 웅장한 중앙 홀\n3층 Rose Main Reading Room(인셉션, 투모로우 배경) \n로즈 메인 리딩 룸 이용 팁:리딩 룸 입구는 두 곳입니다. 하나는 관광객용(사진만 찍고 나가는 곳), 하나는 이용자용(Study & Research)입니다\n입구에서 보안 요원이 "Visiting or Studying?"이라고 물을 수 있습니다. 이때 "Studying" 혹은 "Reading"이라고 답하고 \n안쪽으로 들어가 빈자리에 앉으시면 됩니다. I\'m here for quiet study/reading이라고 대답하기\n퇴실은 5시 45분쯤', duration: '1h 30m' },
+        { time: '17:30', cat: 'hotel',  title: '호텔 체크인',       en: 'Hotel Check-in', loc: 'Kimpton Theta', _hotelRef: 'Kimpton Theta New York' },
+        { time: '19:30', cat: 'show',   title: 'Top View 야경 버스', en: 'Top View Night Bus Tour', loc: "M&M's World 앞",
+          note: "타임스퀘어 (M&M's World 앞출발)\n타임스퀘어-크라이슬러,공립도서관-플랫아이언-워싱턴스퀘어파크-브루클린브릿지(90분)", price: '$29–44', duration: '90m' },
+        { time: '21:30', cat: 'food',   title: '저녁: Chick-fil-A',  en: 'Chick-fil-A', loc: 'Midtown',
+          note: 'Chick-fil-A칙필레버거: Chick-fil-A Chicken Sandwich meal, deluxe(+토마토치즈양배추), \n감자튀김 찍어먹을 소스부탁 can i get all the sauces, please?\n칙필레미니사이즈소스:8oz(2.9달러+tax=3.25달러)', price: '$' },
+      ],
+    },
+    {
+      n: 2, date: 'May 5', weekday: 'Tue',
+      title: '자유의 여신상, 덤보',
+      titleEn: 'Liberty & Downtown',
+      hero: { hue: 210, label: 'LIBERTY CRUISE' },
+      weather: '흐림 · 16°',
+      items: [
+        { time: '09:30', cat: 'ferry',  title: '다운타운 리버티 크루즈', en: 'Downtown Liberty Cruise', loc: 'Pier 16 · 167 John St',
+          note: '호텔에서 지하철타고 풀턴 스트리트 서브웨이 스테이션\npier16탑승(Pier 16,167 John St, New York, NY 10038):자유의여신상-브루클린 브릿지뷰(60분)\n스케줄: 오전 10시, 11시 30분, 13시, 14시 30분', price: '₩27,945', duration: '60m' },
+        { time: '11:30', cat: 'walk',   title: '배터리 파크',          en: 'Battery Park', loc: 'Lower Manhattan',
+          note: '자유의 여신상 보이는 공원' },
+        { time: '12:15', cat: 'sight',  title: '월스트리트',           en: 'Wall Street', loc: 'Financial District',
+          note: '황소상, 뉴욕 증권거래소 구경' },
+        { time: '13:30', cat: 'food',   title: '점심',                en: 'Lunch — FiDi', loc: 'Financial District', price: '$$' },
+        { time: '14:30', cat: 'sight',  title: '9/11 메모리얼 & Oculus', en: '9/11 Memorial + One WTC', loc: '180 Greenwich St',
+          note: '세계무역센터 부지 및 911메모리얼 파크\n911메모리얼파크:쌍둥이 빌딩 자리에 만들어진 추모공원\n원월드트레이드센터(무너진 건물을 대신해 그 옆에 새로 생긴 미국에서 가장 높은 빌딩)\n오큘러스(기차역, 쇼핑몰)' },
+        { time: '16:00', cat: 'view',   title: '덤보 — 맨해튼 브리지 뷰', en: 'DUMBO / 35 Washington St', loc: 'Brooklyn',
+          note: '주소: 35 Washington St, Brooklyn, NY11201\nWTC 근처의 Chambers St Station (또는 Fulton St Station)에서 A 또는 C 라인 Downtown & Brooklyn 방면 열차-High St - Brooklyn Bridge Station에서 내리기' },
+        { time: '16:30', cat: 'food',   title: "Juliana's Pizza",      en: "Juliana's Pizza", loc: 'DUMBO',
+          note: '줄리아나 피자: 하프앤하프, 마리게리타+화이트조합', price: '$$' },
+        { time: '17:30', cat: 'walk',   title: '브루클린 브리지 도보',  en: 'Brooklyn Bridge Walk', loc: 'Brooklyn → Manhattan',
+          note: '워싱턴 스트리트에서 위쪽(남쪽) 언덕 방향으로 2분만→구글 맵에 "Brooklyn Bridge Underpass" 혹은 "Washington St Stairway"라고 검색\n계단을 따라 올라가면 바로 브루클린 브릿지의 보행자 전용도로Wooden Walkway연결\n맨해튼 스카이라인 보면서 30-40분 걷기\nCity Hall 역에서 N, R, W선 (노란색 라인) 탑승 42 St - Times Sq 역 하차(15분 소요)', duration: '40m' },
+        { time: '19:30', cat: 'food',   title: '저녁',                 en: 'Dinner', loc: 'Midtown' },
+      ],
+    },
+    {
+      n: 3, date: 'May 6', weekday: 'Wed',
+      title: 'MoMA와 록펠러',
+      titleEn: 'MoMA & Rockefeller',
+      hero: { hue: 45, label: 'ROCKEFELLER PLAZA' },
+      weather: '맑음 · 19°',
+      items: [
+        { time: '10:00', cat: 'sight',  title: 'MoMA',                 en: 'Museum of Modern Art', loc: '11 W 53rd St',
+          note: '오픈런 입장→무료 한국어 오디오 가이드(모마 내 와이파이 접속)\n5층부터 내려오기*(5층: 고흐의 별이 빛나는 밤, 피카소의 아비뇽의 여인들, 모네의 수련)\n4층 앤디워홀의 캠벨 수프 캔\n1층 야외정원Abby Aldrich Rockefeller Sculpture Garden\n굿즈 구입: 모자', duration: '2h 30m' },
+        { time: '13:00', cat: 'food',   title: "Gallagher's 스테이크",  en: "Gallagher's Steakhouse", loc: 'Midtown',
+          note: '갤러거 스테이크 하우스\nLunch Special Menu 3-Course Lunch Menu로 운영되며, 에피타이저 + 메인(Sliced Filet Mignon) + 디저트가 포함\n물은 tap water(수돗물 무료), bottled water(유료) 선택\n에피타이저는 시저샐러드, 클램차우더수프/메인은 Sliced Filet Mignon, 10 oz. Filet Mignon/디저트는 뉴욕치즈케이크, 아이스크림\n식사후 영수증 요청→팁 선택→최종금액을 적어 서명과 함께 카드를 두면→결제 후 카드 돌려줌 ', price: '$$$$', duration: '1h 30m' },
+        { time: '15:00', cat: 'walk',   title: '5번가 산책',           en: '5th Avenue Stroll', loc: '5th Ave',
+          note: '세인트 패트릭 대성당 내부관람, 웅장한 고딕양식' },
+        { time: '16:00', cat: 'sight',  title: '그랜드 센트럴',         en: 'Grand Central Terminal', loc: '89 E 42nd St',
+          note: '세계 최대 기차역' },
+        { time: '17:00', cat: 'walk',   title: '록펠러 플라자',         en: 'Rockefeller Center Plaza', loc: 'Midtown',
+          note: '탑오브더락 입장전 주변구경' },
+        { time: '18:30', cat: 'view',   title: 'Top of the Rock',      en: 'Top of the Rock Observatory', loc: 'Rockefeller Center',
+          note: '일몰 1시간 전 입장(+야경 감상), 엠파이어빌딩 뷰', price: '₩64,490' },
+        { time: '21:00', cat: 'food',   title: '저녁',                 en: 'Dinner', loc: 'Midtown' },
+      ],
+    },
+    {
+      n: 4, date: 'May 7', weekday: 'Thu',
+      title: '메트로폴리탄, 클로이스터',
+      titleEn: 'The Met & Cloisters',
+      hero: { hue: 340, label: 'THE MET · 5TH AVE' },
+      weather: '맑음 · 21°',
+      items: [
+        { time: '10:00', cat: 'sight',  title: 'The Met',               en: 'Metropolitan Museum of Art', loc: '1000 5th Ave',
+          note: '10시 개장과 동시 입장추천, 200만점의 작품이 있어 선택과 집중이 핵심\n정문에 도착하면 줄이 두갈래 \'General Admission\' 혹은 \'Timed Entry\' 줄에 서세요. (예약자는 줄이 훨씬 빨리 빠짐)\n보안검색(가방검사)후 입구의 검표 직원에게 휴대폰의 QR 코드를 보여주면 바로 입장 가능\n1층 이집트 미술(The Egyptian Art): 로비 오른쪽, 덴두르 신전Temple of Dendur은 꼭 봐야함, 나는 전설이다 배경\n1층 아메리카 윙(The American Wing)\n2층 유럽 회화 (European Paintings): 고흐, 모네, 르누아르, 베르메르 걸작\n4층 루프탑 가든(The Cantor Roof Garden): 전망대 겸 카페\n박물관계단(미드 가십걸)에서 사진 찍기', price: '$30', duration: '3h' },
+        { time: '13:30', cat: 'food',   title: '점심',                  en: 'Lunch', loc: 'UES' },
+        { time: '15:00', cat: 'sight',  title: 'The Met Cloisters',     en: 'Met Cloisters', loc: 'Fort Tryon Park',
+          note: '메트 정문에서 나와 81가(81st St)를 따라 서쪽(센트럴 파크 방향)으로 쭉 가로지르기\n→자연사 박물관 옆에 있는 81 St-Museum of Natural History 역→지하철 탑승 (A선 Blue)\nA선(Uptown & 207 St 방향)ⁿ-A선(익스프레스)타기 →190 St 역(엘리베이터 타고 올라오기)\n지하철에서 내리면 개찰구 쪽 말고, Fort Tryon Park라고 써진 이정표를 따라가서 아주 큰 엘리베이터를 타기\n엘베로 지상 도착하면 바로 공원 입구와 연결→공원 길 걷기 Margaret Corbin Drive여기서부터 클로이스터스 성채까지 약 10~15분\n메트로폴리탄 미술관의 분관, 프랑스식수도원건물, 메트 당일 티켓있으면 무료관람\n폰트브로아 수도원 중정Cuxa Cloister - ★필수 코스:클로이스터스 상징\n폰트브로아 수도원 중정 (Cuxa Cloister) - ★필수 코스\n유니콘 태피스트리 방 (The Unicorn Tapestries) - ★최고의 걸작\n메로드 제단화 (Mérode Altarpiece) & 장식 예술\n허드슨 강 뷰 테라스 (Bonnefont Cloister & Trie Cloister)\n다시 호텔(킴튼 세타)로 돌아올 때는 A선 지하철을 타고 한 번에 42 St-Port Authority Bus Terminal역 하차' },
+        { time: '18:30', cat: 'food',   title: '저녁',                  en: 'Dinner', loc: 'Midtown' },
+      ],
+    },
+    {
+      n: 5, date: 'May 8', weekday: 'Fri',
+      title: '자연사 박물관, 센트럴파크',
+      titleEn: 'AMNH & Central Park',
+      hero: { hue: 120, label: 'CENTRAL PARK' },
+      weather: '맑음 · 22°',
+      items: [
+        { time: '09:30', cat: 'sight',  title: '자연사 박물관',          en: 'American Museum of Natural History', loc: 'Upper West Side',
+          note: '1층 밀스타인 해양 생물관:천장에 매달린 실물 크기의 대왕고래(Blue Whale)모형\n77가(77th St) 쪽 출구로 나오시는 것이 좋습니다.', price: '$25', duration: '2h' },
+        { time: '12:30', cat: 'food',   title: '점심: 피크닉 준비',       en: 'Levain + Chipotle (to go)', loc: 'UWS',
+          note: 'levain bakery르뱅쿠키\nchipotle치폴레: 보울 포장', price: '$' },
+        { time: '13:30', cat: 'walk',   title: '센트럴 파크',            en: 'Central Park', loc: 'Manhattan',
+          note: '십 미도우sheep meadow잔디밭: 피크닉\n더몰: 십 미도우 바로 옆, 느티나무 가로수길\n베데스타 테라스Bethesda Terrace&분수: 더 몰 끝부분, 계단 아래 분수 천장 타일 장식\n체리힐Cherry Hill\n보우브리지Bow Bridge: 하얀색 곡선 다리, 로맨틱한 포토존', duration: '3h' },
+        { time: '18:00', cat: 'food',   title: 'The Halal Guys',        en: 'The Halal Guys', loc: '53rd & 6th Ave',
+          note: '할랄 가이즈The Halal Guys, 화이트 소스는 듬뿍, 레드 소스는 조금', price: '$' },
+      ],
+    },
+    {
+      n: 6, date: 'May 9', weekday: 'Sat',
+      title: '워싱턴 D.C. 이동',
+      titleEn: 'Travel to D.C.',
+      hero: { hue: 200, label: 'WASHINGTON D.C.' },
+      weather: '맑음 · 20°',
+      items: [
+        { time: '09:00', cat: 'flight', title: 'D.C.로 이동',            en: 'Travel to Washington D.C.', loc: 'NYC → D.C.' },
+        { time: '13:00', cat: 'hotel',  title: 'D.C. 호텔 체크인',       en: 'D.C. Hotel', loc: 'Washington D.C.',
+          note: '짐 맡기기 또는 체크인', _hotelRef: 'D.C. Hotel' },
+        { time: '14:30', cat: 'sight',  title: '국립 자연사 박물관',      en: 'National Museum of Natural History', loc: 'The Mall, D.C.',
+          note: '무료 입장' },
+        { time: '19:00', cat: 'food',   title: '저녁',                   en: 'Dinner', loc: 'D.C.' },
+      ],
+    },
+    {
+      n: 7, date: 'May 10', weekday: 'Sun',
+      title: '워싱턴 기념물 투어',
+      titleEn: 'D.C. Monuments',
+      hero: { hue: 50, label: 'THE NATIONAL MALL' },
+      weather: '맑음 · 24°',
+      items: [
+        { time: '09:00', cat: 'sight',  title: '워싱턴 기념탑',           en: 'Washington Monument', loc: 'The Mall',
+          note: '공식 사이트 예약 (30일 전 오전 10시 ET, 수수료 $1)', price: '$1' },
+        { time: '10:30', cat: 'sight',  title: '2차 세계대전 기념관',      en: 'WWII Memorial', loc: 'The Mall',
+          note: '편한 신발 필수' },
+        { time: '11:15', cat: 'sight',  title: '리플렉팅 풀 & 링컨 기념관', en: 'Reflecting Pool & Lincoln Memorial', loc: 'The Mall',
+          note: '물병 챙기기' },
+        { time: '12:30', cat: 'sight',  title: '한국전쟁 기념관',          en: 'Korean War Veterans Memorial', loc: 'The Mall',
+          note: '선글라스' },
+        { time: '13:30', cat: 'food',   title: '점심',                   en: 'Lunch', loc: 'D.C.',
+          note: '모자 · 선크림' },
+        { time: '15:00', cat: 'sight',  title: '국립 항공우주 박물관',     en: 'National Air and Space Museum', loc: 'The Mall' },
+        { time: '17:30', cat: 'sight',  title: '국회 의사당',             en: 'U.S. Capitol Building', loc: 'D.C.' },
+      ],
+    },
+    {
+      n: 8, date: 'May 11', weekday: 'Mon',
+      title: '뉴욕 복귀, 브라이언트 파크',
+      titleEn: 'Back to NYC',
+      hero: { hue: 100, label: 'BRYANT PARK' },
+      weather: '부분 흐림 · 19°',
+      items: [
+        { time: '09:30', cat: 'walk',   title: 'D.C. 오전 일정',          en: 'Morning in D.C.', loc: 'D.C.' },
+        { time: '13:00', cat: 'flight', title: '뉴욕으로 이동',            en: 'Travel back to NYC', loc: 'D.C. → NYC' },
+        { time: '17:30', cat: 'walk',   title: '브라이언트 파크',          en: 'Bryant Park', loc: 'Midtown',
+          note: '느긋한 오후' },
+        { time: '19:00', cat: 'food',   title: '북창동 순두부',            en: 'Bookchang-dong Soondubu', loc: 'K-Town',
+          note: '순두부찌개 + LA갈비', price: '$$' },
+      ],
+    },
+    {
+      n: 9, date: 'May 12', weekday: 'Tue',
+      title: 'Vessel, 하이라인, 빌리지',
+      titleEn: 'Hudson Yards & Village',
+      hero: { hue: 280, label: 'THE VESSEL' },
+      weather: '맑음 · 22°',
+      items: [
+        { time: '09:00', cat: 'view',   title: 'Vessel',                en: 'Vessel · Hudson Yards', loc: '34 St–Hudson Yards',
+          note: '호텔에서 7번가/42가 방향으로 5분만 걸어가면 Times Sq-42 St 역\n7번 노선(보라색)을 타고 종점인 34 St-Hudson Yards 역에서 하차 (한 정거장, 3분 소요)\n황금빛 벌집 모양\n쇼핑몰The Shops at Hudson Yards 4층 창가에서 베슬을 위에서 내려다보는 구도 사진(화장실 이용 추천!)' },
+        { time: '09:45', cat: 'walk',   title: 'The High Line',         en: 'The High Line', loc: 'Chelsea',
+          note: '공중정원, 버려진 철길\n베슬 바로 옆에 하이라인 시작점 입구', duration: '1h' },
+        { time: '11:00', cat: 'view',   title: 'Little Island',          en: 'Little Island', loc: 'Hudson River',
+          note: '허드슨 강 위에 뜬 콘크리트 튤립섬\n인공섬, 섬꼭대기 전망대에서 엠파이어 스테이트 빌딩과 원 월드 트레이드 센터 뷰' },
+        { time: '12:30', cat: 'food',   title: 'Chelsea Market 점심',    en: 'Chelsea Market', loc: '75 9th Ave',
+          note: '로스 타코스Los Tacos No.1\n랍스터 플레이스 Lobster Place', price: '$$' },
+        { time: '14:30', cat: 'walk',   title: '그리니치 빌리지',         en: 'Greenwich Village', loc: 'West Village',
+          note: '뉴욕감성골목, 로맨틱한 분위기, 여유로운 산책\n미드의 배경지:프렌즈, 섹스앤더시티\n워싱턴 스퀘어 파크에서 매그놀리아 바나나 푸딩먹기' },
+        { time: '16:00', cat: 'shop',   title: 'Harry Potter Store',     en: 'Harry Potter NY', loc: 'Flatiron',
+          note: '화장실 있음' },
+        { time: '16:45', cat: 'shop',   title: 'Fishs Eddy',             en: 'Fishs Eddy', loc: 'Flatiron',
+          note: '귀여운 소품샵(자유여신상 컵)', price: '$$' },
+        { time: '19:00', cat: 'food',   title: '저녁',                   en: 'Dinner', loc: 'Midtown' },
+        { time: '20:00', cat: 'show',   title: '재즈 or 뮤지컬',          en: 'Jazz Show or Musical', loc: 'Broadway',
+          note: '현장구매또는TKTS또는뮤지컬로타리에서 예매(알라딘 / 라이온킹 / 위키드 / 시카고)', price: '$$$' },
+      ],
+    },
+    {
+      n: 10, date: 'May 13', weekday: 'Wed',
+      title: '마지막 날, 쇼핑',
+      titleEn: 'Souvenirs & Farewell',
+      hero: { hue: 0, label: 'TIMES SQUARE' },
+      weather: '맑음 · 20°',
+      items: [
+        { time: '09:30', cat: 'shop',   title: '타임스퀘어 기념품',       en: 'Times Square Souvenirs', loc: 'Midtown',
+          note: "Disney Store, M&M, Hershey's Chocolate World에서 기념품사기" },
+        { time: '11:30', cat: 'walk',   title: '센트럴파크 벨베데어',      en: 'Central Park — Belvedere Castle', loc: 'Central Park',
+          note: '벨베데레성Belvedere Castle' },
+        { time: '13:00', cat: 'food',   title: '점심',                   en: 'Lunch', loc: 'Midtown' },
+        { time: '14:30', cat: 'walk',   title: '브라이언트 파크',         en: 'Bryant Park', loc: 'Midtown' },
+        { time: '15:30', cat: 'shop',   title: 'Whole Foods',            en: 'Whole Foods Market', loc: 'Midtown' },
+        { time: '16:15', cat: 'shop',   title: 'CVS',                    en: 'CVS Pharmacy', loc: 'Midtown',
+          note: '리스테린 쿨민트필름3개세트$6.99, NATROL멜라토닌젤리5mg60개$11', price: '$' },
+        { time: '16:45', cat: 'shop',   title: 'Target',                 en: 'Target', loc: 'Midtown',
+          note: '너즈젤리, 소화제TUMS$7', price: '$' },
+        { time: '17:30', cat: 'shop',   title: "Trader Joe's",           en: "Trader Joe's", loc: 'Midtown',
+          note: '프레첼$4.20, 핸드크림, 손소독제, 레몬커드$3.99, 버터아몬드씬$3.3, 메이플피칸그래놀라시리얼, 엑스트라버진올리브오일스프레이', price: '$' },
+        { time: '19:30', cat: 'food',   title: '마지막 저녁',             en: 'Farewell Dinner', loc: 'Midtown' },
+      ],
+    },
+  ],
+
+  // Preparation (from sheet 1)
+  prep: {
+    checklist: [
+      '항공권 예매', '숙소 예매', 'ESTA 신청', '짐 싸기',
+      '로밍/유심 준비', 'Uber 앱 설치', '여행자 보험', '빅버스 예매',
+      '공항 셔틀 예매',
+    ],
+    docs: [
+      'ESTA 승인', '왕복 항공권', '호텔 바우처', '재직증명서(영문)',
+    ],
+    pack: [
+      '피크닉 매트', '물티슈', '휴대용 비데', '위생 장갑',
+    ],
+  },
+
+  // Food guide (from sheet 3)
+  food: [
+    { cat: '🍕 Pizza',    name: "Joe's Pizza",             detail: '클래식 NY 슬라이스',                                    price: '$',       note: '맨해튼 여러 지점' },
+    { cat: '🍕 Pizza',    name: "Juliana's Pizza",          detail: 'Half-and-half: Margherita + White',                      price: '$$',      note: '덤보, 브루클린' },
+    { cat: '🥯 Bagel',    name: 'Essa Bagel',               detail: 'Everything bagel + cream cheese + smoked salmon',        price: '$18–25',  note: '' },
+    { cat: '🥯 Bagel',    name: 'Apollo Bagels',            detail: '갓 구운 베이글',                                         price: '$',       note: '' },
+    { cat: '🥯 Bagel',    name: 'Pop Up Bagel',             detail: '베이글 3개 $13 (크림치즈 1개 포함)',                     price: '$13',     note: '' },
+    { cat: '🌮 Tacos',    name: 'Los Tacos No.1',           detail: 'NYC 최고 타코 · al pastor 또는 carne asada',             price: '$$',      note: '첼시 마켓 외' },
+    { cat: '🍔 Burger',   name: 'Chick-fil-A',              detail: 'Deluxe Meal · "Can I get all the sauces, please?"',      price: '$12–15',  note: '일요일 휴무' },
+    { cat: '🍔 Burger',   name: "Tony Dragon's Grille",     detail: 'Tony Burger $13 / Beef & Portobello $14 · 위생장갑 요청', price: '$13–14',  note: '10AM–6PM (푸드트럭)' },
+    { cat: '🥩 Steak',    name: "Gallagher's Steakhouse",   detail: '3코스 런치: 애피 + Sliced Filet Mignon + NY 치즈케익',   price: '$$$$',    note: '구글 예약 필요' },
+    { cat: '🌯 Fast',     name: 'Chipotle',                 detail: '보울: 라이스 + 빈 + 단백질 + 토핑 올 + 과카 (+$3)',       price: '$21.50',  note: '라이스에 고수 있음' },
+    { cat: '🌯 Fast',     name: 'The Halal Guys',           detail: '라이스 플레이트 or 랩 · 화이트 많이, 레드 조금',          price: '$',       note: '53rd & 6th Ave' },
+    { cat: '🦞 Seafood',  name: 'Lobster Place',            detail: '신선한 랍스터 롤',                                       price: '$$',      note: '첼시 마켓 내부' },
+    { cat: '🍲 Korean',   name: '북창동 순두부',             detail: '순두부찌개 + LA갈비',                                    price: '$$',      note: 'K-타운' },
+    { cat: '🍪 Dessert',  name: 'Levain Bakery',            detail: '초코칩 월넛 쿠키 (수상작) · 레몬도 추천',                 price: '$',       note: '뜨끈하고 큼직' },
+    { cat: '🍪 Dessert',  name: 'Magnolia Bakery',          detail: '바나나 푸딩 → 워싱턴 스퀘어 파크',                        price: '$',       note: '' },
+    { cat: '🍪 Dessert',  name: "Junior's Cheesecake",      detail: '오리지널 NY 치즈케익',                                   price: '$',       note: '타임스퀘어/그랜드센트럴' },
+    { cat: '☕ Dessert',  name: "Ralph's Coffee",           detail: '말차 라떼',                                              price: '$',       note: '랄프로렌 플래그십 내부' },
+  ],
+};
+// Drag-and-drop reorder + hotel search
+// Exposes: useDragReorder, HotelSearchSheet
+
+// ─── Drag reorder hook ──────────────────────────────────────
+// Touch long-press to drag + HTML5 drag for desktop.
+// onReorder(fromIdx, toIdx) called on drop.
+function useDragReorder(onReorder, enabled = true) {
+  // HTML5 (desktop)
+  const [dragIdx, setDragIdx] = React.useState(null);
+  const [overIdx, setOverIdx] = React.useState(null);
+
+  // Touch long-press drag
+  const [td, setTd] = React.useState(null); // {from,to,dy,startY,itemH}
+  const tdRef = React.useRef(null);
+  const timerRef = React.useRef(null);
+  const elRefs = React.useRef({});
+  React.useEffect(() => {
+    tdRef.current = td;
+  }, [td]);
+
+  // Prevent body scroll while touch-dragging
+  React.useEffect(() => {
+    if (!td) return;
+    const stop = e => e.preventDefault();
+    document.addEventListener('touchmove', stop, {
+      passive: false
+    });
+    return () => document.removeEventListener('touchmove', stop);
+  }, [!!td]);
+  const containerProps = {};
+  const itemProps = idx => {
+    // Touch handlers — always active regardless of `enabled`
+    const onTouchStart = e => {
+      const startY = e.touches[0].clientY;
+      timerRef.current = setTimeout(() => {
+        const el = elRefs.current[idx];
+        const itemH = el ? el.getBoundingClientRect().height : 64;
+        if (window.navigator?.vibrate) window.navigator.vibrate(14);
+        setTd({
+          from: idx,
+          to: idx,
+          dy: 0,
+          startY,
+          itemH
+        });
+      }, 430);
+    };
+    const onTouchMove = e => {
+      clearTimeout(timerRef.current);
+      const d = tdRef.current;
+      if (!d) return;
+      const dy = e.touches[0].clientY - d.startY;
+      const count = Object.keys(elRefs.current).length;
+      const steps = Math.round(dy / d.itemH);
+      const to = Math.max(0, Math.min(count - 1, d.from + steps));
+      setTd(prev => prev ? {
+        ...prev,
+        dy,
+        to
+      } : null);
+    };
+    const onTouchEnd = () => {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+      const d = tdRef.current;
+      if (d) {
+        if (d.from !== d.to) onReorder(d.from, d.to);
+        setTd(null);
+      }
+    };
+
+    // Visual style
+    let style = {};
+    let isDragSource = false;
+    let isDropTarget = false;
+    if (td) {
+      const {
+        from,
+        to,
+        dy,
+        itemH
+      } = td;
+      if (idx === from) {
+        isDragSource = true;
+        style = {
+          transform: `translateY(${dy}px) scale(1.035)`,
+          transition: 'transform 0s, box-shadow 0.15s, opacity 0.15s',
+          zIndex: 50,
+          opacity: 0.88,
+          position: 'relative',
+          boxShadow: '0 16px 40px rgba(0,0,0,0.24), 0 4px 8px rgba(0,0,0,0.12)'
+        };
+      } else {
+        let shift = 0;
+        if (from < to && idx > from && idx <= to) shift = -itemH;
+        else if (from > to && idx >= to && idx < from) shift = itemH;
+        isDropTarget = from !== to && idx === to;
+        style = {
+          transform: `translateY(${shift}px)`,
+          // 더 자연스러운 스프링 모션
+          transition: 'transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          position: 'relative',
+        };
+      }
+    } else if (enabled) {
+      style = {
+        opacity: dragIdx === idx ? 0.35 : 1,
+        transition: 'opacity 0.15s, transform 0.15s',
+        transform: overIdx === idx && dragIdx !== idx ? 'translateY(-2px)' : 'none'
+      };
+    }
+
+    // HTML5 drag (desktop, gated by enabled)
+    const html5 = !enabled ? {} : {
+      draggable: true,
+      onDragStart: e => {
+        setDragIdx(idx);
+        e.dataTransfer.effectAllowed = 'move';
+        try {
+          e.dataTransfer.setData('text/plain', String(idx));
+        } catch (_) {}
+        const el = e.currentTarget;
+        if (el && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(el, 20, 20);
+      },
+      onDragOver: e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (overIdx !== idx) setOverIdx(idx);
+      },
+      onDragEnter: e => {
+        e.preventDefault();
+        setOverIdx(idx);
+      },
+      onDrop: e => {
+        e.preventDefault();
+        const from = dragIdx,
+          to = idx;
+        setDragIdx(null);
+        setOverIdx(null);
+        if (from == null || from === to) return;
+        onReorder(from, to);
+      },
+      onDragEnd: () => {
+        setDragIdx(null);
+        setOverIdx(null);
+      }
+    };
+    return {
+      ref: el => {
+        elRefs.current[idx] = el;
+      },
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
+      ...html5,
+      style,
+      'data-drag-over': !td && enabled && overIdx === idx && dragIdx !== null && dragIdx !== idx,
+      'data-drag-source': isDragSource,
+      'data-drop-target': isDropTarget,
+    };
+  };
+  return {
+    containerProps,
+    itemProps,
+    dragIdx: td ? td.from : dragIdx,
+    overIdx: td ? td.to : overIdx,
+    isTouchDragging: !!td,
+  };
+}
+
+// ─── Drag handle component ──────────────────────────────────
+function DragHandle({
+  size = 18,
+  color = '#7A756D'
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: color,
+    style: {
+      cursor: 'grab'
+    }
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "9",
+    cy: "6",
+    r: "1.4"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "15",
+    cy: "6",
+    r: "1.4"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "9",
+    cy: "12",
+    r: "1.4"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "15",
+    cy: "12",
+    r: "1.4"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "9",
+    cy: "18",
+    r: "1.4"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "15",
+    cy: "18",
+    r: "1.4"
+  }));
+}
+
+// ─── Sample hotel database (since we can't hit a real API) ──
+// Would normally be Booking.com / Google Places API.
+const SAMPLE_HOTELS = [{
+  name: 'Kimpton Theta New York',
+  area: 'Times Square',
+  stars: 4,
+  price: '$289',
+  tags: ['boutique', 'central']
+}, {
+  name: 'The Manhattan at Times Square',
+  area: 'Times Square',
+  stars: 3,
+  price: '$199',
+  tags: ['classic', 'central']
+}, {
+  name: 'The Standard High Line',
+  area: 'Meatpacking',
+  stars: 4,
+  price: '$359',
+  tags: ['design', 'views']
+}, {
+  name: 'Ace Hotel New York',
+  area: 'NoMad',
+  stars: 4,
+  price: '$329',
+  tags: ['design', 'lobby']
+}, {
+  name: 'The Hoxton, Williamsburg',
+  area: 'Brooklyn',
+  stars: 4,
+  price: '$269',
+  tags: ['brooklyn', 'design']
+}, {
+  name: 'citizenM New York Times Square',
+  area: 'Times Square',
+  stars: 4,
+  price: '$259',
+  tags: ['modern', 'compact']
+}, {
+  name: 'Moxy Times Square',
+  area: 'Times Square',
+  stars: 3,
+  price: '$229',
+  tags: ['rooftop', 'young']
+}, {
+  name: 'The Ludlow Hotel',
+  area: 'Lower East Side',
+  stars: 4,
+  price: '$389',
+  tags: ['lounge', 'trendy']
+}, {
+  name: '1 Hotel Central Park',
+  area: 'Midtown',
+  stars: 5,
+  price: '$549',
+  tags: ['eco', 'luxe']
+}, {
+  name: 'Park Hyatt New York',
+  area: 'Midtown West',
+  stars: 5,
+  price: '$899',
+  tags: ['luxe', 'spa']
+}, {
+  name: 'Pod 51 Hotel',
+  area: 'Midtown East',
+  stars: 3,
+  price: '$159',
+  tags: ['budget', 'pod']
+}, {
+  name: 'Yotel New York',
+  area: "Hell's Kitchen",
+  stars: 3,
+  price: '$189',
+  tags: ['compact', 'tech']
+}, {
+  name: 'The Bowery Hotel',
+  area: 'East Village',
+  stars: 4,
+  price: '$449',
+  tags: ['boutique', 'classic']
+}, {
+  name: 'NoMad Hotel',
+  area: 'NoMad',
+  stars: 5,
+  price: '$519',
+  tags: ['library', 'luxe']
+}, {
+  name: 'Arlo SoHo',
+  area: 'SoHo',
+  stars: 3,
+  price: '$239',
+  tags: ['design', 'views']
+}, {
+  name: 'The Beekman, A Thompson Hotel',
+  area: 'Financial District',
+  stars: 5,
+  price: '$479',
+  tags: ['historic', 'luxe']
+}];
+
+// Simulated "found in email/calendar" hotels — matching the trip dates
+const MAILBOX_HOTELS = [{
+  name: 'Kimpton Theta New York',
+  area: 'Times Square',
+  checkin: 'May 4, 2025',
+  checkout: 'May 13, 2025',
+  confirmation: 'BK-8471293',
+  source: 'Booking.com 예약 확인 · 2025-03-18',
+  price: '$289/박 × 9박'
+}];
+
+// ─── Hotel search sheet ─────────────────────────────────────
+function HotelSearchSheet({
+  COLORS,
+  SERIF,
+  SANS,
+  MONO,
+  Icon,
+  onPick,
+  onClose
+}) {
+  const [q, setQ] = React.useState('');
+  const [tab, setTab] = React.useState('search'); // search | mailbox
+  const [scanning, setScanning] = React.useState(false);
+  const [found, setFound] = React.useState(null);
+  const filtered = SAMPLE_HOTELS.filter(h => !q || h.name.toLowerCase().includes(q.toLowerCase()) || h.area.toLowerCase().includes(q.toLowerCase()) || h.tags.some(t => t.includes(q.toLowerCase())));
+  const scanMailbox = () => {
+    setScanning(true);
+    setFound(null);
+    // Simulate scan
+    const steps = ['이메일 스캔 중…', '캘린더 이벤트 확인 중…', '예약 확인 메일 분석 중…', '일정과 매칭 중…'];
+    let i = 0;
+    const t = setInterval(() => {
+      i++;
+      if (i >= steps.length) {
+        clearInterval(t);
+        setScanning(false);
+        setFound(MAILBOX_HOTELS);
+      }
+    }, 600);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      zIndex: 110,
+      background: 'rgba(0,0,0,0.35)',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end'
+    },
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: COLORS.bg,
+      borderRadius: '22px 22px 0 0',
+      maxHeight: '90%',
+      display: 'flex',
+      flexDirection: 'column'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '8px 0 4px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 36,
+      height: 4,
+      background: COLORS.line,
+      borderRadius: 2
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '6px 20px 8px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 24,
+      color: COLORS.ink,
+      flex: 1,
+      whiteSpace: 'nowrap'
+    }
+  }, "\uD638\uD154 \uAC80\uC0C9"), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    style: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      border: 'none',
+      background: COLORS.card,
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "x",
+    size: 14,
+    color: COLORS.mute,
+    stroke: 2
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '0 16px 10px',
+      display: 'flex',
+      gap: 6
+    }
+  }, [{
+    id: 'search',
+    label: '검색'
+  }, {
+    id: 'mailbox',
+    label: '이메일·캘린더에서 찾기'
+  }].map(t => /*#__PURE__*/React.createElement("button", {
+    key: t.id,
+    onClick: () => setTab(t.id),
+    style: {
+      flex: 1,
+      border: 'none',
+      borderRadius: 10,
+      padding: '9px 10px',
+      background: tab === t.id ? COLORS.ink : COLORS.card,
+      color: tab === t.id ? COLORS.bg : COLORS.ink,
+      fontFamily: SANS,
+      fontSize: 12,
+      fontWeight: 500,
+      cursor: 'pointer'
+    }
+  }, t.label))), tab === 'search' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '0 16px 10px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: COLORS.card,
+      borderRadius: 10,
+      padding: '10px 12px',
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "search",
+    size: 14,
+    color: COLORS.mute,
+    stroke: 1.8
+  }), /*#__PURE__*/React.createElement("input", {
+    autoFocus: true,
+    value: q,
+    onChange: e => setQ(e.target.value),
+    placeholder: "\uD638\uD154\uBA85, \uC9C0\uC5ED, \uC2A4\uD0C0\uC77C",
+    style: {
+      border: 'none',
+      outline: 'none',
+      background: 'transparent',
+      flex: 1,
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.ink
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      overflow: 'auto',
+      padding: '0 16px 40px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: COLORS.card,
+      borderRadius: 14,
+      overflow: 'hidden'
+    }
+  }, filtered.map((h, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => {
+      onPick(h.name + ' (' + h.area + ')');
+      onClose();
+    },
+    style: {
+      width: '100%',
+      border: 'none',
+      background: 'transparent',
+      padding: '12px 14px',
+      textAlign: 'left',
+      cursor: 'pointer',
+      borderBottom: i < filtered.length - 1 ? `1px solid ${COLORS.line}` : 'none'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      alignItems: 'baseline',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 13.5,
+      color: COLORS.ink,
+      fontWeight: 500
+    }
+  }, h.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10.5,
+      color: COLORS.accent,
+      flexShrink: 0
+    }
+  }, h.price)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 3,
+      fontFamily: SANS,
+      fontSize: 11.5,
+      color: COLORS.mute,
+      display: 'flex',
+      gap: 6,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "pin",
+    size: 11,
+    stroke: 1.8
+  }), /*#__PURE__*/React.createElement("span", null, h.area), /*#__PURE__*/React.createElement("span", {
+    style: {
+      opacity: 0.4
+    }
+  }, "\xB7"), /*#__PURE__*/React.createElement("span", null, '★'.repeat(h.stars), '☆'.repeat(5 - h.stars))))), filtered.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: 20,
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.mute,
+      textAlign: 'center'
+    }
+  }, "\uACB0\uACFC \uC5C6\uC74C")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      padding: '10px 12px',
+      background: COLORS.softer,
+      borderRadius: 10,
+      fontFamily: SANS,
+      fontSize: 11,
+      color: COLORS.mute,
+      lineHeight: 1.45
+    }
+  }, "\uD83D\uDCA1 \uC2E4\uC81C \uC571\uC5D0\uC11C\uB294 Booking.com\xB7Expedia\xB7Google Places API\uC5D0\uC11C \uC2E4\uC2DC\uAC04 \uAC00\uACA9\uACFC \uAC00\uC6A9 \uAC1D\uC2E4\uC744 \uAC00\uC838\uC635\uB2C8\uB2E4."))) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      overflow: 'auto',
+      padding: '0 16px 40px'
+    }
+  }, !scanning && !found && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: COLORS.card,
+      borderRadius: 14,
+      padding: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 18,
+      color: COLORS.ink,
+      lineHeight: 1.3
+    }
+  }, "\uC774\uBA54\uC77C\uACFC \uCE98\uB9B0\uB354\uC5D0\uC11C \uD638\uD154 \uC608\uC57D\uC744 \uC790\uB3D9\uC73C\uB85C \uCC3E\uC544\uB4DC\uB824\uC694"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      fontFamily: SANS,
+      fontSize: 12.5,
+      color: COLORS.mute,
+      lineHeight: 1.5
+    }
+  }, "\uC5EC\uD589 \uAE30\uAC04(May 4\u201313, 2025)\uC5D0 \uB9DE\uB294 \uD638\uD154 \uC608\uC57D \uD655\uC778 \uBA54\uC77C\uC744 \uC2A4\uCE94\uD569\uB2C8\uB2E4. Booking.com, Agoda, Expedia \uB4F1\uC758 \uD655\uC778 \uBA54\uC77C\uACFC \uAD6C\uAE00 \uCE98\uB9B0\uB354 \uC774\uBCA4\uD2B8\uB97C \uBD84\uC11D\uD574\uC694."), /*#__PURE__*/React.createElement("button", {
+    onClick: scanMailbox,
+    style: {
+      marginTop: 14,
+      width: '100%',
+      border: 'none',
+      cursor: 'pointer',
+      background: COLORS.ink,
+      color: COLORS.bg,
+      borderRadius: 12,
+      padding: '13px',
+      fontFamily: SANS,
+      fontSize: 14,
+      fontWeight: 500,
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "search",
+    size: 14,
+    color: COLORS.bg,
+    stroke: 1.8
+  }), "\uC2A4\uCE94 \uC2DC\uC791"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 12,
+      display: 'flex',
+      gap: 6,
+      flexWrap: 'wrap'
+    }
+  }, ['Gmail', 'Outlook', 'Google Calendar', 'Apple Calendar'].map(s => /*#__PURE__*/React.createElement("span", {
+    key: s,
+    style: {
+      padding: '4px 8px',
+      borderRadius: 6,
+      background: COLORS.softer,
+      fontFamily: MONO,
+      fontSize: 10,
+      color: COLORS.mute,
+      letterSpacing: '0.04em'
+    }
+  }, s))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      padding: '10px 12px',
+      background: COLORS.softer,
+      borderRadius: 10,
+      fontFamily: SANS,
+      fontSize: 11,
+      color: COLORS.mute,
+      lineHeight: 1.45
+    }
+  }, "\u26A0\uFE0F \uC774 \uB370\uBAA8\uC5D0\uC11C\uB294 \uC0D8\uD50C \uB370\uC774\uD130\uB97C \uBC18\uD658\uD574\uC694. \uC2E4\uC81C \uAD6C\uD604 \uC2DC OAuth\uB85C Gmail\xB7Google Calendar API\uC5D0 \uC811\uADFC\uD569\uB2C8\uB2E4.")), scanning && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: COLORS.card,
+      borderRadius: 14,
+      padding: 24,
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline-block',
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      border: `2.5px solid ${COLORS.line}`,
+      borderTopColor: COLORS.accent,
+      animation: 'spin 0.8s linear infinite'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.ink
+    }
+  }, "\uBA54\uC77C\uD568 \uC2A4\uCE94 \uC911\u2026"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 4,
+      fontFamily: MONO,
+      fontSize: 10,
+      color: COLORS.mute,
+      letterSpacing: '0.08em'
+    }
+  }, "GMAIL \xB7 CALENDAR \xB7 BOOKING CONFIRMATIONS"), /*#__PURE__*/React.createElement("style", null, `@keyframes spin { to { transform: rotate(360deg); } }`)), found && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '4px 4px 10px',
+      fontFamily: MONO,
+      fontSize: 10,
+      color: COLORS.accent,
+      letterSpacing: '0.12em'
+    }
+  }, "\u2713 ", found.length, "\uAC1C \uC608\uC57D \uBC1C\uACAC"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 8
+    }
+  }, found.map((h, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => {
+      onPick(h.name + ' (' + h.area + ')');
+      onClose();
+    },
+    style: {
+      background: COLORS.card,
+      border: 'none',
+      borderRadius: 14,
+      padding: '14px 16px',
+      textAlign: 'left',
+      cursor: 'pointer'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 10,
+      alignItems: 'flex-start'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      background: COLORS.softer,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "hotel",
+    size: 18,
+    color: COLORS.ink,
+    stroke: 1.8
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 14,
+      color: COLORS.ink,
+      fontWeight: 500
+    }
+  }, h.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 2,
+      fontFamily: SANS,
+      fontSize: 12,
+      color: COLORS.mute
+    }
+  }, h.area), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      display: 'grid',
+      gridTemplateColumns: '86px 1fr',
+      gap: '3px 10px',
+      fontFamily: MONO,
+      fontSize: 10,
+      color: COLORS.mute,
+      letterSpacing: '0.04em'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      whiteSpace: 'nowrap'
+    }
+  }, "CHECK-IN"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: COLORS.ink
+    }
+  }, h.checkin), /*#__PURE__*/React.createElement("span", {
+    style: {
+      whiteSpace: 'nowrap'
+    }
+  }, "CHECKOUT"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: COLORS.ink
+    }
+  }, h.checkout), /*#__PURE__*/React.createElement("span", {
+    style: {
+      whiteSpace: 'nowrap'
+    }
+  }, "\uC608\uC57D\uBC88\uD638"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: COLORS.ink
+    }
+  }, h.confirmation), /*#__PURE__*/React.createElement("span", {
+    style: {
+      whiteSpace: 'nowrap'
+    }
+  }, "\uC694\uAE08"), "    ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: COLORS.ink
+    }
+  }, h.price)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      fontFamily: SANS,
+      fontSize: 10.5,
+      color: COLORS.mute,
+      fontStyle: 'italic'
+    }
+  }, "\uCD9C\uCC98: ", h.source))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      padding: '8px 10px',
+      background: COLORS.softer,
+      borderRadius: 8,
+      fontFamily: SANS,
+      fontSize: 11.5,
+      color: COLORS.ink,
+      textAlign: 'center',
+      fontWeight: 500
+    }
+  }, "\uC774 \uD638\uD154\uB85C \uC124\uC815\uD558\uAE30 \u2192"))))))));
+}
+Object.assign(window, {
+  useDragReorder,
+  DragHandle,
+  HotelSearchSheet
+});
 // iOS.jsx — Simplified iOS 26 (Liquid Glass) device frame
 // Based on the iOS 26 UI Kit + Figma status bar spec. No assets, no deps.
 // Exports: IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard
@@ -647,1114 +1758,6 @@ Object.assign(window, {
   IOSListRow,
   IOSKeyboard
 });
-// Drag-and-drop reorder + hotel search
-// Exposes: useDragReorder, HotelSearchSheet
-
-// ─── Drag reorder hook ──────────────────────────────────────
-// Touch long-press to drag + HTML5 drag for desktop.
-// onReorder(fromIdx, toIdx) called on drop.
-function useDragReorder(onReorder, enabled = true) {
-  // HTML5 (desktop)
-  const [dragIdx, setDragIdx] = React.useState(null);
-  const [overIdx, setOverIdx] = React.useState(null);
-
-  // Touch long-press drag
-  const [td, setTd] = React.useState(null); // {from,to,dy,startY,itemH}
-  const tdRef = React.useRef(null);
-  const timerRef = React.useRef(null);
-  const elRefs = React.useRef({});
-  React.useEffect(() => {
-    tdRef.current = td;
-  }, [td]);
-
-  // Prevent body scroll while touch-dragging
-  React.useEffect(() => {
-    if (!td) return;
-    const stop = e => e.preventDefault();
-    document.addEventListener('touchmove', stop, {
-      passive: false
-    });
-    return () => document.removeEventListener('touchmove', stop);
-  }, [!!td]);
-  const containerProps = {};
-  const itemProps = idx => {
-    // Touch handlers — always active regardless of `enabled`
-    const onTouchStart = e => {
-      const startY = e.touches[0].clientY;
-      timerRef.current = setTimeout(() => {
-        const el = elRefs.current[idx];
-        const itemH = el ? el.getBoundingClientRect().height : 64;
-        if (window.navigator?.vibrate) window.navigator.vibrate(14);
-        setTd({
-          from: idx,
-          to: idx,
-          dy: 0,
-          startY,
-          itemH
-        });
-      }, 430);
-    };
-    const onTouchMove = e => {
-      clearTimeout(timerRef.current);
-      const d = tdRef.current;
-      if (!d) return;
-      const dy = e.touches[0].clientY - d.startY;
-      const count = Object.keys(elRefs.current).length;
-      const steps = Math.round(dy / d.itemH);
-      const to = Math.max(0, Math.min(count - 1, d.from + steps));
-      setTd(prev => prev ? {
-        ...prev,
-        dy,
-        to
-      } : null);
-    };
-    const onTouchEnd = () => {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-      const d = tdRef.current;
-      if (d) {
-        if (d.from !== d.to) onReorder(d.from, d.to);
-        setTd(null);
-      }
-    };
-
-    // Visual style
-    let style = {};
-    if (td) {
-      const {
-        from,
-        to,
-        dy,
-        itemH
-      } = td;
-      if (idx === from) {
-        style = {
-          transform: `translateY(${dy}px) scale(1.035)`,
-          transition: 'transform 0s, box-shadow 0.15s, opacity 0.15s',
-          zIndex: 50,
-          opacity: 0.92,
-          position: 'relative',
-          boxShadow: '0 16px 40px rgba(0,0,0,0.24), 0 4px 8px rgba(0,0,0,0.12)'
-        };
-      } else {
-        let shift = 0;
-        if (from < to && idx > from && idx <= to) shift = -itemH;else if (from > to && idx >= to && idx < from) shift = itemH;
-        const isTarget = from !== to && idx === to;
-        style = {
-          transform: `translateY(${shift}px)`,
-          transition: 'transform 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.18s ease, background 0.18s ease',
-          position: 'relative',
-          ...(isTarget ? {
-            outline: '2.5px solid #C14F2E',
-            outlineOffset: '2px',
-            background: 'rgba(193,79,46,0.07)'
-          } : {})
-        };
-      }
-    } else if (enabled) {
-      style = {
-        opacity: dragIdx === idx ? 0.35 : 1,
-        transition: 'opacity 0.15s, transform 0.15s',
-        transform: overIdx === idx && dragIdx !== idx ? 'translateY(-2px)' : 'none'
-      };
-    }
-
-    // HTML5 drag (desktop, gated by enabled)
-    const html5 = !enabled ? {} : {
-      draggable: true,
-      onDragStart: e => {
-        setDragIdx(idx);
-        e.dataTransfer.effectAllowed = 'move';
-        try {
-          e.dataTransfer.setData('text/plain', String(idx));
-        } catch (_) {}
-        const el = e.currentTarget;
-        if (el && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(el, 20, 20);
-      },
-      onDragOver: e => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        if (overIdx !== idx) setOverIdx(idx);
-      },
-      onDragEnter: e => {
-        e.preventDefault();
-        setOverIdx(idx);
-      },
-      onDrop: e => {
-        e.preventDefault();
-        const from = dragIdx,
-          to = idx;
-        setDragIdx(null);
-        setOverIdx(null);
-        if (from == null || from === to) return;
-        onReorder(from, to);
-      },
-      onDragEnd: () => {
-        setDragIdx(null);
-        setOverIdx(null);
-      }
-    };
-    return {
-      ref: el => {
-        elRefs.current[idx] = el;
-      },
-      onTouchStart,
-      onTouchMove,
-      onTouchEnd,
-      ...html5,
-      style,
-      'data-drag-over': !td && enabled && overIdx === idx && dragIdx !== null && dragIdx !== idx
-    };
-  };
-  return {
-    containerProps,
-    itemProps,
-    dragIdx: td ? td.from : dragIdx,
-    overIdx: td ? td.to : overIdx
-  };
-}
-
-// ─── Drag handle component ──────────────────────────────────
-function DragHandle({
-  size = 18,
-  color = '#7A756D'
-}) {
-  return /*#__PURE__*/React.createElement("svg", {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: color,
-    style: {
-      cursor: 'grab'
-    }
-  }, /*#__PURE__*/React.createElement("circle", {
-    cx: "9",
-    cy: "6",
-    r: "1.4"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "15",
-    cy: "6",
-    r: "1.4"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "9",
-    cy: "12",
-    r: "1.4"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "15",
-    cy: "12",
-    r: "1.4"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "9",
-    cy: "18",
-    r: "1.4"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "15",
-    cy: "18",
-    r: "1.4"
-  }));
-}
-
-// ─── Sample hotel database (since we can't hit a real API) ──
-// Would normally be Booking.com / Google Places API.
-const SAMPLE_HOTELS = [{
-  name: 'Kimpton Theta New York',
-  area: 'Times Square',
-  stars: 4,
-  price: '$289',
-  tags: ['boutique', 'central']
-}, {
-  name: 'The Manhattan at Times Square',
-  area: 'Times Square',
-  stars: 3,
-  price: '$199',
-  tags: ['classic', 'central']
-}, {
-  name: 'The Standard High Line',
-  area: 'Meatpacking',
-  stars: 4,
-  price: '$359',
-  tags: ['design', 'views']
-}, {
-  name: 'Ace Hotel New York',
-  area: 'NoMad',
-  stars: 4,
-  price: '$329',
-  tags: ['design', 'lobby']
-}, {
-  name: 'The Hoxton, Williamsburg',
-  area: 'Brooklyn',
-  stars: 4,
-  price: '$269',
-  tags: ['brooklyn', 'design']
-}, {
-  name: 'citizenM New York Times Square',
-  area: 'Times Square',
-  stars: 4,
-  price: '$259',
-  tags: ['modern', 'compact']
-}, {
-  name: 'Moxy Times Square',
-  area: 'Times Square',
-  stars: 3,
-  price: '$229',
-  tags: ['rooftop', 'young']
-}, {
-  name: 'The Ludlow Hotel',
-  area: 'Lower East Side',
-  stars: 4,
-  price: '$389',
-  tags: ['lounge', 'trendy']
-}, {
-  name: '1 Hotel Central Park',
-  area: 'Midtown',
-  stars: 5,
-  price: '$549',
-  tags: ['eco', 'luxe']
-}, {
-  name: 'Park Hyatt New York',
-  area: 'Midtown West',
-  stars: 5,
-  price: '$899',
-  tags: ['luxe', 'spa']
-}, {
-  name: 'Pod 51 Hotel',
-  area: 'Midtown East',
-  stars: 3,
-  price: '$159',
-  tags: ['budget', 'pod']
-}, {
-  name: 'Yotel New York',
-  area: "Hell's Kitchen",
-  stars: 3,
-  price: '$189',
-  tags: ['compact', 'tech']
-}, {
-  name: 'The Bowery Hotel',
-  area: 'East Village',
-  stars: 4,
-  price: '$449',
-  tags: ['boutique', 'classic']
-}, {
-  name: 'NoMad Hotel',
-  area: 'NoMad',
-  stars: 5,
-  price: '$519',
-  tags: ['library', 'luxe']
-}, {
-  name: 'Arlo SoHo',
-  area: 'SoHo',
-  stars: 3,
-  price: '$239',
-  tags: ['design', 'views']
-}, {
-  name: 'The Beekman, A Thompson Hotel',
-  area: 'Financial District',
-  stars: 5,
-  price: '$479',
-  tags: ['historic', 'luxe']
-}];
-
-// Simulated "found in email/calendar" hotels — matching the trip dates
-const MAILBOX_HOTELS = [{
-  name: 'Kimpton Theta New York',
-  area: 'Times Square',
-  checkin: 'May 4, 2025',
-  checkout: 'May 13, 2025',
-  confirmation: 'BK-8471293',
-  source: 'Booking.com 예약 확인 · 2025-03-18',
-  price: '$289/박 × 9박'
-}];
-
-// ─── Hotel search sheet ─────────────────────────────────────
-function HotelSearchSheet({
-  COLORS,
-  SERIF,
-  SANS,
-  MONO,
-  Icon,
-  onPick,
-  onClose
-}) {
-  const [q, setQ] = React.useState('');
-  const [tab, setTab] = React.useState('search'); // search | mailbox
-  const [scanning, setScanning] = React.useState(false);
-  const [found, setFound] = React.useState(null);
-  const filtered = SAMPLE_HOTELS.filter(h => !q || h.name.toLowerCase().includes(q.toLowerCase()) || h.area.toLowerCase().includes(q.toLowerCase()) || h.tags.some(t => t.includes(q.toLowerCase())));
-  const scanMailbox = () => {
-    setScanning(true);
-    setFound(null);
-    // Simulate scan
-    const steps = ['이메일 스캔 중…', '캘린더 이벤트 확인 중…', '예약 확인 메일 분석 중…', '일정과 매칭 중…'];
-    let i = 0;
-    const t = setInterval(() => {
-      i++;
-      if (i >= steps.length) {
-        clearInterval(t);
-        setScanning(false);
-        setFound(MAILBOX_HOTELS);
-      }
-    }, 600);
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'fixed',
-      inset: 0,
-      zIndex: 110,
-      background: 'rgba(0,0,0,0.35)',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-end'
-    },
-    onClick: onClose
-  }, /*#__PURE__*/React.createElement("div", {
-    onClick: e => e.stopPropagation(),
-    style: {
-      background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
-      maxHeight: '90%',
-      display: 'flex',
-      flexDirection: 'column'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      justifyContent: 'center',
-      padding: '8px 0 4px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 36,
-      height: 4,
-      background: COLORS.line,
-      borderRadius: 2
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '6px 20px 8px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      gap: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SERIF,
-      fontSize: 24,
-      color: COLORS.ink,
-      flex: 1,
-      whiteSpace: 'nowrap'
-    }
-  }, "\uD638\uD154 \uAC80\uC0C9"), /*#__PURE__*/React.createElement("button", {
-    onClick: onClose,
-    style: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
-      border: 'none',
-      background: COLORS.card,
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "x",
-    size: 14,
-    color: COLORS.mute,
-    stroke: 2
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '0 16px 10px',
-      display: 'flex',
-      gap: 6
-    }
-  }, [{
-    id: 'search',
-    label: '검색'
-  }, {
-    id: 'mailbox',
-    label: '이메일·캘린더에서 찾기'
-  }].map(t => /*#__PURE__*/React.createElement("button", {
-    key: t.id,
-    onClick: () => setTab(t.id),
-    style: {
-      flex: 1,
-      border: 'none',
-      borderRadius: 10,
-      padding: '9px 10px',
-      background: tab === t.id ? COLORS.ink : COLORS.card,
-      color: tab === t.id ? COLORS.bg : COLORS.ink,
-      fontFamily: SANS,
-      fontSize: 12,
-      fontWeight: 500,
-      cursor: 'pointer'
-    }
-  }, t.label))), tab === 'search' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '0 16px 10px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: COLORS.card,
-      borderRadius: 10,
-      padding: '10px 12px',
-      display: 'flex',
-      gap: 8,
-      alignItems: 'center'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "search",
-    size: 14,
-    color: COLORS.mute,
-    stroke: 1.8
-  }), /*#__PURE__*/React.createElement("input", {
-    autoFocus: true,
-    value: q,
-    onChange: e => setQ(e.target.value),
-    placeholder: "\uD638\uD154\uBA85, \uC9C0\uC5ED, \uC2A4\uD0C0\uC77C",
-    style: {
-      border: 'none',
-      outline: 'none',
-      background: 'transparent',
-      flex: 1,
-      fontFamily: SANS,
-      fontSize: 13,
-      color: COLORS.ink
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      overflow: 'auto',
-      padding: '0 16px 40px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: COLORS.card,
-      borderRadius: 14,
-      overflow: 'hidden'
-    }
-  }, filtered.map((h, i) => /*#__PURE__*/React.createElement("button", {
-    key: i,
-    onClick: () => {
-      onPick(h.name + ' (' + h.area + ')');
-      onClose();
-    },
-    style: {
-      width: '100%',
-      border: 'none',
-      background: 'transparent',
-      padding: '12px 14px',
-      textAlign: 'left',
-      cursor: 'pointer',
-      borderBottom: i < filtered.length - 1 ? `1px solid ${COLORS.line}` : 'none'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      gap: 8,
-      alignItems: 'baseline',
-      justifyContent: 'space-between'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SANS,
-      fontSize: 13.5,
-      color: COLORS.ink,
-      fontWeight: 500
-    }
-  }, h.name), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: MONO,
-      fontSize: 10.5,
-      color: COLORS.accent,
-      flexShrink: 0
-    }
-  }, h.price)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 3,
-      fontFamily: SANS,
-      fontSize: 11.5,
-      color: COLORS.mute,
-      display: 'flex',
-      gap: 6,
-      alignItems: 'center'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "pin",
-    size: 11,
-    stroke: 1.8
-  }), /*#__PURE__*/React.createElement("span", null, h.area), /*#__PURE__*/React.createElement("span", {
-    style: {
-      opacity: 0.4
-    }
-  }, "\xB7"), /*#__PURE__*/React.createElement("span", null, '★'.repeat(h.stars), '☆'.repeat(5 - h.stars))))), filtered.length === 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: 20,
-      fontFamily: SANS,
-      fontSize: 13,
-      color: COLORS.mute,
-      textAlign: 'center'
-    }
-  }, "\uACB0\uACFC \uC5C6\uC74C")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 10,
-      padding: '10px 12px',
-      background: COLORS.softer,
-      borderRadius: 10,
-      fontFamily: SANS,
-      fontSize: 11,
-      color: COLORS.mute,
-      lineHeight: 1.45
-    }
-  }, "\uD83D\uDCA1 \uC2E4\uC81C \uC571\uC5D0\uC11C\uB294 Booking.com\xB7Expedia\xB7Google Places API\uC5D0\uC11C \uC2E4\uC2DC\uAC04 \uAC00\uACA9\uACFC \uAC00\uC6A9 \uAC1D\uC2E4\uC744 \uAC00\uC838\uC635\uB2C8\uB2E4."))) : /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      overflow: 'auto',
-      padding: '0 16px 40px'
-    }
-  }, !scanning && !found && /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: COLORS.card,
-      borderRadius: 14,
-      padding: 18
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SERIF,
-      fontSize: 18,
-      color: COLORS.ink,
-      lineHeight: 1.3
-    }
-  }, "\uC774\uBA54\uC77C\uACFC \uCE98\uB9B0\uB354\uC5D0\uC11C \uD638\uD154 \uC608\uC57D\uC744 \uC790\uB3D9\uC73C\uB85C \uCC3E\uC544\uB4DC\uB824\uC694"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 8,
-      fontFamily: SANS,
-      fontSize: 12.5,
-      color: COLORS.mute,
-      lineHeight: 1.5
-    }
-  }, "\uC5EC\uD589 \uAE30\uAC04(May 4\u201313, 2025)\uC5D0 \uB9DE\uB294 \uD638\uD154 \uC608\uC57D \uD655\uC778 \uBA54\uC77C\uC744 \uC2A4\uCE94\uD569\uB2C8\uB2E4. Booking.com, Agoda, Expedia \uB4F1\uC758 \uD655\uC778 \uBA54\uC77C\uACFC \uAD6C\uAE00 \uCE98\uB9B0\uB354 \uC774\uBCA4\uD2B8\uB97C \uBD84\uC11D\uD574\uC694."), /*#__PURE__*/React.createElement("button", {
-    onClick: scanMailbox,
-    style: {
-      marginTop: 14,
-      width: '100%',
-      border: 'none',
-      cursor: 'pointer',
-      background: COLORS.ink,
-      color: COLORS.bg,
-      borderRadius: 12,
-      padding: '13px',
-      fontFamily: SANS,
-      fontSize: 14,
-      fontWeight: 500,
-      display: 'flex',
-      gap: 8,
-      alignItems: 'center',
-      justifyContent: 'center'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "search",
-    size: 14,
-    color: COLORS.bg,
-    stroke: 1.8
-  }), "\uC2A4\uCE94 \uC2DC\uC791"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 12,
-      display: 'flex',
-      gap: 6,
-      flexWrap: 'wrap'
-    }
-  }, ['Gmail', 'Outlook', 'Google Calendar', 'Apple Calendar'].map(s => /*#__PURE__*/React.createElement("span", {
-    key: s,
-    style: {
-      padding: '4px 8px',
-      borderRadius: 6,
-      background: COLORS.softer,
-      fontFamily: MONO,
-      fontSize: 10,
-      color: COLORS.mute,
-      letterSpacing: '0.04em'
-    }
-  }, s))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 14,
-      padding: '10px 12px',
-      background: COLORS.softer,
-      borderRadius: 10,
-      fontFamily: SANS,
-      fontSize: 11,
-      color: COLORS.mute,
-      lineHeight: 1.45
-    }
-  }, "\u26A0\uFE0F \uC774 \uB370\uBAA8\uC5D0\uC11C\uB294 \uC0D8\uD50C \uB370\uC774\uD130\uB97C \uBC18\uD658\uD574\uC694. \uC2E4\uC81C \uAD6C\uD604 \uC2DC OAuth\uB85C Gmail\xB7Google Calendar API\uC5D0 \uC811\uADFC\uD569\uB2C8\uB2E4.")), scanning && /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: COLORS.card,
-      borderRadius: 14,
-      padding: 24,
-      textAlign: 'center'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'inline-block',
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      border: `2.5px solid ${COLORS.line}`,
-      borderTopColor: COLORS.accent,
-      animation: 'spin 0.8s linear infinite'
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 14,
-      fontFamily: SANS,
-      fontSize: 13,
-      color: COLORS.ink
-    }
-  }, "\uBA54\uC77C\uD568 \uC2A4\uCE94 \uC911\u2026"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 4,
-      fontFamily: MONO,
-      fontSize: 10,
-      color: COLORS.mute,
-      letterSpacing: '0.08em'
-    }
-  }, "GMAIL \xB7 CALENDAR \xB7 BOOKING CONFIRMATIONS"), /*#__PURE__*/React.createElement("style", null, `@keyframes spin { to { transform: rotate(360deg); } }`)), found && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '4px 4px 10px',
-      fontFamily: MONO,
-      fontSize: 10,
-      color: COLORS.accent,
-      letterSpacing: '0.12em'
-    }
-  }, "\u2713 ", found.length, "\uAC1C \uC608\uC57D \uBC1C\uACAC"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 8
-    }
-  }, found.map((h, i) => /*#__PURE__*/React.createElement("button", {
-    key: i,
-    onClick: () => {
-      onPick(h.name + ' (' + h.area + ')');
-      onClose();
-    },
-    style: {
-      background: COLORS.card,
-      border: 'none',
-      borderRadius: 14,
-      padding: '14px 16px',
-      textAlign: 'left',
-      cursor: 'pointer'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      gap: 10,
-      alignItems: 'flex-start'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 40,
-      height: 40,
-      borderRadius: 10,
-      background: COLORS.softer,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: 0
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "hotel",
-    size: 18,
-    color: COLORS.ink,
-    stroke: 1.8
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SANS,
-      fontSize: 14,
-      color: COLORS.ink,
-      fontWeight: 500
-    }
-  }, h.name), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 2,
-      fontFamily: SANS,
-      fontSize: 12,
-      color: COLORS.mute
-    }
-  }, h.area), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 8,
-      display: 'grid',
-      gridTemplateColumns: '86px 1fr',
-      gap: '3px 10px',
-      fontFamily: MONO,
-      fontSize: 10,
-      color: COLORS.mute,
-      letterSpacing: '0.04em'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      whiteSpace: 'nowrap'
-    }
-  }, "CHECK-IN"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: COLORS.ink
-    }
-  }, h.checkin), /*#__PURE__*/React.createElement("span", {
-    style: {
-      whiteSpace: 'nowrap'
-    }
-  }, "CHECKOUT"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: COLORS.ink
-    }
-  }, h.checkout), /*#__PURE__*/React.createElement("span", {
-    style: {
-      whiteSpace: 'nowrap'
-    }
-  }, "\uC608\uC57D\uBC88\uD638"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: COLORS.ink
-    }
-  }, h.confirmation), /*#__PURE__*/React.createElement("span", {
-    style: {
-      whiteSpace: 'nowrap'
-    }
-  }, "\uC694\uAE08"), "    ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: COLORS.ink
-    }
-  }, h.price)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 8,
-      fontFamily: SANS,
-      fontSize: 10.5,
-      color: COLORS.mute,
-      fontStyle: 'italic'
-    }
-  }, "\uCD9C\uCC98: ", h.source))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 10,
-      padding: '8px 10px',
-      background: COLORS.softer,
-      borderRadius: 8,
-      fontFamily: SANS,
-      fontSize: 11.5,
-      color: COLORS.ink,
-      textAlign: 'center',
-      fontWeight: 500
-    }
-  }, "\uC774 \uD638\uD154\uB85C \uC124\uC815\uD558\uAE30 \u2192"))))))));
-}
-Object.assign(window, {
-  useDragReorder,
-  DragHandle,
-  HotelSearchSheet
-});
-// Real NYC trip data, parsed from the uploaded itinerary
-window.TRIP_DEFAULT = {
-  title: 'New York',
-  subtitleKo: '뉴욕 · 10일',
-  dates: 'May 4 — May 13, 2025',
-  travelers: 'Solo trip',
-  hotel: 'Kimpton Theta New York (Times Square)',
-  hotels: [
-    {
-      name: 'Kimpton Theta New York',
-      area: 'Times Square',
-      checkin: 'May 4, 2025',
-      checkinTime: '15:00',
-      checkout: 'May 9, 2025',
-      checkoutTime: '12:00',
-      nights: 5,
-      price: '$289/박',
-      address: '125 W 48th St, New York, NY 10036',
-      phone: '+1 212-354-2323',
-      confirmation: '73378565985208',
-      amenities: ['Free WiFi', 'Fitness Center', 'Pet Friendly', 'Bar', '24h Front Desk'],
-      note: '타임스퀘어에서 도보 3분. 체크인 15시, 체크아웃 12시. 프론트에서 룸 업그레이드 요청 가능.',
-      rating: 4.3,
-      hue: 25,
-    },
-    {
-      name: 'Royal Sonesta Washington DC Capitol Hill',
-      area: 'Capitol Hill, D.C.',
-      checkin: 'May 9, 2025',
-      checkinTime: '16:00',
-      checkout: 'May 11, 2025',
-      checkoutTime: '11:00',
-      nights: 2,
-      address: '20 Massachusetts Ave NW, Washington, DC 20001',
-      phone: '+1 202-888-1850',
-      confirmation: '73392131862879',
-      amenities: ['Free WiFi', 'Fitness Center', 'Restaurant', 'Bar', 'Pet Friendly', 'Valet Parking'],
-      note: '체크인 16시, 체크아웃 11시. 캐피톨 힐 인근. 발레파킹 가능.',
-      rating: 4.0,
-      hue: 200,
-    },
-    {
-      name: 'Hotel RIU Plaza Manhattan Times Square',
-      area: 'Times Square',
-      checkin: 'May 11, 2025',
-      checkinTime: '15:00',
-      checkout: 'May 14, 2025',
-      checkoutTime: '12:00',
-      nights: 3,
-      address: '145 W 47th St, New York, NY 10036',
-      phone: '+1 646-864-1100',
-      confirmation: '73382367193804',
-      amenities: ['Free WiFi', 'Fitness Center', 'Restaurant', 'Bar', 'Free Breakfast', 'Business Center'],
-      note: '체크인 15시, 체크아웃 12시. 조식 포함. 타임스퀘어 도보 1분.',
-      rating: 4.0,
-      hue: 40,
-    },
-  ],
-  days: [
-    {
-      n: 1, date: 'May 4', weekday: 'Mon',
-      title: '도착, 타임스퀘어',
-      titleEn: 'Arrival & Midtown',
-      hero: { hue: 25, label: 'TIMES SQUARE' },
-      weather: '맑음 · 18°',
-      items: [
-        { time: '10:00', cat: 'flight', title: 'JFK 공항 도착',   en: 'Arrive at JFK Airport', loc: 'JFK International',
-          note: '지하철로 이동\n맨해튼까지 60분\nair train(엘리베이터level 2)-jamaica station(빨간색방향)-내려서 엘리베이터로L2층(Concourse)- 에어트레인 이용료8.25달러결제-표지판: 머리 위에 있는 \'Subway E J Z\'-엘리베이터 위치: 보통 계단 옆쪽이나 구석에 \'Elevator to E Train\' 표지판-엘리베이터\'Lower Level (E Train Platform)\' 버튼-(탑승전3달러결제)E선 열차 탑승-방향 확인: \'Manhattan Bound\' 또는 \'World Trade Center\' 행이라고 적힌 전광판-E선(파란색 동그라미)-40분 걸려50th Street 역 도착-지상' },
-        { time: '14:00', cat: 'hotel',  title: '호텔 짐 맡기기',    en: 'Kimpton Theta New York', loc: 'Times Square by IHG',
-          note: '체크인/프론트에 짐 맡기기\n"Hi, I\'m a bit early for check-in. Is it possible to leave my luggage here for a while?"' },
-        { time: '14:30', cat: 'food',   title: '점심: 피자 or 타코', en: "Joe's Pizza / Los Tacos No.1", loc: 'Midtown',
-          note: "Joe's Pizza (뉴욕 정통 조각 피자)\nLos Tacos No.1 (타코 맛집)", price: '$' },
-        { time: '15:30', cat: 'sight',  title: '뉴욕 공립 도서관',   en: 'New York Public Library', loc: '5th Ave @ 42nd',
-          note: '도서관 입구의 두마리 사자상(인내, 용기)\n1층 아스토 홀(Astor Hall)\n1층 treasures exhibition트레저스 엑시비션:구텐바르크 성경, 토마스 제퍼슨의 \'독립선언서\' 사본, 찰스디킨스의 필기구..\n맥그로우 로툰다(McGraw Rotunda): 로즈 메인 리딩 룸 들어가기전 웅장한 중앙 홀\n3층 Rose Main Reading Room(인셉션, 투모로우 배경) \n로즈 메인 리딩 룸 이용 팁:리딩 룸 입구는 두 곳입니다. 하나는 관광객용(사진만 찍고 나가는 곳), 하나는 이용자용(Study & Research)입니다\n입구에서 보안 요원이 "Visiting or Studying?"이라고 물을 수 있습니다. 이때 "Studying" 혹은 "Reading"이라고 답하고 \n안쪽으로 들어가 빈자리에 앉으시면 됩니다. I\'m here for quiet study/reading이라고 대답하기\n퇴실은 5시 45분쯤', duration: '1h 30m' },
-        { time: '17:30', cat: 'hotel',  title: '호텔 체크인',       en: 'Hotel Check-in', loc: 'Kimpton Theta', _hotelRef: 'Kimpton Theta New York' },
-        { time: '19:30', cat: 'show',   title: 'Top View 야경 버스', en: 'Top View Night Bus Tour', loc: "M&M's World 앞",
-          note: "타임스퀘어 (M&M's World 앞출발)\n타임스퀘어-크라이슬러,공립도서관-플랫아이언-워싱턴스퀘어파크-브루클린브릿지(90분)", price: '$29–44', duration: '90m' },
-        { time: '21:30', cat: 'food',   title: '저녁: Chick-fil-A',  en: 'Chick-fil-A', loc: 'Midtown',
-          note: 'Chick-fil-A칙필레버거: Chick-fil-A Chicken Sandwich meal, deluxe(+토마토치즈양배추), \n감자튀김 찍어먹을 소스부탁 can i get all the sauces, please?\n칙필레미니사이즈소스:8oz(2.9달러+tax=3.25달러)', price: '$' },
-      ],
-    },
-    {
-      n: 2, date: 'May 5', weekday: 'Tue',
-      title: '자유의 여신상, 덤보',
-      titleEn: 'Liberty & Downtown',
-      hero: { hue: 210, label: 'LIBERTY CRUISE' },
-      weather: '흐림 · 16°',
-      items: [
-        { time: '09:30', cat: 'ferry',  title: '다운타운 리버티 크루즈', en: 'Downtown Liberty Cruise', loc: 'Pier 16 · 167 John St',
-          note: '호텔에서 지하철타고 풀턴 스트리트 서브웨이 스테이션\npier16탑승(Pier 16,167 John St, New York, NY 10038):자유의여신상-브루클린 브릿지뷰(60분)\n스케줄: 오전 10시, 11시 30분, 13시, 14시 30분', price: '₩27,945', duration: '60m' },
-        { time: '11:30', cat: 'walk',   title: '배터리 파크',          en: 'Battery Park', loc: 'Lower Manhattan',
-          note: '자유의 여신상 보이는 공원' },
-        { time: '12:15', cat: 'sight',  title: '월스트리트',           en: 'Wall Street', loc: 'Financial District',
-          note: '황소상, 뉴욕 증권거래소 구경' },
-        { time: '13:30', cat: 'food',   title: '점심',                en: 'Lunch — FiDi', loc: 'Financial District', price: '$$' },
-        { time: '14:30', cat: 'sight',  title: '9/11 메모리얼 & Oculus', en: '9/11 Memorial + One WTC', loc: '180 Greenwich St',
-          note: '세계무역센터 부지 및 911메모리얼 파크\n911메모리얼파크:쌍둥이 빌딩 자리에 만들어진 추모공원\n원월드트레이드센터(무너진 건물을 대신해 그 옆에 새로 생긴 미국에서 가장 높은 빌딩)\n오큘러스(기차역, 쇼핑몰)' },
-        { time: '16:00', cat: 'view',   title: '덤보 — 맨해튼 브리지 뷰', en: 'DUMBO / 35 Washington St', loc: 'Brooklyn',
-          note: '주소: 35 Washington St, Brooklyn, NY11201\nWTC 근처의 Chambers St Station (또는 Fulton St Station)에서 A 또는 C 라인 Downtown & Brooklyn 방면 열차-High St - Brooklyn Bridge Station에서 내리기' },
-        { time: '16:30', cat: 'food',   title: "Juliana's Pizza",      en: "Juliana's Pizza", loc: 'DUMBO',
-          note: '줄리아나 피자: 하프앤하프, 마리게리타+화이트조합', price: '$$' },
-        { time: '17:30', cat: 'walk',   title: '브루클린 브리지 도보',  en: 'Brooklyn Bridge Walk', loc: 'Brooklyn → Manhattan',
-          note: '워싱턴 스트리트에서 위쪽(남쪽) 언덕 방향으로 2분만→구글 맵에 "Brooklyn Bridge Underpass" 혹은 "Washington St Stairway"라고 검색\n계단을 따라 올라가면 바로 브루클린 브릿지의 보행자 전용도로Wooden Walkway연결\n맨해튼 스카이라인 보면서 30-40분 걷기\nCity Hall 역에서 N, R, W선 (노란색 라인) 탑승 42 St - Times Sq 역 하차(15분 소요)', duration: '40m' },
-        { time: '19:30', cat: 'food',   title: '저녁',                 en: 'Dinner', loc: 'Midtown' },
-      ],
-    },
-    {
-      n: 3, date: 'May 6', weekday: 'Wed',
-      title: 'MoMA와 록펠러',
-      titleEn: 'MoMA & Rockefeller',
-      hero: { hue: 45, label: 'ROCKEFELLER PLAZA' },
-      weather: '맑음 · 19°',
-      items: [
-        { time: '10:00', cat: 'sight',  title: 'MoMA',                 en: 'Museum of Modern Art', loc: '11 W 53rd St',
-          note: '오픈런 입장→무료 한국어 오디오 가이드(모마 내 와이파이 접속)\n5층부터 내려오기*(5층: 고흐의 별이 빛나는 밤, 피카소의 아비뇽의 여인들, 모네의 수련)\n4층 앤디워홀의 캠벨 수프 캔\n1층 야외정원Abby Aldrich Rockefeller Sculpture Garden\n굿즈 구입: 모자', duration: '2h 30m' },
-        { time: '13:00', cat: 'food',   title: "Gallagher's 스테이크",  en: "Gallagher's Steakhouse", loc: 'Midtown',
-          note: '갤러거 스테이크 하우스\nLunch Special Menu 3-Course Lunch Menu로 운영되며, 에피타이저 + 메인(Sliced Filet Mignon) + 디저트가 포함\n물은 tap water(수돗물 무료), bottled water(유료) 선택\n에피타이저는 시저샐러드, 클램차우더수프/메인은 Sliced Filet Mignon, 10 oz. Filet Mignon/디저트는 뉴욕치즈케이크, 아이스크림\n식사후 영수증 요청→팁 선택→최종금액을 적어 서명과 함께 카드를 두면→결제 후 카드 돌려줌 ', price: '$$$$', duration: '1h 30m' },
-        { time: '15:00', cat: 'walk',   title: '5번가 산책',           en: '5th Avenue Stroll', loc: '5th Ave',
-          note: '세인트 패트릭 대성당 내부관람, 웅장한 고딕양식' },
-        { time: '16:00', cat: 'sight',  title: '그랜드 센트럴',         en: 'Grand Central Terminal', loc: '89 E 42nd St',
-          note: '세계 최대 기차역' },
-        { time: '17:00', cat: 'walk',   title: '록펠러 플라자',         en: 'Rockefeller Center Plaza', loc: 'Midtown',
-          note: '탑오브더락 입장전 주변구경' },
-        { time: '18:30', cat: 'view',   title: 'Top of the Rock',      en: 'Top of the Rock Observatory', loc: 'Rockefeller Center',
-          note: '일몰 1시간 전 입장(+야경 감상), 엠파이어빌딩 뷰', price: '₩64,490' },
-        { time: '21:00', cat: 'food',   title: '저녁',                 en: 'Dinner', loc: 'Midtown' },
-      ],
-    },
-    {
-      n: 4, date: 'May 7', weekday: 'Thu',
-      title: '메트로폴리탄, 클로이스터',
-      titleEn: 'The Met & Cloisters',
-      hero: { hue: 340, label: 'THE MET · 5TH AVE' },
-      weather: '맑음 · 21°',
-      items: [
-        { time: '10:00', cat: 'sight',  title: 'The Met',               en: 'Metropolitan Museum of Art', loc: '1000 5th Ave',
-          note: '10시 개장과 동시 입장추천, 200만점의 작품이 있어 선택과 집중이 핵심\n정문에 도착하면 줄이 두갈래 \'General Admission\' 혹은 \'Timed Entry\' 줄에 서세요. (예약자는 줄이 훨씬 빨리 빠짐)\n보안검색(가방검사)후 입구의 검표 직원에게 휴대폰의 QR 코드를 보여주면 바로 입장 가능\n1층 이집트 미술(The Egyptian Art): 로비 오른쪽, 덴두르 신전Temple of Dendur은 꼭 봐야함, 나는 전설이다 배경\n1층 아메리카 윙(The American Wing)\n2층 유럽 회화 (European Paintings): 고흐, 모네, 르누아르, 베르메르 걸작\n4층 루프탑 가든(The Cantor Roof Garden): 전망대 겸 카페\n박물관계단(미드 가십걸)에서 사진 찍기', price: '$30', duration: '3h' },
-        { time: '13:30', cat: 'food',   title: '점심',                  en: 'Lunch', loc: 'UES' },
-        { time: '15:00', cat: 'sight',  title: 'The Met Cloisters',     en: 'Met Cloisters', loc: 'Fort Tryon Park',
-          note: '메트 정문에서 나와 81가(81st St)를 따라 서쪽(센트럴 파크 방향)으로 쭉 가로지르기\n→자연사 박물관 옆에 있는 81 St-Museum of Natural History 역→지하철 탑승 (A선 Blue)\nA선(Uptown & 207 St 방향)ⁿ-A선(익스프레스)타기 →190 St 역(엘리베이터 타고 올라오기)\n지하철에서 내리면 개찰구 쪽 말고, Fort Tryon Park라고 써진 이정표를 따라가서 아주 큰 엘리베이터를 타기\n엘베로 지상 도착하면 바로 공원 입구와 연결→공원 길 걷기 Margaret Corbin Drive여기서부터 클로이스터스 성채까지 약 10~15분\n메트로폴리탄 미술관의 분관, 프랑스식수도원건물, 메트 당일 티켓있으면 무료관람\n폰트브로아 수도원 중정Cuxa Cloister - ★필수 코스:클로이스터스 상징\n폰트브로아 수도원 중정 (Cuxa Cloister) - ★필수 코스\n유니콘 태피스트리 방 (The Unicorn Tapestries) - ★최고의 걸작\n메로드 제단화 (Mérode Altarpiece) & 장식 예술\n허드슨 강 뷰 테라스 (Bonnefont Cloister & Trie Cloister)\n다시 호텔(킴튼 세타)로 돌아올 때는 A선 지하철을 타고 한 번에 42 St-Port Authority Bus Terminal역 하차' },
-        { time: '18:30', cat: 'food',   title: '저녁',                  en: 'Dinner', loc: 'Midtown' },
-      ],
-    },
-    {
-      n: 5, date: 'May 8', weekday: 'Fri',
-      title: '자연사 박물관, 센트럴파크',
-      titleEn: 'AMNH & Central Park',
-      hero: { hue: 120, label: 'CENTRAL PARK' },
-      weather: '맑음 · 22°',
-      items: [
-        { time: '09:30', cat: 'sight',  title: '자연사 박물관',          en: 'American Museum of Natural History', loc: 'Upper West Side',
-          note: '1층 밀스타인 해양 생물관:천장에 매달린 실물 크기의 대왕고래(Blue Whale)모형\n77가(77th St) 쪽 출구로 나오시는 것이 좋습니다.', price: '$25', duration: '2h' },
-        { time: '12:30', cat: 'food',   title: '점심: 피크닉 준비',       en: 'Levain + Chipotle (to go)', loc: 'UWS',
-          note: 'levain bakery르뱅쿠키\nchipotle치폴레: 보울 포장', price: '$' },
-        { time: '13:30', cat: 'walk',   title: '센트럴 파크',            en: 'Central Park', loc: 'Manhattan',
-          note: '십 미도우sheep meadow잔디밭: 피크닉\n더몰: 십 미도우 바로 옆, 느티나무 가로수길\n베데스타 테라스Bethesda Terrace&분수: 더 몰 끝부분, 계단 아래 분수 천장 타일 장식\n체리힐Cherry Hill\n보우브리지Bow Bridge: 하얀색 곡선 다리, 로맨틱한 포토존', duration: '3h' },
-        { time: '18:00', cat: 'food',   title: 'The Halal Guys',        en: 'The Halal Guys', loc: '53rd & 6th Ave',
-          note: '할랄 가이즈The Halal Guys, 화이트 소스는 듬뿍, 레드 소스는 조금', price: '$' },
-      ],
-    },
-    {
-      n: 6, date: 'May 9', weekday: 'Sat',
-      title: '워싱턴 D.C. 이동',
-      titleEn: 'Travel to D.C.',
-      hero: { hue: 200, label: 'WASHINGTON D.C.' },
-      weather: '맑음 · 20°',
-      items: [
-        { time: '09:00', cat: 'flight', title: 'D.C.로 이동',            en: 'Travel to Washington D.C.', loc: 'NYC → D.C.' },
-        { time: '13:00', cat: 'hotel',  title: 'D.C. 호텔 체크인',       en: 'D.C. Hotel', loc: 'Washington D.C.',
-          note: '짐 맡기기 또는 체크인', _hotelRef: 'D.C. Hotel' },
-        { time: '14:30', cat: 'sight',  title: '국립 자연사 박물관',      en: 'National Museum of Natural History', loc: 'The Mall, D.C.',
-          note: '무료 입장' },
-        { time: '19:00', cat: 'food',   title: '저녁',                   en: 'Dinner', loc: 'D.C.' },
-      ],
-    },
-    {
-      n: 7, date: 'May 10', weekday: 'Sun',
-      title: '워싱턴 기념물 투어',
-      titleEn: 'D.C. Monuments',
-      hero: { hue: 50, label: 'THE NATIONAL MALL' },
-      weather: '맑음 · 24°',
-      items: [
-        { time: '09:00', cat: 'sight',  title: '워싱턴 기념탑',           en: 'Washington Monument', loc: 'The Mall',
-          note: '공식 사이트 예약 (30일 전 오전 10시 ET, 수수료 $1)', price: '$1' },
-        { time: '10:30', cat: 'sight',  title: '2차 세계대전 기념관',      en: 'WWII Memorial', loc: 'The Mall',
-          note: '편한 신발 필수' },
-        { time: '11:15', cat: 'sight',  title: '리플렉팅 풀 & 링컨 기념관', en: 'Reflecting Pool & Lincoln Memorial', loc: 'The Mall',
-          note: '물병 챙기기' },
-        { time: '12:30', cat: 'sight',  title: '한국전쟁 기념관',          en: 'Korean War Veterans Memorial', loc: 'The Mall',
-          note: '선글라스' },
-        { time: '13:30', cat: 'food',   title: '점심',                   en: 'Lunch', loc: 'D.C.',
-          note: '모자 · 선크림' },
-        { time: '15:00', cat: 'sight',  title: '국립 항공우주 박물관',     en: 'National Air and Space Museum', loc: 'The Mall' },
-        { time: '17:30', cat: 'sight',  title: '국회 의사당',             en: 'U.S. Capitol Building', loc: 'D.C.' },
-      ],
-    },
-    {
-      n: 8, date: 'May 11', weekday: 'Mon',
-      title: '뉴욕 복귀, 브라이언트 파크',
-      titleEn: 'Back to NYC',
-      hero: { hue: 100, label: 'BRYANT PARK' },
-      weather: '부분 흐림 · 19°',
-      items: [
-        { time: '09:30', cat: 'walk',   title: 'D.C. 오전 일정',          en: 'Morning in D.C.', loc: 'D.C.' },
-        { time: '13:00', cat: 'flight', title: '뉴욕으로 이동',            en: 'Travel back to NYC', loc: 'D.C. → NYC' },
-        { time: '17:30', cat: 'walk',   title: '브라이언트 파크',          en: 'Bryant Park', loc: 'Midtown',
-          note: '느긋한 오후' },
-        { time: '19:00', cat: 'food',   title: '북창동 순두부',            en: 'Bookchang-dong Soondubu', loc: 'K-Town',
-          note: '순두부찌개 + LA갈비', price: '$$' },
-      ],
-    },
-    {
-      n: 9, date: 'May 12', weekday: 'Tue',
-      title: 'Vessel, 하이라인, 빌리지',
-      titleEn: 'Hudson Yards & Village',
-      hero: { hue: 280, label: 'THE VESSEL' },
-      weather: '맑음 · 22°',
-      items: [
-        { time: '09:00', cat: 'view',   title: 'Vessel',                en: 'Vessel · Hudson Yards', loc: '34 St–Hudson Yards',
-          note: '호텔에서 7번가/42가 방향으로 5분만 걸어가면 Times Sq-42 St 역\n7번 노선(보라색)을 타고 종점인 34 St-Hudson Yards 역에서 하차 (한 정거장, 3분 소요)\n황금빛 벌집 모양\n쇼핑몰The Shops at Hudson Yards 4층 창가에서 베슬을 위에서 내려다보는 구도 사진(화장실 이용 추천!)' },
-        { time: '09:45', cat: 'walk',   title: 'The High Line',         en: 'The High Line', loc: 'Chelsea',
-          note: '공중정원, 버려진 철길\n베슬 바로 옆에 하이라인 시작점 입구', duration: '1h' },
-        { time: '11:00', cat: 'view',   title: 'Little Island',          en: 'Little Island', loc: 'Hudson River',
-          note: '허드슨 강 위에 뜬 콘크리트 튤립섬\n인공섬, 섬꼭대기 전망대에서 엠파이어 스테이트 빌딩과 원 월드 트레이드 센터 뷰' },
-        { time: '12:30', cat: 'food',   title: 'Chelsea Market 점심',    en: 'Chelsea Market', loc: '75 9th Ave',
-          note: '로스 타코스Los Tacos No.1\n랍스터 플레이스 Lobster Place', price: '$$' },
-        { time: '14:30', cat: 'walk',   title: '그리니치 빌리지',         en: 'Greenwich Village', loc: 'West Village',
-          note: '뉴욕감성골목, 로맨틱한 분위기, 여유로운 산책\n미드의 배경지:프렌즈, 섹스앤더시티\n워싱턴 스퀘어 파크에서 매그놀리아 바나나 푸딩먹기' },
-        { time: '16:00', cat: 'shop',   title: 'Harry Potter Store',     en: 'Harry Potter NY', loc: 'Flatiron',
-          note: '화장실 있음' },
-        { time: '16:45', cat: 'shop',   title: 'Fishs Eddy',             en: 'Fishs Eddy', loc: 'Flatiron',
-          note: '귀여운 소품샵(자유여신상 컵)', price: '$$' },
-        { time: '19:00', cat: 'food',   title: '저녁',                   en: 'Dinner', loc: 'Midtown' },
-        { time: '20:00', cat: 'show',   title: '재즈 or 뮤지컬',          en: 'Jazz Show or Musical', loc: 'Broadway',
-          note: '현장구매또는TKTS또는뮤지컬로타리에서 예매(알라딘 / 라이온킹 / 위키드 / 시카고)', price: '$$$' },
-      ],
-    },
-    {
-      n: 10, date: 'May 13', weekday: 'Wed',
-      title: '마지막 날, 쇼핑',
-      titleEn: 'Souvenirs & Farewell',
-      hero: { hue: 0, label: 'TIMES SQUARE' },
-      weather: '맑음 · 20°',
-      items: [
-        { time: '09:30', cat: 'shop',   title: '타임스퀘어 기념품',       en: 'Times Square Souvenirs', loc: 'Midtown',
-          note: "Disney Store, M&M, Hershey's Chocolate World에서 기념품사기" },
-        { time: '11:30', cat: 'walk',   title: '센트럴파크 벨베데어',      en: 'Central Park — Belvedere Castle', loc: 'Central Park',
-          note: '벨베데레성Belvedere Castle' },
-        { time: '13:00', cat: 'food',   title: '점심',                   en: 'Lunch', loc: 'Midtown' },
-        { time: '14:30', cat: 'walk',   title: '브라이언트 파크',         en: 'Bryant Park', loc: 'Midtown' },
-        { time: '15:30', cat: 'shop',   title: 'Whole Foods',            en: 'Whole Foods Market', loc: 'Midtown' },
-        { time: '16:15', cat: 'shop',   title: 'CVS',                    en: 'CVS Pharmacy', loc: 'Midtown',
-          note: '리스테린 쿨민트필름3개세트$6.99, NATROL멜라토닌젤리5mg60개$11', price: '$' },
-        { time: '16:45', cat: 'shop',   title: 'Target',                 en: 'Target', loc: 'Midtown',
-          note: '너즈젤리, 소화제TUMS$7', price: '$' },
-        { time: '17:30', cat: 'shop',   title: "Trader Joe's",           en: "Trader Joe's", loc: 'Midtown',
-          note: '프레첼$4.20, 핸드크림, 손소독제, 레몬커드$3.99, 버터아몬드씬$3.3, 메이플피칸그래놀라시리얼, 엑스트라버진올리브오일스프레이', price: '$' },
-        { time: '19:30', cat: 'food',   title: '마지막 저녁',             en: 'Farewell Dinner', loc: 'Midtown' },
-      ],
-    },
-  ],
-
-  // Preparation (from sheet 1)
-  prep: {
-    checklist: [
-      '항공권 예매', '숙소 예매', 'ESTA 신청', '짐 싸기',
-      '로밍/유심 준비', 'Uber 앱 설치', '여행자 보험', '빅버스 예매',
-      '공항 셔틀 예매',
-    ],
-    docs: [
-      'ESTA 승인', '왕복 항공권', '호텔 바우처', '재직증명서(영문)',
-    ],
-    pack: [
-      '피크닉 매트', '물티슈', '휴대용 비데', '위생 장갑',
-    ],
-  },
-
-  // Food guide (from sheet 3)
-  food: [
-    { cat: '🍕 Pizza',    name: "Joe's Pizza",             detail: '클래식 NY 슬라이스',                                    price: '$',       note: '맨해튼 여러 지점' },
-    { cat: '🍕 Pizza',    name: "Juliana's Pizza",          detail: 'Half-and-half: Margherita + White',                      price: '$$',      note: '덤보, 브루클린' },
-    { cat: '🥯 Bagel',    name: 'Essa Bagel',               detail: 'Everything bagel + cream cheese + smoked salmon',        price: '$18–25',  note: '' },
-    { cat: '🥯 Bagel',    name: 'Apollo Bagels',            detail: '갓 구운 베이글',                                         price: '$',       note: '' },
-    { cat: '🥯 Bagel',    name: 'Pop Up Bagel',             detail: '베이글 3개 $13 (크림치즈 1개 포함)',                     price: '$13',     note: '' },
-    { cat: '🌮 Tacos',    name: 'Los Tacos No.1',           detail: 'NYC 최고 타코 · al pastor 또는 carne asada',             price: '$$',      note: '첼시 마켓 외' },
-    { cat: '🍔 Burger',   name: 'Chick-fil-A',              detail: 'Deluxe Meal · "Can I get all the sauces, please?"',      price: '$12–15',  note: '일요일 휴무' },
-    { cat: '🍔 Burger',   name: "Tony Dragon's Grille",     detail: 'Tony Burger $13 / Beef & Portobello $14 · 위생장갑 요청', price: '$13–14',  note: '10AM–6PM (푸드트럭)' },
-    { cat: '🥩 Steak',    name: "Gallagher's Steakhouse",   detail: '3코스 런치: 애피 + Sliced Filet Mignon + NY 치즈케익',   price: '$$$$',    note: '구글 예약 필요' },
-    { cat: '🌯 Fast',     name: 'Chipotle',                 detail: '보울: 라이스 + 빈 + 단백질 + 토핑 올 + 과카 (+$3)',       price: '$21.50',  note: '라이스에 고수 있음' },
-    { cat: '🌯 Fast',     name: 'The Halal Guys',           detail: '라이스 플레이트 or 랩 · 화이트 많이, 레드 조금',          price: '$',       note: '53rd & 6th Ave' },
-    { cat: '🦞 Seafood',  name: 'Lobster Place',            detail: '신선한 랍스터 롤',                                       price: '$$',      note: '첼시 마켓 내부' },
-    { cat: '🍲 Korean',   name: '북창동 순두부',             detail: '순두부찌개 + LA갈비',                                    price: '$$',      note: 'K-타운' },
-    { cat: '🍪 Dessert',  name: 'Levain Bakery',            detail: '초코칩 월넛 쿠키 (수상작) · 레몬도 추천',                 price: '$',       note: '뜨끈하고 큼직' },
-    { cat: '🍪 Dessert',  name: 'Magnolia Bakery',          detail: '바나나 푸딩 → 워싱턴 스퀘어 파크',                        price: '$',       note: '' },
-    { cat: '🍪 Dessert',  name: "Junior's Cheesecake",      detail: '오리지널 NY 치즈케익',                                   price: '$',       note: '타임스퀘어/그랜드센트럴' },
-    { cat: '☕ Dessert',  name: "Ralph's Coffee",           detail: '말차 라떼',                                              price: '$',       note: '랄프로렌 플래그십 내부' },
-  ],
-};
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 // NYC Travel App — restructured
 // - Trips list (top level) -> pick a trip -> Home
@@ -2156,6 +2159,7 @@ function SwipeableRow({
   onEdit,
   onDelete,
   disabled,
+  isDragging,
   wrapStyle = {}
 }) {
   const [x, setX] = React.useState(0);
@@ -2173,6 +2177,10 @@ function SwipeableRow({
   React.useEffect(() => {
     if (disabled) close();
   }, [disabled]);
+  // 드래그 중에는 스와이프 버튼 즉시 닫기
+  React.useEffect(() => {
+    if (isDragging) close();
+  }, [isDragging]);
   const onTouchStart = e => {
     if (disabled) return;
     startRef.current = {
@@ -3799,15 +3807,19 @@ function HomeScreen({
   onConvertInlineHotel,
   onAddItemToFirstDay,
   editing,
-  setEditing
+  setEditing,
+  userData,
+  onOpenCompanion
 }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [datePicker, setDatePicker] = React.useState(null); // 'start' | 'end' | null
   const {
-    itemProps: dayDragProps
+    itemProps: dayDragProps,
+    isTouchDragging: isDayDragging
   } = useDragReorder(onReorderDays, editing);
   const {
-    itemProps: hotelDragProps
+    itemProps: hotelDragProps,
+    isTouchDragging: isHotelDragging
   } = useDragReorder(onReorderHotels, editing);
   const featured = trip.days[0];
   const tripYear = extractTripYear(trip);
@@ -3874,9 +3886,42 @@ function HomeScreen({
     style: {
       background: COLORS.bg,
       minHeight: '100%',
-      paddingBottom: 110
+      paddingBottom: 110,
+      position: 'relative'
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, onOpenCompanion && /*#__PURE__*/React.createElement("button", {
+    onClick: onOpenCompanion,
+    style: {
+      position: 'absolute',
+      top: 'calc(14px + env(safe-area-inset-top,0px))',
+      right: 16,
+      zIndex: 10,
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      background: userData?.photoURL ? 'transparent' : COLORS.softer,
+      border: `2px solid ${COLORS.line}`,
+      padding: 0,
+      cursor: 'pointer',
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 1px 6px rgba(0,0,0,0.10)'
+    }
+  }, userData?.photoURL ? /*#__PURE__*/React.createElement("img", {
+    src: userData.photoURL,
+    alt: "profile",
+    style: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover'
+    }
+  }) : /*#__PURE__*/React.createElement(Icon, {
+    name: "user",
+    size: 18,
+    color: COLORS.mute
+  })), /*#__PURE__*/React.createElement("div", {
     style: {
       paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))'
     }
@@ -4083,28 +4128,52 @@ function HomeScreen({
     }
   }, trip.days.map((d, i) => {
     const dp = dayDragProps(i);
+    const isDropTarget = dp['data-drop-target'];
+    const isDragSource = dp['data-drag-source'];
     return /*#__PURE__*/React.createElement(SwipeableRow, {
       key: i,
       onEdit: () => onOpenDay(i),
       onDelete: () => onDeleteDay(i),
       disabled: editing,
+      isDragging: isDayDragging,
       wrapStyle: {
         borderRadius: 16
       }
-    }, /*#__PURE__*/React.createElement("div", _extends({}, dp, {
-      onClick: () => !editing && onOpenDay(i),
+    }, /*#__PURE__*/React.createElement("div", {
+      ref: dp.ref,
+      onTouchStart: dp.onTouchStart,
+      onTouchMove: dp.onTouchMove,
+      onTouchEnd: dp.onTouchEnd,
+      onClick: () => !editing && !isDayDragging && onOpenDay(i),
       style: {
-        background: COLORS.card,
         borderRadius: 16,
+        cursor: editing ? 'grab' : 'pointer',
+        ...(dp.style || {}),
+        // 드롭 타겟: 카드 모양 고스트 플레이스홀더
+        ...(isDropTarget ? {
+          background: 'transparent',
+          border: `2px dashed ${COLORS.line}`
+        } : {
+          background: COLORS.card,
+          border: 'none'
+        })
+      }
+    }, isDropTarget ?
+    /*#__PURE__*/
+    // 카드 모양 빈 플레이스홀더 (같은 높이)
+    React.createElement("div", {
+      style: {
+        height: 88,
+        borderRadius: 14
+      }
+    }) : /*#__PURE__*/React.createElement("div", {
+      style: {
         padding: 12,
         display: 'flex',
         gap: 12,
-        alignItems: 'center',
-        cursor: editing ? 'grab' : 'pointer',
-        border: dp['data-drag-over'] ? `2px solid ${COLORS.accent}` : 'none',
-        ...(dp.style || {})
+        alignItems: 'center'
       }
-    }), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", {
       style: {
         width: 64,
         height: 64,
@@ -4169,7 +4238,7 @@ function HomeScreen({
     }), /*#__PURE__*/React.createElement("span", null, d.items.length, " stops"))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, {
       size: 14,
       color: COLORS.mute
-    }), /*#__PURE__*/React.createElement("button", {
+    }), !isDayDragging && /*#__PURE__*/React.createElement("button", {
       onClick: e => {
         e.stopPropagation();
         onDeleteDay(i);
@@ -4195,7 +4264,7 @@ function HomeScreen({
       size: 16,
       color: COLORS.mute,
       stroke: 1.8
-    })));
+    }))));
   }), !editing && /*#__PURE__*/React.createElement("button", {
     onClick: onAddDay,
     style: {
@@ -6868,15 +6937,167 @@ function saveNav(state) {
   } catch (e) {}
 }
 
+// ─── Splash Screen (로그인 후 로딩 중 표시) ──────────────────
+const SPLASH_PLACES = ['✈ New York', '🗼 Paris', '🗾 Tokyo', '🌉 San Francisco', '🏝 Bali', '🎡 London'];
+function SplashScreen({
+  visible
+}) {
+  const [idx, setIdx] = React.useState(0);
+  const [animKey, setAnimKey] = React.useState(0);
+  const [hiding, setHiding] = React.useState(false);
+  React.useEffect(() => {
+    const t = setInterval(() => {
+      setIdx(i => (i + 1) % SPLASH_PLACES.length);
+      setAnimKey(k => k + 1);
+    }, 700);
+    return () => clearInterval(t);
+  }, []);
+  React.useEffect(() => {
+    if (!visible) setHiding(true);
+  }, [visible]);
+  if (!visible && !hiding) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      background: '#F5F2EC',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+      opacity: hiding ? 0 : 1,
+      transition: hiding ? 'opacity 0.3s ease' : 'none'
+    },
+    onTransitionEnd: () => setHiding(false)
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Instrument Serif',Georgia,serif",
+      fontSize: 34,
+      color: '#1A1816',
+      letterSpacing: '-0.5px',
+      animation: 'splashIn 0.5s ease both'
+    }
+  }, "Trip Like J"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      height: 22,
+      overflow: 'hidden',
+      fontFamily: '-apple-system,sans-serif',
+      fontSize: 13,
+      color: '#7A756D',
+      letterSpacing: '0.04em',
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    key: animKey,
+    style: {
+      display: 'block',
+      animation: 'destSlide 0.45s cubic-bezier(0.22,1,0.36,1) both'
+    }
+  }, SPLASH_PLACES[idx])), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      height: 2,
+      background: '#C14F2E',
+      animation: 'barGrow 2.2s cubic-bezier(0.4,0,0.2,1) forwards',
+      borderRadius: '0 2px 2px 0'
+    }
+  }));
+}
+
+// ─── Takeoff Icon ─────────────────────────────────────────────
+// 비행기 동체 (땅선 제외)
+const PLANE_BODY = 'M22.07 9.64c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.67c.81-.23 1.28-1.05 1.07-1.85z';
+function TakeoffIcon() {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative',
+      width: 72,
+      height: 72,
+      marginBottom: 32
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative',
+      zIndex: 1,
+      width: 72,
+      height: 72,
+      borderRadius: 18,
+      background: COLORS.accent,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "36",
+    height: "36",
+    viewBox: "0 0 24 24",
+    style: {
+      position: 'absolute',
+      animation: 'planeFadeIn 0.12s ease 0.95s both'
+    }
+  }, /*#__PURE__*/React.createElement("path", {
+    fill: "white",
+    d: "M2.5 19h19v2h-19z"
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      top: 45,
+      left: '50%',
+      zIndex: 2,
+      pointerEvents: 'none'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      left: -350,
+      width: 700,
+      height: 3,
+      background: 'white',
+      borderRadius: 2,
+      transformOrigin: 'center center',
+      animation: 'runwaySpring 0.6s linear 0.93s both'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      zIndex: 3,
+      pointerEvents: 'none'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      animation: 'planeFly 0.95s linear 0s both'
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "36",
+    height: "36",
+    viewBox: "0 0 24 24",
+    style: {
+      display: 'block',
+      transform: 'translate(-18px,-18px)'
+    }
+  }, /*#__PURE__*/React.createElement("path", {
+    fill: "white",
+    d: PLANE_BODY
+  })))));
+}
+
 // ─── Login Screen ────────────────────────────────────────────
 function LoginScreen({
-  errorMsg
+  errorMsg,
+  onLoginStart
 }) {
   const [loading, setLoading] = React.useState(false);
   const [errLocal, setErrLocal] = React.useState('');
   const handleLogin = async () => {
     setLoading(true);
     setErrLocal('');
+    if (onLoginStart) onLoginStart();
     try {
       await fbSignIn();
       // popup success — auth listener will transition the screen
@@ -6908,24 +7129,40 @@ function LoginScreen({
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 32
+      padding: '48px 36px',
+      textAlign: 'center'
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(TakeoffIcon, null), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SERIF,
-      fontSize: 52,
+      fontSize: 56,
       color: COLORS.ink,
       letterSpacing: '-0.02em',
-      marginBottom: 6
+      lineHeight: 1.1,
+      marginBottom: 14
     }
-  }, "\uC5EC\uD589."), /*#__PURE__*/React.createElement("div", {
+  }, [...'Trip'].map((ch, i) => /*#__PURE__*/React.createElement("span", {
+    key: 't' + i,
+    style: {
+      display: 'inline-block',
+      animation: `charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${0.82 + i * 0.055}s both`
+    }
+  }, ch)), /*#__PURE__*/React.createElement("br", null), [...'Like J.'].map((ch, i) => /*#__PURE__*/React.createElement("span", {
+    key: 'l' + i,
+    style: {
+      display: 'inline-block',
+      animation: `charPop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${0.82 + (4 + i) * 0.055 + 0.04}s both`
+    }
+  }, ch === ' ' ? ' ' : ch))), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SANS,
-      fontSize: 14,
+      fontSize: 15,
       color: COLORS.mute,
-      marginBottom: 56
+      marginBottom: 56,
+      lineHeight: 1.5,
+      animation: 'charPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 1.38s both'
     }
-  }, "\uB098\uB9CC\uC758 \uC5EC\uD589 \uD50C\uB798\uB108"), /*#__PURE__*/React.createElement("button", {
+  }, "\uC5EC\uD589 \uC77C\uC815 \uB9CC\uB4E4\uACE0 \uAC04\uD3B8\uD558\uAC8C \uACF5\uC720\uD574 \uBCF4\uC138\uC694."), /*#__PURE__*/React.createElement("button", {
     onClick: handleLogin,
     disabled: loading,
     style: {
@@ -7379,20 +7616,36 @@ function CompanionSheet({
 }
 
 // ─── App ─────────────────────────────────────────────────────
+// 로컬 캐시 읽기 (로그인 상태면 즉시 앱 표시용)
+function _readCache() {
+  if (!localStorage.getItem('tlj_authed')) return null;
+  try {
+    return {
+      userData: JSON.parse(localStorage.getItem('tlj_userData') || 'null'),
+      trip: JSON.parse(localStorage.getItem('tlj_trip') || 'null'),
+      prep: JSON.parse(localStorage.getItem('tlj_prep') || 'null')
+    };
+  } catch (e) {
+    return null;
+  }
+}
 function App() {
   const _nav = loadNav();
+  const _cache = _readCache(); // 캐시된 상태 (로그인된 경우)
+
   // ── Firebase auth + data state ─────────────────────────────
-  const [authState, setAuthState] = React.useState('loading'); // loading | out | in
+  const [authState, setAuthState] = React.useState(_cache?.userData ? 'in' : 'loading');
   const [authUser, setAuthUser] = React.useState(null);
-  const [userData, setUserData] = React.useState(null);
-  const [trip, setTrip] = React.useState(null);
-  const [prep, setPrep] = React.useState({
+  const [userData, setUserData] = React.useState(_cache?.userData || null);
+  const [trip, setTrip] = React.useState(_cache?.trip || null);
+  const [prep, setPrep] = React.useState(_cache?.prep || {
     checklist: [],
     docs: [],
     pack: []
   });
   const [companionOpen, setCompanionOpen] = React.useState(false);
   const [loginError, setLoginError] = React.useState('');
+  const [loginPending, setLoginPending] = React.useState(false); // 로그인 버튼 누른 후 로딩 중
   const tripRef = React.useRef(null); // for loop-prevention
 
   // ── UI nav state ───────────────────────────────────────────
@@ -7434,21 +7687,43 @@ function App() {
     }
   };
 
+  // ── 앱 준비되면 loginPending 해제 ────────────────────────────
+  React.useEffect(() => {
+    if (loginPending && authState === 'in' && trip !== null) {
+      setLoginPending(false);
+    }
+  }, [loginPending, authState, trip]);
+
+  // ── 로컬 캐시 저장 (새로고침 시 즉시 표시용) ──────────────────
+  React.useEffect(() => {
+    if (userData) localStorage.setItem('tlj_userData', JSON.stringify(userData));
+  }, [userData]);
+  React.useEffect(() => {
+    if (trip) localStorage.setItem('tlj_trip', JSON.stringify(trip));
+  }, [trip]);
+  React.useEffect(() => {
+    if (prep) localStorage.setItem('tlj_prep', JSON.stringify(prep));
+  }, [prep]);
+
   // ── Firebase auth listener ─────────────────────────────────
   React.useEffect(() => {
     return fbOnAuth(async fbUser => {
       if (fbUser) {
         setAuthUser(fbUser);
-        try {
-          const ud = await fbGetOrCreateUser(fbUser);
-          setUserData(ud);
-          setLoginError('');
-          setAuthState('in');
-        } catch (e) {
-          console.error('fbGetOrCreateUser error:', e);
-          setLoginError('계정 데이터를 불러오는 데 실패했습니다: ' + (e.message || e.code || ''));
-          setAuthState('out');
-        }
+        const fallback = {
+          uid: fbUser.uid,
+          displayName: fbUser.displayName || '여행자',
+          email: fbUser.email || '',
+          photoURL: fbUser.photoURL || '',
+          groupId: fbUser.uid
+        };
+        // fallback 즉시 세팅 → 바로 앱 화면 표시
+        setUserData(fallback);
+        setLoginError('');
+        localStorage.setItem('tlj_authed', '1');
+        setAuthState('in');
+        // Firestore는 백그라운드에서 실제 데이터로 업데이트
+        fbGetOrCreateUser(fbUser).then(setUserData).catch(() => {});
       } else {
         setAuthUser(null);
         setUserData(null);
@@ -7458,15 +7733,37 @@ function App() {
           docs: [],
           pack: []
         });
+        localStorage.removeItem('tlj_authed');
+        localStorage.removeItem('tlj_userData');
+        localStorage.removeItem('tlj_trip');
+        localStorage.removeItem('tlj_prep');
         setAuthState('out');
       }
     });
   }, []);
 
   // ── Firestore: shared group listener ──────────────────────
+  const groupCreateRef = React.useRef(false);
   React.useEffect(() => {
     if (!userData?.groupId) return;
+    groupCreateRef.current = false;
     return fbListenGroup(userData.groupId, data => {
+      if (data === null) {
+        // groups 문서가 없으면 기본값으로 생성 (한 번만)
+        if (groupCreateRef.current) return;
+        groupCreateRef.current = true;
+        const def = window.TRIP_DEFAULT || {};
+        fbSaveGroup(userData.groupId, {
+          title: def.title || '새 여행',
+          dates: def.dates || '',
+          hotel: def.hotel || '',
+          days: def.days || [],
+          hotels: def.hotels || [],
+          food: def.food || [],
+          members: [userData.uid]
+        });
+        return;
+      }
       setTrip(prev => {
         if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
         tripRef.current = data;
@@ -7933,7 +8230,9 @@ function App() {
         onConvertInlineHotel: convertInlineHotel,
         onAddItemToFirstDay: addItemToFirstDay,
         editing: editing,
-        setEditing: setEditing
+        setEditing: setEditing,
+        userData: userData,
+        onOpenCompanion: () => setCompanionOpen(true)
       });
       label = 'Home';
     }
@@ -7965,11 +8264,17 @@ function App() {
   const dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
 
   // ── Auth gating ───────────────────────────────────────────
-  if (authState === 'loading') return null;
-  if (authState === 'out') return /*#__PURE__*/React.createElement(LoginScreen, {
-    errorMsg: loginError
+  // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
+  const showSplash = loginPending && (authState !== 'in' || trip === null);
+  if (showSplash) return /*#__PURE__*/React.createElement(SplashScreen, {
+    visible: true
   });
-  if (!trip) return null;
+  if (authState === 'loading') return null; // 짧은 초기 로딩 (캐시 없을 때)
+  if (authState === 'out') return /*#__PURE__*/React.createElement(LoginScreen, {
+    errorMsg: loginError,
+    onLoginStart: () => setLoginPending(true)
+  });
+  if (!trip) return null; // 캐시 있으면 거의 발생 안 함
 
   // Figure out what "back" means in the current state, for swipe-from-edge.
   let swipeBack = null;
@@ -8002,39 +8307,7 @@ function App() {
     visible: tabBarVisible,
     editing: editing,
     onToggleEdit: handleEditToggle
-  }), tab === 'home' && dayIdx === null && hotelIdx === null && /*#__PURE__*/React.createElement("button", {
-    onClick: () => setCompanionOpen(true),
-    style: {
-      position: 'fixed',
-      top: 'calc(14px + env(safe-area-inset-top,0px))',
-      right: 16,
-      zIndex: 90,
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      background: userData?.photoURL ? 'transparent' : COLORS.softer,
-      border: `2px solid ${COLORS.line}`,
-      padding: 0,
-      cursor: 'pointer',
-      overflow: 'hidden',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: '0 1px 6px rgba(0,0,0,0.10)'
-    }
-  }, userData?.photoURL ? /*#__PURE__*/React.createElement("img", {
-    src: userData.photoURL,
-    alt: "profile",
-    style: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover'
-    }
-  }) : /*#__PURE__*/React.createElement(Icon, {
-    name: "user",
-    size: 18,
-    color: COLORS.mute
-  })), /*#__PURE__*/React.createElement(StopSheet, {
+  }), /*#__PURE__*/React.createElement(StopSheet, {
     open: openStop,
     dayHue: dayHue,
     onClose: () => setOpenStop(null),
