@@ -2694,20 +2694,14 @@ function App() {
     }
   };
 
-  // ── 스플래시 숨기기 (auth + trip 준비 후 최소 4초 표시) ────────
+  // ── 스플래시 즉시 숨기기 (React 마운트되면 바로 로그인 화면 표시) ─
   React.useEffect(() => {
-    const ready = authState === 'out' || (authState === 'in' && trip !== null);
-    if (ready) {
-      const delay = Math.max(0, 4000 - (Date.now() - (window._splashStart || Date.now())));
-      setTimeout(() => {
-        const splash = document.getElementById('splash');
-        if (!splash) return;
-        splash.style.animation = 'none';
-        splash.classList.add('hide');
-        setTimeout(() => splash.remove(), 200);
-      }, delay);
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.classList.add('hide');
+      setTimeout(() => splash.remove(), 350);
     }
-  }, [authState, trip]);
+  }, []);
 
   // ── Firebase auth listener ─────────────────────────────────
   React.useEffect(() => {
