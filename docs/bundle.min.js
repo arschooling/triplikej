@@ -6806,26 +6806,28 @@ function TabBar({
   }];
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      position: 'fixed',
-      left: 14,
-      right: 14,
-      bottom: 'env(safe-area-inset-bottom, 0px)',
-      zIndex: 30,
-      background: 'rgba(255,255,255,0.88)',
-      backdropFilter: 'blur(20px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-      borderRadius: 26,
-      padding: '9px 10px 11px',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.08)',
-      border: `0.5px solid ${COLORS.line}`,
-      display: 'flex',
-      gap: 2,
-      alignItems: 'center',
+      position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 30,
+      display: 'flex', flexDirection: 'column', alignItems: 'stretch',
       transition: 'opacity 0.25s ease',
       opacity: visible ? 1 : 0,
-      pointerEvents: visible ? 'auto' : 'none'
+      pointerEvents: visible ? 'auto' : 'none',
     }
-  }, tabs.map(t => /*#__PURE__*/React.createElement("button", {
+  },
+    /*#__PURE__*/React.createElement("div", {
+      style: { padding: '0 14px 8px' }
+    },
+      /*#__PURE__*/React.createElement("div", {
+        style: {
+          background: 'rgba(255,255,255,0.88)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          borderRadius: 26,
+          padding: '9px 10px 11px',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.08)',
+          border: `0.5px solid ${COLORS.line}`,
+          display: 'flex', gap: 2, alignItems: 'center',
+        }
+      }, tabs.map(t => /*#__PURE__*/React.createElement("button", {
     key: t.id,
     onClick: () => setTab(t.id),
     style: {
@@ -6877,7 +6879,16 @@ function TabBar({
     size: 17,
     color: editing ? '#fff' : COLORS.mute,
     stroke: 1.8
-  })));
+  })))
+),
+/*#__PURE__*/React.createElement("div", {
+  style: {
+    height: 'env(safe-area-inset-bottom, 0px)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    background: 'rgba(255,255,255,0)',
+  }
+}));
 }
 
 // ─── APP ───────────────────────────────────────────────────
