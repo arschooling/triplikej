@@ -1,4 +1,5 @@
-// ─── Firebase init ───────────────────────────────────────────
+// ─── Lazy Firebase Loader ────────────────────────────────────
+// Firebase SDK는 필요할 때 처음 로드됨 (첫 화면 즉시 표시)
 const firebaseConfig = {
   apiKey: "AIzaSyBwWcPIioHZDMoNzd_9UJiwmhwKT1TTYTM",
   authDomain: "triplikej.firebaseapp.com",
@@ -7,25 +8,48 @@ const firebaseConfig = {
   messagingSenderId: "1045914771780",
   appId: "1:1045914771780:web:7adef948e46137073e7711",
 };
-firebase.initializeApp(firebaseConfig);
-const fbAuth = firebase.auth();
-const fbDb   = firebase.firestore();
+
+let _fbAuth, _fbDb, _readyPromise = null;
+
+function _load() {
+  if (_readyPromise) return _readyPromise;
+  _readyPromise = new Promise(resolve => {
+    const srcs = [
+      'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
+      'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js',
+      'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js',
+    ];
+    let i = 0;
+    function next() {
+      if (i >= srcs.length) {
+        firebase.initializeApp(firebaseConfig);
+        _fbAuth = firebase.auth();
+        _fbDb   = firebase.firestore();
+        _fbAuth.getRedirectResult().catch(e => console.warn('redirect:', e.code));
+        resolve();
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = srcs[i++];
+      s.onload = next;
+      document.head.appendChild(s);
+    }
+    next();
+  });
+  return _readyPromise;
+}
 
 // ─── Auth ────────────────────────────────────────────────────
-const _googleProvider = new firebase.auth.GoogleAuthProvider();
-window.fbSignIn = () =>
-  fbAuth.signInWithPopup(_googleProvider);
-window.fbSignInRedirect = () =>
-  fbAuth.signInWithRedirect(_googleProvider);
-window.fbSignOut = () => fbAuth.signOut();
-window.fbOnAuth  = (cb) => fbAuth.onAuthStateChanged(cb);
-
-// redirect 결과 처리 (페이지 로드 시 자동 호출)
-fbAuth.getRedirectResult().catch(e => console.warn('getRedirectResult:', e.code));
+const _googleProvider = () => new firebase.auth.GoogleAuthProvider();
+window.fbSignIn         = async () => { await _load(); return _fbAuth.signInWithPopup(_googleProvider()); };
+window.fbSignInRedirect = async () => { await _load(); return _fbAuth.signInWithRedirect(_googleProvider()); };
+window.fbSignOut        = async () => { await _load(); return _fbAuth.signOut(); };
+window.fbOnAuth         = (cb)      => { _load().then(() => _fbAuth.onAuthStateChanged(cb)); };
 
 // ─── User document ───────────────────────────────────────────
 window.fbGetOrCreateUser = async (fbUser) => {
-  const ref  = fbDb.collection('users').doc(fbUser.uid);
+  await _load();
+  const ref  = _fbDb.collection('users').doc(fbUser.uid);
   const snap = await ref.get();
   if (!snap.exists) {
     const def  = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
@@ -37,8 +61,7 @@ window.fbGetOrCreateUser = async (fbUser) => {
       createdAt   : firebase.firestore.FieldValue.serverTimestamp(),
     };
     await ref.set(data);
-    // shared trip group (solo = own uid)
-    await fbDb.collection('groups').doc(fbUser.uid).set({
+    await _fbDb.collection('groups').doc(fbUser.uid).set({
       title   : def.title,
       dates   : def.dates,
       hotel   : def.hotel || '',
@@ -48,8 +71,7 @@ window.fbGetOrCreateUser = async (fbUser) => {
       members : [fbUser.uid],
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
-    // private prep
-    await fbDb.collection('preps').doc(fbUser.uid).set({
+    await _fbDb.collection('preps').doc(fbUser.uid).set({
       prep: def.prep || { checklist:[], docs:[], pack:[] },
     });
     return { ...data, uid: fbUser.uid };
@@ -57,45 +79,42 @@ window.fbGetOrCreateUser = async (fbUser) => {
   return { uid: fbUser.uid, ...snap.data() };
 };
 
-// ─── Shared group (days / hotels / food) ─────────────────────
+// ─── Shared group ─────────────────────────────────────────────
 window.fbListenGroup = (groupId, cb) =>
-  fbDb.collection('groups').doc(groupId)
+  _fbDb.collection('groups').doc(groupId)
     .onSnapshot(s => { if (s.exists) cb(s.data()); });
 
 window.fbSaveGroup = (groupId, patch) =>
-  fbDb.collection('groups').doc(groupId).set(patch, { merge: true });
+  _fbDb.collection('groups').doc(groupId).set(patch, { merge: true });
 
-// ─── Private prep ────────────────────────────────────────────
+// ─── Private prep ─────────────────────────────────────────────
 window.fbListenPrep = (uid, cb) =>
-  fbDb.collection('preps').doc(uid)
+  _fbDb.collection('preps').doc(uid)
     .onSnapshot(s => cb(s.exists ? (s.data().prep || {}) : {}));
 
 window.fbSavePrep = (uid, prep) =>
-  fbDb.collection('preps').doc(uid).set({ prep }, { merge: true });
+  _fbDb.collection('preps').doc(uid).set({ prep }, { merge: true });
 
-// ─── User lookup ─────────────────────────────────────────────
+// ─── User lookup ──────────────────────────────────────────────
 window.fbSearchUser = async (email) => {
-  const snap = await fbDb.collection('users').where('email','==',email.trim()).get();
+  const snap = await _fbDb.collection('users').where('email','==',email.trim()).get();
   if (snap.empty) return null;
   return { uid: snap.docs[0].id, ...snap.docs[0].data() };
 };
 
-// ─── Companion invites ───────────────────────────────────────
+// ─── Invites ──────────────────────────────────────────────────
 window.fbSendInvite = async (fromUser, toEmail) => {
   const toUser = await fbSearchUser(toEmail);
-  if (!toUser)                    return { error: '가입된 사용자가 없습니다.' };
+  if (!toUser)                     return { error: '가입된 사용자가 없습니다.' };
   if (toUser.uid === fromUser.uid) return { error: '자기 자신에게는 초대할 수 없습니다.' };
-  const ex = await fbDb.collection('invites')
+  const ex = await _fbDb.collection('invites')
     .where('fromUid','==',fromUser.uid).where('toUid','==',toUser.uid)
     .where('status','==','pending').get();
   if (!ex.empty) return { error: '이미 초대를 보냈습니다.' };
-  await fbDb.collection('invites').add({
-    fromUid  : fromUser.uid,
-    fromName : fromUser.displayName,
-    fromEmail: fromUser.email,
-    fromPhoto: fromUser.photoURL || '',
-    toUid    : toUser.uid,
-    groupId  : fromUser.groupId,
+  await _fbDb.collection('invites').add({
+    fromUid  : fromUser.uid, fromName : fromUser.displayName,
+    fromEmail: fromUser.email, fromPhoto: fromUser.photoURL || '',
+    toUid    : toUser.uid, groupId  : fromUser.groupId,
     status   : 'pending',
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
@@ -103,29 +122,28 @@ window.fbSendInvite = async (fromUser, toEmail) => {
 };
 
 window.fbListenInvites = (uid, cb) =>
-  fbDb.collection('invites')
+  _fbDb.collection('invites')
     .where('toUid','==',uid).where('status','==','pending')
     .onSnapshot(s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))));
 
 window.fbAcceptInvite = async (invite, myUid) => {
-  await fbDb.collection('invites').doc(invite.id).update({ status:'accepted' });
-  await fbDb.collection('users').doc(myUid).update({ groupId: invite.groupId });
-  await fbDb.collection('groups').doc(invite.groupId).update({
+  await _fbDb.collection('invites').doc(invite.id).update({ status:'accepted' });
+  await _fbDb.collection('users').doc(myUid).update({ groupId: invite.groupId });
+  await _fbDb.collection('groups').doc(invite.groupId).update({
     members: firebase.firestore.FieldValue.arrayUnion(myUid),
   });
   return invite.groupId;
 };
 
 window.fbRejectInvite = (id) =>
-  fbDb.collection('invites').doc(id).update({ status:'rejected' });
+  _fbDb.collection('invites').doc(id).update({ status:'rejected' });
 
-// ─── Companions list ─────────────────────────────────────────
 window.fbGetCompanions = async (groupId, myUid) => {
-  const snap = await fbDb.collection('groups').doc(groupId).get();
+  const snap = await _fbDb.collection('groups').doc(groupId).get();
   if (!snap.exists) return [];
   const uids = (snap.data().members || []).filter(u => u !== myUid);
   const res  = await Promise.all(uids.map(async uid => {
-    const s = await fbDb.collection('users').doc(uid).get();
+    const s = await _fbDb.collection('users').doc(uid).get();
     return s.exists ? { uid, ...s.data() } : null;
   }));
   return res.filter(Boolean);
@@ -134,17 +152,15 @@ window.fbGetCompanions = async (groupId, myUid) => {
 window.fbLeaveGroup = async (userData) => {
   const { uid, groupId } = userData;
   if (groupId === uid) return;
-  await fbDb.collection('groups').doc(groupId).update({
+  await _fbDb.collection('groups').doc(groupId).update({
     members: firebase.firestore.FieldValue.arrayRemove(uid),
   });
-  // copy current group data to new solo group
-  const gs = await fbDb.collection('groups').doc(groupId).get();
-  await fbDb.collection('groups').doc(uid).set(
+  const gs = await _fbDb.collection('groups').doc(groupId).get();
+  await _fbDb.collection('groups').doc(uid).set(
     gs.exists ? { ...gs.data(), members:[uid] } : { members:[uid] }
   );
-  await fbDb.collection('users').doc(uid).update({ groupId: uid });
+  await _fbDb.collection('users').doc(uid).update({ groupId: uid });
 };
 
-// update userData groupId in memory helper
 window.fbUpdateUserGroupId = (uid, groupId) =>
-  fbDb.collection('users').doc(uid).update({ groupId });
+  _fbDb.collection('users').doc(uid).update({ groupId });
