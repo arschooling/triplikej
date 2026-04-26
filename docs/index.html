@@ -26,13 +26,14 @@
     display:flex; flex-direction:column;
     align-items:center; justify-content:center;
     z-index:9999; transition:opacity 0.35s ease;
+    animation:splashFadeIn 0.4s ease both;
   }
   #splash.hide { opacity:0; pointer-events:none; }
 
   #splash-title {
     font-family:'Instrument Serif',Georgia,serif;
     font-size:34px; color:#1A1816; letter-spacing:-0.5px;
-    animation:splashIn 0.5s ease both;
+    animation:splashIn 0.6s 0.15s ease both;
   }
   #splash-dest {
     margin-top:14px; height:22px; overflow:hidden;
@@ -44,6 +45,7 @@
     display:block;
     animation:destSlide 0.45s cubic-bezier(0.22,1,0.36,1) both;
   }
+  #splash-dest-text { animation-delay:0.35s; }
   #splash-bar {
     position:absolute; bottom:0; left:0; height:2px;
     background:#C14F2E;
@@ -51,6 +53,10 @@
     border-radius:0 2px 2px 0;
   }
 
+  @keyframes splashFadeIn {
+    from { opacity:0; }
+    to   { opacity:1; }
+  }
   @keyframes splashIn {
     from { opacity:0; transform:translateY(6px); }
     to   { opacity:1; transform:translateY(0); }

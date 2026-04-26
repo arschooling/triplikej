@@ -2702,6 +2702,7 @@ function App() {
           bar.style.width = '100%';
         }
         setTimeout(() => {
+          splash.style.animation = 'none';
           splash.classList.add('hide');
           setTimeout(() => splash.remove(), 350);
         }, 220);
