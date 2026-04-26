@@ -2415,12 +2415,18 @@ function LoginScreen({ errorMsg }) {
 
   return (
     <div style={{ minHeight:'100vh', background:COLORS.bg, display:'flex', flexDirection:'column',
-      alignItems:'center', justifyContent:'center', padding:32 }}>
-      <div style={{ fontFamily:SERIF, fontSize:52, color:COLORS.ink, letterSpacing:'-0.02em', marginBottom:6 }}>
-        여행.
+      alignItems:'center', justifyContent:'center', padding:'48px 36px', textAlign:'center' }}>
+      <div style={{ width:72, height:72, borderRadius:18, background:COLORS.accent,
+        display:'flex', alignItems:'center', justifyContent:'center', marginBottom:32 }}>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="white">
+          <path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.67c.81-.23 1.28-1.05 1.07-1.85z"/>
+        </svg>
       </div>
-      <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.mute, marginBottom:56 }}>
-        나만의 여행 플래너
+      <div style={{ fontFamily:SERIF, fontSize:56, color:COLORS.ink, letterSpacing:'-0.02em', lineHeight:1.1, marginBottom:14 }}>
+        Trip<br/>Like J.
+      </div>
+      <div style={{ fontFamily:SANS, fontSize:15, color:COLORS.mute, marginBottom:56, lineHeight:1.5 }}>
+        여행 일정 만들고 간편하게 공유해 보세요.
       </div>
       <button onClick={handleLogin} disabled={loading}
         style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 28px',
@@ -2654,7 +2660,6 @@ function App() {
   const [companionOpen, setCompanionOpen] = React.useState(false);
   const [loginError, setLoginError] = React.useState('');
   const tripRef = React.useRef(null); // for loop-prevention
-  const splashStart = React.useRef(Date.now());
 
   // ── UI nav state ───────────────────────────────────────────
   const [tab, setTab]           = React.useState(_nav.tab || 'home');
@@ -2689,23 +2694,17 @@ function App() {
     }
   };
 
-  // ── 스플래시 숨기기 (auth + trip 준비 후 최소 1초 표시) ────────
+  // ── 스플래시 숨기기 (auth + trip 준비 후 최소 4초 표시) ────────
   React.useEffect(() => {
     const ready = authState === 'out' || (authState === 'in' && trip !== null);
     if (ready) {
-      const delay = Math.max(0, 4000 - (Date.now() - splashStart.current));
+      const delay = Math.max(0, 4000 - (Date.now() - (window._splashStart || Date.now())));
       setTimeout(() => {
         const splash = document.getElementById('splash');
         if (!splash) return;
-        const bar = document.getElementById('splash-bar');
-        if (bar) {
-          bar.style.transition = 'width 0.2s ease';
-          bar.style.width = '100%';
-        }
-        setTimeout(() => {
-          splash.classList.add('hide');
-          setTimeout(() => splash.remove(), 350);
-        }, 220);
+        splash.style.animation = 'none';
+        splash.classList.add('hide');
+        setTimeout(() => splash.remove(), 200);
       }, delay);
     }
   }, [authState, trip]);
@@ -2715,7 +2714,6 @@ function App() {
     return fbOnAuth(async (fbUser) => {
       if (fbUser) {
         setAuthUser(fbUser);
-        // Firestore 실패해도 auth 정보만으로 일단 진입
         const fallback = {
           uid: fbUser.uid,
           displayName: fbUser.displayName || '여행자',
@@ -2723,6 +2721,10 @@ function App() {
           photoURL: fbUser.photoURL || '',
           groupId: fbUser.uid,
         };
+        // fallback 즉시 세팅 → fbListenGroup + fbListenPrep 즉시 시작 (병렬)
+        setUserData(fallback);
+        // fbGetOrCreateUser와 병렬로 리스너가 이미 시작됨
+        // 문서 생성 보장 후 authState 전환 (신규 유저 안전)
         try {
           const ud = await Promise.race([
             fbGetOrCreateUser(fbUser),
@@ -2731,8 +2733,6 @@ function App() {
           setUserData(ud);
         } catch(e) {
           console.warn('Firestore 연결 실패, auth 정보로 진행:', e.message);
-          setUserData(fallback);
-          // 백그라운드에서 재시도
           fbGetOrCreateUser(fbUser).then(setUserData).catch(() => {});
         }
         setLoginError('');
