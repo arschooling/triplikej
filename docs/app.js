@@ -5637,6 +5637,7 @@ function App() {
   const [companionOpen, setCompanionOpen] = React.useState(false);
   const [loginError, setLoginError] = React.useState('');
   const tripRef = React.useRef(null); // for loop-prevention
+  const splashStart = React.useRef(Date.now());
 
   // ── UI nav state ───────────────────────────────────────────
   const [tab, setTab] = React.useState(_nav.tab || 'home');
@@ -5677,21 +5678,24 @@ function App() {
     }
   };
 
-  // ── 스플래시 숨기기 (auth + trip 데이터 준비되면) ─────────────
+  // ── 스플래시 숨기기 (auth + trip 준비 후 최소 1초 표시) ────────
   React.useEffect(() => {
     const ready = authState === 'out' || (authState === 'in' && trip !== null);
     if (ready) {
-      const splash = document.getElementById('splash');
-      if (!splash) return;
-      const bar = document.getElementById('splash-bar');
-      if (bar) {
-        bar.style.transition = 'width 0.2s ease';
-        bar.style.width = '100%';
-      }
+      const delay = Math.max(0, 1000 - (Date.now() - splashStart.current));
       setTimeout(() => {
-        splash.classList.add('hide');
-        setTimeout(() => splash.remove(), 350);
-      }, 220);
+        const splash = document.getElementById('splash');
+        if (!splash) return;
+        const bar = document.getElementById('splash-bar');
+        if (bar) {
+          bar.style.transition = 'width 0.2s ease';
+          bar.style.width = '100%';
+        }
+        setTimeout(() => {
+          splash.classList.add('hide');
+          setTimeout(() => splash.remove(), 350);
+        }, 220);
+      }, delay);
     }
   }, [authState, trip]);
 
