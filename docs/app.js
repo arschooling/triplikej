@@ -5661,9 +5661,10 @@ function _readCache() {
   if (!localStorage.getItem('tlj_authed')) return null;
   try {
     return {
-      userData: JSON.parse(localStorage.getItem('tlj_userData') || 'null'),
-      trip: JSON.parse(localStorage.getItem('tlj_trip') || 'null'),
-      prep: JSON.parse(localStorage.getItem('tlj_prep') || 'null')
+      userData:  JSON.parse(localStorage.getItem('tlj_userData')  || 'null'),
+      trip:      JSON.parse(localStorage.getItem('tlj_trip')      || 'null'),
+      prep:      JSON.parse(localStorage.getItem('tlj_prep')      || 'null'),
+      userTrips: JSON.parse(localStorage.getItem('tlj_userTrips') || 'null'),
     };
   } catch (e) {
     return null;
@@ -5694,25 +5695,14 @@ function TripsScreen({ trips, onSelect, onAdd, loading, userData, onOpenCompanio
     },
       /*#__PURE__*/React.createElement("div", { style: { fontFamily: SERIF, fontSize: 30, color: COLORS.ink } }, "My Trips")
     ),
-    /* ── 디버그 패널 (나중에 삭제) ── */
     /*#__PURE__*/React.createElement("div", {
-      style: { margin: '0 16px 16px', padding: 12, background: '#fff3cd', borderRadius: 12,
-        fontFamily: MONO, fontSize: 11, color: '#333', lineHeight: 1.6 }
-    },
-      /*#__PURE__*/React.createElement("div", null, 'uid(auth): ' + (authUser ? authUser.uid : 'null')),
-      /*#__PURE__*/React.createElement("div", null, 'uid(data): ' + (userData ? userData.uid : 'null')),
-      /*#__PURE__*/React.createElement("div", null, 'trips: ' + trips.length + ' | loading: ' + loading),
-      /*#__PURE__*/React.createElement("div", null, 'error: ' + (tripsError || 'none')),
-      /*#__PURE__*/React.createElement("div", null, 'ver: APP-V14 | ' + new Date().toLocaleTimeString('ko-KR'))
-    ),
-    loading
-      ? /*#__PURE__*/React.createElement("div", {
-          style: { textAlign: 'center', padding: 60, color: COLORS.mute, fontFamily: SANS, fontSize: 14 }
-        }, "Loading...")
-      : /*#__PURE__*/React.createElement("div", {
-          style: { padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 12 }
-        },
-          trips.map(function(t) {
+        style: { padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 12 }
+      },
+      trips.length === 0 && loading
+        ? /*#__PURE__*/React.createElement("div", {
+            style: { textAlign: 'center', padding: 60, color: COLORS.mute, fontFamily: SANS, fontSize: 14 }
+          }, "불러오는 중...")
+        : trips.map(function(t) {
             const hue = (t.days && t.days[0] && t.days[0].hero) ? (t.days[0].hero.hue || 25) : 25;
             const label = (t.days && t.days[0] && t.days[0].hero && t.days[0].hero.label)
               ? t.days[0].hero.label
@@ -5761,9 +5751,17 @@ function App() {
     docs: [],
     pack: []
   });
-  const [activeTripId, setActiveTripId] = React.useState(null);
-  const [userTrips, setUserTrips] = React.useState([]);
-  const [tripsLoading, setTripsLoading] = React.useState(false);
+  // 새로고침 후 복원: 로그인 상태일 때만 activeTripId 복원
+  const [activeTripId, setActiveTripId] = React.useState(
+    _cache?.userData && _nav.activeTripId ? _nav.activeTripId : null
+  );
+  const _cachedTrips =
+    (_cache?.userTrips && _cache.userTrips.length > 0)  ? _cache.userTrips :
+    (_cache?.trip && _cache?.userData?.uid)              ? [Object.assign({ id: _cache.userData.uid }, _cache.trip)] :
+    (_cache?.userData?.uid)                              ? [{ id: _cache.userData.uid, title: '내 여행', days: [], dates: '', hotels: [], food: [] }] :
+    [];
+  const [userTrips, setUserTrips] = React.useState(_cachedTrips);
+  const [tripsLoading, setTripsLoading] = React.useState(_cachedTrips.length === 0);
   const [companionOpen, setCompanionOpen] = React.useState(false);
   const [loginError, setLoginError] = React.useState('');
   const [loginPending, setLoginPending] = React.useState(false); // 로그인 버튼 누른 후 로딩 중
@@ -5825,6 +5823,9 @@ function App() {
   React.useEffect(() => {
     if (prep) localStorage.setItem('tlj_prep', JSON.stringify(prep));
   }, [prep]);
+  React.useEffect(() => {
+    if (userTrips && userTrips.length > 0) localStorage.setItem('tlj_userTrips', JSON.stringify(userTrips));
+  }, [userTrips]);
 
   // ── Firebase auth listener ─────────────────────────────────
   React.useEffect(() => {
@@ -5860,27 +5861,43 @@ function App() {
         localStorage.removeItem('tlj_userData');
         localStorage.removeItem('tlj_trip');
         localStorage.removeItem('tlj_prep');
+        localStorage.removeItem('tlj_userTrips');
         setAuthState('out');
       }
     });
   }, []);
 
+  // ── 캐시된 여행이 1개면 자동 진입 (이전 동작 복원) ──────────
+  React.useEffect(() => {
+    if (!activeTripId && _cachedTrips.length === 1 && userData?.uid) {
+      setActiveTripId(_cachedTrips[0].id);
+      // 캐시된 trip 데이터도 즉시 세팅 (Firestore 응답 전까지 표시용)
+      if (_cachedTrips[0].days && _cachedTrips[0].days.length > 0) {
+        setTrip(_cachedTrips[0]);
+      }
+    }
+  }, [userData?.uid]);
+
   // ── 여행 목록 로드 ────────────────────────────────────────
-  // userData.uid를 사용 — localStorage 캐시에서 즉시 로드되므로
-  // Firebase Auth 비동기 대기 없이 바로 Firestore 연결 가능
   const [tripsError, setTripsError] = React.useState('');
   React.useEffect(() => {
     var uid = userData?.uid;
     if (!uid) return;
-    setTripsLoading(true);
+    // 캐시에 이미 있으면 로딩 스피너 없이 바로 표시
+    setTripsLoading(prev => _cachedTrips.length > 0 ? false : true);
     setTripsError('');
     var unsub = fbListenGroup(uid, function(data) {
       setTripsLoading(false);
       if (data) {
-        setUserTrips([Object.assign({ id: uid }, data)]);
+        setUserTrips(prev => {
+          const next = [Object.assign({ id: uid }, data)];
+          localStorage.setItem('tlj_userTrips', JSON.stringify(next));
+          return next;
+        });
         setTripsError('');
       } else {
-        setTripsError('no-data');
+        // Firestore 응답 없어도 캐시가 있으면 유지
+        if (_cachedTrips.length === 0) setTripsError('no-data');
       }
     });
     return unsub;
@@ -5891,18 +5908,24 @@ function App() {
   React.useEffect(() => {
     if (!activeTripId) return;
     groupCreateRef.current = false;
-    setTrip(null);
+    // setTrip(null) 제거 — 캐시 데이터 유지하며 Firestore 응답 대기
     return fbListenGroup(activeTripId, data => {
       if (data === null) {
         if (groupCreateRef.current) return;
         groupCreateRef.current = true;
-        fbSaveGroup(activeTripId, {
-          title: '새 여행', dates: '', hotel: '', days: [],
-          hotels: [], food: [], members: [userData.uid]
-        });
+        // 캐시에 실제 데이터 있으면 그걸로 복원, 없으면 TRIP_DEFAULT
+        const cached = _cache?.trip;
+        const restoreData = (cached && cached.days && cached.days.length > 0)
+          ? cached
+          : { title: 'New York', dates: window.TRIP_DEFAULT?.dates || '', days: window.TRIP_DEFAULT?.days || [],
+              hotels: window.TRIP_DEFAULT?.hotels || [], food: window.TRIP_DEFAULT?.food || [],
+              hotel: window.TRIP_DEFAULT?.hotel || '', members: [userData.uid] };
+        fbSaveGroup(activeTripId, restoreData);
         return;
       }
       setTrip(prev => {
+        // Firestore 데이터가 비어있고 캐시에 실제 데이터가 있으면 캐시 우선
+        if ((!data.days || data.days.length === 0) && prev && prev.days && prev.days.length > 0) return prev;
         if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
         tripRef.current = data;
         return data;
@@ -5930,12 +5953,19 @@ function App() {
     });
   }, [authUser?.uid]);
   React.useEffect(() => {
-    saveNav({
-      tab,
-      dayIdx,
-      hotelIdx
-    });
-  }, [tab, dayIdx, hotelIdx]);
+    saveNav({ tab, dayIdx, hotelIdx, activeTripId, scrollY: window.scrollY });
+  }, [tab, dayIdx, hotelIdx, activeTripId]);
+  // 첫 마운트 시 scrollY 복원 (새로고침 대응)
+  const _didRestoreScroll = React.useRef(false);
+  React.useEffect(() => {
+    if (!_didRestoreScroll.current && _nav.scrollY) {
+      _didRestoreScroll.current = true;
+      requestAnimationFrame(() => {
+        window.scrollTo(0, _nav.scrollY);
+        lastScrollTop.current = _nav.scrollY;
+      });
+    }
+  }, [activeTripId]); // activeTripId 세팅 후 실행
   React.useEffect(() => {
     if (navGoingBack.current) {
       // 뒤로가기: 저장된 홈 스크롤 위치 복원
@@ -5945,6 +5975,9 @@ function App() {
         lastScrollTop.current = target;
       });
       navGoingBack.current = false;
+    } else if (_didRestoreScroll.current) {
+      // 첫 마운트 복원 후에는 스크롤 초기화 스킵
+      _didRestoreScroll.current = false;
     } else {
       window.scrollTo(0, 0);
       lastScrollTop.current = 0;
@@ -5953,6 +5986,7 @@ function App() {
     setEditing(false);
   }, [scrollKey, tab, dayIdx, hotelIdx]);
   React.useEffect(() => {
+    let _scrollSaveTimer = null;
     const handleScroll = () => {
       const st = window.scrollY;
       const diff = st - lastScrollTop.current;
@@ -5960,6 +5994,11 @@ function App() {
         setTabBarVisible(diff < 0 || st < 60);
       }
       lastScrollTop.current = st;
+      // scrollY 저장 (throttle 300ms)
+      if (_scrollSaveTimer) clearTimeout(_scrollSaveTimer);
+      _scrollSaveTimer = setTimeout(() => {
+        saveNav({ tab, dayIdx, hotelIdx, activeTripId, scrollY: st });
+      }, 300);
     };
     window.addEventListener('scroll', handleScroll, {
       passive: true
@@ -6402,11 +6441,10 @@ function App() {
   const dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
 
   // ── Auth gating ───────────────────────────────────────────
-  // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
-  const showSplash = loginPending && (authState !== 'in' || trip === null);
-  if (showSplash) return /*#__PURE__*/React.createElement(SplashScreen, {
-    visible: true
-  });
+  // 로그인 버튼 누른 후 authState가 'in'이 되면 바로 진행 (Firestore 대기 안 함)
+  const showSplash = loginPending && authState !== 'in';
+  if (showSplash) return /*#__PURE__*/React.createElement(SplashScreen, { visible: true });
+  if (loginPending && authState === 'in') setLoginPending(false);
   if (authState === 'loading') return null;
   if (authState === 'out') return /*#__PURE__*/React.createElement(LoginScreen, {
     errorMsg: loginError,
@@ -6470,21 +6508,6 @@ function App() {
       background: '#F5F2EC'
     }
   },
-  tab === 'home' && dayIdx === null && hotelIdx === null && /*#__PURE__*/React.createElement("button", {
-    onClick: function() { setActiveTripId(null); setTrip(null); setEditing(false); },
-    style: {
-      position: 'fixed',
-      top: 'calc(env(safe-area-inset-top) + 14px)',
-      left: 16, zIndex: 300,
-      background: 'transparent', border: 'none',
-      padding: '4px 8px', cursor: 'pointer',
-      display: 'flex', alignItems: 'center', gap: 3,
-      fontFamily: SANS, fontSize: 13, color: COLORS.mute,
-    }
-  },
-    /*#__PURE__*/React.createElement(Icon, { name: 'chevron-left', size: 14, color: COLORS.mute, stroke: 2 }),
-    "My Trips"
-  ),
   /*#__PURE__*/React.createElement(SwipeBackLayer, {
     onBack: swipeBack
   }, screen), /*#__PURE__*/React.createElement(TabBar, {
