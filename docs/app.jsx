@@ -1435,7 +1435,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v101</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v102</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3686,40 +3686,60 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
 }
 
 // ─── Budget Screen ─────────────────────────────────────────
-const BUDGET_OUT_CATS = ['교통','숙박','식비','쇼핑','관광','기타'];
-const BUDGET_IN_CATS  = ['환전','지원금','기타'];
+const BUDGET_OUT_CATS_DEFAULT = ['교통','숙박','식비','쇼핑','관광','기타'];
+const BUDGET_IN_CATS_DEFAULT  = ['환전','지원금','기타'];
 
 function BudgetScreen({ trip, onEditBudget }) {
-  const entries = trip.budget?.entries || [];
-  const [addOpen,  setAddOpen]  = React.useState(false);
-  const [editIdx,  setEditIdx]  = React.useState(null);
+  const budget  = trip.budget || {};
+  const entries = budget.entries || [];
+  const outCats = budget.outCats || BUDGET_OUT_CATS_DEFAULT;
+  const inCats  = budget.inCats  || BUDGET_IN_CATS_DEFAULT;
+
+  const [addOpen,    setAddOpen]    = React.useState(false);
+  const [editIdx,    setEditIdx]    = React.useState(null);
   const [delConfirm, setDelConfirm] = React.useState(false);
   const [form, setForm] = React.useState({ type:'out', amount:'', cat:'식비', note:'', date:'' });
+  const [addingCat,  setAddingCat]  = React.useState(false);
+  const [newCatVal,  setNewCatVal]  = React.useState('');
 
   const totalIn  = entries.filter(e => e.type==='in').reduce((s,e) => s+e.amount, 0);
   const totalOut = entries.filter(e => e.type==='out').reduce((s,e) => s+e.amount, 0);
   const balance  = totalIn - totalOut;
 
+  const currentCats = form.type === 'out' ? outCats : inCats;
+
   const openAdd = (type) => {
-    setForm({ type, amount:'', cat: type==='out' ? '식비' : '환전', note:'', date:'' });
-    setEditIdx(null);
-    setDelConfirm(false);
+    const cats = type === 'out' ? outCats : inCats;
+    setForm({ type, amount:'', cat: cats[0] || '', note:'', date:'', currency:'KRW' });
+    setEditIdx(null); setDelConfirm(false); setAddingCat(false); setNewCatVal('');
     setAddOpen(true);
   };
   const openEdit = (idx) => {
     const e = entries[idx];
-    setForm({ type:e.type, amount:String(e.amount), cat:e.cat, note:e.note||'', date:e.date||'' });
-    setEditIdx(idx);
-    setDelConfirm(false);
+    setForm({ type:e.type, amount:String(e.amount), cat:e.cat, note:e.note||'', date:e.date||'', currency:e.currency||'KRW' });
+    setEditIdx(idx); setDelConfirm(false); setAddingCat(false); setNewCatVal('');
     setAddOpen(true);
+  };
+
+  const addCustomCat = () => {
+    const name = newCatVal.trim();
+    if (!name) return;
+    const key = form.type === 'out' ? 'outCats' : 'inCats';
+    const cur  = form.type === 'out' ? outCats : inCats;
+    if (cur.includes(name)) { setForm(f => ({...f, cat: name})); setAddingCat(false); setNewCatVal(''); return; }
+    const next = [...cur, name];
+    onEditBudget({ [key]: next });
+    setForm(f => ({...f, cat: name}));
+    setAddingCat(false); setNewCatVal('');
   };
   const saveEntry = () => {
     const amt = parseFloat(form.amount);
     if (!amt || isNaN(amt)) return;
+    const cur = form.currency || 'KRW';
     const entry = {
       id: editIdx !== null ? entries[editIdx].id : Date.now().toString(),
       type: form.type, amount: amt, cat: form.cat,
-      note: form.note,
+      note: form.note, currency: cur,
       date: form.date || new Date().toISOString().slice(0,10),
     };
     const updated = editIdx !== null
@@ -3815,13 +3835,20 @@ function BudgetScreen({ trip, onEditBudget }) {
                 <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>
                   {e.cat}{e.note ? ` · ${e.note}` : ''}
                 </div>
-                <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:2 }}>{e.date}</div>
+                <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:2 }}>
+                  {e.date}{e.currency && e.currency !== 'KRW' ? ` · ${e.currency}` : ''}
+                </div>
               </div>
-              <div style={{
-                fontFamily:MONO, fontSize:15, fontWeight:600, flexShrink:0,
-                color: e.type==='in' ? '#3A9B4C' : COLORS.ink,
-              }}>
-                {e.type==='in' ? '+' : '-'}{e.amount.toLocaleString()}
+              <div style={{ textAlign:'right', flexShrink:0 }}>
+                <div style={{ fontFamily:MONO, fontSize:15, fontWeight:600,
+                  color: e.type==='in' ? '#3A9B4C' : COLORS.ink }}>
+                  {e.type==='in' ? '+' : '-'}{e.amount.toLocaleString()}
+                </div>
+                {e.currency && e.currency !== 'KRW' && (
+                  <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:1 }}>
+                    {e.currency}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -3856,16 +3883,48 @@ function BudgetScreen({ trip, onEditBudget }) {
               style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px', marginBottom:12,
                 border:`1px solid ${COLORS.line}`, borderRadius:12, background:COLORS.card,
                 fontFamily:MONO, fontSize:24, color:COLORS.ink, outline:'none' }}/>
-            {/* 카테고리 */}
-            <div style={{ display:'flex', flexWrap:'wrap', gap:7, marginBottom:12 }}>
-              {(form.type==='out' ? BUDGET_OUT_CATS : BUDGET_IN_CATS).map(c => (
-                <button key={c} onClick={() => setForm(f => ({...f, cat:c}))}
-                  style={{ padding:'7px 15px', borderRadius:20, cursor:'pointer',
-                    border:`1.5px solid ${form.cat===c ? COLORS.accent : COLORS.line}`,
-                    background: form.cat===c ? COLORS.accent : COLORS.card,
-                    fontFamily:SANS, fontSize:13, fontWeight: form.cat===c ? 600 : 400,
-                    color: form.cat===c ? '#fff' : COLORS.ink }}>
-                  {c}
+            {/* 카테고리 드롭다운 */}
+            <div style={{ marginBottom:12 }}>
+              {addingCat ? (
+                <div style={{ display:'flex', gap:6 }}>
+                  <input autoFocus value={newCatVal} onChange={e => setNewCatVal(e.target.value)}
+                    onKeyDown={e => { if (e.key==='Enter') addCustomCat(); if (e.key==='Escape') { setAddingCat(false); setNewCatVal(''); }}}
+                    placeholder="새 항목 이름"
+                    style={{ flex:1, padding:'11px 14px', border:`1px solid ${COLORS.line}`, borderRadius:12,
+                      background:COLORS.card, fontFamily:SANS, fontSize:14, color:COLORS.ink, outline:'none' }}/>
+                  <button onClick={addCustomCat} style={{ padding:'11px 16px', border:'none', borderRadius:12,
+                    background:COLORS.ink, color:'#fff', fontFamily:SANS, fontSize:13, fontWeight:600, cursor:'pointer' }}>추가</button>
+                  <button onClick={() => { setAddingCat(false); setNewCatVal(''); }} style={{ padding:'11px 12px', border:'none', borderRadius:12,
+                    background:COLORS.softer, color:COLORS.mute, fontFamily:SANS, fontSize:13, cursor:'pointer' }}>취소</button>
+                </div>
+              ) : (
+                <div style={{ display:'flex', gap:6 }}>
+                  <select value={form.cat} onChange={e => setForm(f => ({...f, cat: e.target.value}))}
+                    style={{ flex:1, padding:'11px 14px', border:`1px solid ${COLORS.line}`, borderRadius:12,
+                      background:COLORS.card, fontFamily:SANS, fontSize:14, color:COLORS.ink,
+                      outline:'none', appearance:'none', WebkitAppearance:'none',
+                      backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+                      backgroundRepeat:'no-repeat', backgroundPosition:'right 14px center' }}>
+                    {currentCats.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <button onClick={() => setAddingCat(true)} style={{ padding:'11px 14px', border:`1px solid ${COLORS.line}`,
+                    borderRadius:12, background:COLORS.card, cursor:'pointer',
+                    display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <Icon name="plus" size={14} color={COLORS.mute} stroke={2}/>
+                  </button>
+                </div>
+              )}
+            </div>
+            {/* 통화 선택 */}
+            <div style={{ display:'flex', gap:6, marginBottom:12, flexWrap:'wrap' }}>
+              {['KRW','USD','EUR','JPY','CNY','GBP','기타'].map(cur => (
+                <button key={cur} onClick={() => setForm(f => ({...f, currency: cur}))}
+                  style={{ padding:'6px 13px', borderRadius:20, cursor:'pointer',
+                    border:`1.5px solid ${(form.currency||'KRW')===cur ? COLORS.ink : COLORS.line}`,
+                    background: (form.currency||'KRW')===cur ? COLORS.ink : 'transparent',
+                    fontFamily:MONO, fontSize:12, fontWeight: (form.currency||'KRW')===cur ? 600 : 400,
+                    color: (form.currency||'KRW')===cur ? '#fff' : COLORS.mute }}>
+                  {cur}
                 </button>
               ))}
             </div>
@@ -5473,7 +5532,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v101</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v102</div>
         </div>
       </div>
       <button onClick={async () => {
