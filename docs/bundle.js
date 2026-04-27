@@ -3913,7 +3913,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v147"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v148"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6517,11 +6517,16 @@ function StopSheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
-      paddingBottom: kbh,
-      transition: 'padding 0.22s ease',
       background: `rgba(0,0,0,${Math.max(0, 0.35 - sheetY / 400)})`
     },
     onClick: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
+      transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
+      display: 'flex',
+      flexDirection: 'column'
+    }
   }, /*#__PURE__*/React.createElement("div", {
     ref: sheetRef,
     onClick: e => e.stopPropagation(),
@@ -6529,11 +6534,9 @@ function StopSheet({
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
       paddingBottom: 40,
-      maxHeight: kbh > 0 ? `calc(100vh - ${kbh + 16}px)` : '92%',
+      maxHeight: kbh > 0 ? `calc(100vh - ${kbh + 8}px)` : '92%',
       overflowY: 'auto',
-      overflowX: 'hidden',
-      transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
-      transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
+      overflowX: 'hidden'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -6782,7 +6785,15 @@ function StopSheet({
     size: 16,
     color: COLORS.ink,
     stroke: 1.8
-  })))))));
+  })))))), kbh > 0 && /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      height: kbh,
+      background: COLORS.bg,
+      flexShrink: 0,
+      transition: 'height 0.22s ease'
+    }
+  })));
 }
 function LocationField({
   value,
@@ -12621,7 +12632,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v147"))), /*#__PURE__*/React.createElement("button", {
+  }, "v148"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);

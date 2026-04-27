@@ -1702,7 +1702,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v147</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v148</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3001,17 +3001,19 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
-      paddingBottom: kbh,
-      transition: 'padding 0.22s ease',
       background:`rgba(0,0,0,${Math.max(0, 0.35 - sheetY / 400)})` }} onClick={onClose}>
+      {/* transform wrapper — sheet + filler 같이 움직임 */}
+      <div style={{
+        transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
+        transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
+        display:'flex', flexDirection:'column',
+      }}>
       <div ref={sheetRef} onClick={(e)=>e.stopPropagation()}
         style={{
           background:COLORS.bg, borderRadius:'22px 22px 0 0',
           paddingBottom:40,
-          maxHeight: kbh > 0 ? `calc(100vh - ${kbh + 16}px)` : '92%',
+          maxHeight: kbh > 0 ? `calc(100vh - ${kbh + 8}px)` : '92%',
           overflowY:'auto', overflowX:'hidden',
-          transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
-          transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
         }}>
         {/* 드래그 핸들 */}
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px' }}>
@@ -3120,6 +3122,12 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
           </div>
         </div>
       </div>
+      {/* 시트 하단 ~ 키보드 상단 사이 검은 배경 가리기 */}
+      {kbh > 0 && <div onClick={e=>e.stopPropagation()} style={{
+        height: kbh, background: COLORS.bg, flexShrink: 0,
+        transition: 'height 0.22s ease',
+      }}/>}
+      </div>{/* wrapper 닫기 */}
     </div>
   );
 }
@@ -6130,7 +6138,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v147</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v148</div>
         </div>
       </div>
       <button onClick={async () => {
