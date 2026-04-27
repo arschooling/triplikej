@@ -1463,7 +1463,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v118</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v119</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -2690,6 +2690,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   const [draft, setDraft] = React.useState(open.stop);
   const committed = React.useRef(open.stop);
   const [sheetY, setSheetY] = React.useState(0);
+  const [entered, setEntered] = React.useState(false);
   const sheetRef = React.useRef(null);
   const sheetYRef = React.useRef(0);
   const dragRef = React.useRef({ active: false, startY: 0, startScrollTop: 0 });
@@ -2697,6 +2698,8 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   React.useEffect(() => {
     setDraft(open.stop); committed.current = open.stop;
     setSheetY(0); sheetYRef.current = 0; setEditing(!!open.editing);
+    setEntered(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
   }, [open]);
 
   // 배경 스크롤 완전 차단
@@ -2751,8 +2754,8 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
         style={{
           background:COLORS.bg, borderRadius:'22px 22px 0 0',
           paddingBottom:40, maxHeight:'92%', overflowY:'auto', overflowX:'hidden',
-          transform: `translateY(${sheetY}px)`,
-          transition: sheetY === 0 ? 'transform 0.32s cubic-bezier(0.32,0.72,0,1)' : 'none',
+          transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
+          transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
         }}>
         {/* 드래그 핸들 */}
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px' }}>
@@ -5805,7 +5808,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v118</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v119</div>
         </div>
       </div>
       <button onClick={async () => {
