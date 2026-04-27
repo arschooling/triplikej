@@ -1495,7 +1495,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v128</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v129</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -4180,18 +4180,18 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
       </div>
 
       {/* 요약 카드 */}
-      <div style={{ margin:'0 16px 14px', background:COLORS.ink, borderRadius:20, padding:'20px 22px' }}>
-        {/* 총 수입 / 총 지출 — 원화 환산 합계 */}
-        <div style={{ display:'flex', gap:0 }}>
-          <div style={{ flex:1 }}>
-            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>총 수입 (₩ 환산)</div>
-            <div style={{ fontFamily:SERIF, fontSize:28, color:'#7EC88A', letterSpacing:'-0.02em', lineHeight:1 }}>
+      <div style={{ margin:'0 16px 14px', background:COLORS.ink, borderRadius:20, padding:'22px 22px 20px' }}>
+        {/* 총 수입(왼쪽) / 총 지출(오른쪽) */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:0 }}>
+          <div>
+            <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.45)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>총 수입</div>
+            <div style={{ fontFamily:SERIF, fontSize:32, color:'#7EC88A', letterSpacing:'-0.02em', lineHeight:1 }}>
               {fmtAmt(Math.round(krwTotalIn), 'KRW')}
             </div>
           </div>
-          <div style={{ flex:1 }}>
-            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>총 지출 (₩ 환산)</div>
-            <div style={{ fontFamily:SERIF, fontSize:28, color:'#E88A7E', letterSpacing:'-0.02em', lineHeight:1 }}>
+          <div>
+            <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.45)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>총 지출</div>
+            <div style={{ fontFamily:SERIF, fontSize:32, color:'#E88A7E', letterSpacing:'-0.02em', lineHeight:1 }}>
               {fmtAmt(Math.round(krwTotalOut), 'KRW')}
             </div>
           </div>
@@ -4199,69 +4199,73 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
 
         {/* 통화별 수입/지출 */}
         {Object.keys(byCurrency).length > 0 && (
-          <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.1)', display:'flex', flexDirection:'column', gap:7 }}>
+          <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
             {Object.entries(byCurrency).map(([cur, { out, inc }]) => (
-              <div key={cur} style={{ display:'flex', alignItems:'center', gap:0 }}>
-                <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.4)', letterSpacing:'0.08em', width:38, flexShrink:0 }}>{cur}</div>
-                <div style={{ display:'flex', gap:14 }}>
-                  {out > 0 && (
-                    <span style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.65)' }}>
-                      지출 <span style={{ color:'#E88A7E' }}>{fmtAmt(out, cur)}</span>
-                    </span>
-                  )}
-                  {inc > 0 && (
-                    <span style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.65)' }}>
-                      수입 <span style={{ color:'#7EC88A' }}>{fmtAmt(inc, cur)}</span>
-                    </span>
-                  )}
+              <div key={cur} style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:0, marginBottom:8 }}>
+                <div>
+                  <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.35)', letterSpacing:'0.08em', marginBottom:3 }}>{cur} 수입</div>
+                  {inc > 0
+                    ? <div style={{ fontFamily:MONO, fontSize:15, color:'#7EC88A', fontWeight:600 }}>{fmtAmt(inc, cur)}</div>
+                    : <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.2)' }}>—</div>
+                  }
+                </div>
+                <div>
+                  <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.35)', letterSpacing:'0.08em', marginBottom:3 }}>{cur} 지출</div>
+                  {out > 0
+                    ? <div style={{ fontFamily:MONO, fontSize:15, color:'#E88A7E', fontWeight:600 }}>{fmtAmt(out, cur)}</div>
+                    : <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.2)' }}>—</div>
+                  }
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* 공동/개인 (공동 내역 있을 때만) */}
+        {/* 공동(왼쪽) / 개인(오른쪽) */}
         {hasShared && (
-          <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.1)', display:'flex', flexDirection:'column', gap:10 }}>
-            {(krwSharedOut > 0 || krwPersonalOut > 0) && (
-              <div style={{ display:'flex', gap:24 }}>
-                {krwSharedOut > 0 && (
-                  <div style={{ display:'flex', alignItems:'flex-end', gap:8 }}>
-                    <div>
-                      <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>공동 지출</div>
-                      <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwSharedOut),'KRW')}</div>
-                    </div>
-                    <button onClick={() => setSplitOpen(true)} style={{
-                      marginBottom:1, padding:'3px 7px', border:'1px solid rgba(255,255,255,0.2)',
-                      borderRadius:8, background:'transparent', cursor:'pointer',
-                      fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.55)', letterSpacing:'0.05em',
-                    }}>÷N</button>
-                  </div>
-                )}
-                {krwPersonalOut > 0 && (
-                  <div>
-                    <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>개인 지출</div>
-                    <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwPersonalOut),'KRW')}</div>
-                  </div>
-                )}
-              </div>
-            )}
-            {(krwSharedIn > 0 || krwPersonalIn > 0) && (
-              <div style={{ display:'flex', gap:24 }}>
-                {krwSharedIn > 0 && (
-                  <div>
-                    <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>공동 수입</div>
-                    <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwSharedIn),'KRW')}</div>
-                  </div>
-                )}
-                {krwPersonalIn > 0 && (
-                  <div>
-                    <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>개인 수입</div>
-                    <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwPersonalIn),'KRW')}</div>
-                  </div>
-                )}
-              </div>
-            )}
+          <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.1)',
+            display:'grid', gridTemplateColumns:'1fr 1fr', gap:0 }}>
+            {/* 공동 */}
+            <div>
+              <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.45)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>공동</div>
+              {krwSharedIn > 0 && (
+                <div style={{ marginBottom:8 }}>
+                  <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.35)', marginBottom:3 }}>수입</div>
+                  <div style={{ fontFamily:MONO, fontSize:15, color:'#7EC88A', fontWeight:600 }}>{fmtAmt(Math.round(krwSharedIn),'KRW')}</div>
+                </div>
+              )}
+              {krwSharedOut > 0 && (
+                <div>
+                  <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.35)', marginBottom:3 }}>지출</div>
+                  <div style={{ fontFamily:MONO, fontSize:15, color:'#E88A7E', fontWeight:600, marginBottom:8 }}>{fmtAmt(Math.round(krwSharedOut),'KRW')}</div>
+                  <button onClick={() => setSplitOpen(true)} style={{
+                    padding:'8px 14px', border:'none',
+                    borderRadius:10, background:'rgba(255,255,255,0.14)', cursor:'pointer',
+                    fontFamily:MONO, fontSize:12, fontWeight:600,
+                    color:'rgba(255,255,255,0.85)', letterSpacing:'0.04em',
+                    display:'flex', alignItems:'center', gap:5,
+                  }}>
+                    <span style={{ fontSize:14 }}>÷</span> 1/N 계산
+                  </button>
+                </div>
+              )}
+            </div>
+            {/* 개인 */}
+            <div>
+              <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.45)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>개인</div>
+              {krwPersonalIn > 0 && (
+                <div style={{ marginBottom:8 }}>
+                  <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.35)', marginBottom:3 }}>수입</div>
+                  <div style={{ fontFamily:MONO, fontSize:15, color:'#7EC88A', fontWeight:600 }}>{fmtAmt(Math.round(krwPersonalIn),'KRW')}</div>
+                </div>
+              )}
+              {krwPersonalOut > 0 && (
+                <div>
+                  <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.35)', marginBottom:3 }}>지출</div>
+                  <div style={{ fontFamily:MONO, fontSize:15, color:'#E88A7E', fontWeight:600 }}>{fmtAmt(Math.round(krwPersonalOut),'KRW')}</div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -4298,47 +4302,48 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
         </div>
       ) : (() => {
         const indexed = [...entries].map((e,i) => ({ ...e, _i:i })).reverse();
-        const personal = indexed.filter(e => (e.scope||'personal')==='personal');
-        const shared   = indexed.filter(e => (e.scope||'personal')==='shared');
+        const incomeList  = indexed.filter(e => e.type === 'in');
+        const expenseList = indexed.filter(e => e.type === 'out');
         const renderEntry = (e) => (
           <div key={e.id||e._i} onClick={() => openEdit(e._i)} style={{
-            background:COLORS.card, borderRadius:14, padding:'13px 16px', marginBottom:8,
-            display:'flex', alignItems:'center', gap:12, cursor:'pointer',
+            background:COLORS.card, borderRadius:12, padding:'11px 12px', marginBottom:6, cursor:'pointer',
           }}>
-            <div style={{
-              width:36, height:36, borderRadius:18, flexShrink:0,
-              background: e.type==='in' ? 'rgba(126,200,138,0.15)' : 'rgba(232,138,126,0.12)',
-              display:'flex', alignItems:'center', justifyContent:'center',
-            }}>
-              <Icon name={e.type==='in' ? 'plus' : 'minus'} size={15}
-                color={e.type==='in' ? '#3A9B4C' : '#C14F2E'} stroke={2.5}/>
-            </div>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>
-                {e.cat}{e.note ? ` · ${e.note}` : ''}
-              </div>
-              <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:2 }}>{e.date}</div>
-            </div>
-            <div style={{ fontFamily:MONO, fontSize:15, fontWeight:600, textAlign:'right', flexShrink:0,
-              color: e.type==='in' ? '#3A9B4C' : COLORS.ink }}>
+            <div style={{ fontFamily:MONO, fontSize:14, fontWeight:600, color: e.type==='in' ? '#3A9B4C' : COLORS.ink, marginBottom:3 }}>
               {e.type==='in' ? '+' : '-'}{fmtAmt(e.amount, e.currency||'KRW')}
+            </div>
+            <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.ink, marginBottom:2,
+              whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+              {e.cat}{e.note ? ` · ${e.note}` : ''}
+            </div>
+            <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>{e.date}</div>
+              {(e.scope||'personal')==='shared' && (
+                <div style={{ fontFamily:MONO, fontSize:9, color:'#4F6BED', background:'rgba(79,107,237,0.1)',
+                  borderRadius:4, padding:'1px 5px', letterSpacing:'0.05em' }}>공동</div>
+              )}
             </div>
           </div>
         );
         return (
           <div style={{ padding:'0 16px' }}>
-            {personal.length > 0 && (
-              <>
-                {hasShared && <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase', padding:'4px 4px 8px' }}>개인</div>}
-                {personal.map(renderEntry)}
-              </>
-            )}
-            {shared.length > 0 && (
-              <>
-                <div style={{ fontFamily:MONO, fontSize:9.5, color:'#4F6BED', letterSpacing:'0.1em', textTransform:'uppercase', padding:'4px 4px 8px', marginTop: personal.length>0?8:0 }}>공동</div>
-                {shared.map(renderEntry)}
-              </>
-            )}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, alignItems:'start' }}>
+              <div>
+                <div style={{ fontFamily:MONO, fontSize:10, color:'#3A9B4C', letterSpacing:'0.1em',
+                  textTransform:'uppercase', padding:'4px 2px 8px' }}>수입</div>
+                {incomeList.length === 0
+                  ? <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, padding:'8px 2px' }}>내역 없음</div>
+                  : incomeList.map(renderEntry)
+                }
+              </div>
+              <div>
+                <div style={{ fontFamily:MONO, fontSize:10, color:'#C14F2E', letterSpacing:'0.1em',
+                  textTransform:'uppercase', padding:'4px 2px 8px' }}>지출</div>
+                {expenseList.length === 0
+                  ? <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, padding:'8px 2px' }}>내역 없음</div>
+                  : expenseList.map(renderEntry)
+                }
+              </div>
+            </div>
           </div>
         );
       })()}
@@ -5696,7 +5701,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v128</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v129</div>
         </div>
       </div>
       <button onClick={async () => {

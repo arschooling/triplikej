@@ -3483,7 +3483,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v128")), /*#__PURE__*/React.createElement("button", {
+  }, "v129")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -9078,63 +9078,53 @@ function BudgetScreen({
       margin: '0 16px 14px',
       background: COLORS.ink,
       borderRadius: 20,
-      padding: '20px 22px'
+      padding: '22px 22px 20px'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      display: 'flex',
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
       gap: 0
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
-      fontSize: 9.5,
+      fontSize: 10,
       color: 'rgba(255,255,255,0.45)',
-      letterSpacing: '0.12em',
+      letterSpacing: '0.1em',
       textTransform: 'uppercase',
-      marginBottom: 4
+      marginBottom: 6
     }
-  }, "\uCD1D \uC218\uC785 (\u20A9 \uD658\uC0B0)"), /*#__PURE__*/React.createElement("div", {
+  }, "\uCD1D \uC218\uC785"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SERIF,
-      fontSize: 28,
+      fontSize: 32,
       color: '#7EC88A',
       letterSpacing: '-0.02em',
       lineHeight: 1
     }
-  }, fmtAmt(Math.round(krwTotalIn), 'KRW'))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, fmtAmt(Math.round(krwTotalIn), 'KRW'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
-      fontSize: 9.5,
+      fontSize: 10,
       color: 'rgba(255,255,255,0.45)',
-      letterSpacing: '0.12em',
+      letterSpacing: '0.1em',
       textTransform: 'uppercase',
-      marginBottom: 4
+      marginBottom: 6
     }
-  }, "\uCD1D \uC9C0\uCD9C (\u20A9 \uD658\uC0B0)"), /*#__PURE__*/React.createElement("div", {
+  }, "\uCD1D \uC9C0\uCD9C"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SERIF,
-      fontSize: 28,
+      fontSize: 32,
       color: '#E88A7E',
       letterSpacing: '-0.02em',
       lineHeight: 1
     }
   }, fmtAmt(Math.round(krwTotalOut), 'KRW')))), Object.keys(byCurrency).length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14,
-      paddingTop: 14,
-      borderTop: '1px solid rgba(255,255,255,0.1)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 7
+      marginTop: 16,
+      paddingTop: 16,
+      borderTop: '1px solid rgba(255,255,255,0.1)'
     }
   }, Object.entries(byCurrency).map(([cur, {
     out,
@@ -9142,140 +9132,167 @@ function BudgetScreen({
   }]) => /*#__PURE__*/React.createElement("div", {
     key: cur,
     style: {
-      display: 'flex',
-      alignItems: 'center',
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: 0,
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10,
+      color: 'rgba(255,255,255,0.35)',
+      letterSpacing: '0.08em',
+      marginBottom: 3
+    }
+  }, cur, " \uC218\uC785"), inc > 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 15,
+      color: '#7EC88A',
+      fontWeight: 600
+    }
+  }, fmtAmt(inc, cur)) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 13,
+      color: 'rgba(255,255,255,0.2)'
+    }
+  }, "\u2014")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10,
+      color: 'rgba(255,255,255,0.35)',
+      letterSpacing: '0.08em',
+      marginBottom: 3
+    }
+  }, cur, " \uC9C0\uCD9C"), out > 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 15,
+      color: '#E88A7E',
+      fontWeight: 600
+    }
+  }, fmtAmt(out, cur)) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 13,
+      color: 'rgba(255,255,255,0.2)'
+    }
+  }, "\u2014"))))), hasShared && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 16,
+      paddingTop: 16,
+      borderTop: '1px solid rgba(255,255,255,0.1)',
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
       gap: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10,
+      color: 'rgba(255,255,255,0.45)',
+      letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+      marginBottom: 10
+    }
+  }, "\uACF5\uB3D9"), krwSharedIn > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 8
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
       fontSize: 10,
-      color: 'rgba(255,255,255,0.4)',
-      letterSpacing: '0.08em',
-      width: 38,
-      flexShrink: 0
-    }
-  }, cur), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      gap: 14
-    }
-  }, out > 0 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: MONO,
-      fontSize: 12,
-      color: 'rgba(255,255,255,0.65)'
-    }
-  }, "\uC9C0\uCD9C ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: '#E88A7E'
-    }
-  }, fmtAmt(out, cur))), inc > 0 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: MONO,
-      fontSize: 12,
-      color: 'rgba(255,255,255,0.65)'
-    }
-  }, "\uC218\uC785 ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: '#7EC88A'
-    }
-  }, fmtAmt(inc, cur))))))), hasShared && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 14,
-      paddingTop: 14,
-      borderTop: '1px solid rgba(255,255,255,0.1)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 10
-    }
-  }, (krwSharedOut > 0 || krwPersonalOut > 0) && /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      gap: 24
-    }
-  }, krwSharedOut > 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      alignItems: 'flex-end',
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: MONO,
-      fontSize: 9,
-      color: 'rgba(255,255,255,0.4)',
-      letterSpacing: '0.1em',
+      color: 'rgba(255,255,255,0.35)',
       marginBottom: 3
     }
-  }, "\uACF5\uB3D9 \uC9C0\uCD9C"), /*#__PURE__*/React.createElement("div", {
+  }, "\uC218\uC785"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
-      fontSize: 13,
-      color: 'rgba(255,255,255,0.75)'
+      fontSize: 15,
+      color: '#7EC88A',
+      fontWeight: 600
     }
-  }, fmtAmt(Math.round(krwSharedOut), 'KRW'))), /*#__PURE__*/React.createElement("button", {
+  }, fmtAmt(Math.round(krwSharedIn), 'KRW'))), krwSharedOut > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10,
+      color: 'rgba(255,255,255,0.35)',
+      marginBottom: 3
+    }
+  }, "\uC9C0\uCD9C"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 15,
+      color: '#E88A7E',
+      fontWeight: 600,
+      marginBottom: 8
+    }
+  }, fmtAmt(Math.round(krwSharedOut), 'KRW')), /*#__PURE__*/React.createElement("button", {
     onClick: () => setSplitOpen(true),
     style: {
-      marginBottom: 1,
-      padding: '3px 7px',
-      border: '1px solid rgba(255,255,255,0.2)',
-      borderRadius: 8,
-      background: 'transparent',
+      padding: '8px 14px',
+      border: 'none',
+      borderRadius: 10,
+      background: 'rgba(255,255,255,0.14)',
       cursor: 'pointer',
       fontFamily: MONO,
-      fontSize: 9,
-      color: 'rgba(255,255,255,0.55)',
-      letterSpacing: '0.05em'
-    }
-  }, "\xF7N")), krwPersonalOut > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: MONO,
-      fontSize: 9,
-      color: 'rgba(255,255,255,0.4)',
-      letterSpacing: '0.1em',
-      marginBottom: 3
-    }
-  }, "\uAC1C\uC778 \uC9C0\uCD9C"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: MONO,
-      fontSize: 13,
-      color: 'rgba(255,255,255,0.75)'
-    }
-  }, fmtAmt(Math.round(krwPersonalOut), 'KRW')))), (krwSharedIn > 0 || krwPersonalIn > 0) && /*#__PURE__*/React.createElement("div", {
-    style: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: 'rgba(255,255,255,0.85)',
+      letterSpacing: '0.04em',
       display: 'flex',
-      gap: 24
+      alignItems: 'center',
+      gap: 5
     }
-  }, krwSharedIn > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 14
+    }
+  }, "\xF7"), " 1/N \uACC4\uC0B0"))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
-      fontSize: 9,
-      color: 'rgba(255,255,255,0.4)',
+      fontSize: 10,
+      color: 'rgba(255,255,255,0.45)',
       letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+      marginBottom: 10
+    }
+  }, "\uAC1C\uC778"), krwPersonalIn > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10,
+      color: 'rgba(255,255,255,0.35)',
       marginBottom: 3
     }
-  }, "\uACF5\uB3D9 \uC218\uC785"), /*#__PURE__*/React.createElement("div", {
+  }, "\uC218\uC785"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
-      fontSize: 13,
-      color: 'rgba(255,255,255,0.75)'
+      fontSize: 15,
+      color: '#7EC88A',
+      fontWeight: 600
     }
-  }, fmtAmt(Math.round(krwSharedIn), 'KRW'))), krwPersonalIn > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, fmtAmt(Math.round(krwPersonalIn), 'KRW'))), krwPersonalOut > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
-      fontSize: 9,
-      color: 'rgba(255,255,255,0.4)',
-      letterSpacing: '0.1em',
+      fontSize: 10,
+      color: 'rgba(255,255,255,0.35)',
       marginBottom: 3
     }
-  }, "\uAC1C\uC778 \uC218\uC785"), /*#__PURE__*/React.createElement("div", {
+  }, "\uC9C0\uCD9C"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
-      fontSize: 13,
-      color: 'rgba(255,255,255,0.75)'
+      fontSize: 15,
+      color: '#E88A7E',
+      fontWeight: 600
     }
-  }, fmtAmt(Math.round(krwPersonalIn), 'KRW')))))), /*#__PURE__*/React.createElement("div", {
+  }, fmtAmt(Math.round(krwPersonalOut), 'KRW')))))), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '0 16px 16px',
       display: 'flex',
@@ -9369,90 +9386,103 @@ function BudgetScreen({
       ...e,
       _i: i
     })).reverse();
-    const personal = indexed.filter(e => (e.scope || 'personal') === 'personal');
-    const shared = indexed.filter(e => (e.scope || 'personal') === 'shared');
+    const incomeList = indexed.filter(e => e.type === 'in');
+    const expenseList = indexed.filter(e => e.type === 'out');
     const renderEntry = e => /*#__PURE__*/React.createElement("div", {
       key: e.id || e._i,
       onClick: () => openEdit(e._i),
       style: {
         background: COLORS.card,
-        borderRadius: 14,
-        padding: '13px 16px',
-        marginBottom: 8,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
+        borderRadius: 12,
+        padding: '11px 12px',
+        marginBottom: 6,
         cursor: 'pointer'
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        flexShrink: 0,
-        background: e.type === 'in' ? 'rgba(126,200,138,0.15)' : 'rgba(232,138,126,0.12)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        fontFamily: MONO,
+        fontSize: 14,
+        fontWeight: 600,
+        color: e.type === 'in' ? '#3A9B4C' : COLORS.ink,
+        marginBottom: 3
       }
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: e.type === 'in' ? 'plus' : 'minus',
-      size: 15,
-      color: e.type === 'in' ? '#3A9B4C' : '#C14F2E',
-      stroke: 2.5
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1,
-        minWidth: 0
-      }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, e.type === 'in' ? '+' : '-', fmtAmt(e.amount, e.currency || 'KRW')), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: SANS,
-        fontSize: 13.5,
-        fontWeight: 500,
-        color: COLORS.ink
+        fontSize: 11.5,
+        color: COLORS.ink,
+        marginBottom: 2,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
       }
     }, e.cat, e.note ? ` · ${e.note}` : ''), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontFamily: MONO,
-        fontSize: 10,
-        color: COLORS.mute,
-        marginTop: 2
+        display: 'flex',
+        alignItems: 'center',
+        gap: 5
       }
-    }, e.date)), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
-        fontSize: 15,
-        fontWeight: 600,
-        textAlign: 'right',
-        flexShrink: 0,
-        color: e.type === 'in' ? '#3A9B4C' : COLORS.ink
+        fontSize: 9.5,
+        color: COLORS.mute
       }
-    }, e.type === 'in' ? '+' : '-', fmtAmt(e.amount, e.currency || 'KRW')));
+    }, e.date), (e.scope || 'personal') === 'shared' && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: MONO,
+        fontSize: 9,
+        color: '#4F6BED',
+        background: 'rgba(79,107,237,0.1)',
+        borderRadius: 4,
+        padding: '1px 5px',
+        letterSpacing: '0.05em'
+      }
+    }, "\uACF5\uB3D9")));
     return /*#__PURE__*/React.createElement("div", {
       style: {
         padding: '0 16px'
       }
-    }, personal.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, hasShared && /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 8,
+        alignItems: 'start'
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
-        fontSize: 9.5,
+        fontSize: 10,
+        color: '#3A9B4C',
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        padding: '4px 2px 8px'
+      }
+    }, "\uC218\uC785"), incomeList.length === 0 ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 12,
         color: COLORS.mute,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        padding: '4px 4px 8px'
+        padding: '8px 2px'
       }
-    }, "\uAC1C\uC778"), personal.map(renderEntry)), shared.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    }, "\uB0B4\uC5ED \uC5C6\uC74C") : incomeList.map(renderEntry)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
-        fontSize: 9.5,
-        color: '#4F6BED',
+        fontSize: 10,
+        color: '#C14F2E',
         letterSpacing: '0.1em',
         textTransform: 'uppercase',
-        padding: '4px 4px 8px',
-        marginTop: personal.length > 0 ? 8 : 0
+        padding: '4px 2px 8px'
       }
-    }, "\uACF5\uB3D9"), shared.map(renderEntry)));
+    }, "\uC9C0\uCD9C"), expenseList.length === 0 ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 12,
+        color: COLORS.mute,
+        padding: '8px 2px'
+      }
+    }, "\uB0B4\uC5ED \uC5C6\uC74C") : expenseList.map(renderEntry))));
   })(), addOpen && /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
@@ -11801,7 +11831,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v128"))), /*#__PURE__*/React.createElement("button", {
+  }, "v129"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
