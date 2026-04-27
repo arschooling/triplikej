@@ -3,8 +3,8 @@
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
@@ -21,7 +21,7 @@ function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLim
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 // NYC Travel App — restructured
 // - Trips list (top level) -> pick a trip -> Home
@@ -1577,7 +1577,7 @@ function useFxRate() {
           rate: rate,
           ts: ts || null
         });else _tryNext(i + 1);
-      }).catch(function () {
+      })["catch"](function () {
         return _tryNext(i + 1);
       });
     };
@@ -2208,7 +2208,7 @@ function ShareTripSheet(_ref12) {
       setMemberProfiles(members);
       setContacts(candidates);
       setLoading(false);
-    }).catch(function () {
+    })["catch"](function () {
       return setLoading(false);
     });
   }, [open, trip && trip.id]);
@@ -2245,7 +2245,7 @@ function ShareTripSheet(_ref12) {
   var toggleSelect = function toggleSelect(uid) {
     setSelected(function (prev) {
       var next = new Set(prev);
-      if (next.has(uid)) next.delete(uid);else next.add(uid);
+      if (next.has(uid)) next["delete"](uid);else next.add(uid);
       return next;
     });
   };
@@ -2905,7 +2905,8 @@ function HomeScreen(_ref19) {
     editing = _ref19.editing,
     setEditing = _ref19.setEditing,
     userData = _ref19.userData,
-    onOpenCompanion = _ref19.onOpenCompanion;
+    onOpenCompanion = _ref19.onOpenCompanion,
+    onLoadSample = _ref19.onLoadSample;
   var _React$useState51 = React.useState(false),
     _React$useState52 = _slicedToArray(_React$useState51, 2),
     editingTitle = _React$useState52[0],
@@ -3380,7 +3381,42 @@ function HomeScreen(_ref19) {
       color: COLORS.mute,
       stroke: 1.8
     }))));
-  }), !editing && /*#__PURE__*/React.createElement("button", {
+  }), trip.days.length === 0 && onLoadSample && /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: '8px 0 4px',
+      padding: '24px 20px',
+      background: COLORS.card,
+      borderRadius: 16,
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 20,
+      color: COLORS.ink,
+      marginBottom: 6
+    }
+  }, "New York"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.mute,
+      marginBottom: 16
+    }
+  }, "10\uC77C \uC0D8\uD50C \uC77C\uC815\uC73C\uB85C \uC571\uC744 \uBBF8\uB9AC \uC0B4\uD3B4\uBCF4\uC138\uC694"), /*#__PURE__*/React.createElement("button", {
+    onClick: onLoadSample,
+    style: {
+      padding: '11px 24px',
+      background: COLORS.ink,
+      border: 'none',
+      borderRadius: 12,
+      color: COLORS.bg,
+      fontFamily: SANS,
+      fontSize: 13,
+      fontWeight: 500,
+      cursor: 'pointer'
+    }
+  }, "\uB274\uC695 \uC0D8\uD50C \uBD88\uB7EC\uC624\uAE30")), !editing && /*#__PURE__*/React.createElement("button", {
     onClick: onAddDay,
     style: {
       padding: '16px 12px',
@@ -3801,7 +3837,7 @@ function DayScreen(_ref20) {
   var toggle = function toggle(i) {
     return setDone(function (s) {
       var n = new Set(s);
-      n.has(i) ? n.delete(i) : n.add(i);
+      n.has(i) ? n["delete"](i) : n.add(i);
       localStorage.setItem('done_' + trip.title + '_' + dayIdx, JSON.stringify(_toConsumableArray(n)));
       return n;
     });
@@ -7209,7 +7245,7 @@ function App() {
                 localStorage.setItem('tlj_authed', '1');
                 setAuthState('in');
                 // Firestore는 백그라운드에서 실제 데이터로 업데이트
-                fbGetOrCreateUser(fbUser).then(setUserData).catch(function () {});
+                fbGetOrCreateUser(fbUser).then(setUserData)["catch"](function () {});
               } else {
                 setAuthUser(null);
                 setUserData(null);
@@ -7246,7 +7282,7 @@ function App() {
     fbLoadTrips(tripIds).then(function (trips) {
       setUserTrips(trips);
       setTripsLoading(false);
-    }).catch(function () {
+    })["catch"](function () {
       return setTripsLoading(false);
     });
   }, [userData === null || userData === void 0 ? void 0 : userData.uid, JSON.stringify(userData === null || userData === void 0 ? void 0 : userData.tripIds)]);
@@ -7301,7 +7337,7 @@ function App() {
           docs: [],
           pack: []
         };
-        fbSavePrep(authUser.uid, def).catch(console.error);
+        fbSavePrep(authUser.uid, def)["catch"](console.error);
         setPrep(def);
       } else {
         setPrep(p);
@@ -7353,11 +7389,11 @@ function App() {
     setTrip(function (prev) {
       return _objectSpread(_objectSpread({}, prev), patch);
     });
-    if (activeTripId) fbSaveGroup(activeTripId, patch).catch(console.error);
+    if (activeTripId) fbSaveGroup(activeTripId, patch)["catch"](console.error);
   };
   var editPrep = function editPrep(newPrep) {
     setPrep(newPrep);
-    if (authUser !== null && authUser !== void 0 && authUser.uid) fbSavePrep(authUser.uid, newPrep).catch(console.error);
+    if (authUser !== null && authUser !== void 0 && authUser.uid) fbSavePrep(authUser.uid, newPrep)["catch"](console.error);
   };
   var deleteTrip = /*#__PURE__*/function () {
     var _ref40 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(tripId) {
@@ -7822,7 +7858,27 @@ function App() {
         userData: userData,
         onOpenCompanion: function onOpenCompanion() {
           return setCompanionOpen(true);
-        }
+        },
+        onLoadSample: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+          var def;
+          return _regenerator().w(function (_context9) {
+            while (1) switch (_context9.n) {
+              case 0:
+                def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+                _context9.n = 1;
+                return window.fbSaveGroup(activeTripId, {
+                  title: def.title || '내 여행',
+                  dates: def.dates || '',
+                  hotel: def.hotel || '',
+                  days: def.days || [],
+                  hotels: def.hotels || [],
+                  food: def.food || []
+                });
+              case 1:
+                return _context9.a(2);
+            }
+          }, _callee8);
+        }))
       });
       label = 'Home';
     }
@@ -7885,22 +7941,22 @@ function App() {
       setHotelIdx(null);
       setEditing(false);
     },
-    onAdd: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+    onAdd: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
       var title, _yield$fbCreateNewTri, tripId, hue;
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.n) {
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
             title = prompt('여행 이름을 입력해 주세요\n(예: 뉴욕, 파리 7박)');
             if (title) {
-              _context9.n = 1;
+              _context0.n = 1;
               break;
             }
-            return _context9.a(2);
+            return _context0.a(2);
           case 1:
-            _context9.n = 2;
+            _context0.n = 2;
             return fbCreateNewTrip(userData.uid, title);
           case 2:
-            _yield$fbCreateNewTri = _context9.v;
+            _yield$fbCreateNewTri = _context0.v;
             tripId = _yield$fbCreateNewTri.tripId;
             hue = _yield$fbCreateNewTri.hue;
             setUserTrips(function (prev) {
@@ -7919,9 +7975,9 @@ function App() {
             setDayIdx(null);
             setHotelIdx(null);
           case 3:
-            return _context9.a(2);
+            return _context0.a(2);
         }
-      }, _callee8);
+      }, _callee9);
     })),
     onShare: function onShare(t) {
       return setShareTripTarget(t);

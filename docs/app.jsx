@@ -1260,7 +1260,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
-                      userData, onOpenCompanion }) {
+                      userData, onOpenCompanion, onLoadSample }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [datePicker, setDatePicker] = React.useState(null); // 'start' | 'end' | null
   const { itemProps: dayDragProps, isTouchDragging: isDayDragging } = useDragReorder(onReorderDays, editing);
@@ -1482,6 +1482,21 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
             </SwipeableRow>
           );
         })}
+        {trip.days.length === 0 && onLoadSample && (
+          <div style={{ margin:'8px 0 4px', padding:'24px 20px', background:COLORS.card,
+            borderRadius:16, textAlign:'center' }}>
+            <div style={{ fontFamily:SERIF, fontSize:20, color:COLORS.ink, marginBottom:6 }}>
+              New York
+            </div>
+            <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.mute, marginBottom:16 }}>
+              10일 샘플 일정으로 앱을 미리 살펴보세요
+            </div>
+            <button onClick={onLoadSample} style={{
+              padding:'11px 24px', background:COLORS.ink, border:'none', borderRadius:12,
+              color:COLORS.bg, fontFamily:SANS, fontSize:13, fontWeight:500, cursor:'pointer',
+            }}>뉴욕 샘플 불러오기</button>
+          </div>
+        )}
         {!editing && (
           <button onClick={onAddDay} style={{
             padding:'16px 12px', background:'transparent',
@@ -3528,7 +3543,18 @@ function App() {
         onConvertInlineHotel={convertInlineHotel}
         onAddItemToFirstDay={addItemToFirstDay}
         editing={editing} setEditing={setEditing}
-        userData={userData} onOpenCompanion={() => setCompanionOpen(true)}/>;
+        userData={userData} onOpenCompanion={() => setCompanionOpen(true)}
+        onLoadSample={async () => {
+          const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+          await window.fbSaveGroup(activeTripId, {
+            title: def.title || '내 여행',
+            dates: def.dates || '',
+            hotel: def.hotel || '',
+            days: def.days || [],
+            hotels: def.hotels || [],
+            food: def.food || [],
+          });
+        }}/>;
       label = 'Home';
     }
   } else if (tab === 'map')  { screen = <MapScreen trip={trip}/>; label='Map'; }
