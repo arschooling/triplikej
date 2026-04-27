@@ -2371,7 +2371,7 @@ function HotelDetailScreen({ hotel, onBack, onEdit, onOpenSearch, editing, setEd
 }
 
 // ─── Stop sheet (unchanged except pulls editing from open) ─
-function StopSheet({ open, dayHue, onClose, onSave }) {
+function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
   const [draft, setDraft] = React.useState(open.stop);
@@ -2456,7 +2456,7 @@ function StopSheet({ open, dayHue, onClose, onSave }) {
           </div>
 
           {editing ? (
-            <EditStopForm draft={draft} setDraft={setDraft}/>
+            <EditStopForm draft={draft} setDraft={setDraft} cityBias={cityBias}/>
           ) : (
             <>
               <div style={{ marginTop:8, fontFamily:SERIF, fontSize:28, lineHeight:1.12, color:COLORS.ink }}>
@@ -2536,7 +2536,88 @@ function StopSheet({ open, dayHue, onClose, onSave }) {
   );
 }
 
-function EditStopForm({ draft, setDraft }) {
+function LocationField({ value, onChange, cityBias }) {
+  const [query, setQuery]     = React.useState(value || '');
+  const [results, setResults] = React.useState([]);
+  const [show, setShow]       = React.useState(false);
+  const timer = React.useRef(null);
+
+  React.useEffect(() => { setQuery(value || ''); }, [value]);
+
+  React.useEffect(() => {
+    clearTimeout(timer.current);
+    if (!query.trim()) { setResults([]); setShow(false); return; }
+    timer.current = setTimeout(async () => {
+      try {
+        const [bLat, bLon] = cityBias || [];
+        const bias = bLat ? `&lat=${bLat}&lon=${bLon}` : '';
+        const j = await (await fetch(
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lang=en${bias}`
+        )).json();
+        const feats = j?.features || [];
+        setResults(feats);
+        if (feats.length) setShow(true);
+      } catch(_) {}
+    }, 350);
+  }, [query]);
+
+  return (
+    <div style={{ position:'relative' }}>
+      <div style={{ position:'relative' }}>
+        <input value={query}
+          onChange={e => { setQuery(e.target.value); onChange(e.target.value, null); }}
+          onFocus={() => results.length && setShow(true)}
+          onBlur={() => setTimeout(() => setShow(false), 150)}
+          placeholder="위치 검색..."
+          style={{ width:'100%', padding:'8px 34px 8px 10px', borderRadius:8,
+            border:`1px solid ${COLORS.line}`, background:COLORS.card,
+            fontFamily:SANS, fontSize:13, color:COLORS.ink, boxSizing:'border-box' }}/>
+        <div style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
+          <Icon name="search" size={13} color={COLORS.mute} stroke={2}/>
+        </div>
+      </div>
+      {show && results.length > 0 && (
+        <div style={{
+          position:'absolute', top:'calc(100% + 4px)', left:0, right:0, zIndex:300,
+          background:COLORS.bg, border:`1px solid ${COLORS.line}`, borderRadius:10,
+          overflow:'hidden', boxShadow:'0 4px 20px rgba(0,0,0,0.12)',
+        }}>
+          {results.map((f, i) => {
+            const p = f.properties;
+            const name = p.name || p.street || query;
+            const addr = [p.street, p.city || p.county].filter(Boolean).join(', ');
+            const [lon, lat] = f.geometry.coordinates;
+            return (
+              <button key={i}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => {
+                  const loc = addr ? `${name}, ${addr}` : name;
+                  setQuery(loc); setShow(false);
+                  onChange(loc, [lat, lon]);
+                }}
+                style={{
+                  display:'flex', gap:10, alignItems:'center', width:'100%',
+                  padding:'9px 12px', border:'none', background:'transparent',
+                  cursor:'pointer', textAlign:'left',
+                  borderBottom: i < results.length-1 ? `1px solid ${COLORS.line}` : 'none',
+                }}>
+                <Icon name="pin" size={13} color={COLORS.accent} stroke={1.8}/>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, fontWeight:500,
+                    whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{name}</div>
+                  {addr && <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute,
+                    whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{addr}</div>}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EditStopForm({ draft, setDraft, cityBias }) {
   const [showHotelSearch, setShowHotelSearch] = React.useState(false);
   const field = (key, label, type='text') => (
     <label style={{ display:'block', marginTop:10 }}>
@@ -2582,7 +2663,14 @@ function EditStopForm({ draft, setDraft }) {
           호텔 검색해서 채우기
         </button>
       )}
-      {field('loc', '위치')}
+      <label style={{ display:'block', marginTop:10 }}>
+        <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>위치</div>
+        <LocationField
+          value={draft.loc || ''}
+          cityBias={cityBias}
+          onChange={(loc, coords) => setDraft({ ...draft, loc, ...(coords ? { coords } : {}) })}
+        />
+      </label>
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
         {field('duration', '소요 시간')}
         {field('price', '가격')}
@@ -2719,7 +2807,7 @@ function MapScreen({ trip, onEditItem }) {
   const day = trip.days[selDay];
   const { itemProps } = useDragReorder((from, to) => dispatch({ type:'REORDER', from, to }), true);
 
-  const [editingItem, setEditingItem] = React.useState(null); // { dayIdx, itemIdx, item }
+  const [openStop, setOpenStop] = React.useState(null); // { idx: origIdx, stop: item }
 
   const city = trip.title || 'New York';
   const CITY_BIAS_MAP = {
@@ -2873,7 +2961,7 @@ function MapScreen({ trip, onEditItem }) {
               borderRadius:12, display:'flex', gap:10, alignItems:'center',
               overflow:'hidden',
             }}>
-              <button onClick={() => setEditingItem({ orderedIdx: i, origIdx: it._origIdx, item: it })}
+              <button onClick={() => setOpenStop({ idx: it._origIdx, stop: it, editing: false })}
                 style={{
                   flex:1, display:'flex', gap:10, alignItems:'center',
                   padding:'11px 0 11px 14px', border:'none', background:'transparent',
@@ -2889,9 +2977,7 @@ function MapScreen({ trip, onEditItem }) {
                   <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, fontWeight:500,
                     whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{it.title}</div>
                   <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute,
-                    whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                    {it.loc}
-                  </div>
+                    whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{it.loc}</div>
                 </div>
               </button>
               <button
@@ -2904,18 +2990,16 @@ function MapScreen({ trip, onEditItem }) {
         })}
       </div>
 
-      <PlaceSearchSheet
-        open={!!editingItem}
-        item={editingItem?.item}
+      <StopSheet
+        open={openStop}
+        dayHue={day?.hero?.hue ?? 25}
         cityBias={cityBias}
-        onClose={() => setEditingItem(null)}
-        onPick={({ name, addr, coords }) => {
-          const { orderedIdx, origIdx } = editingItem;
-          const loc = addr ? `${name}, ${addr}` : name;
-          GEO_CACHE[loc] = coords;
-          dispatch({ type:'UPDATE_ITEM', idx: orderedIdx, patch: { loc, coords } });
-          if (onEditItem) onEditItem(selDay, origIdx, { loc, coords });
-          setEditingItem(null);
+        onClose={() => setOpenStop(null)}
+        onSave={(draft) => {
+          const orderedIdx = ordered.findIndex(o => o._origIdx === openStop.idx);
+          if (orderedIdx >= 0) dispatch({ type:'UPDATE_ITEM', idx: orderedIdx, patch: draft });
+          if (onEditItem) onEditItem(selDay, openStop.idx, draft);
+          setOpenStop(null);
         }}
       />
     </div>

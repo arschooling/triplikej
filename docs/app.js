@@ -5017,7 +5017,8 @@ function StopSheet({
   open,
   dayHue,
   onClose,
-  onSave
+  onSave,
+  cityBias
 }) {
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
@@ -5175,7 +5176,8 @@ function StopSheet({
     }
   }, "\xB7"), /*#__PURE__*/React.createElement("span", null, draft.time)), editing ? /*#__PURE__*/React.createElement(EditStopForm, {
     draft: draft,
-    setDraft: setDraft
+    setDraft: setDraft,
+    cityBias: cityBias
   }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 8,
@@ -5340,9 +5342,152 @@ function StopSheet({
     stroke: 1.8
   })))))));
 }
+function LocationField({
+  value,
+  onChange,
+  cityBias
+}) {
+  const [query, setQuery] = React.useState(value || '');
+  const [results, setResults] = React.useState([]);
+  const [show, setShow] = React.useState(false);
+  const timer = React.useRef(null);
+  React.useEffect(() => {
+    setQuery(value || '');
+  }, [value]);
+  React.useEffect(() => {
+    clearTimeout(timer.current);
+    if (!query.trim()) {
+      setResults([]);
+      setShow(false);
+      return;
+    }
+    timer.current = setTimeout(async () => {
+      try {
+        const [bLat, bLon] = cityBias || [];
+        const bias = bLat ? `&lat=${bLat}&lon=${bLon}` : '';
+        const j = await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lang=en${bias}`)).json();
+        const feats = j?.features || [];
+        setResults(feats);
+        if (feats.length) setShow(true);
+      } catch (_) {}
+    }, 350);
+  }, [query]);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: query,
+    onChange: e => {
+      setQuery(e.target.value);
+      onChange(e.target.value, null);
+    },
+    onFocus: () => results.length && setShow(true),
+    onBlur: () => setTimeout(() => setShow(false), 150),
+    placeholder: "\uC704\uCE58 \uAC80\uC0C9...",
+    style: {
+      width: '100%',
+      padding: '8px 34px 8px 10px',
+      borderRadius: 8,
+      border: `1px solid ${COLORS.line}`,
+      background: COLORS.card,
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.ink,
+      boxSizing: 'border-box'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      right: 10,
+      top: '50%',
+      transform: 'translateY(-50%)',
+      pointerEvents: 'none'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "search",
+    size: 13,
+    color: COLORS.mute,
+    stroke: 2
+  }))), show && results.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      top: 'calc(100% + 4px)',
+      left: 0,
+      right: 0,
+      zIndex: 300,
+      background: COLORS.bg,
+      border: `1px solid ${COLORS.line}`,
+      borderRadius: 10,
+      overflow: 'hidden',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.12)'
+    }
+  }, results.map((f, i) => {
+    const p = f.properties;
+    const name = p.name || p.street || query;
+    const addr = [p.street, p.city || p.county].filter(Boolean).join(', ');
+    const [lon, lat] = f.geometry.coordinates;
+    return /*#__PURE__*/React.createElement("button", {
+      key: i,
+      onMouseDown: e => e.preventDefault(),
+      onClick: () => {
+        const loc = addr ? `${name}, ${addr}` : name;
+        setQuery(loc);
+        setShow(false);
+        onChange(loc, [lat, lon]);
+      },
+      style: {
+        display: 'flex',
+        gap: 10,
+        alignItems: 'center',
+        width: '100%',
+        padding: '9px 12px',
+        border: 'none',
+        background: 'transparent',
+        cursor: 'pointer',
+        textAlign: 'left',
+        borderBottom: i < results.length - 1 ? `1px solid ${COLORS.line}` : 'none'
+      }
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: "pin",
+      size: 13,
+      color: COLORS.accent,
+      stroke: 1.8
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 13,
+        color: COLORS.ink,
+        fontWeight: 500,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }
+    }, name), addr && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 11,
+        color: COLORS.mute,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }
+    }, addr)));
+  })));
+}
 function EditStopForm({
   draft,
-  setDraft
+  setDraft,
+  cityBias
 }) {
   const [showHotelSearch, setShowHotelSearch] = React.useState(false);
   const field = (key, label, type = 'text') => /*#__PURE__*/React.createElement("label", {
@@ -5451,7 +5596,31 @@ function EditStopForm({
     size: 13,
     color: COLORS.bg,
     stroke: 2
-  }), "\uD638\uD154 \uAC80\uC0C9\uD574\uC11C \uCC44\uC6B0\uAE30"), field('loc', '위치'), /*#__PURE__*/React.createElement("div", {
+  }), "\uD638\uD154 \uAC80\uC0C9\uD574\uC11C \uCC44\uC6B0\uAE30"), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: 'block',
+      marginTop: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 9.5,
+      color: COLORS.mute,
+      letterSpacing: '0.12em',
+      textTransform: 'uppercase',
+      marginBottom: 4
+    }
+  }, "\uC704\uCE58"), /*#__PURE__*/React.createElement(LocationField, {
+    value: draft.loc || '',
+    cityBias: cityBias,
+    onChange: (loc, coords) => setDraft({
+      ...draft,
+      loc,
+      ...(coords ? {
+        coords
+      } : {})
+    })
+  })), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
@@ -5709,7 +5878,7 @@ function MapScreen({
     from,
     to
   }), true);
-  const [editingItem, setEditingItem] = React.useState(null); // { dayIdx, itemIdx, item }
+  const [openStop, setOpenStop] = React.useState(null); // { idx: origIdx, stop: item }
 
   const city = trip.title || 'New York';
   const CITY_BIAS_MAP = {
@@ -5949,10 +6118,10 @@ function MapScreen({
         overflow: 'hidden'
       }
     }), /*#__PURE__*/React.createElement("button", {
-      onClick: () => setEditingItem({
-        orderedIdx: i,
-        origIdx: it._origIdx,
-        item: it
+      onClick: () => setOpenStop({
+        idx: it._origIdx,
+        stop: it,
+        editing: false
       }),
       style: {
         flex: 1,
@@ -6023,35 +6192,20 @@ function MapScreen({
       color: COLORS.accent,
       stroke: 1.8
     })));
-  })), /*#__PURE__*/React.createElement(PlaceSearchSheet, {
-    open: !!editingItem,
-    item: editingItem?.item,
+  })), /*#__PURE__*/React.createElement(StopSheet, {
+    open: openStop,
+    dayHue: day?.hero?.hue ?? 25,
     cityBias: cityBias,
-    onClose: () => setEditingItem(null),
-    onPick: ({
-      name,
-      addr,
-      coords
-    }) => {
-      const {
-        orderedIdx,
-        origIdx
-      } = editingItem;
-      const loc = addr ? `${name}, ${addr}` : name;
-      GEO_CACHE[loc] = coords;
-      dispatch({
+    onClose: () => setOpenStop(null),
+    onSave: draft => {
+      const orderedIdx = ordered.findIndex(o => o._origIdx === openStop.idx);
+      if (orderedIdx >= 0) dispatch({
         type: 'UPDATE_ITEM',
         idx: orderedIdx,
-        patch: {
-          loc,
-          coords
-        }
+        patch: draft
       });
-      if (onEditItem) onEditItem(selDay, origIdx, {
-        loc,
-        coords
-      });
-      setEditingItem(null);
+      if (onEditItem) onEditItem(selDay, openStop.idx, draft);
+      setOpenStop(null);
     }
   }));
 }
