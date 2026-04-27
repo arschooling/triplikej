@@ -1438,7 +1438,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v104</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v105</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3692,7 +3692,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
 const BUDGET_OUT_CATS_DEFAULT = ['교통','숙박','식비','쇼핑','관광','기타'];
 const BUDGET_IN_CATS_DEFAULT  = ['환전','지원금','기타'];
 
-function BudgetScreen({ trip, onEditBudget }) {
+function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
   const budget  = trip.budget || {};
   const entries = budget.entries || [];
   const outCats = budget.outCats || BUDGET_OUT_CATS_DEFAULT;
@@ -3704,6 +3704,9 @@ function BudgetScreen({ trip, onEditBudget }) {
   const [form, setForm] = React.useState({ type:'out', amount:'', cat:'식비', note:'', date:'' });
   const [addingCat,  setAddingCat]  = React.useState(false);
   const [newCatVal,  setNewCatVal]  = React.useState('');
+  const sheetTouchY = React.useRef(null);
+
+  React.useEffect(() => { onSheetChange?.(addOpen || editIdx !== null); }, [addOpen, editIdx]);
 
   const totalIn  = entries.filter(e => e.type==='in').reduce((s,e) => s+e.amount, 0);
   const totalOut = entries.filter(e => e.type==='out').reduce((s,e) => s+e.amount, 0);
@@ -3893,11 +3896,14 @@ function BudgetScreen({ trip, onEditBudget }) {
             position:'absolute', bottom:0, left:0, right:0,
             background:COLORS.bg, borderRadius:'22px 22px 0 0',
             padding:'20px 18px', paddingBottom:'calc(24px + env(safe-area-inset-bottom,0px))',
-          }} onClick={e => e.stopPropagation()}>
+          }} onClick={e => e.stopPropagation()}
+            onTouchStart={e => { sheetTouchY.current = e.touches[0].clientY; }}
+            onTouchEnd={e => { if (e.changedTouches[0].clientY - (sheetTouchY.current||0) > 80) setAddOpen(false); }}>
+            <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2, margin:'-10px auto 14px' }}/>
             {/* 수입/지출 토글 + 공동/개인 */}
             <div style={{ display:'flex', gap:8, marginBottom:14 }}>
               <div style={{ flex:1, display:'flex', gap:6, background:COLORS.softer, borderRadius:14, padding:4 }}>
-                {[{v:'out',label:'지출'},{v:'in',label:'수입'}].map(({v,label}) => (
+                {[{v:'in',label:'수입'},{v:'out',label:'지출'}].map(({v,label}) => (
                   <button key={v} onClick={() => { const cats = v==='out'?outCats:inCats; setForm(f => ({ ...f, type:v, cat:cats[0]||'' })); }}
                     style={{ flex:1, padding:'9px 0', border:'none', borderRadius:10, cursor:'pointer',
                       background: form.type===v ? COLORS.card : 'transparent',
@@ -4053,7 +4059,7 @@ function TabBar({ tab, setTab, visible, editing, canEdit, onToggleEdit }) {
   return (
     <div style={{
       position:'fixed', left:14, right:14,
-      bottom:'calc(env(safe-area-inset-bottom, 10px) + 4px)',
+      bottom:'calc(env(safe-area-inset-bottom, 10px) - 26px)',
       zIndex:30,
       background:'rgba(255,255,255,0.88)',
       backdropFilter:'blur(20px) saturate(180%)',
@@ -4062,8 +4068,9 @@ function TabBar({ tab, setTab, visible, editing, canEdit, onToggleEdit }) {
       padding:'12px 10px 14px',
       border:`0.5px solid ${COLORS.line}`,
       display:'flex', gap:2, alignItems:'center',
-      transition:'opacity 0.25s ease',
+      transition:'opacity 0.25s ease, transform 0.25s ease',
       opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(80px)',
       pointerEvents: visible ? 'auto' : 'none',
     }}>
       {tabs.map(t => (
@@ -4914,6 +4921,7 @@ function App() {
   const [scrollKey, setScrollKey]     = React.useState(0);
   const [editing, setEditing]         = React.useState(false);
   const [tabBarVisible, setTabBarVisible] = React.useState(true);
+  const [budgetSheetOpen, setBudgetSheetOpen] = React.useState(false);
   const [saveConfirm, setSaveConfirm] = React.useState(false); // 저장 확인 다이얼로그
   const lastScrollTop    = React.useRef(0);
   const savedHomeScrollY = React.useRef(0);
@@ -5110,9 +5118,10 @@ function App() {
   const tabRef           = React.useRef(tab);
   const swipeBackRef     = React.useRef(null);
   const slideDirRef      = React.useRef(null);
-  const tabDragRef       = React.useRef(null);
+  const tabDragRef       = React.useRef(null); // { dir, targetTab, tx, settleComplete }
   const edgeDragRef      = React.useRef(null);
   const mainContainerRef = React.useRef(null);
+  const dragFlexRef      = React.useRef(null); // ref to the flex container for direct DOM update
   React.useEffect(() => { tabRef.current = tab; }, [tab]);
 
   const changeTab = React.useCallback((newTab) => {
@@ -5127,10 +5136,12 @@ function App() {
     setTab(newTab); setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);
   }, []);
 
+  // Called after CSS transition ends on the drag flex container
   const handleTabDragEnd = React.useCallback(() => {
     const d = tabDragRef.current;
-    if (!d || !d.settling) return;
-    if (d.settleComplete) {
+    tabDragRef.current = null;
+    setTabDrag(null); // removes both pages from DOM
+    if (d?.settleComplete) {
       if (d.targetTab === '__trips__') {
         setActiveTripId(null); setTrip(null); setEditing(false);
       } else {
@@ -5138,9 +5149,18 @@ function App() {
         setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);
       }
     }
-    tabDragRef.current = null;
-    setTabDrag(null);
   }, []);
+
+  // After tabDrag state causes the flex container to render, set its initial transform via DOM
+  React.useLayoutEffect(() => {
+    if (tabDrag && dragFlexRef.current) {
+      const W = window.innerWidth;
+      const tx = tabDragRef.current?.tx || 0;
+      const cTx = tabDrag.dir === 'prev' ? -W + tx : -tx;
+      dragFlexRef.current.style.transition = 'none';
+      dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
+    }
+  }, [tabDrag]);
 
   React.useEffect(() => {
     const el = mainContainerRef.current;
@@ -5150,8 +5170,8 @@ function App() {
       if (swipeBackRef.current) return;
       const touch = e.touches[0];
       const W = window.innerWidth;
-      const isLeft  = touch.clientX <= 30;
-      const isRight = touch.clientX >= W - 30;
+      const isLeft  = touch.clientX <= 60;
+      const isRight = touch.clientX >= W - 60;
       if (!isLeft && !isRight) return;
       const idx = TAB_ORDER.indexOf(tabRef.current);
       let dir, targetTab;
@@ -5168,7 +5188,6 @@ function App() {
       edgeDragRef.current = { x: touch.clientX, y: touch.clientY, t: Date.now(), dir, targetTab, locked: false };
     };
 
-    let rafId = null;
     const onTouchMove = (e) => {
       const s = edgeDragRef.current;
       if (!s) return;
@@ -5181,22 +5200,19 @@ function App() {
         if (s.dir === 'next' && adx > 5) { edgeDragRef.current = null; return; }
         if (Math.abs(adx) < 8) return;
         s.locked = true;
-        const init = { dir: s.dir, targetTab: s.targetTab, tx: 0, settling: false, settleComplete: false };
-        tabDragRef.current = init;
-        setTabDrag(init);
+        tabDragRef.current = { dir: s.dir, targetTab: s.targetTab, tx: 0, settleComplete: false };
+        setTabDrag({ dir: s.dir, targetTab: s.targetTab }); // triggers render of both pages
         return;
       }
       e.preventDefault();
+      const W = window.innerWidth;
       const raw = s.dir === 'prev' ? adx : -adx;
-      const tx = Math.max(0, Math.min(raw, window.innerWidth));
-      tabDragRef.current = { ...tabDragRef.current, tx, settling: false };
-      if (!rafId) {
-        rafId = requestAnimationFrame(() => {
-          rafId = null;
-          if (tabDragRef.current && !tabDragRef.current.settling) {
-            setTabDrag({ ...tabDragRef.current });
-          }
-        });
+      const tx = Math.max(0, Math.min(raw, W));
+      tabDragRef.current.tx = tx;
+      // Direct DOM update — zero React re-renders during drag
+      if (dragFlexRef.current) {
+        const cTx = s.dir === 'prev' ? -W + tx : -tx;
+        dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
       }
     };
 
@@ -5209,9 +5225,14 @@ function App() {
       const elapsed = Date.now() - s.t;
       const W = window.innerWidth;
       const complete = raw > W * 0.3 || (elapsed < 350 && raw > 50);
-      const next = { ...tabDragRef.current, tx: complete ? W : 0, settling: true, settleComplete: complete };
-      tabDragRef.current = next;
-      setTabDrag(next);
+      const targetTx = complete ? W : 0;
+      tabDragRef.current.settleComplete = complete;
+      // Trigger CSS transition directly on DOM — no React re-render needed
+      if (dragFlexRef.current) {
+        const cTx = s.dir === 'prev' ? -W + targetTx : -targetTx;
+        dragFlexRef.current.style.transition = 'transform 300ms cubic-bezier(0.25,1,0.35,1)';
+        dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
+      }
     };
 
     el.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -5504,7 +5525,7 @@ function App() {
     label = 'Map';
   }
   else if (tab === 'food')   { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} editing={editing} setEditing={setEditing}/>; label='Food'; }
-  else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })}/>; label='Budget'; }
+  else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })} onSheetChange={setBudgetSheetOpen}/>; label='Budget'; }
   else                       { screen = <PrepScreen trip={trip} prep={prep} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
   const dayHue = dayIdx !== null && trip ? (trip.days[dayIdx]?.hero?.hue ?? 30) : 30;
@@ -5613,7 +5634,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v104</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v105</div>
         </div>
       </div>
       <button onClick={async () => {
@@ -5668,24 +5689,15 @@ function App() {
     }
   };
 
-  const dragTx   = tabDrag ? tabDrag.tx : 0;
-  const dragDir  = tabDrag ? tabDrag.dir : null;
-  const dragW    = window.innerWidth;
-  const containerTx = tabDrag
-    ? (dragDir === 'prev' ? -dragW + dragTx : -dragTx)
-    : 0;
-
   return (
     <div style={{ minHeight:'100vh', fontFamily:'-apple-system, system-ui, sans-serif', background:'#F5F2EC' }}>
       <div ref={mainContainerRef} style={{ overflowX:'hidden' }}>
         {tabDrag ? (
-          <div style={{
-            display:'flex',
-            transform:`translateX(${containerTx}px)`,
-            transition: tabDrag.settling ? 'transform 280ms cubic-bezier(0.22,1,0.36,1)' : 'none',
-            willChange:'transform',
+          // transform은 JSX에 없음 — useLayoutEffect + onTouchMove에서 직접 DOM 조작
+          <div ref={dragFlexRef} style={{
+            display:'flex', willChange:'transform',
           }} onTransitionEnd={handleTabDragEnd}>
-            {dragDir === 'prev' && (
+            {tabDrag.dir === 'prev' && (
               <div style={{ width:'100vw', minWidth:'100vw', flexShrink:0, overflow:'hidden' }}>
                 {getScreenForTab(tabDrag.targetTab)}
               </div>
@@ -5693,7 +5705,7 @@ function App() {
             <div style={{ width:'100vw', minWidth:'100vw', flexShrink:0, overflow:'hidden' }}>
               <SwipeBackLayer onBack={swipeBack}>{screen}</SwipeBackLayer>
             </div>
-            {dragDir === 'next' && (
+            {tabDrag.dir === 'next' && (
               <div style={{ width:'100vw', minWidth:'100vw', flexShrink:0, overflow:'hidden' }}>
                 {getScreenForTab(tabDrag.targetTab)}
               </div>
@@ -5707,7 +5719,9 @@ function App() {
           </div>
         )}
       </div>
-      <TabBar tab={tab} setTab={changeTab} visible={tabBarVisible} editing={editing} canEdit={canEdit} onToggleEdit={handleEditToggle}/>
+      <TabBar tab={tab} setTab={changeTab}
+        visible={tabBarVisible && !openStop && !profileSheetOpen && !hotelSheet && !cityPicker && !saveConfirm && !budgetSheetOpen}
+        editing={editing} canEdit={canEdit} onToggleEdit={handleEditToggle}/>
       <StopSheet open={openStop} dayHue={dayHue}
         onClose={() => setOpenStop(null)} onSave={saveStop}/>
       {cityPicker && (
