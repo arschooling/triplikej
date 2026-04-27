@@ -1464,7 +1464,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v110</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v111</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -1870,9 +1870,13 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
         )}
       </div>
 
-      {/* Hotels — trip.hotels 목록만 표시 */}
+      {/* Hotels — 일정에 연결된 숙소만 표시 */}
       {(() => {
-        const hotelList = trip.hotels || [];
+        const allHotels = trip.hotels || [];
+        const linkedNames = new Set(
+          (trip.days || []).flatMap(d => (d.items || []).filter(it => it._hotelRef).map(it => it._hotelRef))
+        );
+        const hotelList = allHotels.filter(h => linkedNames.has(h.name));
         const total = hotelList.length;
         return (
           <>
@@ -5696,7 +5700,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v110</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v111</div>
         </div>
       </div>
       <button onClick={async () => {
