@@ -89,11 +89,10 @@ window.fbGetOrCreateUser = async (fbUser) => {
   const validTripIds = tripIds.filter((id, i) =>
     groupSnaps[i].exists && (groupSnaps[i].data().members || []).includes(fbUser.uid)
   );
-  if (validTripIds.length !== tripIds.length || !existing.tripIds) {
+  if (JSON.stringify(validTripIds) !== JSON.stringify(existing.tripIds || [])) {
     await ref.update({ tripIds: validTripIds });
-    return { uid: fbUser.uid, ...existing, tripIds: validTripIds };
   }
-  return { uid: fbUser.uid, ...existing };
+  return { uid: fbUser.uid, ...existing, tripIds: validTripIds };
 };
 
 // ─── Shared group ─────────────────────────────────────────────
