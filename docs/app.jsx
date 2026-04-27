@@ -990,8 +990,6 @@ function FxCard() {
   const [curIdx, setCurIdx] = React.useState(0);
   const cur = FX_CURRENCIES[curIdx];
   const { loading, rate, ts, refresh } = useFxRate(cur.code);
-  const prev = () => setCurIdx(i => (i - 1 + FX_CURRENCIES.length) % FX_CURRENCIES.length);
-  const next = () => setCurIdx(i => (i + 1) % FX_CURRENCIES.length);
   return (
     <div style={{ background:COLORS.card, borderRadius:14, padding:'13px 14px 11px' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -1007,15 +1005,15 @@ function FxCard() {
         <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>
           = {cur.sym}1 {ts && <span style={{ opacity:0.6 }}>· {ts}</span>}
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:2 }}>
-          <button onClick={prev} style={{ border:'none', background:'transparent', cursor:'pointer', padding:'2px 3px', lineHeight:1 }}>
-            <Icon name="chevron-l" size={10} color={COLORS.mute} stroke={2}/>
-          </button>
-          <span style={{ fontFamily:MONO, fontSize:10, color:COLORS.ink, fontWeight:600, minWidth:28, textAlign:'center' }}>{cur.code}</span>
-          <button onClick={next} style={{ border:'none', background:'transparent', cursor:'pointer', padding:'2px 3px', lineHeight:1 }}>
-            <Icon name="chevron-r" size={10} color={COLORS.mute} stroke={2}/>
-          </button>
-        </div>
+        <select value={curIdx} onChange={e => setCurIdx(Number(e.target.value))} style={{
+          border:'none', background:'transparent', cursor:'pointer',
+          fontFamily:MONO, fontSize:10, color:COLORS.ink, fontWeight:600,
+          outline:'none', padding:'2px 0', appearance:'none', WebkitAppearance:'none',
+        }}>
+          {FX_CURRENCIES.map((c, i) => (
+            <option key={c.code} value={i}>{c.code}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
@@ -1079,11 +1077,11 @@ function TimezoneCard({ city, onClick }) {
         <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase' }}>시차</div>
         <Icon name="chevron-d" size={12} color={COLORS.mute} stroke={1.8}/>
       </div>
-      <div style={{ marginTop:5, display:'flex', alignItems:'baseline', gap:10 }}>
+      <div style={{ marginTop:5, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, flexShrink:0 }}>{formatDiffFromSeoul(city.zone)}</div>
-        <div style={{ display:'flex', flexDirection:'column', gap:1, minWidth:0 }}>
-          <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.ink, letterSpacing:'0.02em' }}>{formatCityTime(city.zone)}</div>
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:2 }}>
           <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.04em' }}>{formatCityDateWeekday(city.zone)}</div>
+          <div style={{ fontFamily:MONO, fontSize:16, color:COLORS.ink, letterSpacing:'0.04em' }}>{formatCityTime(city.zone)}</div>
         </div>
       </div>
       <div style={{ marginTop:5, fontFamily:SANS, fontSize:11, color:COLORS.mute, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
@@ -1465,7 +1463,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v116</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v117</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -5807,7 +5805,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v116</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v117</div>
         </div>
       </div>
       <button onClick={async () => {
