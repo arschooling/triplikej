@@ -236,3 +236,65 @@ window.fbCreateNewTrip = async (uid, title) => {
   });
   return tripId;
 };
+
+// ─── Trip-specific invites ────────────────────────────────────
+window.fbSendTripInvite = async (fromUser, toEmail, tripId, tripTitle) => {
+  const toUser = await fbSearchUser(toEmail);
+  if (!toUser)                     return { error: '가입된 사용자가 없습니다.' };
+  if (toUser.uid === fromUser.uid) return { error: '자기 자신에게는 초대할 수 없습니다.' };
+  const tripSnap = await _fbDb.collection('groups').doc(tripId).get();
+  if (tripSnap.exists && (tripSnap.data().members || []).includes(toUser.uid))
+    return { error: '이미 이 여행에 참여 중입니다.' };
+  const ex = await _fbDb.collection('invites')
+    .where('fromUid','==',fromUser.uid).where('toUid','==',toUser.uid)
+    .where('tripId','==',tripId).where('status','==','pending').get();
+  if (!ex.empty) return { error: '이미 초대를 보냈습니다.' };
+  await _fbDb.collection('invites').add({
+    fromUid  : fromUser.uid, fromName : fromUser.displayName,
+    fromEmail: fromUser.email, fromPhoto: fromUser.photoURL || '',
+    toUid    : toUser.uid,
+    tripId, tripTitle: tripTitle || '',
+    groupId  : tripId,
+    status   : 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+  return { success: true, toName: toUser.displayName };
+};
+
+window.fbAcceptTripInvite = async (invite, myUid) => {
+  const tripId = invite.tripId || invite.groupId;
+  await _fbDb.collection('invites').doc(invite.id).update({ status: 'accepted' });
+  await _fbDb.collection('groups').doc(tripId).update({
+    members: firebase.firestore.FieldValue.arrayUnion(myUid),
+  });
+  await _fbDb.collection('users').doc(myUid).update({
+    tripIds: firebase.firestore.FieldValue.arrayUnion(tripId),
+  });
+  return tripId;
+};
+
+window.fbGetTripCompanions = async (tripId, myUid) => {
+  const snap = await _fbDb.collection('groups').doc(tripId).get();
+  if (!snap.exists) return [];
+  const uids = (snap.data().members || []).filter(u => u !== myUid);
+  const res = await Promise.all(uids.map(async uid => {
+    const s = await _fbDb.collection('users').doc(uid).get();
+    return s.exists ? { uid, ...s.data() } : null;
+  }));
+  return res.filter(Boolean);
+};
+
+window.fbDeleteTrip = async (tripId, uid) => {
+  const snap = await _fbDb.collection('groups').doc(tripId).get();
+  const members = snap.exists ? (snap.data().members || []) : [];
+  if (members.length <= 1) {
+    await _fbDb.collection('groups').doc(tripId).delete();
+  } else {
+    await _fbDb.collection('groups').doc(tripId).update({
+      members: firebase.firestore.FieldValue.arrayRemove(uid),
+    });
+  }
+  await _fbDb.collection('users').doc(uid).update({
+    tripIds: firebase.firestore.FieldValue.arrayRemove(tripId),
+  });
+};
