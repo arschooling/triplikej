@@ -63,7 +63,8 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
     case 'refresh':return <svg {...p}><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>;
     case 'globe':  return <svg {...p}><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>;
     case 'nav':    return <svg {...p}><path d="m3 11 19-8-8 19-2-8z"/></svg>;
-    case 'phone':  return <svg {...p}><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg>;
+    case 'phone':   return <svg {...p}><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg>;
+    case 'sparkle': return <svg {...p}><path d="M12 3 9.5 9.5 3 12l6.5 2.5L12 21l2.5-6.5L21 12l-6.5-2.5z"/></svg>;
     default: return null;
   }
 };
@@ -648,9 +649,8 @@ function TimeField({ value, onChange }) {
       width:'100%', padding:'8px 10px', borderRadius:8,
       border:`1px solid ${COLORS.line}`, background:COLORS.card,
       fontFamily:MONO, fontSize:14, color:COLORS.ink, cursor:'pointer',
-      display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+      display:'flex', alignItems:'center', justifyContent:'center',
     }}>
-      <Icon name="clock" size={13} color={COLORS.mute} stroke={1.8}/>
       {value || '09:00'}
     </button>
   );
@@ -1031,6 +1031,12 @@ function formatDiffFromSeoul(zone) {
 function formatCityTime(zone) {
   return new Intl.DateTimeFormat('en-US', { timeZone: zone, hour:'2-digit', minute:'2-digit', hour12: false }).format(new Date());
 }
+function formatCityDateWeekday(zone) {
+  const d = new Date();
+  const date = new Intl.DateTimeFormat('ko-KR', { timeZone: zone, month:'long', day:'numeric' }).format(d);
+  const weekday = new Intl.DateTimeFormat('ko-KR', { timeZone: zone, weekday:'short' }).format(d);
+  return `${date} (${weekday})`;
+}
 
 function TimezoneCard({ city, onClick }) {
   const [, force] = React.useReducer(x => x+1, 0);
@@ -1047,6 +1053,9 @@ function TimezoneCard({ city, onClick }) {
       <div style={{ marginTop:5, fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>{formatDiffFromSeoul(city.zone)}</div>
       <div style={{ marginTop:1, fontFamily:SANS, fontSize:11, color:COLORS.mute, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
         {city.flag} {city.key} · {formatCityTime(city.zone)}
+      </div>
+      <div style={{ marginTop:2, fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.06em' }}>
+        {formatCityDateWeekday(city.zone)}
       </div>
     </button>
   );
@@ -1418,15 +1427,13 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
     catch (e) { setRestoreErr('복원 실패. 다시 시도해 주세요.'); setRestoring(false); }
   };
   return (
-    <div style={{ minHeight:'100vh', background:COLORS.bg, paddingBottom:100,
-      paddingTop:'calc(env(safe-area-inset-top, 0px) + 72px)' }}>
+    <div style={{ minHeight:'100vh', background:COLORS.bg, paddingBottom:100 }}>
       <div style={{
-        position:'fixed', top:0, left:0, right:0, zIndex:50, background:COLORS.bg,
         display:'flex', alignItems:'flex-end', justifyContent:'space-between',
-        paddingTop:'calc(env(safe-area-inset-top, 0px) + 16px)',
+        paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v91</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v92</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -1450,7 +1457,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                 <TripSwipeCard key={t.id}
                   onShare={() => onShare(t)}
                   onDelete={() => onDelete(t.id)}
-                  wrapStyle={{ borderRadius:20, border:`1px solid ${COLORS.line}` }}>
+                  wrapStyle={{ borderRadius:16, border:`1px solid ${COLORS.line}` }}>
                   <button onClick={() => onSelect(t.id)} style={{
                     display:'block', width:'100%', background:'none', border:'none',
                     padding:0, margin:0, textAlign:'left', cursor:'pointer',
@@ -1480,7 +1487,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
               );
             })}
             {(trips.length === 0 || trips.every(t => !(t.days||[]).length)) && onRestore && (
-              <div style={{ padding:'28px 20px', background:COLORS.card, borderRadius:20,
+              <div style={{ padding:'28px 20px', background:COLORS.card, borderRadius:16,
                 border:`1px solid ${COLORS.line}`, textAlign:'center', marginBottom:4 }}>
                 <div style={{ fontFamily:SERIF, fontSize:24, color:COLORS.ink, marginBottom:6 }}>New York</div>
                 <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.mute, marginBottom:18 }}>
@@ -1496,7 +1503,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
               </div>
             )}
             <button onClick={onAdd} style={{ marginTop:4, padding:'18px 16px', background:'transparent',
-              border:`1.5px dashed ${COLORS.line}`, borderRadius:20, color:COLORS.mute, cursor:'pointer',
+              border:`1.5px dashed ${COLORS.line}`, borderRadius:16, color:COLORS.mute, cursor:'pointer',
               display:'flex', gap:8, alignItems:'center', justifyContent:'center', fontFamily:SANS, fontSize:13.5 }}>
               <Icon name="plus" size={15} color={COLORS.mute} stroke={2}/>새 여행 추가
             </button>
@@ -1821,26 +1828,10 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
         )}
       </div>
 
-      {/* Hotels — trip.hotels + any 'hotel' category items in days */}
+      {/* Hotels — trip.hotels 목록만 표시 */}
       {(() => {
         const hotelList = trip.hotels || [];
-        // Inline hotels: hotel items in days not already in trip.hotels
-        const inlineHotels = [];
-        trip.days.forEach((d, di) => {
-          (d.items || []).forEach((it, ii) => {
-            if (it.cat === 'hotel') {
-              const exists = hotelList.some(h =>
-                h.name === it.title || h.name === it.en ||
-                (it._hotelRef && it._hotelRef === h.name));
-              if (!exists) inlineHotels.push({
-                name: it.en || it.title.replace(/\s*(체크인|체크아웃)\s*$/, ''),
-                area: d.title, checkin: `${d.date}${it.time ? ' · '+it.time : ''}`,
-                hue: d.hero.hue, _inline: true, _dayIdx: di,
-              });
-            }
-          });
-        });
-        const total = hotelList.length + inlineHotels.length;
+        const total = hotelList.length;
         return (
           <>
             <div style={{ padding:'22px 24px 8px', display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
@@ -1892,39 +1883,6 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
                     ) : (
                       <Icon name="chevron" size={16} color={COLORS.mute} stroke={1.8}/>
                     )}
-                  </div>
-                  </SwipeableRow>
-                );
-              })}
-              {inlineHotels.map((h, i) => {
-                // trip.hotels에 같은 이름 있으면 그리로, 없으면 자동 추가 후 오픈
-                const handleClick = () => {
-                  const matchIdx = (trip.hotels||[]).findIndex(h2 => h2.name === h.name);
-                  if (matchIdx >= 0) { onOpenHotel(matchIdx); }
-                  else { onConvertInlineHotel(h); }
-                };
-                return (
-                  <SwipeableRow key={'inl'+i} onEdit={handleClick} onDelete={() => {}} disabled={editing} wrapStyle={{ borderRadius:16 }}>
-                  <div onClick={handleClick} style={{
-                    background:COLORS.card, borderRadius:16, padding:12,
-                    display:'flex', gap:12, alignItems:'center', cursor:'pointer',
-                  }}>
-                    <div style={{ width:64, height:64, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
-                      <Photo hue={h.hue ?? 25} height={64} small/>
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.accent, letterSpacing:'0.12em' }}>
-                        STAY · {h.checkin}
-                      </div>
-                      <div style={{ marginTop:3, fontFamily:SERIF, fontSize:18, lineHeight:1.2, color:COLORS.ink,
-                        whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{h.name}</div>
-                      <div style={{ marginTop:3, fontFamily:SANS, fontSize:11.5, color:COLORS.mute,
-                        display:'flex', gap:5, alignItems:'center' }}>
-                        <Icon name="pin" size={11} color={COLORS.mute} stroke={1.8}/>
-                        <span>{h.area}</span>
-                      </div>
-                    </div>
-                    <Icon name="chevron" size={16} color={COLORS.mute} stroke={1.8}/>
                   </div>
                   </SwipeableRow>
                 );
@@ -2022,6 +1980,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
   });
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
+  const [nearbyStop, setNearbyStop] = React.useState(null);
   const { itemProps: itemDragProps } = useDragReorder(onReorderItems, editing);
 
   return (
@@ -2119,6 +2078,16 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                   onEdit={() => onOpenStop({ idx: i, stop: it, editing: true })}
                   onDelete={() => onDeleteItem(i)}>
                 <div style={{ position:'relative' }}>
+                  {!editing && (
+                    <button onClick={(e)=>{ e.stopPropagation(); setNearbyStop(it); }} style={{
+                      position:'absolute', top:8, right:8, zIndex:5,
+                      width:26, height:26, borderRadius:13, border:'none',
+                      background:'rgba(26,24,22,0.06)', cursor:'pointer',
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                    }}>
+                      <Icon name="sparkle" size={13} color={COLORS.mute} stroke={1.8}/>
+                    </button>
+                  )}
                   <button onClick={() => onOpenStop({ idx: i, stop: it, editing })} style={{
                     width:'100%', background:COLORS.card, borderRadius:14, border:'none', cursor:'pointer',
                     padding:'11px 14px 13px', textAlign:'left', opacity: isDone ? 0.5 : 1,
@@ -2235,6 +2204,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
           setDatePickerOpen(false);
         }}
       />
+      <NearbySheet stop={nearbyStop} onClose={() => setNearbyStop(null)}/>
     </div>
   );
 }
@@ -2480,6 +2450,131 @@ function HotelDetailScreen({ hotel, onBack, onEdit, onOpenSearch, editing, setEd
   );
 }
 
+// ─── Nearby suggestions sheet ────────────────────────────────
+function NearbySheet({ stop, onClose }) {
+  const [results, setResults] = React.useState(null); // null=loading, []+=done
+  const [sheetY, setSheetY] = React.useState(0);
+  const sheetRef = React.useRef(null);
+  const sheetYRef = React.useRef(0);
+  const dragRef = React.useRef({ active:false, startY:0 });
+
+  React.useEffect(() => {
+    if (!stop) return;
+    setResults(null); setSheetY(0); sheetYRef.current = 0;
+    const ctrl = new AbortController();
+    (async () => {
+      try {
+        let lat, lon;
+        if (stop.coords) { [lat, lon] = stop.coords; }
+        else {
+          const q = encodeURIComponent([stop.title, stop.en, stop.loc].filter(Boolean).join(' '));
+          const geo = await fetch(`https://photon.komoot.io/api/?q=${q}&limit=1`, { signal:ctrl.signal }).then(r=>r.json());
+          const f = geo.features?.[0];
+          if (!f) { setResults([]); return; }
+          [lon, lat] = f.geometry.coordinates;
+        }
+        const r = 600;
+        const qs = `[out:json][timeout:10];(node["amenity"~"restaurant|cafe|bar"](around:${r},${lat},${lon});node["tourism"~"attraction|museum|viewpoint"](around:${r},${lat},${lon}););out 20;`;
+        const d = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(qs)}`, { signal:ctrl.signal }).then(r=>r.json());
+        const seen = new Set();
+        const list = (d.elements||[]).reduce((acc, e) => {
+          const nm = e.tags?.name || e.tags?.['name:en'] || '';
+          if (!nm || seen.has(nm)) return acc;
+          seen.add(nm);
+          const type = e.tags?.amenity || e.tags?.tourism || '';
+          const typeLabel = { restaurant:'맛집', cafe:'카페', bar:'바', attraction:'명소', museum:'박물관', viewpoint:'전망' }[type] || type;
+          acc.push({ name:nm, type:typeLabel, lat:e.lat, lon:e.lon });
+          return acc;
+        }, []);
+        setResults(list);
+      } catch(e) { if (!ctrl.signal.aborted) setResults([]); }
+    })();
+    return () => ctrl.abort();
+  }, [stop]);
+
+  React.useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    const onStart = (e) => { dragRef.current = { active:true, startY:e.touches[0].clientY, st:el.scrollTop }; };
+    const onMove = (e) => {
+      if (!dragRef.current.active) return;
+      const dy = e.touches[0].clientY - dragRef.current.startY;
+      if (dragRef.current.st > 8 || dy <= 0) { dragRef.current.active = false; return; }
+      e.preventDefault();
+      sheetYRef.current = Math.max(0, dy);
+      setSheetY(sheetYRef.current);
+    };
+    const onEnd = () => {
+      dragRef.current.active = false;
+      const top = el.getBoundingClientRect().top;
+      if (top > window.innerHeight / 2) onClose();
+      else { sheetYRef.current = 0; setSheetY(0); }
+    };
+    el.addEventListener('touchstart', onStart, { passive:true });
+    el.addEventListener('touchmove', onMove, { passive:false });
+    el.addEventListener('touchend', onEnd, { passive:true });
+    return () => { el.removeEventListener('touchstart',onStart); el.removeEventListener('touchmove',onMove); el.removeEventListener('touchend',onEnd); };
+  }, [stop]);
+
+  if (!stop) return null;
+  const typeIcon = { '맛집':'food', '카페':'bar', '바':'bar', '명소':'sight', '박물관':'book', '전망':'view' };
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:1100,
+      display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      background:`rgba(0,0,0,${Math.max(0,0.30-sheetY/400)})` }} onClick={onClose}>
+      <div ref={sheetRef} onClick={e=>e.stopPropagation()}
+        style={{ background:COLORS.bg, borderRadius:'22px 22px 0 0', maxHeight:'70%',
+          overflowY:'auto', overflowX:'hidden', paddingBottom:40,
+          transform:`translateY(${sheetY}px)`,
+          transition: sheetY===0 ? 'transform 0.32s cubic-bezier(0.32,0.72,0,1)' : 'none' }}>
+        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 4px' }}>
+          <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
+        </div>
+        <div style={{ padding:'8px 20px 14px' }}>
+          <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>주변 추천</div>
+          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginTop:2 }}>{stop.title}</div>
+        </div>
+        {results === null && (
+          <div style={{ padding:'32px 20px', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+            주변 장소를 찾는 중...
+          </div>
+        )}
+        {results !== null && results.length === 0 && (
+          <div style={{ padding:'32px 20px', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+            주변에 추천할 장소가 없어요
+          </div>
+        )}
+        {results !== null && results.length > 0 && (
+          <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:8 }}>
+            {['맛집','카페','바','명소','박물관','전망'].map(type => {
+              const items = results.filter(r => r.type === type);
+              if (!items.length) return null;
+              return (
+                <div key={type}>
+                  <div style={{ padding:'0 4px 6px', fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>{type}</div>
+                  <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
+                    {items.map((r, i) => (
+                      <button key={i} onClick={() => window.open(mapsSearchUrl(r.name), '_blank')}
+                        style={{ width:'100%', padding:'12px 14px', border:'none', background:'transparent',
+                          cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center', gap:10,
+                          borderBottom: i < items.length-1 ? `1px solid ${COLORS.line}` : 'none' }}>
+                        <Icon name={typeIcon[type]||'pin'} size={14} color={COLORS.mute} stroke={1.8}/>
+                        <span style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.ink }}>{r.name}</span>
+                        <Icon name="chevron" size={12} color={COLORS.line} stroke={2} style={{ marginLeft:'auto' }}/>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Stop sheet (unchanged except pulls editing from open) ─
 function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   if (!open) return null;
@@ -2524,7 +2619,8 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
     };
     const onEnd = () => {
       dragRef.current.active = false;
-      if (sheetYRef.current > window.innerHeight * 0.5) { onClose(); }
+      const topPos = sheetRef.current ? sheetRef.current.getBoundingClientRect().top : 0;
+      if (topPos > window.innerHeight / 2) { onClose(); }
       else { sheetYRef.current = 0; setSheetY(0); }
     };
     el.addEventListener('touchstart', onStart, { passive: true });
@@ -3175,34 +3271,149 @@ function MapScreen({ trip, onEditItem }) {
 
 // ─── Food ───────────────────────────────────────────────────
 function FoodScreen({ trip, onEditFood, editing, setEditing }) {
-  const grouped = {};
-  (trip.food || []).forEach((f, idx) => { (grouped[f.cat] = grouped[f.cat] || []).push({ ...f, idx }); });
+  const [query,    setQuery]    = React.useState('');
+  const [selCat,   setSelCat]   = React.useState(null); // null = 전체
+  const [addCatInput, setAddCatInput] = React.useState(false);
+  const [newCatName,  setNewCatName]  = React.useState('');
 
-  const addFood = () => {
-    const list = [...(trip.food || []), { cat:'🍕 New', name:'새 맛집', detail:'', price:'', note:'' }];
+  const allFood = trip.food || [];
+  const cats = [...new Set(allFood.map(f => f.cat).filter(Boolean))];
+
+  const filtered = allFood.reduce((acc, f, idx) => {
+    const qLow = query.toLowerCase();
+    const matchQ = !query || (f.name||'').toLowerCase().includes(qLow)
+      || (f.detail||'').toLowerCase().includes(qLow)
+      || (f.note||'').toLowerCase().includes(qLow);
+    const matchCat = selCat === null || f.cat === selCat;
+    if (matchQ && matchCat) acc.push({ ...f, idx });
+    return acc;
+  }, []);
+
+  const grouped = {};
+  filtered.forEach(f => { (grouped[f.cat||'기타'] = grouped[f.cat||'기타'] || []).push(f); });
+
+  const addFood = (cat) => {
+    const list = [...allFood, { cat: cat || (cats[0]||'🍽 기타'), name:'새 맛집', detail:'', price:'', note:'' }];
     onEditFood(list);
   };
   const delFood = (idx) => {
     if (!confirm('이 맛집을 삭제할까요?')) return;
-    onEditFood((trip.food || []).filter((_, i) => i !== idx));
+    onEditFood(allFood.filter((_, i) => i !== idx));
   };
   const updateFood = (idx, patch) => {
-    const list = [...(trip.food || [])];
-    list[idx] = { ...list[idx], ...patch };
+    const list = [...allFood]; list[idx] = { ...list[idx], ...patch };
     onEditFood(list);
+  };
+  const renameCat = (oldCat, newCat) => {
+    if (!newCat.trim() || newCat === oldCat) return;
+    const list = allFood.map(f => f.cat === oldCat ? { ...f, cat: newCat } : f);
+    onEditFood(list);
+    if (selCat === oldCat) setSelCat(newCat);
+  };
+  const deleteCat = (cat) => {
+    if (!confirm(`"${cat}" 카테고리와 모든 맛집을 삭제할까요?`)) return;
+    const list = allFood.filter(f => f.cat !== cat);
+    onEditFood(list);
+    if (selCat === cat) setSelCat(null);
+  };
+  const addCategory = () => {
+    const name = newCatName.trim();
+    if (!name) return;
+    addFood(name);
+    setSelCat(name);
+    setNewCatName(''); setAddCatInput(false);
   };
 
   return (
     <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
-      <div style={{ paddingTop:'calc(16px + env(safe-area-inset-top, 0px))', paddingLeft:24, paddingRight:24, paddingBottom:16 }}>
+      {/* 헤더 */}
+      <div style={{ paddingTop:'calc(16px + env(safe-area-inset-top, 0px))', paddingLeft:24, paddingRight:24, paddingBottom:12 }}>
         <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>Food Guide</div>
         <div style={{ marginTop:4, fontFamily:SERIF, fontSize:38, color:COLORS.ink, letterSpacing:'-0.02em' }}>먹어볼 것.</div>
       </div>
+
+      {/* 검색창 */}
+      <div style={{ padding:'0 16px 10px', position:'relative' }}>
+        <Icon name="search" size={14} color={COLORS.mute} stroke={2}
+          style={{ position:'absolute', left:28, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}/>
+        <input value={query} onChange={e => setQuery(e.target.value)}
+          placeholder="맛집 검색..."
+          style={{
+            width:'100%', boxSizing:'border-box',
+            paddingLeft:36, paddingRight:12, paddingTop:9, paddingBottom:9,
+            border:`1px solid ${COLORS.line}`, borderRadius:12,
+            background:COLORS.card, fontFamily:SANS, fontSize:13.5,
+            color:COLORS.ink, outline:'none',
+          }}/>
+      </div>
+
+      {/* 카테고리 탭 */}
+      <div style={{ display:'flex', alignItems:'center', overflowX:'auto', paddingLeft:16, paddingRight:16,
+        scrollbarWidth:'none', msOverflowStyle:'none', gap:4, marginBottom:14 }}>
+        <button onClick={() => setSelCat(null)} style={{
+          flexShrink:0, padding:'6px 14px', border:'none', cursor:'pointer', borderRadius:20,
+          background: selCat === null ? COLORS.ink : 'transparent',
+          color: selCat === null ? '#fff' : COLORS.mute,
+          fontFamily:SANS, fontSize:12.5, fontWeight: selCat === null ? 600 : 400,
+        }}>전체</button>
+        {cats.map(c => (
+          <button key={c} onClick={() => setSelCat(c === selCat ? null : c)} style={{
+            flexShrink:0, padding:'6px 14px', border:'none', cursor:'pointer', borderRadius:20,
+            background: selCat === c ? COLORS.ink : 'transparent',
+            color: selCat === c ? '#fff' : COLORS.mute,
+            fontFamily:SANS, fontSize:12.5, fontWeight: selCat === c ? 600 : 400,
+          }}>{c}</button>
+        ))}
+        {editing && !addCatInput && (
+          <button onClick={() => setAddCatInput(true)} style={{
+            flexShrink:0, padding:'6px 12px', border:`1.5px dashed ${COLORS.line}`, cursor:'pointer',
+            borderRadius:20, background:'transparent', color:COLORS.mute,
+            fontFamily:SANS, fontSize:12.5, display:'flex', alignItems:'center', gap:3,
+          }}>
+            <Icon name="plus" size={11} color={COLORS.mute} stroke={2}/> 카테고리
+          </button>
+        )}
+        {editing && addCatInput && (
+          <form onSubmit={e => { e.preventDefault(); addCategory(); }}
+            style={{ display:'flex', gap:4, alignItems:'center', flexShrink:0 }}>
+            <input autoFocus value={newCatName} onChange={e => setNewCatName(e.target.value)}
+              placeholder="카테고리 이름"
+              style={{ width:110, padding:'5px 10px', border:`1px solid ${COLORS.line}`,
+                borderRadius:16, fontFamily:SANS, fontSize:12.5, background:COLORS.card,
+                color:COLORS.ink, outline:'none' }}/>
+            <button type="submit" style={{ padding:'5px 10px', border:'none', borderRadius:16,
+              background:COLORS.ink, color:'#fff', fontFamily:SANS, fontSize:12, cursor:'pointer' }}>추가</button>
+            <button type="button" onClick={() => { setAddCatInput(false); setNewCatName(''); }} style={{
+              padding:'5px 8px', border:'none', borderRadius:16, background:'transparent',
+              color:COLORS.mute, fontFamily:SANS, fontSize:12, cursor:'pointer' }}>취소</button>
+          </form>
+        )}
+      </div>
+
+      {/* 아이템 목록 */}
       <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:18 }}>
         {Object.entries(grouped).map(([cat, items]) => (
           <div key={cat}>
-            <div style={{ padding:'0 4px 8px', fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:'0.08em' }}>
-              {cat}
+            {/* 카테고리 헤더 */}
+            <div style={{ padding:'0 4px 8px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontFamily:MONO, fontSize:10.5, color:COLORS.mute, letterSpacing:'0.08em' }}>{cat}</span>
+              {editing && (
+                <div style={{ display:'flex', gap:4 }}>
+                  <button onClick={() => {
+                    const n = prompt('카테고리 이름 변경:', cat);
+                    if (n) renameCat(cat, n);
+                  }} style={{ padding:'3px 8px', border:`1px solid ${COLORS.line}`,
+                    borderRadius:8, background:'transparent', cursor:'pointer',
+                    fontFamily:SANS, fontSize:11, color:COLORS.mute }}>이름 변경</button>
+                  <button onClick={() => deleteCat(cat)} style={{
+                    padding:'3px 6px', border:'none', borderRadius:8,
+                    background:'rgba(193,79,46,0.10)', cursor:'pointer',
+                    display:'flex', alignItems:'center',
+                  }}>
+                    <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
+                  </button>
+                </div>
+              )}
             </div>
             <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
               {items.map((f, i) => (
@@ -3211,42 +3422,66 @@ function FoodScreen({ trip, onEditFood, editing, setEditing }) {
                   borderBottom: i < items.length - 1 ? `1px solid ${COLORS.line}` : 'none',
                 }}>
                   {editing ? (
-                    <>
+                    <div style={{ display:'flex', flexDirection:'column', gap:4, paddingRight:32 }}>
                       <input value={f.name} onChange={e => updateFood(f.idx, { name: e.target.value })}
-                        style={{ width:'100%', border:'none', outline:'none', background:'transparent',
-                          fontFamily:SANS, fontSize:14, fontWeight:500, color:COLORS.ink, padding:0 }}/>
-                      <input value={f.detail} onChange={e => updateFood(f.idx, { detail: e.target.value })}
-                        placeholder="상세"
-                        style={{ width:'100%', marginTop:3, border:'none', outline:'none', background:'transparent',
-                          fontFamily:SANS, fontSize:12, color:COLORS.mute, padding:0 }}/>
-                      <button onClick={() => delFood(f.idx)} style={{
-                        position:'absolute', top:8, right:8,
-                        width:24, height:24, borderRadius:12, border:'none',
-                        background:'rgba(193,79,46,0.12)', cursor:'pointer',
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                      }}>
-                        <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
-                      </button>
-                    </>
+                        placeholder="맛집 이름"
+                        style={{ border:'none', outline:'none', background:'transparent',
+                          fontFamily:SANS, fontSize:14, fontWeight:500, color:COLORS.ink, padding:0, width:'100%' }}/>
+                      <input value={f.detail||''} onChange={e => updateFood(f.idx, { detail: e.target.value })}
+                        placeholder="상세 설명"
+                        style={{ border:'none', outline:'none', background:'transparent',
+                          fontFamily:SANS, fontSize:12, color:COLORS.mute, padding:0, width:'100%' }}/>
+                      <div style={{ display:'flex', gap:8 }}>
+                        <input value={f.price||''} onChange={e => updateFood(f.idx, { price: e.target.value })}
+                          placeholder="가격"
+                          style={{ border:'none', outline:'none', background:'transparent',
+                            fontFamily:MONO, fontSize:11, color:COLORS.accent, padding:0, width:60 }}/>
+                        <input value={f.note||''} onChange={e => updateFood(f.idx, { note: e.target.value })}
+                          placeholder="메모"
+                          style={{ border:'none', outline:'none', background:'transparent',
+                            fontFamily:SANS, fontSize:11, color:COLORS.mute, padding:0, flex:1 }}/>
+                      </div>
+                    </div>
                   ) : (
-                    <button onClick={() => window.open(mapsSearchUrl(`${f.name} New York`), '_blank')} style={{
+                    <button onClick={() => window.open(mapsSearchUrl(f.name), '_blank')} style={{
                       width:'100%', padding:0, border:'none', background:'transparent', cursor:'pointer', textAlign:'left',
                     }}>
                       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8 }}>
                         <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, fontWeight:500 }}>{f.name}</div>
                         {f.price && <div style={{ fontFamily:MONO, fontSize:10.5, color:COLORS.accent, flexShrink:0 }}>{f.price}</div>}
                       </div>
-                      <div style={{ marginTop:3, fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.4 }}>{f.detail}</div>
+                      {f.detail && <div style={{ marginTop:3, fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.4 }}>{f.detail}</div>}
                       {f.note && <div style={{ marginTop:4, fontFamily:SANS, fontSize:11, color:COLORS.mute, fontStyle:'italic', opacity:0.8 }}>— {f.note}</div>}
+                    </button>
+                  )}
+                  {editing && (
+                    <button onClick={() => delFood(f.idx)} style={{
+                      position:'absolute', top:8, right:8,
+                      width:24, height:24, borderRadius:12, border:'none',
+                      background:'rgba(193,79,46,0.12)', cursor:'pointer',
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                    }}>
+                      <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
                     </button>
                   )}
                 </div>
               ))}
             </div>
+            {editing && (
+              <button onClick={() => addFood(cat)} style={{
+                marginTop:4, padding:'9px 12px', background:'transparent',
+                border:`1.5px dashed ${COLORS.line}`, borderRadius:10,
+                color:COLORS.mute, cursor:'pointer', width:'100%',
+                display:'flex', gap:6, alignItems:'center', justifyContent:'center',
+                fontFamily:SANS, fontSize:11.5,
+              }}>
+                <Icon name="plus" size={11} color={COLORS.mute} stroke={2}/> {cat}에 추가
+              </button>
+            )}
           </div>
         ))}
         {editing && (
-          <button onClick={addFood} style={{
+          <button onClick={() => addFood(cats[0]||'🍽 기타')} style={{
             padding:'14px 12px', background:'transparent',
             border:`1.5px dashed ${COLORS.line}`, borderRadius:14,
             color:COLORS.mute, cursor:'pointer',
@@ -3256,79 +3491,204 @@ function FoodScreen({ trip, onEditFood, editing, setEditing }) {
             <Icon name="plus" size={14} color={COLORS.mute} stroke={2}/> 맛집 추가
           </button>
         )}
+        {filtered.length === 0 && (
+          <div style={{ padding:'32px 0', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+            {query ? '검색 결과가 없어요' : '아직 맛집이 없어요'}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ─── Prep (editable lists) ─────────────────────────────────
-function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
-  const totalStops = trip.days.reduce((s,d)=>s+d.items.length,0);
-  const prep = prepProp || trip.prep || { checklist: [], docs: [], pack: [] };
+// ─── Prep (editable lists with categories) ────────────────────
+function normalizePrepCats(raw) {
+  if (raw?.cats) return raw;
+  const result = [];
+  if (raw?.checklist?.length) result.push({ id:'cat_checklist', name:'체크리스트', items: raw.checklist });
+  if (raw?.docs?.length)      result.push({ id:'cat_docs',      name:'입국 서류',   items: raw.docs });
+  if (raw?.pack?.length)      result.push({ id:'cat_pack',      name:'챙길 물건',   items: raw.pack });
+  if (!result.length)         result.push({ id:'cat_1', name:'체크리스트', items:[] });
+  return { cats: result };
+}
 
-  // ── D-day 계산 ─────────────────────────────────────────────
-  const tripYear   = extractTripYear(trip);
-  const firstDate  = trip.days[0]?.date  || '';
-  const lastDate   = trip.days[trip.days.length - 1]?.date || '';
-  const parseDate  = (s) => {
+function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
+  const rawPrep = prepProp || trip.prep || {};
+  const prep    = normalizePrepCats(rawPrep);
+  const cats    = prep.cats || [];
+
+  const [selCat,    setSelCat]    = React.useState(0);
+  const [renamingCat, setRenamingCat] = React.useState(null);
+
+  const safeSel = Math.min(selCat, Math.max(0, cats.length - 1));
+  const cur     = cats[safeSel] || { id:'', name:'', items:[] };
+
+  const save = (newCats) => onEditPrep({ ...prep, cats: newCats });
+
+  const addCat = () => {
+    const id = 'cat_' + Date.now();
+    save([...cats, { id, name:'새 카테고리', items:[] }]);
+    setSelCat(cats.length);
+    setRenamingCat(cats.length);
+  };
+  const deleteCat = (i) => {
+    if (!confirm(`"${cats[i].name}" 카테고리를 삭제할까요?`)) return;
+    const next = cats.filter((_, j) => j !== i);
+    if (!next.length) next.push({ id:'cat_1', name:'체크리스트', items:[] });
+    save(next);
+    setSelCat(Math.min(safeSel, next.length - 1));
+  };
+  const renameCat = (i, name) => {
+    const next = [...cats]; next[i] = { ...next[i], name };
+    save(next);
+  };
+  const addItem = () => {
+    const next = [...cats];
+    next[safeSel] = { ...next[safeSel], items: [...(next[safeSel].items || []), '새 항목'] };
+    save(next);
+  };
+  const updateItem = (ii, val) => {
+    const next = [...cats];
+    const items = [...next[safeSel].items]; items[ii] = val;
+    next[safeSel] = { ...next[safeSel], items };
+    save(next);
+  };
+  const deleteItem = (ii) => {
+    const next = [...cats];
+    next[safeSel] = { ...next[safeSel], items: next[safeSel].items.filter((_,j) => j !== ii) };
+    save(next);
+  };
+  const { itemProps } = useDragReorder((from, to) => {
+    const next = [...cats];
+    const items = [...next[safeSel].items];
+    const [m] = items.splice(from, 1); items.splice(to, 0, m);
+    next[safeSel] = { ...next[safeSel], items };
+    save(next);
+  }, editing);
+
+  // D-day
+  const tripYear = extractTripYear(trip);
+  const firstDate = trip.days[0]?.date || '';
+  const lastDate  = trip.days[trip.days.length - 1]?.date || '';
+  const parseDate = (s) => {
     if (!s) return null;
     const iso = dayDateToIso(s, tripYear);
-    if (!iso) return null;
-    return new Date(iso + 'T12:00:00');
+    return iso ? new Date(iso + 'T12:00:00') : null;
   };
-  const depDate    = parseDate(firstDate);
-  const retDate    = parseDate(lastDate);
-  const today      = new Date(); today.setHours(0,0,0,0);
+  const depDate = parseDate(firstDate);
+  const retDate = parseDate(lastDate);
+  const today   = new Date(); today.setHours(0,0,0,0);
   let ddayLabel = '', ddayColor = COLORS.ink;
   if (depDate) {
     depDate.setHours(0,0,0,0);
     if (retDate) retDate.setHours(0,0,0,0);
     const diff = Math.round((depDate - today) / 86400000);
-    if (diff > 0) {
-      ddayLabel = `D-${diff}`;
-      ddayColor = COLORS.accent;
-    } else if (retDate && today <= retDate) {
-      ddayLabel = `여행 중 ✈️`;
-      ddayColor = '#2E7D32';
-    } else {
-      ddayLabel = `D+${Math.abs(diff)}`;
-      ddayColor = COLORS.mute;
-    }
+    if (diff > 0)                          { ddayLabel = `D-${diff}`;          ddayColor = COLORS.accent; }
+    else if (retDate && today <= retDate)  { ddayLabel = '여행 중 ✈️';         ddayColor = '#2E7D32'; }
+    else                                   { ddayLabel = `D+${Math.abs(diff)}`; ddayColor = COLORS.mute; }
   }
 
-  const Section = ({ sectionKey, title }) => {
-    const items = prep[sectionKey] || [];
-    const { itemProps } = useDragReorder((from, to) => {
-      const list = [...items];
-      const [m] = list.splice(from, 1); list.splice(to, 0, m);
-      onEditPrep({ ...prep, [sectionKey]: list });
-    }, editing);
-    const update = (i, v) => {
-      const list = [...items]; list[i] = v;
-      onEditPrep({ ...prep, [sectionKey]: list });
-    };
-    const del = (i) => onEditPrep({ ...prep, [sectionKey]: items.filter((_, j) => j !== i) });
-    const add = () => onEditPrep({ ...prep, [sectionKey]: [...items, '새 항목'] });
+  return (
+    <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
+      {/* 헤더 */}
+      <div style={{ paddingTop:'calc(16px + env(safe-area-inset-top, 0px))', paddingLeft:24, paddingRight:24, paddingBottom:16 }}>
+        <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>Preparation</div>
+        <div style={{ marginTop:4, fontFamily:SERIF, fontSize:38, color:COLORS.ink, letterSpacing:'-0.02em' }}>출발 준비.</div>
+      </div>
 
-    return (
-      <div style={{ padding:'0 16px', marginTop:16 }}>
-        <div style={{ padding:'0 4px 8px', fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>
-          {title}
+      {/* D-day 카드 */}
+      {depDate && (
+        <div style={{ padding:'0 16px', marginBottom:12 }}>
+          <div style={{ background:COLORS.card, borderRadius:16, padding:'14px 18px',
+            display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div>
+              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4 }}>여행 기간</div>
+              <div style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.ink, fontWeight:500 }}>
+                {firstDate}{lastDate && lastDate !== firstDate ? ` – ${lastDate}` : ''}
+              </div>
+              <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, marginTop:3 }}>{trip.days.length}일</div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4 }}>D-DAY</div>
+              <div style={{ fontFamily:SERIF, fontSize:32, color:ddayColor, letterSpacing:'-0.02em', lineHeight:1 }}>{ddayLabel}</div>
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* 카테고리 탭 */}
+      <div style={{ display:'flex', alignItems:'center', gap:0, overflowX:'auto', paddingLeft:16, paddingRight:16,
+        scrollbarWidth:'none', msOverflowStyle:'none', marginBottom:16 }}>
+        {cats.map((c, i) => (
+          <button key={c.id} onClick={() => setSelCat(i)} style={{
+            flexShrink:0, padding:'7px 14px', border:'none', cursor:'pointer', borderRadius:20,
+            background: i === safeSel ? COLORS.ink : 'transparent',
+            color: i === safeSel ? '#fff' : COLORS.mute,
+            fontFamily:SANS, fontSize:13, fontWeight: i === safeSel ? 600 : 400,
+            transition:'background 0.15s',
+          }}>{c.name}</button>
+        ))}
+        {editing && (
+          <button onClick={addCat} style={{
+            flexShrink:0, padding:'7px 12px', border:`1.5px dashed ${COLORS.line}`, cursor:'pointer',
+            borderRadius:20, background:'transparent', color:COLORS.mute,
+            fontFamily:SANS, fontSize:13, display:'flex', alignItems:'center', gap:4, marginLeft:4,
+          }}>
+            <Icon name="plus" size={12} color={COLORS.mute} stroke={2}/> 카테고리
+          </button>
+        )}
+      </div>
+
+      {/* 카테고리 헤더 (편집 시 이름 수정 + 삭제) */}
+      {editing && (
+        <div style={{ padding:'0 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
+          {renamingCat === safeSel ? (
+            <input autoFocus value={cur.name}
+              onChange={e => renameCat(safeSel, e.target.value)}
+              onBlur={() => setRenamingCat(null)}
+              onKeyDown={e => e.key === 'Enter' && setRenamingCat(null)}
+              style={{ flex:1, border:`1px solid ${COLORS.line}`, borderRadius:8,
+                padding:'6px 10px', fontFamily:SANS, fontSize:13, background:COLORS.card,
+                color:COLORS.ink, outline:'none' }}/>
+          ) : (
+            <button onClick={() => setRenamingCat(safeSel)} style={{
+              flex:1, textAlign:'left', border:`1px solid ${COLORS.line}`, borderRadius:8,
+              padding:'6px 10px', fontFamily:SANS, fontSize:13, background:COLORS.card,
+              color:COLORS.ink, cursor:'pointer', display:'flex', alignItems:'center', gap:6,
+            }}>
+              <Icon name="edit" size={11} color={COLORS.mute} stroke={2}/>{cur.name}
+            </button>
+          )}
+          <button onClick={() => deleteCat(safeSel)} style={{
+            width:32, height:32, borderRadius:16, border:'none', background:'rgba(193,79,46,0.10)',
+            cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+          }}>
+            <Icon name="trash" size={13} color={COLORS.accent} stroke={2}/>
+          </button>
+        </div>
+      )}
+
+      {/* 아이템 목록 */}
+      <div style={{ padding:'0 16px' }}>
         <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
-          {items.map((t, i) => {
-            const dp = itemProps(i);
+          {(cur.items || []).length === 0 && !editing && (
+            <div style={{ padding:'24px 16px', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+              아직 항목이 없어요
+            </div>
+          )}
+          {(cur.items || []).map((t, ii) => {
+            const dp = itemProps(ii);
             return (
-              <div key={i} {...dp} style={{
+              <div key={ii} {...dp} style={{
                 display:'flex', alignItems:'center', gap:12, padding:'12px 14px',
-                borderBottom: i < items.length - 1 ? `1px solid ${COLORS.line}` : 'none',
+                borderBottom: ii < cur.items.length - 1 ? `1px solid ${COLORS.line}` : 'none',
                 ...(dp.style || {}),
                 outline: dp['data-drag-over'] ? `2px solid ${COLORS.accent}` : 'none',
-                outlineOffset: -2,
+                outlineOffset:-2,
               }}>
-                <div style={{ width:16, height:16, borderRadius:8, border:`1.5px solid ${COLORS.ink}`, flexShrink:0 }}/>
+                <div style={{ width:16, height:16, borderRadius:8, border:`1.5px solid ${COLORS.line}`, flexShrink:0 }}/>
                 {editing ? (
-                  <input value={t} onChange={e => update(i, e.target.value)}
+                  <input value={t} onChange={e => updateItem(ii, e.target.value)}
                     style={{ flex:1, border:'none', outline:'none', background:'transparent',
                       fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
                 ) : (
@@ -3337,7 +3697,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
                 {editing && (
                   <>
                     <DragHandle size={13} color={COLORS.mute}/>
-                    <button onClick={() => del(i)} style={{
+                    <button onClick={() => deleteItem(ii)} style={{
                       width:22, height:22, borderRadius:11, border:'none',
                       background:'rgba(193,79,46,0.12)', cursor:'pointer',
                       display:'flex', alignItems:'center', justifyContent:'center',
@@ -3351,7 +3711,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
           })}
         </div>
         {editing && (
-          <button onClick={add} style={{
+          <button onClick={addItem} style={{
             marginTop:6, padding:'10px 12px', background:'transparent',
             border:`1.5px dashed ${COLORS.line}`, borderRadius:12,
             color:COLORS.mute, cursor:'pointer', width:'100%',
@@ -3362,51 +3722,6 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
           </button>
         )}
       </div>
-    );
-  };
-
-  return (
-    <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
-      <div style={{ paddingTop:'calc(16px + env(safe-area-inset-top, 0px))', paddingLeft:24, paddingRight:24, paddingBottom:16 }}>
-        <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>Preparation</div>
-        <div style={{ marginTop:4, fontFamily:SERIF, fontSize:38, color:COLORS.ink, letterSpacing:'-0.02em' }}>출발 준비.</div>
-      </div>
-      {depDate && (
-        <div style={{ padding:'0 16px', marginBottom:8 }}>
-          <div style={{ background:COLORS.card, borderRadius:16,
-            padding:'14px 18px', display:'flex', alignItems:'center', justifyContent:'space-between',
-            boxShadow:'0 1px 4px rgba(0,0,0,0.06)' }}>
-            <div>
-              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em',
-                textTransform:'uppercase', marginBottom:4 }}>여행 기간</div>
-              <div style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.ink, fontWeight:500 }}>
-                {firstDate}{lastDate && lastDate !== firstDate ? ` – ${lastDate}` : ''}
-              </div>
-              <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, marginTop:3 }}>
-                {trip.days.length}박 {trip.days.length}일
-              </div>
-            </div>
-            <div style={{ textAlign:'right' }}>
-              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em',
-                textTransform:'uppercase', marginBottom:4 }}>D-DAY</div>
-              <div style={{ fontFamily:SERIF, fontSize:32, color:ddayColor, letterSpacing:'-0.02em', lineHeight:1 }}>
-                {ddayLabel}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      <div style={{ padding:'0 16px', display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
-        {[{v:trip.days.length,l:'Days'},{v:totalStops,l:'Stops'},{v:(trip.food||[]).length,l:'Eats'}].map((s, i) => (
-          <div key={i} style={{ background:COLORS.card, borderRadius:12, padding:'14px 10px', textAlign:'center' }}>
-            <div style={{ fontFamily:SERIF, fontSize:28, color:COLORS.ink }}>{s.v}</div>
-            <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase', marginTop:2 }}>{s.l}</div>
-          </div>
-        ))}
-      </div>
-      <Section sectionKey="checklist" title="체크리스트"/>
-      <Section sectionKey="docs"      title="입국 서류"/>
-      <Section sectionKey="pack"      title="챙길 물건"/>
     </div>
   );
 }
@@ -3422,13 +3737,12 @@ function TabBar({ tab, setTab, visible, editing, onToggleEdit }) {
   return (
     <div style={{
       position:'fixed', left:14, right:14,
-      bottom:'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+      bottom:'calc(env(safe-area-inset-bottom, 0px) - 2px)',
       zIndex:30,
       background:'rgba(255,255,255,0.88)',
       backdropFilter:'blur(20px) saturate(180%)',
       WebkitBackdropFilter:'blur(20px) saturate(180%)',
       borderRadius:26, padding:'9px 10px 11px',
-      boxShadow:'0 2px 6px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.08)',
       border:`0.5px solid ${COLORS.line}`,
       display:'flex', gap:2, alignItems:'center',
       transition:'opacity 0.25s ease',
@@ -3887,6 +4201,8 @@ function App() {
   const [tab, setTab]           = React.useState(_nav.tab || 'home');
   const [dayIdx, setDayIdx]     = React.useState(_nav.dayIdx ?? null);
   const [hotelIdx, setHotelIdx] = React.useState(_nav.hotelIdx ?? null);
+  const [slideDir,  setSlideDir]  = React.useState(null); // 'from-right' | 'from-left' | null
+  const [slideKey,  setSlideKey]  = React.useState(0);
   const [openStop, setOpenStop]   = React.useState(null);
   const [city, setCity]           = React.useState(CITIES[0]);
   const [cityPicker, setCityPicker]   = React.useState(false);
@@ -4469,7 +4785,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v91</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v92</div>
         </div>
       </div>
       <button onClick={async () => {
@@ -4505,6 +4821,58 @@ function App() {
     else if (dayIdx !== null) swipeBack = () => { navGoingBack.current = true; setDayIdx(null); };
   }
 
+  const TAB_ORDER = ['home', 'map', 'food', 'prep'];
+  const tabRef      = React.useRef(tab);
+  const swipeBackRef = React.useRef(swipeBack);
+  const slideDirRef  = React.useRef(null);
+  const tabSwipeStartRef = React.useRef(null);
+  React.useEffect(() => { tabRef.current = tab; }, [tab]);
+  React.useEffect(() => { swipeBackRef.current = swipeBack; }, [swipeBack]);
+
+  const changeTab = React.useCallback((newTab) => {
+    const oldIdx = TAB_ORDER.indexOf(tabRef.current);
+    const newIdx = TAB_ORDER.indexOf(newTab);
+    if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
+      const dir = newIdx > oldIdx ? 'from-right' : 'from-left';
+      slideDirRef.current = dir;
+      setSlideDir(dir);
+      setSlideKey(k => k + 1);
+    }
+    setTab(newTab); setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);
+  }, []);
+
+  React.useEffect(() => {
+    const onStart = (e) => {
+      if (swipeBackRef.current) return;
+      const t = e.touches[0];
+      if (t.clientX <= 28) return;
+      tabSwipeStartRef.current = { x: t.clientX, y: t.clientY };
+    };
+    const onEnd = (e) => {
+      if (!tabSwipeStartRef.current) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - tabSwipeStartRef.current.x;
+      const dy = Math.abs(t.clientY - tabSwipeStartRef.current.y);
+      tabSwipeStartRef.current = null;
+      if (dy > Math.abs(dx) * 0.8 || Math.abs(dx) < 55) return;
+      const idx = TAB_ORDER.indexOf(tabRef.current);
+      if (dx > 0) {
+        if (idx > 0) { changeTab(TAB_ORDER[idx - 1]); }
+        else if (tabRef.current === 'home') {
+          setActiveTripId(null); setTrip(null); setEditing(false);
+        }
+      } else {
+        if (idx < TAB_ORDER.length - 1) changeTab(TAB_ORDER[idx + 1]);
+      }
+    };
+    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchend', onEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchend', onEnd);
+    };
+  }, [changeTab]);
+
   return (
     <div style={{ minHeight:'100vh', fontFamily:'-apple-system, system-ui, sans-serif', background:'#F5F2EC' }}>
       {tab === 'home' && dayIdx === null && hotelIdx === null && (
@@ -4517,10 +4885,16 @@ function App() {
           <Icon name="chevron-l" size={14} color={COLORS.mute} stroke={2}/>My Trips
         </button>
       )}
-      <SwipeBackLayer onBack={swipeBack}>
-        {screen}
-      </SwipeBackLayer>
-      <TabBar tab={tab} setTab={(t)=>{setTab(t); setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);}} visible={tabBarVisible} editing={editing} onToggleEdit={handleEditToggle}/>
+      <div style={{ overflowX:'hidden' }}>
+        <div key={slideKey}
+          style={{ animation: slideDir ? `tab${slideDir === 'from-right' ? 'SlideFromRight' : 'SlideFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)` : 'none' }}
+          onAnimationEnd={() => setSlideDir(null)}>
+          <SwipeBackLayer onBack={swipeBack}>
+            {screen}
+          </SwipeBackLayer>
+        </div>
+      </div>
+      <TabBar tab={tab} setTab={changeTab} visible={tabBarVisible} editing={editing} onToggleEdit={handleEditToggle}/>
       <StopSheet open={openStop} dayHue={dayHue}
         onClose={() => setOpenStop(null)} onSave={saveStop}/>
       {cityPicker && (

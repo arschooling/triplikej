@@ -59,6 +59,8 @@
     to   { opacity:1; }
   }
   /* 활주로: 넓게 펼쳐졌다가 아이콘 크기로 수축 후 사라짐 */
+  @keyframes tabSlideFromRight { from { transform:translateX(100%) } to { transform:translateX(0) } }
+  @keyframes tabSlideFromLeft  { from { transform:translateX(-100%) } to { transform:translateX(0) } }
   @keyframes runwaySpring {
     0%   { transform:scaleX(19);   }
     36%  { transform:scaleX(0.41); }
