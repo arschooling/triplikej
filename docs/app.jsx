@@ -69,26 +69,9 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
 };
 
 // ─── Photo placeholder ──────────────────────────────────────
-function getPhotoIcon(title='', cat='') {
-  if (cat && CAT_META[cat]) return CAT_META[cat].icon;
-  const t = (title || '').toLowerCase();
-  if (/비행|항공|공항|도착|출발|flight|airport|fly|plane|arrive|depart/.test(t)) return 'flight';
-  if (/호텔|숙소|체크인|체크아웃|hotel|stay|inn|motel|hostel|airbnb/.test(t)) return 'hotel';
-  if (/식사|점심|저녁|아침|밥|라멘|초밥|피자|버거|레스토랑|카페|맛집|브런치|food|eat|lunch|dinner|breakfast|cafe|restaurant|bistro|diner|brunch/.test(t)) return 'food';
-  if (/산책|하이킹|트레킹|걷기|공원|자연|walk|hike|trek|trail|park|garden|nature/.test(t)) return 'walk';
-  if (/전망|뷰|풍경|일몰|일출|노을|야경|view|sunset|sunrise|landscape|overlook|scenery/.test(t)) return 'view';
-  if (/배|선박|크루즈|페리|ferry|boat|cruise|ship/.test(t)) return 'ferry';
-  if (/박물관|미술관|궁|사원|성당|교회|성|탑|기념관|관광|관람|museum|gallery|temple|palace|church|cathedral|monument|landmark|sight|tour/.test(t)) return 'sight';
-  if (/쇼핑|시장|백화점|마트|shop|shopping|market|mall|store|boutique/.test(t)) return 'shop';
-  if (/공연|연극|뮤지컬|콘서트|show|performance|concert|theater|theatre|musical/.test(t)) return 'show';
-  if (/바|술|펍|클럽|나이트|bar|pub|club|nightlife|lounge/.test(t)) return 'bar';
-  return t.trim() ? 'map' : null;
-}
-
-function Photo({ hue=20, label='', height=180, small=false, icon }) {
+function Photo({ hue=20, label='', height=180, small=false }) {
   const bg=`oklch(0.88 0.035 ${hue})`, bg2=`oklch(0.80 0.045 ${hue})`;
   const ink=`oklch(0.36 0.04 ${hue})`;
-  const iconSz = typeof height === 'number' ? Math.min(Math.round(height * 0.38), 72) : 56;
   return (
     <div style={{
       width:'100%', height,
@@ -98,12 +81,6 @@ function Photo({ hue=20, label='', height=180, small=false, icon }) {
     }}>
       <div style={{ position:'absolute', inset:0,
         background:`radial-gradient(ellipse at 30% 25%, rgba(255,255,255,0.35), transparent 60%)` }}/>
-      {icon && !small && (
-        <div style={{ position:'absolute', inset:0,
-          display:'flex', alignItems:'center', justifyContent:'center', opacity:0.28 }}>
-          <Icon name={icon} size={iconSz} color={ink} stroke={1.2}/>
-        </div>
-      )}
       {label && !small && <div style={{
         fontFamily:MONO, fontSize:10, letterSpacing:'0.14em',
         color:ink, opacity:0.72, textTransform:'uppercase', position:'relative',
@@ -1429,7 +1406,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 16px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v86</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v87</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -1459,7 +1436,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                     padding:0, margin:0, textAlign:'left', cursor:'pointer',
                     WebkitTapHighlightColor:'transparent',
                   }}>
-                    <Photo hue={hue} label={label} height={130} icon={getPhotoIcon(t.title)}/>
+                    <Photo hue={hue} label={label} height={130}/>
                     <div style={{ padding:'14px 18px 16px', position:'relative' }}>
                       <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
                         {(t.days||[]).length} DAYS{t.dates ? ' · ' + t.dates : ''}
@@ -1677,7 +1654,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
         <div style={{ padding:'4px 16px 18px' }}>
           <div style={{ background:COLORS.card, borderRadius:22, overflow:'hidden',
             boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)' }}>
-            <Photo hue={featured.hero?.hue ?? 25} label={featured.hero?.label} height={170} icon={getPhotoIcon(featured.hero?.label || featured.title || '')}/>
+            <Photo hue={featured.hero?.hue ?? 25} label={featured.hero?.label} height={170}/>
             <div style={{ padding:'16px 18px 18px' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
                 <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
@@ -2030,7 +2007,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
   return (
     <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
       <div style={{ position:'relative', marginTop:'calc(-1 * env(safe-area-inset-top, 0px))' }}>
-        <Photo hue={day.hero?.hue ?? 25} label={day.hero?.label} height='calc(280px + env(safe-area-inset-top, 0px))' icon={getPhotoIcon(day.hero?.label || day.title || '')}/>
+        <Photo hue={day.hero?.hue ?? 25} label={day.hero?.label} height='calc(280px + env(safe-area-inset-top, 0px))'/>
         <div style={{ position:'absolute', top:0, left:0, right:0, height:180,
           background:'linear-gradient(180deg, rgba(0,0,0,0.28), transparent)' }}/>
         <button onClick={onBack} style={{
@@ -2306,7 +2283,7 @@ function HotelDetailScreen({ hotel, onBack, onEdit, onOpenSearch, editing, setEd
   return (
     <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
       <div style={{ position:'relative', marginTop:'calc(-1 * env(safe-area-inset-top, 0px))' }}>
-        <Photo hue={draft.hue || 25} label={(draft.name || '').toUpperCase().slice(0, 20)} height='calc(240px + env(safe-area-inset-top, 0px))' icon={getPhotoIcon(draft.name || '')}/>
+        <Photo hue={draft.hue || 25} label={(draft.name || '').toUpperCase().slice(0, 20)} height='calc(240px + env(safe-area-inset-top, 0px))'/>
         <div style={{ position:'absolute', top:0, left:0, right:0, height:180,
           background:'linear-gradient(180deg, rgba(0,0,0,0.28), transparent)' }}/>
         <button onClick={onBack} style={{
@@ -2559,7 +2536,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
         </div>
         {/* 사진 영역 + 수정 버튼 오버레이 */}
         <div style={{ position:'relative' }}>
-          <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180} icon={getPhotoIcon(draft.en || '', draft.cat)}/>
+          <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180}/>
           {!editing && (
             <button onClick={(e) => { e.stopPropagation(); setEditing(true); }} style={{
               position:'absolute', top:12, right:12, zIndex:5,
@@ -4471,7 +4448,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v86</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v87</div>
         </div>
       </div>
       <button onClick={async () => {

@@ -677,32 +677,15 @@ const Icon = ({
 };
 
 // ─── Photo placeholder ──────────────────────────────────────
-function getPhotoIcon(title = '', cat = '') {
-  if (cat && CAT_META[cat]) return CAT_META[cat].icon;
-  const t = (title || '').toLowerCase();
-  if (/비행|항공|공항|도착|출발|flight|airport|fly|plane|arrive|depart/.test(t)) return 'flight';
-  if (/호텔|숙소|체크인|체크아웃|hotel|stay|inn|motel|hostel|airbnb/.test(t)) return 'hotel';
-  if (/식사|점심|저녁|아침|밥|라멘|초밥|피자|버거|레스토랑|카페|맛집|브런치|food|eat|lunch|dinner|breakfast|cafe|restaurant|bistro|diner|brunch/.test(t)) return 'food';
-  if (/산책|하이킹|트레킹|걷기|공원|자연|walk|hike|trek|trail|park|garden|nature/.test(t)) return 'walk';
-  if (/전망|뷰|풍경|일몰|일출|노을|야경|view|sunset|sunrise|landscape|overlook|scenery/.test(t)) return 'view';
-  if (/배|선박|크루즈|페리|ferry|boat|cruise|ship/.test(t)) return 'ferry';
-  if (/박물관|미술관|궁|사원|성당|교회|성|탑|기념관|관광|관람|museum|gallery|temple|palace|church|cathedral|monument|landmark|sight|tour/.test(t)) return 'sight';
-  if (/쇼핑|시장|백화점|마트|shop|shopping|market|mall|store|boutique/.test(t)) return 'shop';
-  if (/공연|연극|뮤지컬|콘서트|show|performance|concert|theater|theatre|musical/.test(t)) return 'show';
-  if (/바|술|펍|클럽|나이트|bar|pub|club|nightlife|lounge/.test(t)) return 'bar';
-  return t.trim() ? 'map' : null;
-}
 function Photo({
   hue = 20,
   label = '',
   height = 180,
-  small = false,
-  icon
+  small = false
 }) {
   const bg = `oklch(0.88 0.035 ${hue})`,
     bg2 = `oklch(0.80 0.045 ${hue})`;
   const ink = `oklch(0.36 0.04 ${hue})`;
-  const iconSz = typeof height === 'number' ? Math.min(Math.round(height * 0.38), 72) : 56;
   return /*#__PURE__*/React.createElement("div", {
     style: {
       width: '100%',
@@ -721,21 +704,7 @@ function Photo({
       inset: 0,
       background: `radial-gradient(ellipse at 30% 25%, rgba(255,255,255,0.35), transparent 60%)`
     }
-  }), icon && !small && /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'absolute',
-      inset: 0,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      opacity: 0.28
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: icon,
-    size: iconSz,
-    color: ink,
-    stroke: 1.2
-  })), label && !small && /*#__PURE__*/React.createElement("div", {
+  }), label && !small && /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
       fontSize: 10,
@@ -3312,7 +3281,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v86")), /*#__PURE__*/React.createElement("button", {
+  }, "v87")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -3383,8 +3352,7 @@ function TripsScreen({
     }, /*#__PURE__*/React.createElement(Photo, {
       hue: hue,
       label: label,
-      height: 130,
-      icon: getPhotoIcon(t.title)
+      height: 130
     }), /*#__PURE__*/React.createElement("div", {
       style: {
         padding: '14px 18px 16px',
@@ -3799,8 +3767,7 @@ function HomeScreen({
   }, /*#__PURE__*/React.createElement(Photo, {
     hue: featured.hero?.hue ?? 25,
     label: featured.hero?.label,
-    height: 170,
-    icon: getPhotoIcon(featured.hero?.label || featured.title || '')
+    height: 170
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '16px 18px 18px'
@@ -4531,8 +4498,7 @@ function DayScreen({
   }, /*#__PURE__*/React.createElement(Photo, {
     hue: day.hero?.hue ?? 25,
     label: day.hero?.label,
-    height: "calc(280px + env(safe-area-inset-top, 0px))",
-    icon: getPhotoIcon(day.hero?.label || day.title || '')
+    height: "calc(280px + env(safe-area-inset-top, 0px))"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -5140,8 +5106,7 @@ function HotelDetailScreen({
   }, /*#__PURE__*/React.createElement(Photo, {
     hue: draft.hue || 25,
     label: (draft.name || '').toUpperCase().slice(0, 20),
-    height: "calc(240px + env(safe-area-inset-top, 0px))",
-    icon: getPhotoIcon(draft.name || '')
+    height: "calc(240px + env(safe-area-inset-top, 0px))"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -5656,8 +5621,7 @@ function StopSheet({
   }, /*#__PURE__*/React.createElement(Photo, {
     hue: dayHue,
     label: (draft.en || '').toUpperCase(),
-    height: 180,
-    icon: getPhotoIcon(draft.en || '', draft.cat)
+    height: 180
   }), !editing && /*#__PURE__*/React.createElement("button", {
     onClick: e => {
       e.stopPropagation();
@@ -9180,7 +9144,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v86"))), /*#__PURE__*/React.createElement("button", {
+  }, "v87"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
