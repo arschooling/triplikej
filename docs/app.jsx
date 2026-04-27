@@ -1463,7 +1463,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v120</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v121</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3856,6 +3856,7 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
 
   // KRW 환산 합계 (총 금액 표시용)
   const krwTotalOut = entries.filter(e=>e.type==='out').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
+  const krwTotalIn  = entries.filter(e=>e.type==='in' ).reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
 
   // 통화별 수입/지출 원액
   const byCurrency = {};
@@ -3933,10 +3934,20 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
 
       {/* 요약 카드 */}
       <div style={{ margin:'0 16px 14px', background:COLORS.ink, borderRadius:20, padding:'20px 22px' }}>
-        {/* 총 지출 — 원화 환산 합계 */}
-        <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>총 지출 (₩ 환산)</div>
-        <div style={{ fontFamily:SERIF, fontSize:36, color:'#E88A7E', letterSpacing:'-0.02em', lineHeight:1 }}>
-          {fmtAmt(Math.round(krwTotalOut), 'KRW')}
+        {/* 총 수입 / 총 지출 — 원화 환산 합계 */}
+        <div style={{ display:'flex', gap:0 }}>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>총 수입 (₩ 환산)</div>
+            <div style={{ fontFamily:SERIF, fontSize:28, color:'#7EC88A', letterSpacing:'-0.02em', lineHeight:1 }}>
+              {fmtAmt(Math.round(krwTotalIn), 'KRW')}
+            </div>
+          </div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>총 지출 (₩ 환산)</div>
+            <div style={{ fontFamily:SERIF, fontSize:28, color:'#E88A7E', letterSpacing:'-0.02em', lineHeight:1 }}>
+              {fmtAmt(Math.round(krwTotalOut), 'KRW')}
+            </div>
+          </div>
         </div>
 
         {/* 통화별 수입/지출 */}
@@ -5834,7 +5845,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v120</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v121</div>
         </div>
       </div>
       <button onClick={async () => {
