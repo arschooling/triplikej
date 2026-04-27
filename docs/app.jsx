@@ -12,7 +12,6 @@ const SERIF = '"Instrument Serif", Georgia, serif';
 const SANS  = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const MONO  = '"JetBrains Mono", ui-monospace, monospace';
 // 탭바 위에 시트가 뜨도록 하는 bottom 오프셋
-const SHEET_BOTTOM = 'calc(env(safe-area-inset-bottom, 0px) + 64px)';
 
 const CAT_META = {
   flight:{icon:'flight',label:'Flight'}, hotel:{icon:'hotel',label:'Stay'},
@@ -978,9 +977,9 @@ function PickerSheet({ open, onClose, title, items, getKey, filterFn, renderRow,
         onTouchStart={e => { touchY.current = e.touches[0].clientY; }}
         onTouchEnd={e => { if (e.changedTouches[0].clientY - (touchY.current||0) > 80) onClose(); }}
         style={{
-          position:'fixed', bottom:SHEET_BOTTOM, left:0, right:0,
-          background:COLORS.bg, borderRadius:22,
-          maxHeight:'78%', display:'flex', flexDirection:'column',
+          position:'fixed', bottom:0, left:0, right:0,
+          background:COLORS.bg, borderRadius:'22px 22px 0 0',
+          maxHeight:'82%', display:'flex', flexDirection:'column',
           transform:`translateY(${entered ? 0 : '100vh'})`,
           transition:'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
         }}>
@@ -1001,7 +1000,7 @@ function PickerSheet({ open, onClose, title, items, getKey, filterFn, renderRow,
             </button>}
           </div>
         </div>
-        <div style={{ flex:1, overflowY:'auto', padding:'0 16px 24px' }}>
+        <div style={{ flex:1, overflowY:'auto', padding:'0 16px calc(24px + env(safe-area-inset-bottom,0px))' }}>
           <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
             {filtered.length === 0 && (
               <div style={{ padding:'20px', fontFamily:SANS, fontSize:13, color:COLORS.mute, textAlign:'center' }}>검색 결과 없음</div>
@@ -1531,11 +1530,10 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:400, background:'rgba(0,0,0,0.4)',
-      display:'flex', flexDirection:'column', justifyContent:'flex-end',
-      paddingBottom:SHEET_BOTTOM }} onClick={onClose}>
+      display:'flex', flexDirection:'column', justifyContent:'flex-end' }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:22,
-        padding:'0 20px 28px',
+        background:COLORS.bg, borderRadius:'22px 22px 0 0',
+        padding:'0 20px calc(28px + env(safe-area-inset-bottom,0px))',
         maxHeight:'80vh', display:'flex', flexDirection:'column',
       }}>
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px', flexShrink:0 }}>
@@ -1674,7 +1672,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v135</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v136</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -2868,12 +2866,11 @@ function NearbySheet({ stop, initialTab, onClose }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1100,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
-      paddingBottom:SHEET_BOTTOM,
       background:`rgba(0,0,0,${Math.max(0, 0.32 - sheetY/500)})` }} onClick={onClose}>
       <div ref={sheetRef} onClick={e=>e.stopPropagation()}
-        style={{ background:COLORS.bg, borderRadius:22, maxHeight:'74%',
+        style={{ background:COLORS.bg, borderRadius:'22px 22px 0 0', maxHeight:'74%',
           overflowY:'auto', overflowX:'hidden',
-          paddingBottom:20,
+          paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))',
           transform:`translateY(${entered ? sheetY : window.innerHeight}px)`,
           transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)' }}>
         {/* 핸들 */}
@@ -2980,12 +2977,11 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
-      paddingBottom:SHEET_BOTTOM,
       background:`rgba(0,0,0,${Math.max(0, 0.35 - sheetY / 400)})` }} onClick={onClose}>
       <div ref={sheetRef} onClick={(e)=>e.stopPropagation()}
         style={{
-          background:COLORS.bg, borderRadius:22,
-          paddingBottom:24, maxHeight:'92%', overflowY:'auto', overflowX:'hidden',
+          background:COLORS.bg, borderRadius:'22px 22px 0 0',
+          paddingBottom:40, maxHeight:'92%', overflowY:'auto', overflowX:'hidden',
           transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
           transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
         }}>
@@ -4239,11 +4235,10 @@ function BudgetCalcSheet({ open, onClose, onEnter }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:310,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
-      paddingBottom:SHEET_BOTTOM,
       background:'rgba(0,0,0,0.4)' }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:22,
-        paddingBottom:16,
+        background:COLORS.bg, borderRadius:'22px 22px 0 0',
+        paddingBottom:'env(safe-area-inset-bottom,0px)',
         transform:`translateY(${entered ? 0 : window.innerHeight}px)`,
         transition:'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
       }}>
@@ -4314,11 +4309,10 @@ function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:310,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
-      paddingBottom:SHEET_BOTTOM,
       background:'rgba(0,0,0,0.4)' }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:22, padding:'0 16px',
-        paddingBottom:24,
+        background:COLORS.bg, borderRadius:'22px 22px 0 0', padding:'0 16px',
+        paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))',
         transform:`translateY(${entered ? 0 : window.innerHeight}px)`,
         transition:'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
       }}>
@@ -4646,9 +4640,9 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
         <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.38)' }}
           onClick={() => setAddOpen(false)}>
           <div style={{
-            position:'fixed', bottom:SHEET_BOTTOM, left:0, right:0,
-            background:COLORS.bg, borderRadius:22,
-            padding:'20px 18px 28px',
+            position:'absolute', bottom:0, left:0, right:0,
+            background:COLORS.bg, borderRadius:'22px 22px 0 0',
+            padding:'20px 18px', paddingBottom:'calc(24px + env(safe-area-inset-bottom,0px))',
           }} onClick={e => e.stopPropagation()}
             onTouchStart={e => { sheetTouchY.current = e.touches[0].clientY; }}
             onTouchEnd={e => { if (e.changedTouches[0].clientY - (sheetTouchY.current||0) > 80) setAddOpen(false); }}>
@@ -5148,12 +5142,11 @@ function ProfileSheet({ open, onClose, authUser, userData, trips, onUserDataUpda
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:210, background:'rgba(0,0,0,0.4)',
-      display:'flex', flexDirection:'column', justifyContent:'flex-end',
-      paddingBottom:SHEET_BOTTOM }} onClick={onClose}>
+      display:'flex', flexDirection:'column', justifyContent:'flex-end' }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:22,
+        background:COLORS.bg, borderRadius:'22px 22px 0 0',
         maxHeight:'90%', display:'flex', flexDirection:'column',
-        paddingBottom:16,
+        paddingBottom:'env(safe-area-inset-bottom,0px)',
       }}>
         {/* 핸들 */}
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 4px', flexShrink:0 }}>
@@ -5995,7 +5988,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v135</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v136</div>
         </div>
       </div>
       <button onClick={async () => {

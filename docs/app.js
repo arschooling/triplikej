@@ -19,7 +19,7 @@ const SERIF = '"Instrument Serif", Georgia, serif';
 const SANS = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const MONO = '"JetBrains Mono", ui-monospace, monospace';
 // 탭바 위에 시트가 뜨도록 하는 bottom 오프셋
-const SHEET_BOTTOM = 'calc(env(safe-area-inset-bottom, 0px) + 64px)';
+
 const CAT_META = {
   flight: {
     icon: 'flight',
@@ -2068,12 +2068,12 @@ function PickerSheet({
     },
     style: {
       position: 'fixed',
-      bottom: SHEET_BOTTOM,
+      bottom: 0,
       left: 0,
       right: 0,
       background: COLORS.bg,
-      borderRadius: 22,
-      maxHeight: '78%',
+      borderRadius: '22px 22px 0 0',
+      maxHeight: '82%',
       display: 'flex',
       flexDirection: 'column',
       transform: `translateY(${entered ? 0 : '100vh'})`,
@@ -2150,7 +2150,7 @@ function PickerSheet({
     style: {
       flex: 1,
       overflowY: 'auto',
-      padding: '0 16px 24px'
+      padding: '0 16px calc(24px + env(safe-area-inset-bottom,0px))'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3208,16 +3208,15 @@ function ShareTripSheet({
       background: 'rgba(0,0,0,0.4)',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'flex-end',
-      paddingBottom: SHEET_BOTTOM
+      justifyContent: 'flex-end'
     },
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: 22,
-      padding: '0 20px 28px',
+      borderRadius: '22px 22px 0 0',
+      padding: '0 20px calc(28px + env(safe-area-inset-bottom,0px))',
       maxHeight: '80vh',
       display: 'flex',
       flexDirection: 'column'
@@ -3567,7 +3566,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v135")), /*#__PURE__*/React.createElement("button", {
+  }, "v136")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -5991,7 +5990,6 @@ function NearbySheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
-      paddingBottom: SHEET_BOTTOM,
       background: `rgba(0,0,0,${Math.max(0, 0.32 - sheetY / 500)})`
     },
     onClick: onClose
@@ -6000,11 +5998,11 @@ function NearbySheet({
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: 22,
+      borderRadius: '22px 22px 0 0',
       maxHeight: '74%',
       overflowY: 'auto',
       overflowX: 'hidden',
-      paddingBottom: 20,
+      paddingBottom: 'calc(20px + env(safe-area-inset-bottom,0px))',
       transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
       transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
     }
@@ -6193,7 +6191,6 @@ function StopSheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
-      paddingBottom: SHEET_BOTTOM,
       background: `rgba(0,0,0,${Math.max(0, 0.35 - sheetY / 400)})`
     },
     onClick: onClose
@@ -6202,8 +6199,8 @@ function StopSheet({
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: 22,
-      paddingBottom: 24,
+      borderRadius: '22px 22px 0 0',
+      paddingBottom: 40,
       maxHeight: '92%',
       overflowY: 'auto',
       overflowX: 'hidden',
@@ -8784,7 +8781,6 @@ function BudgetCalcSheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
-      paddingBottom: SHEET_BOTTOM,
       background: 'rgba(0,0,0,0.4)'
     },
     onClick: onClose
@@ -8792,8 +8788,8 @@ function BudgetCalcSheet({
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: 22,
-      paddingBottom: 16,
+      borderRadius: '22px 22px 0 0',
+      paddingBottom: 'env(safe-area-inset-bottom,0px)',
       transform: `translateY(${entered ? 0 : window.innerHeight}px)`,
       transition: 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
     }
@@ -8956,7 +8952,6 @@ function SplitSheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
-      paddingBottom: SHEET_BOTTOM,
       background: 'rgba(0,0,0,0.4)'
     },
     onClick: onClose
@@ -8964,9 +8959,9 @@ function SplitSheet({
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: 22,
+      borderRadius: '22px 22px 0 0',
       padding: '0 16px',
-      paddingBottom: 24,
+      paddingBottom: 'calc(20px + env(safe-area-inset-bottom,0px))',
       transform: `translateY(${entered ? 0 : window.innerHeight}px)`,
       transition: 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
     }
@@ -9734,13 +9729,14 @@ function BudgetScreen({
     onClick: () => setAddOpen(false)
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      position: 'fixed',
-      bottom: SHEET_BOTTOM,
+      position: 'absolute',
+      bottom: 0,
       left: 0,
       right: 0,
       background: COLORS.bg,
-      borderRadius: 22,
-      padding: '20px 18px 28px'
+      borderRadius: '22px 22px 0 0',
+      padding: '20px 18px',
+      paddingBottom: 'calc(24px + env(safe-area-inset-bottom,0px))'
     },
     onClick: e => e.stopPropagation(),
     onTouchStart: e => {
@@ -10664,19 +10660,18 @@ function ProfileSheet({
       background: 'rgba(0,0,0,0.4)',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'flex-end',
-      paddingBottom: SHEET_BOTTOM
+      justifyContent: 'flex-end'
     },
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: 22,
+      borderRadius: '22px 22px 0 0',
       maxHeight: '90%',
       display: 'flex',
       flexDirection: 'column',
-      paddingBottom: 16
+      paddingBottom: 'env(safe-area-inset-bottom,0px)'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -12072,7 +12067,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v135"))), /*#__PURE__*/React.createElement("button", {
+  }, "v136"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
