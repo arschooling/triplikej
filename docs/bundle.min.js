@@ -7773,21 +7773,7 @@ function App() {
       setTrip(cached);
     } else setTrip(null);
     return fbListenGroup(activeTripId, function (data) {
-      if (data === null) {
-        // 이미 데이터가 있으면 덮어쓰지 않음 (Firestore 오류 시 데이터 보호)
-        if (groupCreateRef.current || tripRef.current) return;
-        groupCreateRef.current = true;
-        fbSaveGroup(activeTripId, {
-          title: '새 여행',
-          dates: '',
-          hotel: '',
-          days: [],
-          hotels: [],
-          food: [],
-          members: [userData.uid]
-        });
-        return;
-      }
+      if (data === null) return; // 문서 없음 또는 오류 — 기존 데이터 보호
       var normalized = normalizeTrip(data, activeTripId);
       setTrip(function (prev) {
         if (JSON.stringify(prev) === JSON.stringify(normalized)) return prev;
@@ -8415,6 +8401,13 @@ function App() {
       return setCompanionOpen(true);
     },
     onSelect: function onSelect(id) {
+      var found = userTrips.find(function (t) {
+        return t.id === id;
+      });
+      if (found) {
+        tripRef.current = found;
+        setTrip(found);
+      }
       setActiveTripId(id);
       _setTab('home');
       setDayIdx(null);
