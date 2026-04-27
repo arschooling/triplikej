@@ -2987,41 +2987,19 @@ function TripsScreen(_ref17) {
     style: {
       minHeight: '100vh',
       background: COLORS.bg,
-      paddingTop: 'calc(env(safe-area-inset-top) + 60px)',
+      paddingTop: 'calc(env(safe-area-inset-top) + 64px)',
       paddingBottom: 100
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 300,
-      paddingTop: 'env(safe-area-inset-top,0px)',
-      background: COLORS.bg,
-      borderBottom: "1px solid ".concat(COLORS.line)
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 20px',
-      height: 52
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SERIF,
-      fontSize: 24,
-      color: COLORS.ink,
-      letterSpacing: '-0.01em'
-    }
-  }, "My Trips"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+      position: 'fixed',
+      top: 'calc(14px + env(safe-area-inset-top,0px))',
+      right: 16,
+      zIndex: 300,
+      width: 38,
+      height: 38,
+      borderRadius: 19,
       background: userData !== null && userData !== void 0 && userData.photoURL ? 'transparent' : COLORS.softer,
       border: "2px solid ".concat(COLORS.line),
       padding: 0,
@@ -3029,7 +3007,8 @@ function TripsScreen(_ref17) {
       overflow: 'hidden',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      boxShadow: '0 1px 6px rgba(0,0,0,0.10)'
     }
   }, userData !== null && userData !== void 0 && userData.photoURL ? /*#__PURE__*/React.createElement("img", {
     src: userData.photoURL,
@@ -3041,9 +3020,19 @@ function TripsScreen(_ref17) {
     }
   }) : /*#__PURE__*/React.createElement(Icon, {
     name: "user",
-    size: 17,
+    size: 18,
     color: COLORS.mute
-  })))), loading ? /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '0 24px 32px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 30,
+      color: COLORS.ink
+    }
+  }, "My Trips")), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
