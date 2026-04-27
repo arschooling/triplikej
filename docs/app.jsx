@@ -1433,7 +1433,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v93</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v94</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -4273,7 +4273,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips }) {
           <Icon name="chevron-l" size={17} color={COLORS.ink} stroke={2}/>
         </button>
         <div style={{ flex:1 }}>
-          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>동행인</div>
+          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>Companions</div>
           <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, marginTop:1 }}>
             {totalCompanions > 0 ? `${totalCompanions}명과 함께` : '동행인 없음'}
           </div>
@@ -4604,6 +4604,55 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // ── Tab swipe + animation hooks (must be before any early returns) ───
+  const TAB_ORDER = ['home', 'map', 'food', 'prep'];
+  const tabRef           = React.useRef(tab);
+  const swipeBackRef     = React.useRef(null);
+  const slideDirRef      = React.useRef(null);
+  const tabSwipeStartRef = React.useRef(null);
+  React.useEffect(() => { tabRef.current = tab; }, [tab]);
+
+  const changeTab = React.useCallback((newTab) => {
+    const oldIdx = TAB_ORDER.indexOf(tabRef.current);
+    const newIdx = TAB_ORDER.indexOf(newTab);
+    if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
+      const dir = newIdx > oldIdx ? 'from-right' : 'from-left';
+      slideDirRef.current = dir;
+      setSlideDir(dir);
+      setSlideKey(k => k + 1);
+    }
+    setTab(newTab); setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);
+  }, []);
+
+  React.useEffect(() => {
+    const onStart = (e) => {
+      if (swipeBackRef.current) return;
+      const t = e.touches[0];
+      if (t.clientX <= 28) return;
+      tabSwipeStartRef.current = { x: t.clientX, y: t.clientY };
+    };
+    const onEnd = (e) => {
+      if (!tabSwipeStartRef.current) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - tabSwipeStartRef.current.x;
+      const dy = Math.abs(t.clientY - tabSwipeStartRef.current.y);
+      tabSwipeStartRef.current = null;
+      if (dy > Math.abs(dx) * 0.8 || Math.abs(dx) < 55) return;
+      const idx = TAB_ORDER.indexOf(tabRef.current);
+      if (dx > 0) {
+        if (idx > 0) { changeTab(TAB_ORDER[idx - 1]); }
+        else if (tabRef.current === 'home') { setActiveTripId(null); setTrip(null); setEditing(false); }
+      } else {
+        if (idx < TAB_ORDER.length - 1) changeTab(TAB_ORDER[idx + 1]);
+      }
+    };
+    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchend', onEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchend', onEnd);
+    };
+  }, [changeTab]);
 
   // ── Trip-level actions (Firestore) ────────────────────────
   const editTrip = (patch) => {
@@ -4994,7 +5043,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v93</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v94</div>
         </div>
       </div>
       <button onClick={async () => {
@@ -5029,58 +5078,7 @@ function App() {
     if (hotelIdx !== null) swipeBack = () => { navGoingBack.current = true; setHotelIdx(null); };
     else if (dayIdx !== null) swipeBack = () => { navGoingBack.current = true; setDayIdx(null); };
   }
-
-  const TAB_ORDER = ['home', 'map', 'food', 'prep'];
-  const tabRef      = React.useRef(tab);
-  const swipeBackRef = React.useRef(swipeBack);
-  const slideDirRef  = React.useRef(null);
-  const tabSwipeStartRef = React.useRef(null);
-  React.useEffect(() => { tabRef.current = tab; }, [tab]);
-  React.useEffect(() => { swipeBackRef.current = swipeBack; }, [swipeBack]);
-
-  const changeTab = React.useCallback((newTab) => {
-    const oldIdx = TAB_ORDER.indexOf(tabRef.current);
-    const newIdx = TAB_ORDER.indexOf(newTab);
-    if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
-      const dir = newIdx > oldIdx ? 'from-right' : 'from-left';
-      slideDirRef.current = dir;
-      setSlideDir(dir);
-      setSlideKey(k => k + 1);
-    }
-    setTab(newTab); setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);
-  }, []);
-
-  React.useEffect(() => {
-    const onStart = (e) => {
-      if (swipeBackRef.current) return;
-      const t = e.touches[0];
-      if (t.clientX <= 28) return;
-      tabSwipeStartRef.current = { x: t.clientX, y: t.clientY };
-    };
-    const onEnd = (e) => {
-      if (!tabSwipeStartRef.current) return;
-      const t = e.changedTouches[0];
-      const dx = t.clientX - tabSwipeStartRef.current.x;
-      const dy = Math.abs(t.clientY - tabSwipeStartRef.current.y);
-      tabSwipeStartRef.current = null;
-      if (dy > Math.abs(dx) * 0.8 || Math.abs(dx) < 55) return;
-      const idx = TAB_ORDER.indexOf(tabRef.current);
-      if (dx > 0) {
-        if (idx > 0) { changeTab(TAB_ORDER[idx - 1]); }
-        else if (tabRef.current === 'home') {
-          setActiveTripId(null); setTrip(null); setEditing(false);
-        }
-      } else {
-        if (idx < TAB_ORDER.length - 1) changeTab(TAB_ORDER[idx + 1]);
-      }
-    };
-    document.addEventListener('touchstart', onStart, { passive: true });
-    document.addEventListener('touchend', onEnd, { passive: true });
-    return () => {
-      document.removeEventListener('touchstart', onStart);
-      document.removeEventListener('touchend', onEnd);
-    };
-  }, [changeTab]);
+  swipeBackRef.current = swipeBack;
 
   return (
     <div style={{ minHeight:'100vh', fontFamily:'-apple-system, system-ui, sans-serif', background:'#F5F2EC' }}>
