@@ -2274,6 +2274,7 @@ function TripSwipeCard(_ref11) {
   var children = _ref11.children,
     onShare = _ref11.onShare,
     onDelete = _ref11.onDelete,
+    onTap = _ref11.onTap,
     _ref11$wrapStyle = _ref11.wrapStyle,
     wrapStyle = _ref11$wrapStyle === void 0 ? {} : _ref11$wrapStyle;
   var _React$useState31 = React.useState(0),
@@ -2287,6 +2288,7 @@ function TripSwipeCard(_ref11) {
   var startRef = React.useRef(null);
   var dragging = React.useRef(false);
   var xRef = React.useRef(0);
+  var tappedRef = React.useRef(false);
   var REVEAL = 144;
   var DELETE_EXTRA = 72;
   var close = function close() {
@@ -2300,14 +2302,15 @@ function TripSwipeCard(_ref11) {
       y: e.touches[0].clientY
     };
     dragging.current = false;
+    tappedRef.current = false;
   };
   var onTouchMove = function onTouchMove(e) {
     if (!startRef.current) return;
     var dx = e.touches[0].clientX - startRef.current.x;
     var dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
-      if (Math.abs(dx) < 18) return;
-      if (dy > Math.abs(dx) * 0.55) {
+      if (Math.abs(dx) < 8) return;
+      if (dy > Math.abs(dx) * 0.6) {
         startRef.current = null;
         return;
       }
@@ -2320,8 +2323,14 @@ function TripSwipeCard(_ref11) {
     setX(clamped);
   };
   var onTouchEnd = function onTouchEnd() {
-    if (!startRef.current || !dragging.current) {
+    if (!startRef.current) return;
+    if (!dragging.current) {
+      // 탭 감지: 드래그 없이 손가락 뗌
       startRef.current = null;
+      if (!open && onTap) {
+        tappedRef.current = true;
+        onTap();
+      }
       return;
     }
     startRef.current = null;
@@ -2340,6 +2349,13 @@ function TripSwipeCard(_ref11) {
       close();
     }
   };
+  // 브라우저 synthetic click이 onTap 이후 중복 발생하는 것 방지
+  var onClickCapture = function onClickCapture(e) {
+    if (tappedRef.current) {
+      tappedRef.current = false;
+      e.stopPropagation();
+    }
+  };
   return /*#__PURE__*/React.createElement("div", {
     style: _objectSpread({
       position: 'relative',
@@ -2347,7 +2363,8 @@ function TripSwipeCard(_ref11) {
     }, wrapStyle),
     onTouchStart: onTouchStart,
     onTouchMove: onTouchMove,
-    onTouchEnd: onTouchEnd
+    onTouchEnd: onTouchEnd,
+    onClickCapture: onClickCapture
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -2970,19 +2987,41 @@ function TripsScreen(_ref17) {
     style: {
       minHeight: '100vh',
       background: COLORS.bg,
-      paddingTop: 'calc(env(safe-area-inset-top) + 64px)',
+      paddingTop: 'calc(env(safe-area-inset-top) + 60px)',
       paddingBottom: 100
     }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: onOpenCompanion,
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
-      top: 'calc(14px + env(safe-area-inset-top,0px))',
-      right: 16,
+      top: 0,
+      left: 0,
+      right: 0,
       zIndex: 300,
-      width: 38,
-      height: 38,
-      borderRadius: 19,
+      paddingTop: 'env(safe-area-inset-top,0px)',
+      background: COLORS.bg,
+      borderBottom: "1px solid ".concat(COLORS.line)
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 20px',
+      height: 52
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 24,
+      color: COLORS.ink,
+      letterSpacing: '-0.01em'
+    }
+  }, "My Trips"), /*#__PURE__*/React.createElement("button", {
+    onClick: onOpenCompanion,
+    style: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
       background: userData !== null && userData !== void 0 && userData.photoURL ? 'transparent' : COLORS.softer,
       border: "2px solid ".concat(COLORS.line),
       padding: 0,
@@ -2990,8 +3029,7 @@ function TripsScreen(_ref17) {
       overflow: 'hidden',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: '0 1px 6px rgba(0,0,0,0.10)'
+      justifyContent: 'center'
     }
   }, userData !== null && userData !== void 0 && userData.photoURL ? /*#__PURE__*/React.createElement("img", {
     src: userData.photoURL,
@@ -3003,19 +3041,9 @@ function TripsScreen(_ref17) {
     }
   }) : /*#__PURE__*/React.createElement(Icon, {
     name: "user",
-    size: 18,
+    size: 17,
     color: COLORS.mute
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '0 24px 32px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SERIF,
-      fontSize: 30,
-      color: COLORS.ink
-    }
-  }, "My Trips")), loading ? /*#__PURE__*/React.createElement("div", {
+  })))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -3037,6 +3065,9 @@ function TripsScreen(_ref17) {
     var isShared = Array.isArray(t.members) && t.members.length > 0 && t.members[0] !== myUid;
     return /*#__PURE__*/React.createElement(TripSwipeCard, {
       key: t.id,
+      onTap: function onTap() {
+        return onSelect(t.id);
+      },
       onShare: function onShare() {
         return _onShare(t);
       },

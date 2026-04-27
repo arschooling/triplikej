@@ -853,12 +853,13 @@ function CityPicker({ current, onPick, onClose }) {
 
 // ─── TRIPS SCREEN (top level) ───────────────────────────────
 // ─── Trip Card with swipe-to-reveal share/delete ─────────────
-function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
+function TripSwipeCard({ children, onShare, onDelete, onTap, wrapStyle = {} }) {
   const [x, setX] = React.useState(0);
   const [open, setOpen] = React.useState(false);
   const startRef = React.useRef(null);
   const dragging = React.useRef(false);
   const xRef = React.useRef(0);
+  const tappedRef = React.useRef(false);
   const REVEAL = 144;
   const DELETE_EXTRA = 72;
 
@@ -867,14 +868,15 @@ function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
   const onTouchStart = (e) => {
     startRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     dragging.current = false;
+    tappedRef.current = false;
   };
   const onTouchMove = (e) => {
     if (!startRef.current) return;
     const dx = e.touches[0].clientX - startRef.current.x;
     const dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
-      if (Math.abs(dx) < 18) return;
-      if (dy > Math.abs(dx) * 0.55) { startRef.current = null; return; }
+      if (Math.abs(dx) < 8) return;
+      if (dy > Math.abs(dx) * 0.6) { startRef.current = null; return; }
       dragging.current = true;
     }
     const base = open ? -REVEAL : 0;
@@ -886,7 +888,13 @@ function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
     setX(clamped);
   };
   const onTouchEnd = () => {
-    if (!startRef.current || !dragging.current) { startRef.current = null; return; }
+    if (!startRef.current) return;
+    if (!dragging.current) {
+      // 탭 감지: 드래그 없이 손가락 뗌
+      startRef.current = null;
+      if (!open && onTap) { tappedRef.current = true; onTap(); }
+      return;
+    }
     startRef.current = null; dragging.current = false;
     const cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
@@ -898,10 +906,15 @@ function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
       close();
     }
   };
+  // 브라우저 synthetic click이 onTap 이후 중복 발생하는 것 방지
+  const onClickCapture = (e) => {
+    if (tappedRef.current) { tappedRef.current = false; e.stopPropagation(); }
+  };
 
   return (
     <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}
-      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+      onClickCapture={onClickCapture}>
       <div style={{
         position:'absolute', right:0, top:0, bottom:0, width:REVEAL,
         display:'flex', alignItems:'center', justifyContent:'center', gap:10,
@@ -1146,23 +1159,29 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
 function TripsScreen({ trips, onSelect, onAdd, onShare, onDelete, loading, userData, onOpenCompanion, myUid }) {
   return (
     <div style={{ minHeight:'100vh', background:COLORS.bg,
-      paddingTop:'calc(env(safe-area-inset-top) + 64px)', paddingBottom:100 }}>
-      {/* 프로필 버튼 */}
-      <button onClick={onOpenCompanion} style={{
-        position:'fixed', top:'calc(14px + env(safe-area-inset-top,0px))', right:16, zIndex:300,
-        width:38, height:38, borderRadius:19,
-        background: userData?.photoURL ? 'transparent' : COLORS.softer,
-        border:`2px solid ${COLORS.line}`, padding:0, cursor:'pointer', overflow:'hidden',
-        display:'flex', alignItems:'center', justifyContent:'center',
-        boxShadow:'0 1px 6px rgba(0,0,0,0.10)',
+      paddingTop:'calc(env(safe-area-inset-top) + 60px)', paddingBottom:100 }}>
+      {/* 고정 헤더 */}
+      <div style={{
+        position:'fixed', top:0, left:0, right:0, zIndex:300,
+        paddingTop:'env(safe-area-inset-top,0px)',
+        background:COLORS.bg,
+        borderBottom:`1px solid ${COLORS.line}`,
       }}>
-        {userData?.photoURL
-          ? <img src={userData.photoURL} alt="profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-          : <Icon name="user" size={18} color={COLORS.mute}/>
-        }
-      </button>
-      <div style={{ padding:'0 24px 32px' }}>
-        <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink }}>My Trips</div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
+          padding:'0 20px', height:52 }}>
+          <div style={{ fontFamily:SERIF, fontSize:24, color:COLORS.ink, letterSpacing:'-0.01em' }}>My Trips</div>
+          <button onClick={onOpenCompanion} style={{
+            width:36, height:36, borderRadius:18,
+            background: userData?.photoURL ? 'transparent' : COLORS.softer,
+            border:`2px solid ${COLORS.line}`, padding:0, cursor:'pointer', overflow:'hidden',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            {userData?.photoURL
+              ? <img src={userData.photoURL} alt="profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+              : <Icon name="user" size={17} color={COLORS.mute}/>
+            }
+          </button>
+        </div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1173,6 +1192,7 @@ function TripsScreen({ trips, onSelect, onAdd, onShare, onDelete, loading, userD
               const isShared = Array.isArray(t.members) && t.members.length > 0 && t.members[0] !== myUid;
               return (
                 <TripSwipeCard key={t.id}
+                  onTap={() => onSelect(t.id)}
                   onShare={() => onShare(t)}
                   onDelete={() => onDelete(t.id)}
                   wrapStyle={{ borderRadius:20, border:`1px solid ${COLORS.line}` }}>
