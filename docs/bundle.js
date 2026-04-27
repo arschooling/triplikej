@@ -2270,7 +2270,6 @@ function TripSwipeCard(_ref11) {
   var children = _ref11.children,
     onShare = _ref11.onShare,
     onDelete = _ref11.onDelete,
-    onTap = _ref11.onTap,
     _ref11$wrapStyle = _ref11.wrapStyle,
     wrapStyle = _ref11$wrapStyle === void 0 ? {} : _ref11$wrapStyle;
   var _React$useState31 = React.useState(0),
@@ -2284,7 +2283,6 @@ function TripSwipeCard(_ref11) {
   var startRef = React.useRef(null);
   var dragging = React.useRef(false);
   var xRef = React.useRef(0);
-  var tappedRef = React.useRef(false);
   var REVEAL = 144;
   var DELETE_EXTRA = 72;
   var close = function close() {
@@ -2298,7 +2296,6 @@ function TripSwipeCard(_ref11) {
       y: e.touches[0].clientY
     };
     dragging.current = false;
-    tappedRef.current = false;
   };
   var onTouchMove = function onTouchMove(e) {
     if (!startRef.current) return;
@@ -2306,7 +2303,6 @@ function TripSwipeCard(_ref11) {
     var dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 8) return;
-      // 세로 스크롤이면 startRef를 지우지 말고 그냥 무시 (탭 감지 유지)
       if (dy > Math.abs(dx) * 0.6) return;
       dragging.current = true;
     }
@@ -2322,10 +2318,7 @@ function TripSwipeCard(_ref11) {
     startRef.current = null;
     dragging.current = false;
     if (!wasDragging) {
-      if (!open && onTap) {
-        tappedRef.current = true;
-        onTap();
-      }
+      if (open) close();
       return;
     }
     var cur = xRef.current;
@@ -2347,12 +2340,6 @@ function TripSwipeCard(_ref11) {
     dragging.current = false;
     close();
   };
-  var onClickCapture = function onClickCapture(e) {
-    if (tappedRef.current) {
-      tappedRef.current = false;
-      e.stopPropagation();
-    }
-  };
   return /*#__PURE__*/React.createElement("div", {
     style: _objectSpread({
       position: 'relative',
@@ -2361,8 +2348,7 @@ function TripSwipeCard(_ref11) {
     onTouchStart: onTouchStart,
     onTouchMove: onTouchMove,
     onTouchEnd: onTouchEnd,
-    onTouchCancel: onTouchCancel,
-    onClickCapture: onClickCapture
+    onTouchCancel: onTouchCancel
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -3095,9 +3081,6 @@ function TripsScreen(_ref17) {
     var isShared = Array.isArray(t.members) && t.members.length > 0 && t.members[0] !== myUid;
     return /*#__PURE__*/React.createElement(TripSwipeCard, {
       key: t.id,
-      onTap: function onTap() {
-        return onSelect(t.id);
-      },
       onShare: function onShare() {
         return _onShare(t);
       },
