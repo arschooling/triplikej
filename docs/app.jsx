@@ -1179,7 +1179,7 @@ function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
       }}>
         <button onClick={(e) => { e.stopPropagation(); close(); setTimeout(onShare, 100); }} style={{
           width:50, height:50, borderRadius:25, border:'none', cursor:'pointer',
-          background:'#4F6BED', flexShrink:0,
+          background:COLORS.accent, flexShrink:0,
           display:'flex', alignItems:'center', justifyContent:'center',
         }}><Icon name="share" size={18} color="#fff" stroke={2}/></button>
         <button onClick={(e) => { e.stopPropagation(); close(); setTimeout(onDelete, 100); }} style={{
@@ -1433,7 +1433,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v92</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v93</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3953,70 +3953,26 @@ function LoginScreen({ errorMsg, onLoginStart }) {
 }
 
 // ─── Companion Sheet ──────────────────────────────────────────
-function CompanionSheet({ open, onClose, authUser, userData, onUserDataUpdate, trips }) {
-  const [tripCompanions, setTripCompanions] = React.useState({});
-  const [expandedInvite, setExpandedInvite] = React.useState(null);
-  const [inviteEmail, setInviteEmail] = React.useState('');
-  const [inviteMsg, setInviteMsg] = React.useState('');
-  const [inviting, setInviting] = React.useState(false);
-  const [pendingInvites, setPendingInvites] = React.useState([]);
-
-  const tripIds = (trips || []).map(t => t.id).join(',');
-  React.useEffect(() => {
-    if (!open || !userData) return;
-    (trips || []).forEach(t => {
-      fbGetTripCompanions(t.id, authUser.uid).then(members => {
-        setTripCompanions(prev => ({ ...prev, [t.id]: members }));
-      });
-    });
-    const unsub = fbListenInvites(authUser.uid, setPendingInvites);
-    return unsub;
-  }, [open, tripIds]);
-
-  React.useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = ''; };
-    }
-  }, [open]);
-
-  const handleInvite = async (tripId, tripTitle) => {
-    if (!inviteEmail.trim()) return;
-    setInviting(true); setInviteMsg('');
-    const res = await fbSendTripInvite(userData, inviteEmail, tripId, tripTitle);
-    setInviting(false);
-    if (res.error) setInviteMsg(res.error);
-    else { setInviteMsg(`${res.toName}님께 초대를 보냈습니다!`); setInviteEmail(''); }
-  };
-
-  const handleAccept = async (inv) => {
-    const tripId = await fbAcceptTripInvite(inv, authUser.uid);
-    onUserDataUpdate({ ...userData, tripIds: [...(userData.tripIds || []), tripId] });
-    setPendingInvites(p => p.filter(i => i.id !== inv.id));
-  };
-
-  if (!open) return null;
-
+// ─── Profile Sheet ───────────────────────────────────────────
+function ProfileSheet({ open, onClose, authUser, onAddCompanion, onViewCompanions }) {
+  if (!open || !authUser) return null;
   return (
     <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.4)',
       display:'flex', flexDirection:'column', justifyContent:'flex-end' }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
         background:COLORS.bg, borderRadius:'22px 22px 0 0',
         paddingBottom:'calc(24px + env(safe-area-inset-bottom,0px))',
-        maxHeight:'88%', overflowY:'auto',
       }}>
-        {/* 핸들 */}
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px' }}>
           <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
         </div>
-
-        {/* 프로필 헤더 */}
+        {/* 프로필 */}
         <div style={{ padding:'12px 20px 16px', display:'flex', gap:14, alignItems:'center',
           borderBottom:`1px solid ${COLORS.line}` }}>
           {authUser.photoURL
-            ? <img src={authUser.photoURL} style={{ width:52, height:52, borderRadius:26, flexShrink:0 }}/>
-            : <div style={{ width:52, height:52, borderRadius:26, background:COLORS.accent,
-                display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+            ? <img src={authUser.photoURL} style={{ width:52, height:52, borderRadius:26, objectFit:'cover', flexShrink:0 }}/>
+            : <div style={{ width:52, height:52, borderRadius:26, background:COLORS.accent, flexShrink:0,
+                display:'flex', alignItems:'center', justifyContent:'center',
                 fontFamily:SANS, fontSize:20, color:'#fff', fontWeight:600 }}>
                 {(authUser.displayName||'?')[0]}
               </div>
@@ -4030,6 +3986,126 @@ function CompanionSheet({ open, onClose, authUser, userData, onUserDataUpdate, t
             background:'transparent', fontFamily:SANS, fontSize:12, color:COLORS.mute, cursor:'pointer',
           }}>로그아웃</button>
         </div>
+        {/* 액션 버튼 */}
+        <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:10 }}>
+          <button onClick={() => { onClose(); setTimeout(onAddCompanion, 100); }} style={{
+            padding:'15px 16px', borderRadius:14, border:`1px solid ${COLORS.line}`,
+            background:COLORS.card, cursor:'pointer', textAlign:'left',
+            display:'flex', alignItems:'center', gap:12,
+          }}>
+            <div style={{ width:40, height:40, borderRadius:20, background:'#EEF2FF', flexShrink:0,
+              display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Icon name="plus" size={18} color="#4F6BED" stroke={2.5}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:SANS, fontSize:14, fontWeight:500, color:COLORS.ink }}>동행인 추가하기</div>
+              <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.mute, marginTop:2 }}>이메일로 여행에 초대</div>
+            </div>
+            <Icon name="chevron" size={14} color={COLORS.line} stroke={2}/>
+          </button>
+          <button onClick={() => { onClose(); setTimeout(onViewCompanions, 100); }} style={{
+            padding:'15px 16px', borderRadius:14, border:`1px solid ${COLORS.line}`,
+            background:COLORS.card, cursor:'pointer', textAlign:'left',
+            display:'flex', alignItems:'center', gap:12,
+          }}>
+            <div style={{ width:40, height:40, borderRadius:20, background:COLORS.softer, flexShrink:0,
+              display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Icon name="users" size={18} color={COLORS.mute} stroke={1.8}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:SANS, fontSize:14, fontWeight:500, color:COLORS.ink }}>동행인 보기</div>
+              <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.mute, marginTop:2 }}>함께하는 여행 친구 목록</div>
+            </div>
+            <Icon name="chevron" size={14} color={COLORS.line} stroke={2}/>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Add Companion Sheet ──────────────────────────────────────
+function AddCompanionSheet({ open, onClose, authUser, userData, trips, onUserDataUpdate }) {
+  const [selTrip,        setSelTrip]        = React.useState(null);
+  const [inviteEmail,    setInviteEmail]    = React.useState('');
+  const [inviteMsg,      setInviteMsg]      = React.useState('');
+  const [inviting,       setInviting]       = React.useState(false);
+  const [pendingInvites, setPendingInvites] = React.useState([]);
+  const [companions,     setCompanions]     = React.useState([]); // 현재 선택 여행의 동행인
+  const [removing,       setRemoving]       = React.useState(null);
+
+  const tripIds = (trips||[]).map(t=>t.id).join(',');
+  React.useEffect(() => {
+    if (!open || !authUser) return;
+    const firstId = trips?.[0]?.id || null;
+    setSelTrip(firstId);
+    setInviteEmail(''); setInviteMsg('');
+    const unsub = fbListenInvites(authUser.uid, setPendingInvites);
+    return unsub;
+  }, [open, tripIds]);
+
+  // 선택 여행 변경 시 동행인 다시 로드
+  React.useEffect(() => {
+    if (!selTrip || !authUser) { setCompanions([]); return; }
+    fbGetTripCompanions(selTrip, authUser.uid).then(setCompanions).catch(() => setCompanions([]));
+  }, [selTrip]);
+
+  React.useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [open]);
+
+  const handleInvite = async () => {
+    if (!inviteEmail.trim() || !selTrip) return;
+    setInviting(true); setInviteMsg('');
+    const trip = (trips||[]).find(t => t.id === selTrip);
+    const res = await fbSendTripInvite(userData, inviteEmail, selTrip, trip?.title || '');
+    setInviting(false);
+    if (res.error) setInviteMsg(res.error);
+    else {
+      setInviteMsg(`${res.toName}님께 초대를 보냈습니다!`);
+      setInviteEmail('');
+      // 동행인 목록 갱신
+      fbGetTripCompanions(selTrip, authUser.uid).then(setCompanions);
+    }
+  };
+
+  const handleRemove = async (uid, displayName) => {
+    if (!confirm(`${displayName}님을 이 여행에서 제거할까요?`)) return;
+    setRemoving(uid);
+    try {
+      await fbRemoveTripMember(selTrip, uid);
+      setCompanions(prev => prev.filter(c => c.uid !== uid));
+    } catch(e) { alert('제거 실패. 다시 시도해 주세요.'); }
+    setRemoving(null);
+  };
+
+  const handleAccept = async (inv) => {
+    const tripId = await fbAcceptTripInvite(inv, authUser.uid);
+    onUserDataUpdate({ ...userData, tripIds: [...(userData.tripIds||[]), tripId] });
+    setPendingInvites(p => p.filter(i => i.id !== inv.id));
+  };
+
+  if (!open) return null;
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:210, background:'rgba(0,0,0,0.4)',
+      display:'flex', flexDirection:'column', justifyContent:'flex-end' }} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        background:COLORS.bg, borderRadius:'22px 22px 0 0',
+        paddingBottom:'calc(28px + env(safe-area-inset-bottom,0px))',
+        maxHeight:'88%', overflowY:'auto',
+      }}>
+        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px' }}>
+          <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
+        </div>
+        <div style={{ padding:'6px 20px 16px', borderBottom:`1px solid ${COLORS.line}` }}>
+          <div style={{ fontFamily:SERIF, fontSize:24, color:COLORS.ink }}>동행인 관리</div>
+          <div style={{ fontFamily:SANS, fontSize:12.5, color:COLORS.mute, marginTop:4 }}>
+            초대하거나 동행인을 제거할 수 있어요
+          </div>
+        </div>
 
         {/* 받은 초대 */}
         {pendingInvites.length > 0 && (
@@ -4040,8 +4116,8 @@ function CompanionSheet({ open, onClose, authUser, userData, onUserDataUpdate, t
             {pendingInvites.map(inv => (
               <div key={inv.id} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
                 {inv.fromPhoto
-                  ? <img src={inv.fromPhoto} style={{ width:36, height:36, borderRadius:18 }}/>
-                  : <div style={{ width:36, height:36, borderRadius:18, background:COLORS.accent,
+                  ? <img src={inv.fromPhoto} style={{ width:34, height:34, borderRadius:17 }}/>
+                  : <div style={{ width:34, height:34, borderRadius:17, background:COLORS.accent,
                       display:'flex', alignItems:'center', justifyContent:'center',
                       fontFamily:SANS, fontSize:14, color:'#fff' }}>{(inv.fromName||'?')[0]}</div>
                 }
@@ -4050,11 +4126,11 @@ function CompanionSheet({ open, onClose, authUser, userData, onUserDataUpdate, t
                   <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{inv.tripTitle || inv.fromEmail}</div>
                 </div>
                 <button onClick={() => handleAccept(inv)} style={{
-                  border:'none', borderRadius:10, padding:'6px 12px', cursor:'pointer',
+                  border:'none', borderRadius:9, padding:'6px 12px', cursor:'pointer',
                   background:COLORS.ink, color:COLORS.bg, fontFamily:SANS, fontSize:12, fontWeight:500,
                 }}>수락</button>
                 <button onClick={() => fbRejectInvite(inv.id).then(() => setPendingInvites(p=>p.filter(i=>i.id!==inv.id)))} style={{
-                  border:`1px solid ${COLORS.line}`, borderRadius:10, padding:'6px 10px', cursor:'pointer',
+                  border:`1px solid ${COLORS.line}`, borderRadius:9, padding:'6px 10px', cursor:'pointer',
                   background:'transparent', fontFamily:SANS, fontSize:12, color:COLORS.mute,
                 }}>거절</button>
               </div>
@@ -4062,92 +4138,217 @@ function CompanionSheet({ open, onClose, authUser, userData, onUserDataUpdate, t
           </div>
         )}
 
-        {/* 여행별 동행인 섹션 */}
-        <div style={{ padding:'12px 16px 0' }}>
-          {(trips || []).length === 0 ? (
-            <div style={{ padding:'24px 0', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
-              여행이 없습니다.
-            </div>
-          ) : (trips || []).map(t => {
-            const members = tripCompanions[t.id] || [];
-            const isExpanded = expandedInvite === t.id;
-            const hasBorder = members.length > 0 || isExpanded;
-            return (
-              <div key={t.id} style={{ marginBottom:12, background:COLORS.card,
-                borderRadius:16, overflow:'hidden', border:`1px solid ${COLORS.line}` }}>
-                {/* 여행 헤더 */}
-                <div style={{ padding:'12px 14px', borderBottom: hasBorder ? `1px solid ${COLORS.line}` : 'none' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontFamily:SERIF, fontSize:16, color:COLORS.ink }}>{t.title || '새 여행'}</div>
-                      {t.dates && <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, marginTop:1 }}>{t.dates}</div>}
-                    </div>
-                    <button onClick={() => {
-                      if (isExpanded) { setExpandedInvite(null); setInviteEmail(''); setInviteMsg(''); }
-                      else { setExpandedInvite(t.id); setInviteEmail(''); setInviteMsg(''); }
-                    }} style={{
-                      display:'flex', alignItems:'center', gap:4, padding:'6px 12px',
-                      borderRadius:20, border:`1px solid ${COLORS.line}`, background:'transparent',
-                      cursor:'pointer', fontFamily:SANS, fontSize:12, color:COLORS.mute, flexShrink:0,
-                    }}>
-                      <Icon name="plus" size={12} color={COLORS.mute} stroke={2.5}/>초대
-                    </button>
-                  </div>
-                </div>
-
-                {/* 동행인 목록 */}
-                {members.length > 0 && (
-                  <div style={{ padding:'0 14px' }}>
-                    {members.map((c, ci) => (
-                      <div key={c.uid} style={{ display:'flex', alignItems:'center', gap:10,
-                        padding:'10px 0', borderBottom: ci < members.length - 1 || isExpanded ? `1px solid ${COLORS.line}` : 'none' }}>
-                        {c.photoURL
-                          ? <img src={c.photoURL} style={{ width:36, height:36, borderRadius:18 }}/>
-                          : <div style={{ width:36, height:36, borderRadius:18, background:COLORS.softer,
-                              display:'flex', alignItems:'center', justifyContent:'center',
-                              fontFamily:SANS, fontSize:14, color:COLORS.mute }}>{(c.displayName||'?')[0]}</div>
-                        }
-                        <div style={{ flex:1 }}>
-                          <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, fontWeight:500 }}>{c.displayName}</div>
-                          <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{c.email}</div>
-                        </div>
-                        <div style={{ fontFamily:MONO, fontSize:10, color:'#4F6BED' }}>동행중</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 초대 입력 (펼쳐진 경우) */}
-                {isExpanded && (
-                  <div style={{ padding:'12px 14px 14px' }}>
-                    <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, marginBottom:8 }}>
-                      상대방이 이 앱에 먼저 가입되어 있어야 합니다.
-                    </div>
-                    <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
-                      placeholder="구글 이메일 입력"
-                      onKeyDown={e => e.key === 'Enter' && handleInvite(t.id, t.title)}
-                      style={{ width:'100%', padding:'11px 13px', borderRadius:11,
-                        border:`1.5px solid ${COLORS.line}`, background:COLORS.bg,
-                        fontFamily:SANS, fontSize:13, color:COLORS.ink, boxSizing:'border-box', outline:'none' }}/>
-                    {inviteMsg && (
-                      <div style={{ marginTop:6, fontFamily:SANS, fontSize:12,
-                        color: inviteMsg.includes('보냈') ? COLORS.accent : '#C0392B' }}>{inviteMsg}</div>
-                    )}
-                    <button onClick={() => handleInvite(t.id, t.title)} disabled={inviting || !inviteEmail.trim()} style={{
-                      marginTop:10, width:'100%', padding:'13px', border:'none', borderRadius:12,
-                      background: inviteEmail.trim() ? COLORS.ink : COLORS.softer,
-                      color: inviteEmail.trim() ? COLORS.bg : COLORS.mute,
-                      fontFamily:SANS, fontSize:13, fontWeight:500, cursor:'pointer',
-                    }}>{inviting ? '보내는 중...' : '초대 보내기'}</button>
-                  </div>
-                )}
+        <div style={{ padding:'16px 16px 0' }}>
+          {/* 여행 선택 탭 */}
+          {(trips||[]).length > 0 && (
+            <div style={{ marginBottom:16 }}>
+              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', marginBottom:8 }}>
+                여행 선택
               </div>
-            );
-          })}
+              <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                {(trips||[]).map(t => (
+                  <button key={t.id} onClick={() => setSelTrip(t.id)} style={{
+                    padding:'6px 14px', borderRadius:20,
+                    border:`1.5px solid ${selTrip===t.id ? COLORS.ink : COLORS.line}`,
+                    background: selTrip===t.id ? COLORS.ink : 'transparent',
+                    color: selTrip===t.id ? '#fff' : COLORS.mute,
+                    fontFamily:SANS, fontSize:12.5, cursor:'pointer',
+                  }}>{t.title||'여행'}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 현재 동행인 목록 */}
+          {companions.length > 0 && (
+            <div style={{ marginBottom:16 }}>
+              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', marginBottom:8 }}>
+                현재 동행인 {companions.length}명
+              </div>
+              <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden',
+                border:`1px solid ${COLORS.line}` }}>
+                {companions.map((c, ci) => (
+                  <div key={c.uid} style={{
+                    display:'flex', alignItems:'center', gap:10, padding:'11px 14px',
+                    borderBottom: ci < companions.length-1 ? `1px solid ${COLORS.line}` : 'none',
+                  }}>
+                    {c.photoURL
+                      ? <img src={c.photoURL} style={{ width:36, height:36, borderRadius:18, objectFit:'cover', flexShrink:0 }}/>
+                      : <div style={{ width:36, height:36, borderRadius:18, background:COLORS.softer, flexShrink:0,
+                          display:'flex', alignItems:'center', justifyContent:'center',
+                          fontFamily:SANS, fontSize:14, color:COLORS.mute }}>{(c.displayName||'?')[0]}</div>
+                    }
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontFamily:SANS, fontSize:13, fontWeight:500, color:COLORS.ink }}>{c.displayName}</div>
+                      <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{c.email}</div>
+                    </div>
+                    <button onClick={() => handleRemove(c.uid, c.displayName)}
+                      disabled={removing === c.uid} style={{
+                      padding:'5px 11px', border:`1px solid rgba(193,79,46,0.3)`, borderRadius:9,
+                      background:'rgba(193,79,46,0.07)', cursor:'pointer',
+                      fontFamily:SANS, fontSize:12, color:COLORS.accent,
+                      opacity: removing === c.uid ? 0.5 : 1,
+                    }}>{removing===c.uid ? '...' : '제거'}</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 이메일로 초대 */}
+          <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', marginBottom:8 }}>
+            이메일로 초대
+          </div>
+          <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, marginBottom:10 }}>
+            상대방이 이 앱에 먼저 가입되어 있어야 합니다.
+          </div>
+          <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
+            placeholder="구글 이메일 입력"
+            onKeyDown={e => e.key === 'Enter' && handleInvite()}
+            style={{ width:'100%', padding:'12px 14px', borderRadius:12,
+              border:`1.5px solid ${COLORS.line}`, background:COLORS.card,
+              fontFamily:SANS, fontSize:13.5, color:COLORS.ink, boxSizing:'border-box', outline:'none' }}/>
+          {inviteMsg && (
+            <div style={{ marginTop:8, fontFamily:SANS, fontSize:12,
+              color: inviteMsg.includes('보냈') ? '#2E7D32' : COLORS.accent }}>{inviteMsg}</div>
+          )}
+          <button onClick={handleInvite} disabled={inviting || !inviteEmail.trim() || !selTrip} style={{
+            marginTop:12, width:'100%', padding:'14px', border:'none', borderRadius:14,
+            background: (inviteEmail.trim() && selTrip) ? COLORS.ink : COLORS.softer,
+            color: (inviteEmail.trim() && selTrip) ? COLORS.bg : COLORS.mute,
+            fontFamily:SANS, fontSize:14, fontWeight:600, cursor:'pointer',
+          }}>{inviting ? '보내는 중...' : '초대 보내기'}</button>
         </div>
       </div>
     </div>
   );
+}
+
+// ─── Companions Screen (전체 동행인 목록) ─────────────────────
+function CompanionsScreen({ open, onClose, authUser, userData, trips }) {
+  const [tripCompanions, setTripCompanions] = React.useState({});
+  const [loading, setLoading] = React.useState(false);
+
+  const tripIds = (trips||[]).map(t=>t.id).join(',');
+  React.useEffect(() => {
+    if (!open || !authUser) return;
+    setLoading(true);
+    Promise.all((trips||[]).map(t =>
+      fbGetTripCompanions(t.id, authUser.uid).then(members => ({ id:t.id, members }))
+    )).then(results => {
+      const map = {};
+      results.forEach(r => { map[r.id] = r.members; });
+      setTripCompanions(map);
+      setLoading(false);
+    });
+  }, [open, tripIds]);
+
+  React.useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const tripsWithCompanions = (trips||[]).filter(t => (tripCompanions[t.id]||[]).length > 0);
+  const totalCompanions = Object.values(tripCompanions).reduce((s, m) => s + m.length, 0);
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:220, background:COLORS.bg, overflowY:'auto',
+      paddingBottom:'calc(32px + env(safe-area-inset-bottom,0px))' }}>
+      {/* 헤더 */}
+      <div style={{
+        position:'sticky', top:0, background:COLORS.bg, zIndex:5,
+        paddingTop:'calc(env(safe-area-inset-top,0px) + 14px)',
+        paddingLeft:16, paddingRight:16, paddingBottom:14,
+        borderBottom:`1px solid ${COLORS.line}`,
+        display:'flex', alignItems:'center', gap:12,
+      }}>
+        <button onClick={onClose} style={{
+          width:36, height:36, borderRadius:18, border:'none', background:COLORS.softer,
+          display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0,
+        }}>
+          <Icon name="chevron-l" size={17} color={COLORS.ink} stroke={2}/>
+        </button>
+        <div style={{ flex:1 }}>
+          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>동행인</div>
+          <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, marginTop:1 }}>
+            {totalCompanions > 0 ? `${totalCompanions}명과 함께` : '동행인 없음'}
+          </div>
+        </div>
+      </div>
+
+      {/* 컨텐츠 */}
+      <div style={{ padding:'16px 16px 0' }}>
+        {loading && (
+          <div style={{ padding:'48px 0', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+            불러오는 중...
+          </div>
+        )}
+        {!loading && tripsWithCompanions.length === 0 && (
+          <div style={{ padding:'64px 0', textAlign:'center' }}>
+            <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginBottom:8 }}>아직 동행인이 없어요</div>
+            <div style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.mute }}>
+              프로필에서 동행인을 추가해 보세요
+            </div>
+          </div>
+        )}
+        {!loading && tripsWithCompanions.map(t => {
+          const members = tripCompanions[t.id] || [];
+          return (
+            <div key={t.id} style={{ marginBottom:16, background:COLORS.card,
+              borderRadius:16, overflow:'hidden', border:`1px solid ${COLORS.line}` }}>
+              {/* 여행 헤더 */}
+              <div style={{ padding:'13px 16px', borderBottom:`1px solid ${COLORS.line}`,
+                display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ width:36, height:36, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
+                  <Photo hue={t.hue ?? 25} height={36} small/>
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontFamily:SERIF, fontSize:15, color:COLORS.ink }}>{t.title||'새 여행'}</div>
+                  {t.dates && <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, marginTop:1 }}>{t.dates}</div>}
+                </div>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.accent }}>
+                  {members.length}명
+                </div>
+              </div>
+              {/* 동행인 목록 */}
+              {members.map((c, ci) => (
+                <div key={c.uid} style={{
+                  display:'flex', alignItems:'center', gap:12, padding:'12px 16px',
+                  borderBottom: ci < members.length - 1 ? `1px solid ${COLORS.line}` : 'none',
+                }}>
+                  {c.photoURL
+                    ? <img src={c.photoURL} style={{ width:40, height:40, borderRadius:20, objectFit:'cover', flexShrink:0 }}/>
+                    : <div style={{ width:40, height:40, borderRadius:20, background:COLORS.softer, flexShrink:0,
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                        fontFamily:SANS, fontSize:16, color:COLORS.mute }}>{(c.displayName||'?')[0]}</div>
+                  }
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontFamily:SANS, fontSize:14, fontWeight:500, color:COLORS.ink }}>{c.displayName}</div>
+                    <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, marginTop:1 }}>{c.email}</div>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px',
+                    background:'#EEF2FF', borderRadius:16 }}>
+                    <Icon name="users" size={10} color="#4F6BED" stroke={2}/>
+                    <span style={{ fontFamily:MONO, fontSize:9.5, color:'#4F6BED' }}>동행중</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// 이전 CompanionSheet 호환용 래퍼 (내부에서 사용하지 않지만 혹시 모를 참조 대비)
+function CompanionSheet({ open, onClose, authUser, userData, onUserDataUpdate, trips }) {
+  return <AddCompanionSheet open={open} onClose={onClose} authUser={authUser}
+    userData={userData} trips={trips} onUserDataUpdate={onUserDataUpdate}/>;
 }
 
 // ─── App ─────────────────────────────────────────────────────
@@ -4191,7 +4392,9 @@ function App() {
   const [activeTripId, setActiveTripId] = React.useState(_nav.activeTripId || null);
   const [userTrips, setUserTrips]       = React.useState([]);
   const [tripsLoading, setTripsLoading] = React.useState(false);
-  const [companionOpen, setCompanionOpen] = React.useState(false);
+  const [profileSheetOpen,    setProfileSheetOpen]    = React.useState(false);
+  const [addCompanionOpen,    setAddCompanionOpen]    = React.useState(false);
+  const [companionsScreenOpen, setCompanionsScreenOpen] = React.useState(false);
   const [shareTripTarget, setShareTripTarget] = React.useState(null);
   const [loginError, setLoginError] = React.useState('');
   const [loginPending, setLoginPending] = React.useState(false); // 로그인 버튼 누른 후 로딩 중
@@ -4648,7 +4851,7 @@ function App() {
         onConvertInlineHotel={convertInlineHotel}
         onAddItemToFirstDay={addItemToFirstDay}
         editing={editing} setEditing={setEditing}
-        userData={userData} onOpenCompanion={() => setCompanionOpen(true)}
+        userData={userData} onOpenCompanion={() => setProfileSheetOpen(true)}
         onLoadSample={async () => {
           const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
           const patch = {
@@ -4696,7 +4899,7 @@ function App() {
         loading={tripsLoading}
         userData={userData}
         myUid={authUser?.uid}
-        onOpenCompanion={() => setCompanionOpen(true)}
+        onOpenCompanion={() => setProfileSheetOpen(true)}
         onSelect={(id) => {
           const found = userTrips.find(t => t.id === id);
           let tripToShow = found;
@@ -4762,9 +4965,15 @@ function App() {
         allTrips={userTrips}
         myUid={authUser?.uid}
       />
-      <CompanionSheet open={companionOpen} onClose={() => setCompanionOpen(false)}
+      <ProfileSheet open={profileSheetOpen} onClose={() => setProfileSheetOpen(false)}
+        authUser={authUser}
+        onAddCompanion={() => setAddCompanionOpen(true)}
+        onViewCompanions={() => setCompanionsScreenOpen(true)}/>
+      <AddCompanionSheet open={addCompanionOpen} onClose={() => setAddCompanionOpen(false)}
         authUser={authUser} userData={userData} onUserDataUpdate={ud => setUserData(ud)}
         trips={userTrips}/>
+      <CompanionsScreen open={companionsScreenOpen} onClose={() => setCompanionsScreenOpen(false)}
+        authUser={authUser} userData={userData} trips={userTrips}/>
     </>
   );
 
@@ -4785,7 +4994,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v92</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v93</div>
         </div>
       </div>
       <button onClick={async () => {
@@ -4906,13 +5115,15 @@ function App() {
           onPick={pickHotelFromSearch}
           onClose={() => setHotelSheet(null)}/>
       )}
-      <CompanionSheet
-        open={companionOpen}
-        onClose={() => setCompanionOpen(false)}
+      <ProfileSheet open={profileSheetOpen} onClose={() => setProfileSheetOpen(false)}
         authUser={authUser}
-        userData={userData}
-        onUserDataUpdate={(ud) => setUserData(ud)}
+        onAddCompanion={() => setAddCompanionOpen(true)}
+        onViewCompanions={() => setCompanionsScreenOpen(true)}/>
+      <AddCompanionSheet open={addCompanionOpen} onClose={() => setAddCompanionOpen(false)}
+        authUser={authUser} userData={userData} onUserDataUpdate={ud => setUserData(ud)}
         trips={userTrips}/>
+      <CompanionsScreen open={companionsScreenOpen} onClose={() => setCompanionsScreenOpen(false)}
+        authUser={authUser} userData={userData} trips={userTrips}/>
 
       {/* 저장 확인 다이얼로그 */}
       {saveConfirm && ReactDOM.createPortal(
