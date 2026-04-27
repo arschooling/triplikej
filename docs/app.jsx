@@ -577,6 +577,54 @@ function DatePickerSheet({ open, value, onClose, onPick, minDate, title='날짜 
   );
 }
 
+// ─── Compact scroll wheel ────────────────────────────────────
+function CompactWheel({ items, value, onChange, renderLabel=(x=>x), width=100 }) {
+  const IH = 44, VIS = 5;
+  const ref = React.useRef(null);
+  const timer = React.useRef(null);
+  React.useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const idx = items.indexOf(value);
+    if (idx >= 0) el.scrollTop = idx * IH;
+  }, [value, items]);
+  const onScroll = () => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      const el = ref.current; if (!el) return;
+      const idx = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / IH)));
+      el.scrollTo({ top: idx * IH, behavior: 'smooth' });
+      if (items[idx] !== value) onChange(items[idx]);
+    }, 100);
+  };
+  const PAD = IH * Math.floor(VIS / 2);
+  const stop = e => { e.stopPropagation(); e.preventDefault(); };
+  return (
+    <div style={{ position:'relative', width, height: IH * VIS, overflow:'hidden' }}
+      onClick={stop} onTouchStart={stop} onTouchMove={stop} onTouchEnd={stop}>
+      <div style={{
+        position:'absolute', left:0, right:0, pointerEvents:'none', zIndex:2,
+        top: IH * Math.floor(VIS / 2), height: IH,
+        borderTop:`1.5px solid ${COLORS.line}`, borderBottom:`1.5px solid ${COLORS.line}`,
+      }}/>
+      <div ref={ref} onScroll={onScroll} className="wheel-col" style={{
+        height:'100%', overflowY:'scroll', scrollSnapType:'y mandatory',
+        scrollbarWidth:'none', msOverflowStyle:'none',
+        paddingTop: PAD, paddingBottom: PAD, boxSizing:'content-box',
+      }}>
+        {items.map((it, i) => (
+          <div key={i} style={{
+            height: IH, display:'flex', alignItems:'center', justifyContent:'center',
+            scrollSnapAlign:'center', fontFamily: SANS,
+            fontSize: it === value ? 16 : 14,
+            color: it === value ? COLORS.ink : COLORS.mute,
+            fontWeight: it === value ? 600 : 400, cursor:'pointer',
+          }}>{renderLabel(it)}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Date Range Picker ───────────────────────────────────────
 function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
   const parseIso = s => { const m=(s||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m?{y:+m[1],mo:+m[2]-1,d:+m[3]}:null; };
@@ -624,24 +672,8 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
   const inRng = d => { if(!start||!end) return false; const c={y:view.y,mo:view.mo,d}; return cmp(c,start)>0 && cmp(c,end)<0; };
   const fmtDate = o => o ? `${o.y}. ${o.mo+1}. ${o.d}.` : null;
 
-  /* 년/월 그리드 뷰 */
-  const YearMonthPicker = () => {
-    const YEAR_RANGE = Array.from({length:8}, (_,i) => today.getFullYear()-1+i);
-    return (
-      <div style={{padding:'8px 16px 16px'}}>
-        <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6}}>
-          {MONTH_KR.map((m,i) => (
-            <button key={i} onClick={()=>{ setView(v=>({...v,mo:i})); setShowYM(false); }} style={{
-              padding:'10px 0', borderRadius:10, border:'none', cursor:'pointer', fontFamily:SANS,
-              fontSize:13, fontWeight:500,
-              background: i===view.mo ? COLORS.accent : COLORS.softer,
-              color: i===view.mo ? '#fff' : COLORS.ink,
-            }}>{m}</button>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  const YEARS_LIST  = Array.from({length:12}, (_,i) => today.getFullYear()-2+i);
+  const MONTHS_LIST = Array.from({length:12}, (_,i) => i);
 
   return (
     <BottomSheet open={open} onClose={onClose} title="기간 선택"
@@ -692,7 +724,20 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
         </button>
       </div>
 
-      {showYM ? <YearMonthPicker/> : (
+      {showYM ? (
+        <div style={{display:'flex', justifyContent:'center', gap:16, padding:'0 16px 16px'}}>
+          <CompactWheel
+            items={YEARS_LIST} value={view.y}
+            onChange={y => setView(v => ({...v, y}))}
+            renderLabel={y => `${y}년`} width={130}
+          />
+          <CompactWheel
+            items={MONTHS_LIST} value={view.mo}
+            onChange={mo => setView(v => ({...v, mo}))}
+            renderLabel={m => MONTH_KR[m]} width={90}
+          />
+        </div>
+      ) : (
         <>
           {/* 요일 헤더 */}
           <div style={{display:'grid', gridTemplateColumns:'repeat(7,1fr)', padding:'0 14px 2px'}}>
