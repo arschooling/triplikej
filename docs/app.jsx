@@ -2692,12 +2692,26 @@ function MapScreen({ trip }) {
         layers.current.push(m);
       });
       if (pts.length > 1) {
-        const line = window.L.polyline(pts.map(p => p.pos), {
-          color:'#C14F2E', weight:3, opacity:0.7, dashArray:'8 5',
-        }).addTo(mapInst.current);
-        layers.current.push(line);
+        try {
+          const coords = pts.map(p => `${p.pos[1]},${p.pos[0]}`).join(';');
+          const rd = await (await fetch(
+            `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
+          )).json();
+          if (!cancelled && rd.routes?.[0]) {
+            const route = window.L.geoJSON(rd.routes[0].geometry, {
+              style: { color:'#C14F2E', weight:3.5, opacity:0.85 },
+            }).addTo(mapInst.current);
+            layers.current.push(route);
+          }
+        } catch(_) {
+          const line = window.L.polyline(pts.map(p => p.pos), {
+            color:'#C14F2E', weight:3, opacity:0.7, dashArray:'8 5',
+          }).addTo(mapInst.current);
+          layers.current.push(line);
+        }
       }
-      mapInst.current.fitBounds(window.L.latLngBounds(pts.map(p => p.pos)), { padding:[40,40] });
+      if (!cancelled && mapInst.current)
+        mapInst.current.fitBounds(window.L.latLngBounds(pts.map(p => p.pos)), { padding:[40,40] });
     })();
     return () => { cancelled = true; };
   }, [selDay, mapKey]);
