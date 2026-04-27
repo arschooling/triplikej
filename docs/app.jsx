@@ -1168,7 +1168,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
       paddingTop:'calc(env(safe-area-inset-top) + 16px)', paddingBottom:100 }}>
       <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between',
         padding:'0 20px 20px' }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v54</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v55</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3716,15 +3716,16 @@ function App() {
       }}>
         <Icon name="chevron-left" size={14} color={COLORS.mute} stroke={2}/>My Trips
       </button>
-      <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, textAlign:'center', lineHeight:1.8 }}>
-        <div>tripId: {activeTripId || 'none'}</div>
-        <div>trips loaded: {userTrips.length}</div>
-        <div>found: {userTrips.find(t=>t.id===activeTripId) ? 'yes (days:'+( userTrips.find(t=>t.id===activeTripId)?.days?.length||0)+')' : 'no'}</div>
+      <div style={{ background:'#C0392B', borderRadius:12, padding:'16px 20px', maxWidth:300, textAlign:'center' }}>
+        <div style={{ fontFamily:MONO, fontSize:13, color:'#fff', lineHeight:2 }}>
+          <div>tripId: {activeTripId || 'none'}</div>
+          <div>trips: {userTrips.length} / found: {userTrips.find(t=>t.id===activeTripId) ? 'O days='+( userTrips.find(t=>t.id===activeTripId)?.days?.length||0) : 'X'}</div>
+        </div>
       </div>
       <button onClick={() => fbLoadTrips([activeTripId]).then(ts => { if(ts[0]){ const t=normalizeTrip(ts[0],activeTripId); tripRef.current=t; setTrip(t); } })} style={{
-        padding:'10px 20px', background:COLORS.ink, border:'none', borderRadius:12,
-        color:COLORS.bg, fontFamily:SANS, fontSize:13, cursor:'pointer',
-      }}>Firestore에서 직접 불러오기</button>
+        padding:'14px 28px', background:'#C0392B', border:'none', borderRadius:12,
+        color:'#fff', fontFamily:SANS, fontSize:15, fontWeight:600, cursor:'pointer',
+      }}>일정 불러오기</button>
       <div style={{ width:28, height:28, border:`3px solid ${COLORS.accent}`,
         borderTopColor:'transparent', borderRadius:'50%',
         animation:'spin 0.8s linear infinite' }}/>
