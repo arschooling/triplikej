@@ -1438,7 +1438,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v105</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v106</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3692,6 +3692,26 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
 const BUDGET_OUT_CATS_DEFAULT = ['교통','숙박','식비','쇼핑','관광','기타'];
 const BUDGET_IN_CATS_DEFAULT  = ['환전','지원금','기타'];
 
+// 원화 환산 환율 (대략적 기준)
+const KRW_RATES = {
+  KRW:1, USD:1350, EUR:1480, JPY:9.2, CNY:188, HKD:173, TWD:43, SGD:1010,
+  THB:38, VND:0.055, PHP:23, IDR:0.088, MYR:308, INR:16, AUD:890, NZD:820,
+  GBP:1720, CHF:1530, SEK:128, NOK:122, DKK:198, CAD:1000, MXN:73,
+  BRL:272, AED:368, SAR:360, TRY:42, CZK:62, HUF:3.7, PLN:345,
+};
+const CURRENCY_SYMBOL = {
+  KRW:'₩', USD:'$', EUR:'€', JPY:'¥', CNY:'¥', HKD:'HK$', TWD:'NT$',
+  SGD:'S$', THB:'฿', VND:'₫', PHP:'₱', IDR:'Rp', MYR:'RM', INR:'₹',
+  AUD:'A$', NZD:'NZ$', GBP:'£', CHF:'Fr', SEK:'kr', NOK:'kr', DKK:'kr',
+  CAD:'C$', MXN:'$', BRL:'R$', AED:'AED', SAR:'SAR', TRY:'₺',
+  CZK:'Kč', HUF:'Ft', PLN:'zł',
+};
+const toKrw = (amt, cur) => amt * (KRW_RATES[cur] || 1);
+const fmtAmt = (n, cur) => {
+  const sym = CURRENCY_SYMBOL[cur] || cur;
+  return sym + n.toLocaleString('ko-KR', { maximumFractionDigits: cur==='KRW'?0:2 });
+};
+
 function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
   const budget  = trip.budget || {};
   const entries = budget.entries || [];
@@ -3708,21 +3728,35 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
 
   React.useEffect(() => { onSheetChange?.(addOpen || editIdx !== null); }, [addOpen, editIdx]);
 
-  const totalIn  = entries.filter(e => e.type==='in').reduce((s,e) => s+e.amount, 0);
-  const totalOut = entries.filter(e => e.type==='out').reduce((s,e) => s+e.amount, 0);
-  const balance  = totalIn - totalOut;
+  // KRW 환산 합계
+  const krwTotalIn  = entries.filter(e=>e.type==='in').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
+  const krwTotalOut = entries.filter(e=>e.type==='out').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
+
+  // 통화별 원액 합계 (지출/수입 각각)
+  const byCurrencyOut = {};
+  const byCurrencyIn  = {};
+  entries.forEach(e => {
+    const cur = e.currency || 'KRW';
+    if (e.type==='out') byCurrencyOut[cur] = (byCurrencyOut[cur]||0) + e.amount;
+    else                byCurrencyIn[cur]  = (byCurrencyIn[cur]||0)  + e.amount;
+  });
+
+  // 공동/개인 KRW 합계 (지출 기준)
+  const hasShared = entries.some(e => (e.scope||'personal')==='shared');
+  const krwSharedOut   = entries.filter(e=>e.type==='out'&&(e.scope||'personal')==='shared').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
+  const krwPersonalOut = entries.filter(e=>e.type==='out'&&(e.scope||'personal')==='personal').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
 
   const currentCats = form.type === 'out' ? outCats : inCats;
 
   const openAdd = (type) => {
     const cats = type === 'out' ? outCats : inCats;
-    setForm({ type, amount:'', cat: cats[0] || '', note:'', date:'', currency:'KRW', scope:'shared' });
+    setForm({ type, amount:'', cat: cats[0] || '', note:'', date:'', currency:'KRW', scope:'personal' });
     setEditIdx(null); setDelConfirm(false); setAddingCat(false); setNewCatVal('');
     setAddOpen(true);
   };
   const openEdit = (idx) => {
     const e = entries[idx];
-    setForm({ type:e.type, amount:String(e.amount), cat:e.cat, note:e.note||'', date:e.date||'', currency:e.currency||'KRW', scope:e.scope||'shared' });
+    setForm({ type:e.type, amount:String(e.amount), cat:e.cat, note:e.note||'', date:e.date||'', currency:e.currency||'KRW', scope:e.scope||'personal' });
     setEditIdx(idx); setDelConfirm(false); setAddingCat(false); setNewCatVal('');
     setAddOpen(true);
   };
@@ -3778,42 +3812,49 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
 
       {/* 요약 카드 */}
       <div style={{ margin:'0 16px 14px', background:COLORS.ink, borderRadius:20, padding:'20px 22px' }}>
-        <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:6 }}>Balance</div>
-        <div style={{ fontFamily:SERIF, fontSize:38, color:'#fff', letterSpacing:'-0.02em', lineHeight:1 }}>
-          {balance >= 0 ? '+' : ''}{balance.toLocaleString()}
+        {/* 지출 */}
+        <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>총 지출 (₩ 환산)</div>
+        <div style={{ fontFamily:SERIF, fontSize:36, color:'#E88A7E', letterSpacing:'-0.02em', lineHeight:1 }}>
+          {fmtAmt(Math.round(krwTotalOut), 'KRW')}
         </div>
-        <div style={{ display:'flex', gap:28, marginTop:18 }}>
-          <div>
-            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.1em', textTransform:'uppercase' }}>수입</div>
-            <div style={{ fontFamily:MONO, fontSize:16, color:'#7EC88A', marginTop:3, fontWeight:500 }}>+{totalIn.toLocaleString()}</div>
-          </div>
-          <div>
-            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.1em', textTransform:'uppercase' }}>지출</div>
-            <div style={{ fontFamily:MONO, fontSize:16, color:'#E88A7E', marginTop:3, fontWeight:500 }}>-{totalOut.toLocaleString()}</div>
-          </div>
-        </div>
-        {/* 공동/개인 분리 */}
-        <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.1)', display:'flex', gap:24 }}>
-          <div>
-            <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:4 }}>공동</div>
-            <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.7)' }}>
-              +{sharedIn.toLocaleString()} / -{sharedOut.toLocaleString()}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:4 }}>개인</div>
-            <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.7)' }}>
-              +{personalIn.toLocaleString()} / -{personalOut.toLocaleString()}
-            </div>
-          </div>
-        </div>
-        {topCats.length > 0 && (
-          <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.1)', display:'flex', flexWrap:'wrap', gap:'8px 20px' }}>
-            {topCats.map(([cat, amt]) => (
-              <div key={cat} style={{ fontFamily:MONO, fontSize:11, color:'rgba(255,255,255,0.55)' }}>
-                {cat} <span style={{ color:'rgba(255,255,255,0.85)' }}>{amt.toLocaleString()}</span>
-              </div>
+        {Object.keys(byCurrencyOut).length > 0 && (
+          <div style={{ display:'flex', flexWrap:'wrap', gap:'4px 12px', marginTop:6 }}>
+            {Object.entries(byCurrencyOut).map(([cur, amt]) => (
+              <span key={cur} style={{ fontFamily:MONO, fontSize:11, color:'rgba(255,255,255,0.55)' }}>
+                {fmtAmt(amt, cur)}
+              </span>
             ))}
+          </div>
+        )}
+        {/* 수입 */}
+        {krwTotalIn > 0 && (
+          <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>총 수입 (₩ 환산)</div>
+            <div style={{ fontFamily:SERIF, fontSize:28, color:'#7EC88A', letterSpacing:'-0.02em', lineHeight:1 }}>
+              {fmtAmt(Math.round(krwTotalIn), 'KRW')}
+            </div>
+            {Object.keys(byCurrencyIn).length > 0 && (
+              <div style={{ display:'flex', flexWrap:'wrap', gap:'4px 12px', marginTop:6 }}>
+                {Object.entries(byCurrencyIn).map(([cur, amt]) => (
+                  <span key={cur} style={{ fontFamily:MONO, fontSize:11, color:'rgba(255,255,255,0.55)' }}>
+                    {fmtAmt(amt, cur)}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {/* 공동/개인 (공동 내역 있을 때만) */}
+        {hasShared && (
+          <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.1)', display:'flex', gap:24 }}>
+            <div>
+              <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>공동 지출</div>
+              <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwSharedOut),'KRW')}</div>
+            </div>
+            <div>
+              <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>개인 지출</div>
+              <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwPersonalOut),'KRW')}</div>
+            </div>
           </div>
         )}
       </div>
@@ -3842,51 +3883,52 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
           <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginBottom:8 }}>아직 기록이 없어요</div>
           <div style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.mute }}>여행 수입과 지출을 기록해 보세요</div>
         </div>
-      ) : (
-        <div style={{ padding:'0 16px' }}>
-          {[...entries].map((e,i) => ({ ...e, _i: i })).reverse().map(e => (
-            <div key={e.id||e._i} onClick={() => openEdit(e._i)} style={{
-              background:COLORS.card, borderRadius:14, padding:'13px 16px', marginBottom:8,
-              display:'flex', alignItems:'center', gap:12, cursor:'pointer',
+      ) : (() => {
+        const indexed = [...entries].map((e,i) => ({ ...e, _i:i })).reverse();
+        const personal = indexed.filter(e => (e.scope||'personal')==='personal');
+        const shared   = indexed.filter(e => (e.scope||'personal')==='shared');
+        const renderEntry = (e) => (
+          <div key={e.id||e._i} onClick={() => openEdit(e._i)} style={{
+            background:COLORS.card, borderRadius:14, padding:'13px 16px', marginBottom:8,
+            display:'flex', alignItems:'center', gap:12, cursor:'pointer',
+          }}>
+            <div style={{
+              width:36, height:36, borderRadius:18, flexShrink:0,
+              background: e.type==='in' ? 'rgba(126,200,138,0.15)' : 'rgba(232,138,126,0.12)',
+              display:'flex', alignItems:'center', justifyContent:'center',
             }}>
-              <div style={{
-                width:36, height:36, borderRadius:18, flexShrink:0,
-                background: e.type==='in' ? 'rgba(126,200,138,0.15)' : 'rgba(232,138,126,0.12)',
-                display:'flex', alignItems:'center', justifyContent:'center',
-              }}>
-                <Icon name={e.type==='in' ? 'plus' : 'minus'} size={15}
-                  color={e.type==='in' ? '#3A9B4C' : '#C14F2E'} stroke={2.5}/>
-              </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                  <span style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>
-                    {e.cat}{e.note ? ` · ${e.note}` : ''}
-                  </span>
-                  <span style={{ fontFamily:MONO, fontSize:9.5, padding:'2px 6px', borderRadius:6,
-                    background: (e.scope||'shared')==='shared' ? 'rgba(79,107,237,0.1)' : COLORS.softer,
-                    color: (e.scope||'shared')==='shared' ? '#4F6BED' : COLORS.mute }}>
-                    {(e.scope||'shared')==='shared' ? '공동' : '개인'}
-                  </span>
-                </div>
-                <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:2 }}>
-                  {e.date}{e.currency && e.currency !== 'KRW' ? ` · ${e.currency}` : ''}
-                </div>
-              </div>
-              <div style={{ textAlign:'right', flexShrink:0 }}>
-                <div style={{ fontFamily:MONO, fontSize:15, fontWeight:600,
-                  color: e.type==='in' ? '#3A9B4C' : COLORS.ink }}>
-                  {e.type==='in' ? '+' : '-'}{e.amount.toLocaleString()}
-                </div>
-                {e.currency && e.currency !== 'KRW' && (
-                  <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:1 }}>
-                    {e.currency}
-                  </div>
-                )}
-              </div>
+              <Icon name={e.type==='in' ? 'plus' : 'minus'} size={15}
+                color={e.type==='in' ? '#3A9B4C' : '#C14F2E'} stroke={2.5}/>
             </div>
-          ))}
-        </div>
-      )}
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>
+                {e.cat}{e.note ? ` · ${e.note}` : ''}
+              </div>
+              <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:2 }}>{e.date}</div>
+            </div>
+            <div style={{ fontFamily:MONO, fontSize:15, fontWeight:600, textAlign:'right', flexShrink:0,
+              color: e.type==='in' ? '#3A9B4C' : COLORS.ink }}>
+              {e.type==='in' ? '+' : '-'}{fmtAmt(e.amount, e.currency||'KRW')}
+            </div>
+          </div>
+        );
+        return (
+          <div style={{ padding:'0 16px' }}>
+            {personal.length > 0 && (
+              <>
+                {hasShared && <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase', padding:'4px 4px 8px' }}>개인</div>}
+                {personal.map(renderEntry)}
+              </>
+            )}
+            {shared.length > 0 && (
+              <>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'#4F6BED', letterSpacing:'0.1em', textTransform:'uppercase', padding:'4px 4px 8px', marginTop: personal.length>0?8:0 }}>공동</div>
+                {shared.map(renderEntry)}
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* 입력 시트 */}
       {addOpen && (
@@ -3914,12 +3956,12 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
                 ))}
               </div>
               <div style={{ display:'flex', gap:4, background:COLORS.softer, borderRadius:14, padding:4 }}>
-                {[{v:'shared',label:'공동'},{v:'personal',label:'개인'}].map(({v,label}) => (
+                {[{v:'personal',label:'개인'},{v:'shared',label:'공동'}].map(({v,label}) => (
                   <button key={v} onClick={() => setForm(f => ({...f, scope:v}))}
                     style={{ padding:'9px 12px', border:'none', borderRadius:10, cursor:'pointer',
-                      background: (form.scope||'shared')===v ? COLORS.card : 'transparent',
+                      background: (form.scope||'personal')===v ? COLORS.card : 'transparent',
                       fontFamily:SANS, fontSize:13, fontWeight:600,
-                      color: (form.scope||'shared')===v ? COLORS.ink : COLORS.mute }}>
+                      color: (form.scope||'personal')===v ? COLORS.ink : COLORS.mute }}>
                     {label}
                   </button>
                 ))}
@@ -5634,7 +5676,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v105</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v106</div>
         </div>
       </div>
       <button onClick={async () => {
