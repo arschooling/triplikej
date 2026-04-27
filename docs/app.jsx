@@ -3274,32 +3274,26 @@ function App() {
     fbLoadTrips(tripIds)
       .then(async trips => {
         const normalized = trips.map(t => normalizeTrip(t, t.id));
-        // days가 없는 여행이 있으면 TRIP_DEFAULT로 자동 초기화 (1회)
-        const primary = normalized.find(t => t.id === userData.uid) || normalized[0];
-        if (primary && (primary.days || []).length === 0) {
-          try {
-            const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
-            const patch = {
-              title : def.title  || 'New York',
-              dates : def.dates  || '',
-              hotel : def.hotel  || '',
-              days  : def.days   || [],
-              hotels: def.hotels || [],
-              food  : def.food   || [],
-            };
-            await fbSaveGroup(primary.id, patch);
-            normalized[normalized.indexOf(primary)] = normalizeTrip({ ...primary, ...patch }, primary.id);
-          } catch(e) { console.warn('auto-init failed', e); }
+        // days가 없는 여행은 TRIP_DEFAULT로 자동 복구
+        for (let i = 0; i < normalized.length; i++) {
+          if ((normalized[i].days || []).length === 0) {
+            try {
+              const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+              const patch = {
+                title : def.title  || 'New York',
+                dates : def.dates  || '',
+                hotel : def.hotel  || '',
+                days  : def.days   || [],
+                hotels: def.hotels || [],
+                food  : def.food   || [],
+              };
+              await fbSaveGroup(normalized[i].id, patch);
+              normalized[i] = normalizeTrip({ ...normalized[i], ...patch }, normalized[i].id);
+            } catch(e) { console.warn('auto-restore failed', e); }
+          }
         }
         setUserTrips(normalized);
         setTripsLoading(false);
-        // 트립 목록 로드 후 바로 첫 번째 트립 자동 선택
-        if (normalized.length > 0 && !activeTripId) {
-          const first = normalized[0];
-          tripRef.current = first;
-          setTrip(first);
-          setActiveTripId(first.id);
-        }
       })
       .catch(() => setTripsLoading(false));
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
