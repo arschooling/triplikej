@@ -680,7 +680,7 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
       onConfirm={() => { if(!start){onClose();return;} onPick(toIso(start),toIso(end)); onClose(); }}>
 
       {/* 시작/종료 상태 바 */}
-      <div style={{margin:'4px 16px 14px', display:'flex', borderRadius:14, border:`1px solid ${COLORS.line}`, overflow:'hidden'}}>
+      {!showYM && <div style={{margin:'4px 16px 14px', display:'flex', borderRadius:14, border:`1px solid ${COLORS.line}`, overflow:'hidden'}}>
         {['start','end'].map((k,ki) => {
           const val = k==='start' ? start : end;
           const active = picking===k;
@@ -701,7 +701,7 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
             </button>
           );
         })}
-      </div>
+      </div>}
 
       {/* 월 네비게이션 헤더 */}
       <div style={{display:'flex', alignItems:'center', padding:'0 16px', marginBottom:10, gap:8}}>

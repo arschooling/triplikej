@@ -1745,7 +1745,7 @@ function DateRangeSheet({
       onPick(toIso(start), toIso(end));
       onClose();
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, !showYM && /*#__PURE__*/React.createElement("div", {
     style: {
       margin: '4px 16px 14px',
       display: 'flex',
