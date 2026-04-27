@@ -66,7 +66,8 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
     case 'phone':   return <svg {...p}><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg>;
     case 'sparkle': return <svg {...p}><path d="M12 3 9.5 9.5 3 12l6.5 2.5L12 21l2.5-6.5L21 12l-6.5-2.5z"/></svg>;
     case 'wallet':  return <svg {...p}><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg>;
-    case 'minus':   return <svg {...p}><path d="M5 12h14"/></svg>;
+    case 'minus':      return <svg {...p}><path d="M5 12h14"/></svg>;
+    case 'calculator': return <svg {...p}><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M12 10h2M16 10h.01M8 14h2M12 14h2M16 14h2M8 18h2M12 18h2M16 18h2"/></svg>;
     default: return null;
   }
 };
@@ -1463,7 +1464,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v121</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v122</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3838,6 +3839,197 @@ const fmtAmt = (n, cur) => {
   return sym + n.toLocaleString('ko-KR', { maximumFractionDigits: cur==='KRW'?0:2 });
 };
 
+function BudgetCalcSheet({ open, onClose, onEnter }) {
+  const [display, setDisplay] = React.useState('0');
+  const [prevVal, setPrevVal] = React.useState(null);
+  const [op, setOp]           = React.useState(null);
+  const [waitNew, setWaitNew] = React.useState(false);
+  const [entered, setEntered] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) { setEntered(false); return; }
+    setDisplay('0'); setPrevVal(null); setOp(null); setWaitNew(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+  }, [open]);
+
+  if (!open) return null;
+
+  const compute = (a, b, o) => {
+    if (o==='+') return a+b; if (o==='−') return a-b;
+    if (o==='×') return a*b; if (o==='÷') return b!==0 ? a/b : 0;
+    return b;
+  };
+  const pressDigit = (d) => {
+    if (waitNew) { setDisplay(d==='.' ? '0.' : d); setWaitNew(false); return; }
+    if (d==='.' && display.includes('.')) return;
+    setDisplay(display==='0' && d!=='.' ? d : display+d);
+  };
+  const pressOp = (newOp) => {
+    const cur = parseFloat(display)||0;
+    if (prevVal!==null && !waitNew) {
+      const r = compute(prevVal, cur, op);
+      setDisplay(String(Math.round(r*100)/100)); setPrevVal(r);
+    } else { setPrevVal(cur); }
+    setOp(newOp); setWaitNew(true);
+  };
+  const pressEqual = () => {
+    const cur = parseFloat(display)||0;
+    if (prevVal!==null && op) {
+      const r = compute(prevVal, cur, op);
+      setDisplay(String(Math.round(r*100)/100));
+    }
+    setPrevVal(null); setOp(null); setWaitNew(true);
+  };
+  const pressClear = () => { setDisplay('0'); setPrevVal(null); setOp(null); setWaitNew(false); };
+  const pressBack  = () => {
+    if (waitNew || display.length<=1) { setDisplay('0'); setWaitNew(false); }
+    else setDisplay(display.slice(0,-1)||'0');
+  };
+
+  const displayNum = parseFloat(display)||0;
+  const fmtDisp = display.includes('.')
+    ? display
+    : Number(display).toLocaleString('ko-KR');
+
+  const KS = (bg, color, extra={}) => ({
+    flex:1, padding:'17px 0', border:'none', borderRadius:14, cursor:'pointer',
+    fontFamily:MONO, fontSize:20, fontWeight:600, background:bg, color,
+    display:'flex', alignItems:'center', justifyContent:'center', ...extra,
+  });
+  const isOp = (o) => op===o;
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:310,
+      display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      background:'rgba(0,0,0,0.4)' }} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        background:COLORS.bg, borderRadius:'22px 22px 0 0',
+        paddingBottom:'env(safe-area-inset-bottom,0px)',
+        transform:`translateY(${entered ? 0 : window.innerHeight}px)`,
+        transition:'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
+      }}>
+        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 4px' }}>
+          <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
+        </div>
+        {/* 디스플레이 */}
+        <div style={{ padding:'8px 20px 14px', textAlign:'right', minHeight:64 }}>
+          {op && <span style={{ fontFamily:MONO, fontSize:16, color:COLORS.mute, marginRight:8 }}>{op}</span>}
+          <span style={{ fontFamily:SERIF, fontSize:44, color:COLORS.ink, letterSpacing:'-0.02em' }}>{fmtDisp}</span>
+        </div>
+        {/* 키패드 */}
+        <div style={{ padding:'0 14px', display:'flex', flexDirection:'column', gap:8 }}>
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={pressClear} style={KS(COLORS.softer, COLORS.mute)}>C</button>
+            <button onClick={pressBack}  style={KS(COLORS.softer, COLORS.mute)}>⌫</button>
+            <button onClick={() => { setDisplay(String(Math.round((parseFloat(display)||0)/100*100)/100)); setWaitNew(true); }}
+              style={KS(COLORS.softer, COLORS.mute)}>%</button>
+            <button onClick={() => pressOp('÷')}
+              style={KS(isOp('÷') ? COLORS.accent : 'rgba(193,79,46,0.12)', isOp('÷') ? '#fff' : COLORS.accent)}>÷</button>
+          </div>
+          {[['7','8','9','×'],['4','5','6','−'],['1','2','3','+']].map(row => (
+            <div key={row[0]} style={{ display:'flex', gap:8 }}>
+              {row.slice(0,3).map(d => (
+                <button key={d} onClick={() => pressDigit(d)} style={KS(COLORS.card, COLORS.ink)}>{d}</button>
+              ))}
+              <button onClick={() => pressOp(row[3])}
+                style={KS(isOp(row[3]) ? COLORS.accent : 'rgba(193,79,46,0.12)', isOp(row[3]) ? '#fff' : COLORS.accent)}>{row[3]}</button>
+            </div>
+          ))}
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={() => pressDigit('0')} style={KS(COLORS.card, COLORS.ink, { flex:2 })}>0</button>
+            <button onClick={() => pressDigit('.')} style={KS(COLORS.card, COLORS.ink)}>.</button>
+            <button onClick={pressEqual} style={KS(COLORS.accent, '#fff')}>=</button>
+          </div>
+        </div>
+        {/* 입력 버튼 */}
+        <div style={{ padding:'12px 14px 16px', display:'flex', gap:8 }}>
+          <button onClick={() => { onEnter('in', displayNum); onClose(); }} style={{
+            flex:1, padding:'14px 0', border:`1px solid ${COLORS.line}`, borderRadius:14,
+            background:COLORS.card, fontFamily:SANS, fontSize:13, fontWeight:600, color:COLORS.ink, cursor:'pointer',
+          }}>수입으로 입력</button>
+          <button onClick={() => { onEnter('out', displayNum); onClose(); }} style={{
+            flex:1, padding:'14px 0', border:'none', borderRadius:14,
+            background:COLORS.accent, fontFamily:SANS, fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer',
+          }}>지출로 입력</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter }) {
+  const [n, setN]         = React.useState(String(defaultN));
+  const [entered, setEntered] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) { setEntered(false); return; }
+    setN(String(defaultN));
+    requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+  }, [open, defaultN]);
+
+  if (!open) return null;
+
+  const count = Math.max(1, parseInt(n)||1);
+  const perPerson = Math.round(totalKrw / count);
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:310,
+      display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      background:'rgba(0,0,0,0.4)' }} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        background:COLORS.bg, borderRadius:'22px 22px 0 0', padding:'0 16px',
+        paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))',
+        transform:`translateY(${entered ? 0 : window.innerHeight}px)`,
+        transition:'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
+      }}>
+        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px' }}>
+          <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
+        </div>
+        <div style={{ fontFamily:SERIF, fontSize:20, color:COLORS.ink, padding:'6px 4px 14px' }}>1/N 분할</div>
+        <div style={{ background:COLORS.card, borderRadius:14, padding:'14px 16px', marginBottom:12 }}>
+          <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4 }}>공동 지출 총액 (₩ 환산)</div>
+          <div style={{ fontFamily:SERIF, fontSize:26, color:COLORS.ink }}>{fmtAmt(totalKrw, 'KRW')}</div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
+          <div style={{ flex:1, background:COLORS.card, borderRadius:14, padding:'14px 16px' }}>
+            <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8 }}>인원 수</div>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:12 }}>
+              <button onClick={() => setN(String(Math.max(1,count-1)))} style={{
+                width:30, height:30, borderRadius:15, border:`1px solid ${COLORS.line}`,
+                background:'transparent', cursor:'pointer', fontFamily:SANS, fontSize:18, color:COLORS.ink,
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>−</button>
+              <input value={n} onChange={e => setN(e.target.value.replace(/[^0-9]/g,''))}
+                style={{ width:36, textAlign:'center', border:'none', outline:'none',
+                  fontFamily:MONO, fontSize:22, fontWeight:700, color:COLORS.ink, background:'transparent' }}/>
+              <button onClick={() => setN(String(count+1))} style={{
+                width:30, height:30, borderRadius:15, border:`1px solid ${COLORS.line}`,
+                background:'transparent', cursor:'pointer', fontFamily:SANS, fontSize:18, color:COLORS.ink,
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>+</button>
+            </div>
+          </div>
+          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.mute }}>=</div>
+          <div style={{ flex:1.3, background:COLORS.ink, borderRadius:14, padding:'14px 16px' }}>
+            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.5)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4 }}>1인당</div>
+            <div style={{ fontFamily:SERIF, fontSize:22, color:'#fff', letterSpacing:'-0.01em' }}>{fmtAmt(perPerson, 'KRW')}</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <button onClick={() => { onEnter('in', perPerson); onClose(); }} style={{
+            flex:1, padding:'14px 0', border:`1px solid ${COLORS.line}`, borderRadius:14,
+            background:COLORS.card, fontFamily:SANS, fontSize:13, fontWeight:600, color:COLORS.ink, cursor:'pointer',
+          }}>수입으로 입력</button>
+          <button onClick={() => { onEnter('out', perPerson); onClose(); }} style={{
+            flex:1, padding:'14px 0', border:'none', borderRadius:14,
+            background:COLORS.accent, fontFamily:SANS, fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer',
+          }}>지출로 입력</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
   const budget  = trip.budget || {};
   const entries = budget.entries || [];
@@ -3850,6 +4042,8 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
   const [form, setForm] = React.useState({ type:'out', amount:'', cat:'식비', note:'', date:'' });
   const [addingCat,  setAddingCat]  = React.useState(false);
   const [newCatVal,  setNewCatVal]  = React.useState('');
+  const [calcOpen,   setCalcOpen]   = React.useState(false);
+  const [splitOpen,  setSplitOpen]  = React.useState(false);
   const sheetTouchY = React.useRef(null);
 
   React.useEffect(() => { onSheetChange?.(addOpen || editIdx !== null); }, [addOpen, editIdx]);
@@ -3879,6 +4073,12 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
   const openAdd = (type) => {
     const cats = type === 'out' ? outCats : inCats;
     setForm({ type, amount:'', cat: cats[0] || '', note:'', date:'', currency:'KRW', scope:'personal' });
+    setEditIdx(null); setDelConfirm(false); setAddingCat(false); setNewCatVal('');
+    setAddOpen(true);
+  };
+  const openAddWithAmount = (type, amount) => {
+    const cats = type === 'out' ? outCats : inCats;
+    setForm({ type, amount: String(Math.round(amount)), cat: cats[0] || '', note:'', date:'', currency:'KRW', scope:'personal' });
     setEditIdx(null); setDelConfirm(false); setAddingCat(false); setNewCatVal('');
     setAddOpen(true);
   };
@@ -3979,9 +4179,16 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
             {(krwSharedOut > 0 || krwPersonalOut > 0) && (
               <div style={{ display:'flex', gap:24 }}>
                 {krwSharedOut > 0 && (
-                  <div>
-                    <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>공동 지출</div>
-                    <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwSharedOut),'KRW')}</div>
+                  <div style={{ display:'flex', alignItems:'flex-end', gap:8 }}>
+                    <div>
+                      <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>공동 지출</div>
+                      <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwSharedOut),'KRW')}</div>
+                    </div>
+                    <button onClick={() => setSplitOpen(true)} style={{
+                      marginBottom:1, padding:'3px 7px', border:'1px solid rgba(255,255,255,0.2)',
+                      borderRadius:8, background:'transparent', cursor:'pointer',
+                      fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.55)', letterSpacing:'0.05em',
+                    }}>÷N</button>
                   </div>
                 )}
                 {krwPersonalOut > 0 && (
@@ -4027,6 +4234,12 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
           display:'flex', alignItems:'center', justifyContent:'center', gap:6,
         }}>
           <Icon name="minus" size={14} color="#fff" stroke={2.5}/> 지출 추가
+        </button>
+        <button onClick={() => setCalcOpen(true)} style={{
+          width:46, padding:'12px 0', background:COLORS.card, border:`1px solid ${COLORS.line}`, borderRadius:14,
+          cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+        }}>
+          <Icon name="calculator" size={16} color={COLORS.ink} stroke={1.8}/>
         </button>
       </div>
 
@@ -4238,6 +4451,12 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
           </div>
         </div>
       )}
+      <BudgetCalcSheet open={calcOpen} onClose={() => setCalcOpen(false)}
+        onEnter={(type, amount) => openAddWithAmount(type, amount)}/>
+      <SplitSheet open={splitOpen} onClose={() => setSplitOpen(false)}
+        totalKrw={Math.round(krwSharedOut)}
+        defaultN={Math.max(2, (trip.members||[]).length)}
+        onEnter={(type, amount) => openAddWithAmount(type, amount)}/>
     </div>
   );
 }
@@ -5845,7 +6064,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v121</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v122</div>
         </div>
       </div>
       <button onClick={async () => {
