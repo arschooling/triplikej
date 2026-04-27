@@ -3293,6 +3293,13 @@ function App() {
         }
         setUserTrips(normalized);
         setTripsLoading(false);
+        // 트립 목록 로드 후 바로 첫 번째 트립 자동 선택
+        if (normalized.length > 0 && !activeTripId) {
+          const first = normalized[0];
+          tripRef.current = first;
+          setTrip(first);
+          setActiveTripId(first.id);
+        }
       })
       .catch(() => setTripsLoading(false));
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
