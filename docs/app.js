@@ -3114,8 +3114,8 @@ function HomeScreen(_ref20) {
     onClick: onOpenCompanion,
     style: {
       position: 'absolute',
-      top: 'calc(14px + env(safe-area-inset-top,0px))',
-      right: 16,
+      top: 'calc(16px + env(safe-area-inset-top,0px))',
+      right: 20,
       zIndex: 10,
       width: 38,
       height: 38,

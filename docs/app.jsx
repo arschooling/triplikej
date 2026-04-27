@@ -1349,7 +1349,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
       {/* 프로필 버튼 — 페이지 상단에만 고정, 스크롤하면 올라감 */}
       {onOpenCompanion && (
         <button onClick={onOpenCompanion} style={{
-          position:'absolute', top:'calc(14px + env(safe-area-inset-top,0px))', right:16, zIndex:10,
+          position:'absolute', top:'calc(16px + env(safe-area-inset-top,0px))', right:20, zIndex:10,
           width:38, height:38, borderRadius:19,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
           border:`2px solid ${COLORS.line}`,
