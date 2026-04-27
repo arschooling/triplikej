@@ -3286,16 +3286,7 @@ function App() {
     const cached = normalizeTrip(rawCached, activeTripId);
     if (cached) { tripRef.current = cached; setTrip(cached); } else setTrip(null);
     return fbListenGroup(activeTripId, (data) => {
-      if (data === null) {
-        // 이미 데이터가 있으면 덮어쓰지 않음 (Firestore 오류 시 데이터 보호)
-        if (groupCreateRef.current || tripRef.current) return;
-        groupCreateRef.current = true;
-        fbSaveGroup(activeTripId, {
-          title: '새 여행', dates: '', hotel: '', days: [],
-          hotels: [], food: [], members: [userData.uid],
-        });
-        return;
-      }
+      if (data === null) return; // 문서 없음 또는 오류 — 기존 데이터 보호
       const normalized = normalizeTrip(data, activeTripId);
       setTrip(prev => {
         if (JSON.stringify(prev) === JSON.stringify(normalized)) return prev;
@@ -3640,7 +3631,11 @@ function App() {
         userData={userData}
         myUid={authUser?.uid}
         onOpenCompanion={() => setCompanionOpen(true)}
-        onSelect={(id) => { setActiveTripId(id); setTab('home'); setDayIdx(null); setHotelIdx(null); setEditing(false); }}
+        onSelect={(id) => {
+          const found = userTrips.find(t => t.id === id);
+          if (found) { tripRef.current = found; setTrip(found); }
+          setActiveTripId(id); setTab('home'); setDayIdx(null); setHotelIdx(null); setEditing(false);
+        }}
         onAdd={async () => {
           const title = prompt('여행 이름을 입력해 주세요\n(예: 뉴욕, 파리 7박)');
           if (!title) return;
