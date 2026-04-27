@@ -1351,30 +1351,6 @@ function DateRangeSheet({
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 6,
-        marginBottom: 14
-      }
-    }, YEAR_RANGE.map(y => /*#__PURE__*/React.createElement("button", {
-      key: y,
-      onClick: () => setView(v => ({
-        ...v,
-        y
-      })),
-      style: {
-        padding: '6px 14px',
-        borderRadius: 20,
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: SANS,
-        fontSize: 13,
-        fontWeight: 500,
-        background: y === view.y ? COLORS.ink : COLORS.softer,
-        color: y === view.y ? '#fff' : COLORS.ink
-      }
-    }, y))), /*#__PURE__*/React.createElement("div", {
-      style: {
         display: 'grid',
         gridTemplateColumns: 'repeat(4,1fr)',
         gap: 6

@@ -629,18 +629,6 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
     const YEAR_RANGE = Array.from({length:8}, (_,i) => today.getFullYear()-1+i);
     return (
       <div style={{padding:'8px 16px 16px'}}>
-        {/* 년도 선택 */}
-        <div style={{display:'flex', flexWrap:'wrap', gap:6, marginBottom:14}}>
-          {YEAR_RANGE.map(y => (
-            <button key={y} onClick={()=>setView(v=>({...v,y}))} style={{
-              padding:'6px 14px', borderRadius:20, border:'none', cursor:'pointer', fontFamily:SANS,
-              fontSize:13, fontWeight:500,
-              background: y===view.y ? COLORS.ink : COLORS.softer,
-              color: y===view.y ? '#fff' : COLORS.ink,
-            }}>{y}</button>
-          ))}
-        </div>
-        {/* 월 선택 그리드 */}
         <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6}}>
           {MONTH_KR.map((m,i) => (
             <button key={i} onClick={()=>{ setView(v=>({...v,mo:i})); setShowYM(false); }} style={{
