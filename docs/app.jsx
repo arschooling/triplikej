@@ -1666,26 +1666,26 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
     catch (e) { setRestoreErr('복원 실패. 다시 시도해 주세요.'); setRestoring(false); }
   };
   return (
-    <div style={{ minHeight:'100vh', background:COLORS.bg, paddingBottom:100, position:'relative' }}>
-      <button onClick={onOpenCompanion} style={{
-        position:'absolute', top:'calc(16px + env(safe-area-inset-top,0px))', right:20, zIndex:10,
-        width:38, height:38, borderRadius:19,
-        background: userData?.photoURL ? 'transparent' : COLORS.softer,
-        border:`2px solid ${COLORS.line}`,
-        padding:0, cursor:'pointer', overflow:'hidden',
-        display:'flex', alignItems:'center', justifyContent:'center',
-        boxShadow:'0 1px 6px rgba(0,0,0,0.10)',
-      }}>
-        {userData?.photoURL
-          ? <img src={userData.photoURL} alt="profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-          : <Icon name="user" size={18} color={COLORS.mute}/>
-        }
-      </button>
+    <div style={{ minHeight:'100vh', background:COLORS.bg, paddingBottom:100 }}>
       <div style={{
-        paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
+        display:'flex', alignItems:'center', justifyContent:'space-between',
+        paddingTop:'calc(env(safe-area-inset-top, 0px) + 16px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v137</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v138</span></div>
+        <button onClick={onOpenCompanion} style={{
+          width:38, height:38, borderRadius:19, flexShrink:0,
+          background: userData?.photoURL ? 'transparent' : COLORS.softer,
+          border:`2px solid ${COLORS.line}`,
+          padding:0, cursor:'pointer', overflow:'hidden',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          boxShadow:'0 1px 6px rgba(0,0,0,0.10)',
+        }}>
+          {userData?.photoURL
+            ? <img src={userData.photoURL} alt="profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+            : <Icon name="user" size={18} color={COLORS.mute}/>
+          }
+        </button>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5990,7 +5990,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v137</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v138</div>
         </div>
       </div>
       <button onClick={async () => {

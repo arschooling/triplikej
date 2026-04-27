@@ -3838,19 +3838,39 @@ function TripsScreen({
     style: {
       minHeight: '100vh',
       background: COLORS.bg,
-      paddingBottom: 100,
-      position: 'relative'
+      paddingBottom: 100
     }
-  }, /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
+      paddingLeft: 20,
+      paddingRight: 20,
+      paddingBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 34,
+      color: COLORS.ink,
+      letterSpacing: '-0.02em'
+    }
+  }, "My Trips", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: 'monospace',
+      fontSize: 11,
+      color: COLORS.mute,
+      marginLeft: 8
+    }
+  }, "v138")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
-      position: 'absolute',
-      top: 'calc(16px + env(safe-area-inset-top,0px))',
-      right: 20,
-      zIndex: 10,
       width: 38,
       height: 38,
       borderRadius: 19,
+      flexShrink: 0,
       background: userData?.photoURL ? 'transparent' : COLORS.softer,
       border: `2px solid ${COLORS.line}`,
       padding: 0,
@@ -3873,28 +3893,7 @@ function TripsScreen({
     name: "user",
     size: 18,
     color: COLORS.mute
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      paddingTop: 'calc(env(safe-area-inset-top, 0px) + 20px)',
-      paddingLeft: 20,
-      paddingRight: 20,
-      paddingBottom: 16
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SERIF,
-      fontSize: 34,
-      color: COLORS.ink,
-      letterSpacing: '-0.02em'
-    }
-  }, "My Trips", /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: 'monospace',
-      fontSize: 11,
-      color: COLORS.mute,
-      marginLeft: 8
-    }
-  }, "v137"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -12367,7 +12366,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v137"))), /*#__PURE__*/React.createElement("button", {
+  }, "v138"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
