@@ -46,7 +46,7 @@ window.fbGetOrCreateUser = async (fbUser) => {
       createdAt   : firebase.firestore.FieldValue.serverTimestamp(),
     };
     await ref.set(data);
-    // 신규 유저는 빈 여행으로 시작
+    // 신규 유저는 빈 여행으로 시작 (뉴욕 기본값 X)
     await _fbDb.collection('groups').doc(fbUser.uid).set({
       title   : '내 여행',
       dates   : '',
@@ -98,6 +98,40 @@ window.fbListenGroup = (groupId, cb) =>
       s => cb(s.exists ? s.data() : null),
       err => { console.warn('fbListenGroup error:', err.code); cb(null); }
     );
+
+// ─── 디버그용: native Promise로 감싸서 10초 타임아웃 보장 ──────
+window.fbDebugRead = function(groupId) {
+  return new Promise(function(resolve) {
+    // 10초 후 무조건 resolve
+    var t = setTimeout(function() {
+      resolve({ ok: false, reason: 'TIMEOUT — Firestore 무응답 (10s)', userCheck: '?' });
+    }, 10000);
+
+    // groups 읽기
+    _fbDb.collection('groups').doc(groupId).get().then(
+      function(snap) {
+        clearTimeout(t);
+        // users도 같이 읽기
+        _fbDb.collection('users').doc(groupId).get().then(
+          function(us) {
+            resolve({
+              ok: snap.exists,
+              reason: snap.exists ? '' : 'groups: no document',
+              title: snap.exists ? (snap.data().title || '(없음)') : '',
+              days:  snap.exists ? (snap.data().days||[]).length : 0,
+              userCheck: 'users:' + (us.exists ? 'OK' : 'noDoc'),
+            });
+          },
+          function(ue) { resolve({ ok: snap.exists, reason: snap.exists ? '' : 'groups:noDoc', title: '', days: 0, userCheck: 'users:ERR:' + ue.code }); }
+        );
+      },
+      function(e) {
+        clearTimeout(t);
+        resolve({ ok: false, reason: 'groups:ERR:' + (e.code||'?') + ':' + (e.message||''), userCheck: '?' });
+      }
+    );
+  });
+};
 
 window.fbSaveGroup = (groupId, patch) =>
   _fbDb.collection('groups').doc(groupId).set(patch, { merge: true });
@@ -263,4 +297,10 @@ window.fbDeleteTrip = async (tripId, uid) => {
   await _fbDb.collection('users').doc(uid).update({
     tripIds: firebase.firestore.FieldValue.arrayRemove(tripId),
   });
+};
+
+window.fbGetUsersById = async (uids) => {
+  if (!uids || !uids.length) return [];
+  const snaps = await Promise.all(uids.map(uid => _fbDb.collection('users').doc(uid).get()));
+  return snaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
 };
