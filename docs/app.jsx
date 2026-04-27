@@ -1463,7 +1463,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v119</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v120</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3866,10 +3866,12 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
     else                byCurrency[cur].inc += e.amount;
   });
 
-  // 공동/개인 KRW 합계 (지출 기준)
+  // 공동/개인 KRW 합계 (지출/수입 각각)
   const hasShared = entries.some(e => (e.scope||'personal')==='shared');
   const krwSharedOut   = entries.filter(e=>e.type==='out'&&(e.scope||'personal')==='shared').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
   const krwPersonalOut = entries.filter(e=>e.type==='out'&&(e.scope||'personal')==='personal').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
+  const krwSharedIn    = entries.filter(e=>e.type==='in' &&(e.scope||'personal')==='shared').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
+  const krwPersonalIn  = entries.filter(e=>e.type==='in' &&(e.scope||'personal')==='personal').reduce((s,e)=>s+toKrw(e.amount,e.currency||'KRW'),0);
 
   const currentCats = form.type === 'out' ? outCats : inCats;
 
@@ -3962,15 +3964,39 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
 
         {/* 공동/개인 (공동 내역 있을 때만) */}
         {hasShared && (
-          <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.1)', display:'flex', gap:24 }}>
-            <div>
-              <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>공동 지출</div>
-              <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwSharedOut),'KRW')}</div>
-            </div>
-            <div>
-              <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>개인 지출</div>
-              <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwPersonalOut),'KRW')}</div>
-            </div>
+          <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.1)', display:'flex', flexDirection:'column', gap:10 }}>
+            {(krwSharedOut > 0 || krwPersonalOut > 0) && (
+              <div style={{ display:'flex', gap:24 }}>
+                {krwSharedOut > 0 && (
+                  <div>
+                    <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>공동 지출</div>
+                    <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwSharedOut),'KRW')}</div>
+                  </div>
+                )}
+                {krwPersonalOut > 0 && (
+                  <div>
+                    <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>개인 지출</div>
+                    <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwPersonalOut),'KRW')}</div>
+                  </div>
+                )}
+              </div>
+            )}
+            {(krwSharedIn > 0 || krwPersonalIn > 0) && (
+              <div style={{ display:'flex', gap:24 }}>
+                {krwSharedIn > 0 && (
+                  <div>
+                    <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>공동 수입</div>
+                    <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwSharedIn),'KRW')}</div>
+                  </div>
+                )}
+                {krwPersonalIn > 0 && (
+                  <div>
+                    <div style={{ fontFamily:MONO, fontSize:9, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', marginBottom:3 }}>개인 수입</div>
+                    <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.75)' }}>{fmtAmt(Math.round(krwPersonalIn),'KRW')}</div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -5808,7 +5834,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v119</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v120</div>
         </div>
       </div>
       <button onClick={async () => {
