@@ -950,6 +950,7 @@ const FX_CURRENCIES = [
   { code:'TWD', sym:'NT$' }, { code:'SGD', sym:'S$' }, { code:'THB', sym:'฿' },
   { code:'AUD', sym:'A$' }, { code:'CAD', sym:'C$' }, { code:'CHF', sym:'Fr' },
   { code:'AED', sym:'AED' }, { code:'MYR', sym:'RM' }, { code:'VND', sym:'₫' },
+  { code:'PHP', sym:'₱' }, { code:'MXN', sym:'MX$' },
 ];
 
 function useFxRate(currency) {
@@ -1464,7 +1465,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v111</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v112</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -5700,7 +5701,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v111</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v112</div>
         </div>
       </div>
       <button onClick={async () => {
