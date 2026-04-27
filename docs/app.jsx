@@ -1221,7 +1221,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                 </TripSwipeCard>
               );
             })}
-            {trips.length === 0 && onRestore && (
+            {(trips.length === 0 || trips.every(t => !(t.days||[]).length)) && onRestore && (
               <div style={{ padding:'28px 20px', background:COLORS.card, borderRadius:20,
                 border:`1px solid ${COLORS.line}`, textAlign:'center', marginBottom:4 }}>
                 <div style={{ fontFamily:SERIF, fontSize:24, color:COLORS.ink, marginBottom:6 }}>New York</div>
