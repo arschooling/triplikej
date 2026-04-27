@@ -306,7 +306,7 @@ function HotelSearchSheet({ COLORS, SERIF, SANS, MONO, Icon, onPick, onClose }) 
                 </div>
                 <div style={{ marginTop:8, fontFamily:SANS, fontSize:12.5, color:COLORS.mute, lineHeight:1.5 }}>
                   여행 기간(May 4–13, 2025)에 맞는 호텔 예약 확인 메일을 스캔합니다.
-                  Booking.com, Agoda, Expedia 등의 확인 메일과 구글 캘린더 이벤트를 분석해요.
+                  Booking.com, Agoda, Expedia 등의 확인 메일과 Google 캘린더 이벤트를 분석해요.
                 </div>
                 <button onClick={scanMailbox} style={{
                   marginTop:14, width:'100%', border:'none', cursor:'pointer',
@@ -318,7 +318,7 @@ function HotelSearchSheet({ COLORS, SERIF, SANS, MONO, Icon, onPick, onClose }) 
                   스캔 시작
                 </button>
                 <div style={{ marginTop:12, display:'flex', gap:6, flexWrap:'wrap' }}>
-                  {['Gmail', 'Outlook', 'Google Calendar', 'Apple Calendar'].map(s => (
+                  {['Gmail', 'Outlook', 'Google Calendar'].map(s => (
                     <span key={s} style={{
                       padding:'4px 8px', borderRadius:6, background:COLORS.softer,
                       fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.04em',

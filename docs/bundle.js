@@ -3894,7 +3894,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v142"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v143"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -12590,7 +12590,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v142"))), /*#__PURE__*/React.createElement("button", {
+  }, "v143"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
