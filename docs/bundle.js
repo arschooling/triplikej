@@ -2990,16 +2990,27 @@ function TripsScreen(_ref17) {
       paddingTop: 'calc(env(safe-area-inset-top) + 64px)',
       paddingBottom: 100
     }
-  }, /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'flex-end',
+      justifyContent: 'space-between',
+      padding: '0 20px 20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 34,
+      color: COLORS.ink,
+      letterSpacing: '-0.02em'
+    }
+  }, "My Trips"), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
-      position: 'fixed',
-      top: 'calc(14px + env(safe-area-inset-top,0px))',
-      right: 16,
-      zIndex: 300,
       width: 38,
       height: 38,
       borderRadius: 19,
+      marginBottom: 2,
       background: userData !== null && userData !== void 0 && userData.photoURL ? 'transparent' : COLORS.softer,
       border: "2px solid ".concat(COLORS.line),
       padding: 0,
@@ -3007,8 +3018,7 @@ function TripsScreen(_ref17) {
       overflow: 'hidden',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: '0 1px 6px rgba(0,0,0,0.10)'
+      justifyContent: 'center'
     }
   }, userData !== null && userData !== void 0 && userData.photoURL ? /*#__PURE__*/React.createElement("img", {
     src: userData.photoURL,
@@ -3022,17 +3032,7 @@ function TripsScreen(_ref17) {
     name: "user",
     size: 18,
     color: COLORS.mute
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '0 24px 32px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SERIF,
-      fontSize: 30,
-      color: COLORS.ink
-    }
-  }, "My Trips")), loading ? /*#__PURE__*/React.createElement("div", {
+  }))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
