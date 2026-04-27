@@ -1465,7 +1465,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v113</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v114</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -2009,6 +2009,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const [nearbyStop, setNearbyStop] = React.useState(null);
+  const [nearbyTab, setNearbyTab]   = React.useState('hotspot');
   const { itemProps: itemDragProps } = useDragReorder(onReorderItems, editing);
 
   return (
@@ -2107,14 +2108,22 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                   onDelete={() => onDeleteItem(i)}>
                 <div style={{ position:'relative' }}>
                   {!editing && (
-                    <button onClick={(e)=>{ e.stopPropagation(); setNearbyStop(it); }} style={{
-                      position:'absolute', top:8, right:8, zIndex:5,
-                      width:26, height:26, borderRadius:13, border:'none',
-                      background:'rgba(26,24,22,0.06)', cursor:'pointer',
-                      display:'flex', alignItems:'center', justifyContent:'center',
-                    }}>
-                      <Icon name="sparkle" size={13} color={COLORS.mute} stroke={1.8}/>
-                    </button>
+                    <div style={{ position:'absolute', top:8, right:8, zIndex:5, display:'flex', gap:4 }}>
+                      <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('hotspot'); setNearbyStop(it); }} style={{
+                        width:26, height:26, borderRadius:13, border:'none',
+                        background:'rgba(26,24,22,0.06)', cursor:'pointer',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                      }}>
+                        <Icon name="sparkle" size={13} color={COLORS.mute} stroke={1.8}/>
+                      </button>
+                      <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('food'); setNearbyStop(it); }} style={{
+                        width:26, height:26, borderRadius:13, border:'none',
+                        background:'rgba(26,24,22,0.06)', cursor:'pointer',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                      }}>
+                        <Icon name="food" size={13} color={COLORS.mute} stroke={1.8}/>
+                      </button>
+                    </div>
                   )}
                   <button onClick={() => onOpenStop({ idx: i, stop: it, editing })} style={{
                     width:'100%', background:COLORS.card, borderRadius:14, border:'none', cursor:'pointer',
@@ -2232,7 +2241,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
           setDatePickerOpen(false);
         }}
       />
-      <NearbySheet stop={nearbyStop} onClose={() => setNearbyStop(null)}/>
+      <NearbySheet stop={nearbyStop} initialTab={nearbyTab} onClose={() => setNearbyStop(null)}/>
     </div>
   );
 }
@@ -2479,16 +2488,36 @@ function HotelDetailScreen({ hotel, onBack, onEdit, onOpenSearch, editing, setEd
 }
 
 // ─── Nearby suggestions sheet ────────────────────────────────
-function NearbySheet({ stop, onClose }) {
-  const [results, setResults] = React.useState(null); // null=loading, []+=done
-  const [sheetY, setSheetY] = React.useState(0);
-  const sheetRef = React.useRef(null);
-  const sheetYRef = React.useRef(0);
-  const dragRef = React.useRef({ active:false, startY:0 });
+function haversineM(lat1, lon1, lat2, lon2) {
+  const R = 6371000, toR = Math.PI/180;
+  const dLat = (lat2-lat1)*toR, dLon = (lon2-lon1)*toR;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
 
+function NearbySheet({ stop, initialTab, onClose }) {
+  const [tab, setTab] = React.useState('hotspot');
+  const [hotspots, setHotspots] = React.useState(null);
+  const [food, setFood]         = React.useState(null);
+  const [photos, setPhotos]     = React.useState({});
+  const [entered, setEntered]   = React.useState(false);
+  const [sheetY, setSheetY]     = React.useState(0);
+  const sheetRef  = React.useRef(null);
+  const sheetYRef = React.useRef(0);
+  const dragRef   = React.useRef({ active:false });
+
+  // 열릴 때마다 리셋 + 슬라이드업 애니
+  React.useEffect(() => {
+    if (!stop) { setEntered(false); return; }
+    setTab(initialTab || 'hotspot');
+    setHotspots(null); setFood(null); setPhotos({});
+    setSheetY(0); sheetYRef.current = 0;
+    requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+  }, [stop, initialTab]);
+
+  // 두 타입 병렬 fetch
   React.useEffect(() => {
     if (!stop) return;
-    setResults(null); setSheetY(0); sheetYRef.current = 0;
     const ctrl = new AbortController();
     (async () => {
       try {
@@ -2498,33 +2527,58 @@ function NearbySheet({ stop, onClose }) {
           const q = encodeURIComponent([stop.title, stop.en, stop.loc].filter(Boolean).join(' '));
           const geo = await fetch(`https://photon.komoot.io/api/?q=${q}&limit=1`, { signal:ctrl.signal }).then(r=>r.json());
           const f = geo.features?.[0];
-          if (!f) { setResults([]); return; }
+          if (!f) { setHotspots([]); setFood([]); return; }
           [lon, lat] = f.geometry.coordinates;
         }
-        const r = 600;
-        const qs = `[out:json][timeout:10];(node["amenity"~"restaurant|cafe|bar"](around:${r},${lat},${lon});node["tourism"~"attraction|museum|viewpoint"](around:${r},${lat},${lon}););out 20;`;
-        const d = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(qs)}`, { signal:ctrl.signal }).then(r=>r.json());
-        const seen = new Set();
-        const list = (d.elements||[]).reduce((acc, e) => {
-          const nm = e.tags?.name || e.tags?.['name:en'] || '';
-          if (!nm || seen.has(nm)) return acc;
-          seen.add(nm);
-          const type = e.tags?.amenity || e.tags?.tourism || '';
-          const typeLabel = { restaurant:'맛집', cafe:'카페', bar:'바', attraction:'명소', museum:'박물관', viewpoint:'전망' }[type] || type;
-          acc.push({ name:nm, type:typeLabel, lat:e.lat, lon:e.lon });
-          return acc;
-        }, []);
-        setResults(list);
-      } catch(e) { if (!ctrl.signal.aborted) setResults([]); }
+        const parse = (d) => {
+          const seen = new Set();
+          return (d.elements||[]).reduce((acc, e) => {
+            const nm = e.tags?.name || e.tags?.['name:en'] || '';
+            if (!nm || seen.has(nm) || !e.lat) return acc;
+            seen.add(nm);
+            acc.push({
+              name: nm,
+              type: e.tags?.amenity || e.tags?.tourism || e.tags?.historic || e.tags?.leisure || '',
+              wikipedia: e.tags?.wikipedia || '',
+              dist: haversineM(lat, lon, e.lat, e.lon),
+              lat: e.lat, lon: e.lon,
+            });
+            return acc;
+          }, []).sort((a,b) => a.dist - b.dist);
+        };
+        const hQ = `[out:json][timeout:10];(node["tourism"~"attraction|museum|viewpoint|gallery|theme_park|zoo"](around:900,${lat},${lon});node["historic"~"monument|castle|ruins|memorial"](around:900,${lat},${lon});node["leisure"~"park|garden"](around:900,${lat},${lon}););out 30;`;
+        const fQ = `[out:json][timeout:10];(node["amenity"~"restaurant|cafe|bar|fast_food|pub|biergarten|food_court"](around:600,${lat},${lon}););out 30;`;
+        const base = 'https://overpass-api.de/api/interpreter?data=';
+        const [hR, fR] = await Promise.all([
+          fetch(base + encodeURIComponent(hQ), { signal:ctrl.signal }).then(r=>r.json()),
+          fetch(base + encodeURIComponent(fQ), { signal:ctrl.signal }).then(r=>r.json()),
+        ]);
+        setHotspots(parse(hR));
+        setFood(parse(fR));
+      } catch(e) { if (!ctrl.signal.aborted) { setHotspots([]); setFood([]); } }
     })();
     return () => ctrl.abort();
   }, [stop]);
 
+  // Wikipedia 사진 fetch
+  React.useEffect(() => {
+    [...(hotspots||[]), ...(food||[])].forEach(item => {
+      if (!item.wikipedia || item.name in photos) return;
+      setPhotos(p => ({...p, [item.name]: null}));
+      const title = item.wikipedia.replace(/^[a-z-]+:/, '').replace(/ /g,'_');
+      fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`)
+        .then(r=>r.json())
+        .then(d => { if (d.thumbnail?.source) setPhotos(p=>({...p, [item.name]: d.thumbnail.source})); })
+        .catch(() => {});
+    });
+  }, [hotspots, food]);
+
+  // 드래그-투-클로즈
   React.useEffect(() => {
     const el = sheetRef.current;
-    if (!el) return;
+    if (!el || !stop) return;
     const onStart = (e) => { dragRef.current = { active:true, startY:e.touches[0].clientY, st:el.scrollTop }; };
-    const onMove = (e) => {
+    const onMove  = (e) => {
       if (!dragRef.current.active) return;
       const dy = e.touches[0].clientY - dragRef.current.startY;
       if (dragRef.current.st > 8 || dy <= 0) { dragRef.current.active = false; return; }
@@ -2534,69 +2588,97 @@ function NearbySheet({ stop, onClose }) {
     };
     const onEnd = () => {
       dragRef.current.active = false;
-      const top = el.getBoundingClientRect().top;
-      if (top > window.innerHeight / 2) onClose();
+      if (sheetYRef.current > 110) onClose();
       else { sheetYRef.current = 0; setSheetY(0); }
     };
     el.addEventListener('touchstart', onStart, { passive:true });
-    el.addEventListener('touchmove', onMove, { passive:false });
-    el.addEventListener('touchend', onEnd, { passive:true });
+    el.addEventListener('touchmove',  onMove,  { passive:false });
+    el.addEventListener('touchend',   onEnd,   { passive:true });
     return () => { el.removeEventListener('touchstart',onStart); el.removeEventListener('touchmove',onMove); el.removeEventListener('touchend',onEnd); };
   }, [stop]);
 
   if (!stop) return null;
-  const typeIcon = { '맛집':'food', '카페':'bar', '바':'bar', '명소':'sight', '박물관':'book', '전망':'view' };
+
+  const TYPE_KO = {
+    restaurant:'레스토랑', cafe:'카페', bar:'바', fast_food:'패스트푸드', pub:'펍',
+    biergarten:'비어가든', food_court:'푸드코트',
+    attraction:'명소', museum:'박물관', viewpoint:'전망대', gallery:'갤러리',
+    theme_park:'테마파크', zoo:'동물원', park:'공원', garden:'정원',
+    monument:'기념비', castle:'성', ruins:'유적', memorial:'기념관', historic:'유적지',
+  };
+  const fmtDist = m => m < 1000 ? `${Math.round(m)}m` : `${(m/1000).toFixed(1)}km`;
+  const currentData = tab === 'hotspot' ? hotspots : food;
+  const loading = currentData === null;
+
+  const renderItem = (item) => {
+    const photoUrl = photos[item.name];
+    const hue = item.name.split('').reduce((h,c) => (h*31 + c.charCodeAt(0)) & 0xffff, 0) % 360;
+    return (
+      <button key={item.name} onClick={() => window.open(mapsSearchUrl(item.name), '_blank')}
+        style={{ width:'100%', padding:'10px 16px', border:'none', borderBottom:`1px solid ${COLORS.line}`,
+          background:'transparent', cursor:'pointer', textAlign:'left',
+          display:'flex', alignItems:'center', gap:12 }}>
+        <div style={{ width:58, height:58, borderRadius:12, flexShrink:0, overflow:'hidden' }}>
+          {photoUrl
+            ? <img src={photoUrl} style={{ width:'100%', height:'100%', objectFit:'cover' }} loading="lazy"/>
+            : <Photo hue={hue} height={58} small/>}
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink,
+            whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{item.name}</div>
+          <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:3 }}>
+            {TYPE_KO[item.type] || item.type || '—'} · {fmtDist(item.dist)}
+          </div>
+        </div>
+        <Icon name="chevron" size={14} color={COLORS.line} stroke={2}/>
+      </button>
+    );
+  };
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1100,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
-      background:`rgba(0,0,0,${Math.max(0,0.30-sheetY/400)})` }} onClick={onClose}>
+      background:`rgba(0,0,0,${Math.max(0, 0.32 - sheetY/500)})` }} onClick={onClose}>
       <div ref={sheetRef} onClick={e=>e.stopPropagation()}
-        style={{ background:COLORS.bg, borderRadius:'22px 22px 0 0', maxHeight:'70%',
-          overflowY:'auto', overflowX:'hidden', paddingBottom:40,
-          transform:`translateY(${sheetY}px)`,
-          transition: sheetY===0 ? 'transform 0.32s cubic-bezier(0.32,0.72,0,1)' : 'none' }}>
-        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 4px' }}>
+        style={{ background:COLORS.bg, borderRadius:'22px 22px 0 0', maxHeight:'74%',
+          overflowY:'auto', overflowX:'hidden',
+          paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))',
+          transform:`translateY(${entered ? sheetY : window.innerHeight}px)`,
+          transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)' }}>
+        {/* 핸들 */}
+        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 2px' }}>
           <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
         </div>
-        <div style={{ padding:'8px 20px 14px' }}>
-          <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>주변 추천</div>
-          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginTop:2 }}>{stop.title}</div>
+        {/* 헤더 + 탭 */}
+        <div style={{ padding:'10px 18px 12px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+          <div style={{ fontFamily:SERIF, fontSize:19, color:COLORS.ink, flex:1, minWidth:0,
+            whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{stop.title}</div>
+          <div style={{ display:'flex', background:COLORS.softer, borderRadius:12, padding:3, gap:2, flexShrink:0 }}>
+            {[{v:'hotspot',label:'핫플'},{v:'food',label:'음식점'}].map(({v,label}) => (
+              <button key={v} onClick={() => setTab(v)}
+                style={{ padding:'7px 13px', border:'none', borderRadius:9, cursor:'pointer',
+                  background: tab===v ? COLORS.card : 'transparent',
+                  fontFamily:SANS, fontSize:12, fontWeight:600,
+                  color: tab===v ? COLORS.ink : COLORS.mute,
+                  boxShadow: tab===v ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-        {results === null && (
-          <div style={{ padding:'32px 20px', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+        {/* 목록 */}
+        {loading && (
+          <div style={{ padding:'40px 20px', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
             주변 장소를 찾는 중...
           </div>
         )}
-        {results !== null && results.length === 0 && (
-          <div style={{ padding:'32px 20px', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
-            주변에 추천할 장소가 없어요
+        {!loading && currentData.length === 0 && (
+          <div style={{ padding:'40px 20px', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+            주변에 {tab==='hotspot'?'핫플이':'음식점이'} 없어요
           </div>
         )}
-        {results !== null && results.length > 0 && (
-          <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:8 }}>
-            {['맛집','카페','바','명소','박물관','전망'].map(type => {
-              const items = results.filter(r => r.type === type);
-              if (!items.length) return null;
-              return (
-                <div key={type}>
-                  <div style={{ padding:'0 4px 6px', fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>{type}</div>
-                  <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
-                    {items.map((r, i) => (
-                      <button key={i} onClick={() => window.open(mapsSearchUrl(r.name), '_blank')}
-                        style={{ width:'100%', padding:'12px 14px', border:'none', background:'transparent',
-                          cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center', gap:10,
-                          borderBottom: i < items.length-1 ? `1px solid ${COLORS.line}` : 'none' }}>
-                        <Icon name={typeIcon[type]||'pin'} size={14} color={COLORS.mute} stroke={1.8}/>
-                        <span style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.ink }}>{r.name}</span>
-                        <Icon name="chevron" size={12} color={COLORS.line} stroke={2} style={{ marginLeft:'auto' }}/>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        {!loading && currentData.length > 0 && (
+          <div>{currentData.map(renderItem)}</div>
         )}
       </div>
     </div>
@@ -5701,7 +5783,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v113</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v114</div>
         </div>
       </div>
       <button onClick={async () => {
