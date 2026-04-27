@@ -70,6 +70,7 @@
 <script>
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(function(reg) {
+    reg.update();
     reg.addEventListener('updatefound', function() {
       var newSW = reg.installing;
       newSW.addEventListener('statechange', function() {

@@ -3091,12 +3091,20 @@ function TripsScreen(_ref17) {
         borderRadius: 20,
         border: "1px solid ".concat(COLORS.line)
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("button", {
       onClick: function onClick() {
         return onSelect(t.id);
       },
       style: {
-        cursor: 'pointer'
+        display: 'block',
+        width: '100%',
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        margin: 0,
+        textAlign: 'left',
+        cursor: 'pointer',
+        WebkitTapHighlightColor: 'transparent'
       }
     }, /*#__PURE__*/React.createElement(Photo, {
       hue: hue,
