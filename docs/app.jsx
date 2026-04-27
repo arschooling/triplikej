@@ -1685,7 +1685,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v141</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v142</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2242,12 +2242,14 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
   const [nearbyTab, setNearbyTab]   = React.useState('hotspot');
   const { itemProps: itemDragProps } = useDragReorder(onReorderItems, editing);
 
+  const heroHue = day.hero?.hue ?? 25;
+  const heroBg  = `oklch(0.88 0.035 ${heroHue})`;
   return (
     <div style={{ background:COLORS.bg, minHeight:'100vh', paddingBottom:110 }}>
-      <div style={{ position:'relative', marginTop:'calc(-1 * env(safe-area-inset-top, 0px))' }}>
-        <Photo hue={day.hero?.hue ?? 25} label={day.hero?.label} height='calc(280px + env(safe-area-inset-top, 0px))'/>
-        <div style={{ position:'absolute', top:0, left:0, right:0, height:180,
-          background:'linear-gradient(180deg, rgba(0,0,0,0.28), transparent)' }}/>
+      <div style={{ position:'relative', paddingTop:'env(safe-area-inset-top, 0px)', background: heroBg }}>
+        <Photo hue={heroHue} label={day.hero?.label} height={280}/>
+        <div style={{ position:'absolute', top:0, left:0, right:0, height:'calc(180px + env(safe-area-inset-top, 0px))',
+          background:'linear-gradient(180deg, rgba(0,0,0,0.22), transparent)' }}/>
         <button onClick={onBack} style={{
           position:'absolute', top:'calc(16px + env(safe-area-inset-top, 0px))', left:16, zIndex:5,
           width:38, height:38, borderRadius:19, border:'none',
@@ -2537,12 +2539,14 @@ function HotelDetailScreen({ hotel, onBack, onEdit, onOpenSearch, editing, setEd
     );
   };
 
+  const hotelHue = draft.hue || 25;
+  const hotelBg  = `oklch(0.88 0.035 ${hotelHue})`;
   return (
     <div style={{ background:COLORS.bg, minHeight:'100vh', paddingBottom:110 }}>
-      <div style={{ position:'relative', marginTop:'calc(-1 * env(safe-area-inset-top, 0px))' }}>
-        <Photo hue={draft.hue || 25} label={(draft.name || '').toUpperCase().slice(0, 20)} height='calc(240px + env(safe-area-inset-top, 0px))'/>
-        <div style={{ position:'absolute', top:0, left:0, right:0, height:180,
-          background:'linear-gradient(180deg, rgba(0,0,0,0.28), transparent)' }}/>
+      <div style={{ position:'relative', paddingTop:'env(safe-area-inset-top, 0px)', background: hotelBg }}>
+        <Photo hue={hotelHue} label={(draft.name || '').toUpperCase().slice(0, 20)} height={240}/>
+        <div style={{ position:'absolute', top:0, left:0, right:0, height:'calc(180px + env(safe-area-inset-top, 0px))',
+          background:'linear-gradient(180deg, rgba(0,0,0,0.22), transparent)' }}/>
         <button onClick={onBack} style={{
           position:'absolute', top:'calc(16px + env(safe-area-inset-top, 0px))', left:16, zIndex:5,
           width:38, height:38, borderRadius:19, border:'none',
@@ -6092,7 +6096,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v141</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v142</div>
         </div>
       </div>
       <button onClick={async () => {

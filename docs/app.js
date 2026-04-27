@@ -3596,7 +3596,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v141"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v142"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -4671,6 +4671,8 @@ function DayScreen({
   const {
     itemProps: itemDragProps
   } = useDragReorder(onReorderItems, editing);
+  const heroHue = day.hero?.hue ?? 25;
+  const heroBg = `oklch(0.88 0.035 ${heroHue})`;
   return /*#__PURE__*/React.createElement("div", {
     style: {
       background: COLORS.bg,
@@ -4680,20 +4682,21 @@ function DayScreen({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative',
-      marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))'
+      paddingTop: 'env(safe-area-inset-top, 0px)',
+      background: heroBg
     }
   }, /*#__PURE__*/React.createElement(Photo, {
-    hue: day.hero?.hue ?? 25,
+    hue: heroHue,
     label: day.hero?.label,
-    height: "calc(280px + env(safe-area-inset-top, 0px))"
+    height: 280
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
-      height: 180,
-      background: 'linear-gradient(180deg, rgba(0,0,0,0.28), transparent)'
+      height: 'calc(180px + env(safe-area-inset-top, 0px))',
+      background: 'linear-gradient(180deg, rgba(0,0,0,0.22), transparent)'
     }
   }), /*#__PURE__*/React.createElement("button", {
     onClick: onBack,
@@ -5336,6 +5339,8 @@ function HotelDetailScreen({
       }
     }));
   };
+  const hotelHue = draft.hue || 25;
+  const hotelBg = `oklch(0.88 0.035 ${hotelHue})`;
   return /*#__PURE__*/React.createElement("div", {
     style: {
       background: COLORS.bg,
@@ -5345,20 +5350,21 @@ function HotelDetailScreen({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative',
-      marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))'
+      paddingTop: 'env(safe-area-inset-top, 0px)',
+      background: hotelBg
     }
   }, /*#__PURE__*/React.createElement(Photo, {
-    hue: draft.hue || 25,
+    hue: hotelHue,
     label: (draft.name || '').toUpperCase().slice(0, 20),
-    height: "calc(240px + env(safe-area-inset-top, 0px))"
+    height: 240
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
-      height: 180,
-      background: 'linear-gradient(180deg, rgba(0,0,0,0.28), transparent)'
+      height: 'calc(180px + env(safe-area-inset-top, 0px))',
+      background: 'linear-gradient(180deg, rgba(0,0,0,0.22), transparent)'
     }
   }), /*#__PURE__*/React.createElement("button", {
     onClick: onBack,
@@ -12286,7 +12292,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v141"))), /*#__PURE__*/React.createElement("button", {
+  }, "v142"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
