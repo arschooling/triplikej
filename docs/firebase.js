@@ -82,11 +82,16 @@ window.fbGetOrCreateUser = async (fbUser) => {
     });
   }
 
-  // tripIds에 uid가 없으면 추가
-  if (!existing.tripIds || !existing.tripIds.includes(fbUser.uid)) {
-    const tripIds = [fbUser.uid, ...(existing.tripIds || [])];
-    await ref.update({ tripIds });
-    return { uid: fbUser.uid, ...existing, tripIds };
+  // tripIds 정리: 실제 멤버로 남아있는 여행만 유지
+  let tripIds = existing.tripIds || [fbUser.uid];
+  if (!tripIds.includes(fbUser.uid)) tripIds = [fbUser.uid, ...tripIds];
+  const groupSnaps = await Promise.all(tripIds.map(id => _fbDb.collection('groups').doc(id).get()));
+  const validTripIds = tripIds.filter((id, i) =>
+    groupSnaps[i].exists && (groupSnaps[i].data().members || []).includes(fbUser.uid)
+  );
+  if (validTripIds.length !== tripIds.length || !existing.tripIds) {
+    await ref.update({ tripIds: validTripIds });
+    return { uid: fbUser.uid, ...existing, tripIds: validTripIds };
   }
   return { uid: fbUser.uid, ...existing };
 };
@@ -309,7 +314,6 @@ window.fbRemoveTripMember = async (tripId, uid) => {
   await _fbDb.collection('groups').doc(tripId).update({
     members: firebase.firestore.FieldValue.arrayRemove(uid),
   });
-  await _fbDb.collection('users').doc(uid).update({
-    tripIds: firebase.firestore.FieldValue.arrayRemove(tripId),
-  });
+  // users/{uid} 는 상대방 문서라 권한이 없을 수 있어 별도 처리
+  // 제거된 사용자의 tripIds는 로그인 시 fbGetOrCreateUser에서 정리됨
 };
