@@ -2366,9 +2366,7 @@ function TripSwipeCard({
   };
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      position: 'relative',
-      overflow: 'hidden',
-      ...wrapStyle
+      position: 'relative'
     },
     onTouchStart: onTouchStart,
     onTouchMove: onTouchMove,
@@ -2436,7 +2434,11 @@ function TripSwipeCard({
     style: {
       transform: `translateX(${x}px)`,
       transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.25,1,0.5,1)',
-      background: COLORS.card
+      background: COLORS.card,
+      position: 'relative',
+      zIndex: 1,
+      overflow: 'hidden',
+      ...wrapStyle
     }
   }, children));
 }
