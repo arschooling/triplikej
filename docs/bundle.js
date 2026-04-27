@@ -3445,8 +3445,18 @@ function HomeScreen({
     itemProps: hotelDragProps,
     isTouchDragging: isHotelDragging
   } = useDragReorder(onReorderHotels, editing);
-  const featured = trip.days[0];
   const tripYear = extractTripYear(trip);
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const featuredIdx = (() => {
+    const isos = trip.days.map(d => dayDateToIso(d.date, tripYear) || '');
+    const todayIdx = isos.findIndex(iso => iso === todayIso);
+    if (todayIdx >= 0) return todayIdx; // 여행 중: 오늘
+    const future = isos.findIndex(iso => iso > todayIso);
+    if (future === 0 || isos.every(iso => !iso)) return 0; // 여행 전: 첫째 날
+    if (future < 0) return trip.days.length - 1; // 여행 후: 마지막 날
+    return future - 1; // 사이 공백: 가장 가까운 지난 날
+  })();
+  const featured = trip.days[featuredIdx];
 
   // trip.dates 파싱: "May 4 — May 13, 2025"
   const parseTripDates = () => {
@@ -3673,7 +3683,7 @@ function HomeScreen({
       color: COLORS.accent,
       letterSpacing: '0.14em'
     }
-  }, "DAY 01 \xB7 ", featured.weekday.toUpperCase()), /*#__PURE__*/React.createElement("div", {
+  }, "DAY ", String(featured.n).padStart(2, '0'), " \xB7 ", featured.weekday.toUpperCase()), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SANS,
       fontSize: 11,
@@ -3688,7 +3698,7 @@ function HomeScreen({
       color: COLORS.ink
     }
   }, featured.title), /*#__PURE__*/React.createElement("button", {
-    onClick: () => onOpenDay(0),
+    onClick: () => onOpenDay(featuredIdx),
     style: {
       marginTop: 16,
       width: '100%',
@@ -3705,7 +3715,7 @@ function HomeScreen({
       justifyContent: 'space-between',
       alignItems: 'center'
     }
-  }, /*#__PURE__*/React.createElement("span", null, "\uCCAB\uB0A0 \uC77C\uC815 \uBCF4\uAE30"), /*#__PURE__*/React.createElement(Icon, {
+  }, /*#__PURE__*/React.createElement("span", null, featuredIdx === 0 ? '첫날 일정 보기' : `Day ${featured.n} 일정 보기`), /*#__PURE__*/React.createElement(Icon, {
     name: "chevron",
     size: 16,
     color: COLORS.bg

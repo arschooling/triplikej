@@ -1499,8 +1499,18 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
   };
   const { itemProps: dayDragProps, isTouchDragging: isDayDragging } = useDragReorder(onReorderDays, editing);
   const { itemProps: hotelDragProps, isTouchDragging: isHotelDragging } = useDragReorder(onReorderHotels, editing);
-  const featured = trip.days[0];
   const tripYear = extractTripYear(trip);
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const featuredIdx = (() => {
+    const isos = trip.days.map(d => dayDateToIso(d.date, tripYear) || '');
+    const todayIdx = isos.findIndex(iso => iso === todayIso);
+    if (todayIdx >= 0) return todayIdx;               // 여행 중: 오늘
+    const future = isos.findIndex(iso => iso > todayIso);
+    if (future === 0 || isos.every(iso => !iso)) return 0; // 여행 전: 첫째 날
+    if (future < 0) return trip.days.length - 1;      // 여행 후: 마지막 날
+    return future - 1;                                 // 사이 공백: 가장 가까운 지난 날
+  })();
+  const featured = trip.days[featuredIdx];
 
   // trip.dates 파싱: "May 4 — May 13, 2025"
   const parseTripDates = () => {
@@ -1612,20 +1622,20 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
             <div style={{ padding:'16px 18px 18px' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
                 <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
-                  DAY 01 · {featured.weekday.toUpperCase()}
+                  DAY {String(featured.n).padStart(2,'0')} · {featured.weekday.toUpperCase()}
                 </div>
                 <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{featured.date}</div>
               </div>
               <div style={{ marginTop:7, fontFamily:SERIF, fontSize:28, lineHeight:1.1, color:COLORS.ink }}>
                 {featured.title}
               </div>
-              <button onClick={() => onOpenDay(0)} style={{
+              <button onClick={() => onOpenDay(featuredIdx)} style={{
                 marginTop:16, width:'100%', border:'none', cursor:'pointer',
                 background:COLORS.ink, color:COLORS.bg, borderRadius:12,
                 padding:'13px 16px', fontFamily:SANS, fontSize:14, fontWeight:500,
                 display:'flex', justifyContent:'space-between', alignItems:'center',
               }}>
-                <span>첫날 일정 보기</span>
+                <span>{featuredIdx === 0 ? '첫날 일정 보기' : `Day ${featured.n} 일정 보기`}</span>
                 <Icon name="chevron" size={16} color={COLORS.bg}/>
               </button>
             </div>
