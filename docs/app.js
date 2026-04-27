@@ -751,6 +751,23 @@ function SwipeBackLayer({
   }));
 }
 
+// ─── 키보드 높이 감지 (iOS visualViewport) ───────────────────
+function useKeyboardHeight() {
+  const [kbh, setKbh] = React.useState(0);
+  React.useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setKbh(Math.max(0, window.innerHeight - vv.height));
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
+  return kbh;
+}
+
 // ─── Popup sheet (centered modal with swipe-down dismiss) ────
 function BottomSheet({
   open,
@@ -764,6 +781,7 @@ function BottomSheet({
   const [visible, setVisible] = React.useState(false);
   const [drag, setDrag] = React.useState(0);
   const startY = React.useRef(null);
+  const kbh = useKeyboardHeight();
   React.useEffect(() => {
     if (open) {
       setMounted(true);
@@ -825,7 +843,8 @@ function BottomSheet({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px 18px',
+      padding: `20px 18px ${20 + kbh}px`,
+      transition: 'padding 0.2s ease',
       background: visible && drag < 80 ? 'rgba(20,16,14,0.42)' : 'rgba(20,16,14,0)',
       transition: 'background 240ms ease'
     },
@@ -2035,6 +2054,7 @@ function PickerSheet({
   const [entered, setEntered] = React.useState(false);
   const inputRef = React.useRef(null);
   const touchY = React.useRef(null);
+  const kbh = useKeyboardHeight();
   React.useEffect(() => {
     if (!open) {
       setEntered(false);
@@ -2068,7 +2088,7 @@ function PickerSheet({
     },
     style: {
       position: 'fixed',
-      bottom: 0,
+      bottom: kbh,
       left: 0,
       right: 0,
       background: COLORS.bg,
@@ -2077,7 +2097,7 @@ function PickerSheet({
       display: 'flex',
       flexDirection: 'column',
       transform: `translateY(${entered ? 0 : '100vh'})`,
-      transition: 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
+      transition: 'transform 0.34s cubic-bezier(0.32,0.72,0,1), bottom 0.2s ease'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3596,7 +3616,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v143"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v144"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6119,6 +6139,7 @@ function StopSheet({
     startY: 0,
     startScrollTop: 0
   });
+  const kbh = useKeyboardHeight();
   React.useEffect(() => {
     setDraft(open.stop);
     committed.current = open.stop;
@@ -6212,7 +6233,7 @@ function StopSheet({
       maxHeight: '92%',
       overflowY: 'auto',
       overflowX: 'hidden',
-      transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
+      transform: `translateY(${entered ? sheetY - kbh : window.innerHeight}px)`,
       transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -12292,7 +12313,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v143"))), /*#__PURE__*/React.createElement("button", {
+  }, "v144"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
