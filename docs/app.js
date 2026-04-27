@@ -1254,9 +1254,7 @@ function DateRangeSheet({
   const [start, setStart] = React.useState(null);
   const [end, setEnd] = React.useState(null);
   const [picking, setPicking] = React.useState('start');
-  const [pickingYM, setPickingYM] = React.useState(false);
-  const [tmpY, setTmpY] = React.useState(today.getFullYear());
-  const [tmpMo, setTmpMo] = React.useState(today.getMonth());
+  const [showYM, setShowYM] = React.useState(false);
   React.useEffect(() => {
     if (!open) return;
     const s = parseIso(startIso),
@@ -1271,7 +1269,7 @@ function DateRangeSheet({
       mo: today.getMonth()
     });
     setPicking('start');
-    setPickingYM(false);
+    setShowYM(false);
   }, [open]);
   const handleDay = d => {
     const clicked = {
@@ -1289,110 +1287,41 @@ function DateRangeSheet({
         setEnd(null);
       } else {
         setEnd(clicked);
-        setPicking('start');
       }
     }
   };
+  const prevMonth = () => {
+    let {
+      y,
+      mo
+    } = view;
+    mo--;
+    if (mo < 0) {
+      mo = 11;
+      y--;
+    }
+    setView({
+      y,
+      mo
+    });
+  };
+  const nextMonth = () => {
+    let {
+      y,
+      mo
+    } = view;
+    mo++;
+    if (mo > 11) {
+      mo = 0;
+      y++;
+    }
+    setView({
+      y,
+      mo
+    });
+  };
   const MONTH_KR = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
   const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-  const YEARS = Array.from({
-    length: 10
-  }, (_, i) => today.getFullYear() - 2 + i);
-  const MONTHS = Array.from({
-    length: 12
-  }, (_, i) => i);
-  const IH = 44,
-    VIS = 5;
-  const ScrollPick = ({
-    items,
-    value,
-    onChange,
-    renderLabel,
-    width = 90
-  }) => {
-    const ref = React.useRef(null),
-      timer = React.useRef(null);
-    React.useEffect(() => {
-      const el = ref.current;
-      if (!el) return;
-      const idx = items.indexOf(value);
-      if (idx >= 0) el.scrollTop = idx * IH;
-    }, [value]);
-    const onScroll = () => {
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => {
-        const el = ref.current;
-        if (!el) return;
-        const idx = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / IH)));
-        el.scrollTo({
-          top: idx * IH,
-          behavior: 'smooth'
-        });
-        if (items[idx] !== value) onChange(items[idx]);
-      }, 100);
-    };
-    const PAD = IH * Math.floor(VIS / 2),
-      stop = e => e.stopPropagation();
-    return /*#__PURE__*/React.createElement("div", {
-      style: {
-        position: 'relative',
-        width,
-        height: IH * VIS,
-        overflow: 'hidden'
-      },
-      onClick: stop,
-      onTouchStart: stop,
-      onTouchMove: stop,
-      onTouchEnd: stop
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        pointerEvents: 'none',
-        zIndex: 2,
-        top: IH * Math.floor(VIS / 2),
-        height: IH,
-        borderTop: `1.5px solid ${COLORS.line}`,
-        borderBottom: `1.5px solid ${COLORS.line}`
-      }
-    }), /*#__PURE__*/React.createElement("div", {
-      ref: ref,
-      onScroll: onScroll,
-      style: {
-        height: '100%',
-        overflowY: 'scroll',
-        scrollSnapType: 'y mandatory',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
-        paddingTop: PAD,
-        paddingBottom: PAD,
-        boxSizing: 'content-box'
-      },
-      className: "wheel-col"
-    }, items.map((it, i) => /*#__PURE__*/React.createElement("div", {
-      key: i,
-      onClick: () => {
-        onChange(it);
-        ref.current?.scrollTo({
-          top: i * IH,
-          behavior: 'smooth'
-        });
-      },
-      style: {
-        height: IH,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        scrollSnapAlign: 'center',
-        fontFamily: SANS,
-        fontSize: it === value ? 16 : 14,
-        color: it === value ? COLORS.ink : COLORS.mute,
-        fontWeight: it === value ? 600 : 400,
-        cursor: 'pointer'
-      }
-    }, renderLabel(it)))));
-  };
   const firstDow = new Date(view.y, view.mo, 1).getDay();
   const daysInMo = new Date(view.y, view.mo + 1, 0).getDate();
   const cells = [];
@@ -1409,6 +1338,69 @@ function DateRangeSheet({
     };
     return cmp(c, start) > 0 && cmp(c, end) < 0;
   };
+  const fmtDate = o => o ? `${o.y}. ${o.mo + 1}. ${o.d}.` : null;
+
+  /* 년/월 그리드 뷰 */
+  const YearMonthPicker = () => {
+    const YEAR_RANGE = Array.from({
+      length: 8
+    }, (_, i) => today.getFullYear() - 1 + i);
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: '8px 16px 16px'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 6,
+        marginBottom: 14
+      }
+    }, YEAR_RANGE.map(y => /*#__PURE__*/React.createElement("button", {
+      key: y,
+      onClick: () => setView(v => ({
+        ...v,
+        y
+      })),
+      style: {
+        padding: '6px 14px',
+        borderRadius: 20,
+        border: 'none',
+        cursor: 'pointer',
+        fontFamily: SANS,
+        fontSize: 13,
+        fontWeight: 500,
+        background: y === view.y ? COLORS.ink : COLORS.softer,
+        color: y === view.y ? '#fff' : COLORS.ink
+      }
+    }, y))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4,1fr)',
+        gap: 6
+      }
+    }, MONTH_KR.map((m, i) => /*#__PURE__*/React.createElement("button", {
+      key: i,
+      onClick: () => {
+        setView(v => ({
+          ...v,
+          mo: i
+        }));
+        setShowYM(false);
+      },
+      style: {
+        padding: '10px 0',
+        borderRadius: 10,
+        border: 'none',
+        cursor: 'pointer',
+        fontFamily: SANS,
+        fontSize: 13,
+        fontWeight: 500,
+        background: i === view.mo ? COLORS.accent : COLORS.softer,
+        color: i === view.mo ? '#fff' : COLORS.ink
+      }
+    }, m))));
+  };
   return /*#__PURE__*/React.createElement(BottomSheet, {
     open: open,
     onClose: onClose,
@@ -1423,191 +1415,128 @@ function DateRangeSheet({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: '8px 16px 4px',
+      margin: '4px 16px 14px',
       display: 'flex',
-      gap: 8
+      borderRadius: 14,
+      border: `1px solid ${COLORS.line}`,
+      overflow: 'hidden'
     }
-  }, ['start', 'end'].map(k => {
+  }, ['start', 'end'].map((k, ki) => {
     const val = k === 'start' ? start : end;
     const active = picking === k;
     return /*#__PURE__*/React.createElement("button", {
       key: k,
-      onClick: () => setPicking(k),
+      onClick: () => {
+        setPicking(k);
+        setShowYM(false);
+      },
       style: {
         flex: 1,
-        padding: '8px 12px',
-        borderRadius: 10,
+        padding: '10px 14px',
         border: 'none',
         cursor: 'pointer',
         textAlign: 'left',
-        background: active ? COLORS.ink : COLORS.softer,
-        color: active ? '#fff' : COLORS.ink
+        background: active ? COLORS.ink : 'transparent',
+        borderRight: ki === 0 ? `1px solid ${COLORS.line}` : 'none'
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
         fontSize: 9,
-        letterSpacing: '0.1em',
-        opacity: 0.65
+        letterSpacing: '0.12em',
+        marginBottom: 3,
+        color: active ? 'rgba(255,255,255,0.5)' : COLORS.mute
       }
-    }, k === 'start' ? '시작' : '종료'), /*#__PURE__*/React.createElement("div", {
+    }, k === 'start' ? 'START' : 'END'), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: SANS,
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 500,
-        marginTop: 2
+        color: active ? '#fff' : val ? COLORS.ink : COLORS.mute
       }
-    }, val ? `${val.mo + 1}월 ${val.d}일` : '—'));
+    }, fmtDate(val) || '—'));
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: '8px 16px 6px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      if (!pickingYM) {
-        setTmpY(view.y);
-        setTmpMo(view.mo);
-      }
-      setPickingYM(p => !p);
-    },
-    style: {
-      border: 'none',
-      background: COLORS.softer,
-      borderRadius: 10,
-      cursor: 'pointer',
-      fontFamily: SERIF,
-      fontSize: 17,
-      color: COLORS.ink,
-      padding: '5px 12px',
       display: 'flex',
       alignItems: 'center',
-      gap: 6
-    }
-  }, view.y, "\uB144 ", MONTH_KR[view.mo], /*#__PURE__*/React.createElement(Icon, {
-    name: "chevron-d",
-    size: 12,
-    color: COLORS.mute,
-    stroke: 2.5
-  })), !pickingYM && /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      gap: 4
+      padding: '0 16px',
+      marginBottom: 10,
+      gap: 8
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      let {
-        y,
-        mo
-      } = view;
-      mo--;
-      if (mo < 0) {
-        mo = 11;
-        y--;
-      }
-      setView({
-        y,
-        mo
-      });
-    },
+    onClick: prevMonth,
     style: {
-      width: 30,
-      height: 30,
-      borderRadius: 15,
+      width: 34,
+      height: 34,
+      borderRadius: 17,
       border: 'none',
       cursor: 'pointer',
-      background: COLORS.card,
+      background: COLORS.softer,
+      flexShrink: 0,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center'
     }
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "chevron-l",
-    size: 14,
+    size: 13,
     color: COLORS.ink,
-    stroke: 2
+    stroke: 2.5
   })), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      let {
-        y,
-        mo
-      } = view;
-      mo++;
-      if (mo > 11) {
-        mo = 0;
-        y++;
-      }
-      setView({
-        y,
-        mo
-      });
-    },
+    onClick: () => setShowYM(p => !p),
     style: {
-      width: 30,
-      height: 30,
-      borderRadius: 15,
+      flex: 1,
       border: 'none',
       cursor: 'pointer',
-      background: COLORS.card,
+      borderRadius: 10,
+      background: showYM ? COLORS.softer : 'transparent',
+      padding: '6px 0',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 15,
+      fontWeight: 600,
+      color: COLORS.ink,
+      letterSpacing: '-0.01em'
+    }
+  }, view.y, "\uB144 ", MONTH_KR[view.mo]), /*#__PURE__*/React.createElement(Icon, {
+    name: "chevron-d",
+    size: 11,
+    color: COLORS.mute,
+    stroke: 2.5,
+    style: {
+      transform: showYM ? 'rotate(180deg)' : 'none',
+      transition: 'transform 0.2s'
+    }
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: nextMonth,
+    style: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      border: 'none',
+      cursor: 'pointer',
+      background: COLORS.softer,
+      flexShrink: 0,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center'
     }
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "chevron",
-    size: 14,
+    size: 13,
     color: COLORS.ink,
-    stroke: 2
-  })))), pickingYM ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    stroke: 2.5
+  }))), showYM ? /*#__PURE__*/React.createElement(YearMonthPicker, null) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
-      display: 'flex',
-      justifyContent: 'center',
-      gap: 12,
-      padding: '4px 16px 8px'
-    }
-  }, /*#__PURE__*/React.createElement(ScrollPick, {
-    items: YEARS,
-    value: tmpY,
-    onChange: setTmpY,
-    renderLabel: y => `${y}년`,
-    width: 110
-  }), /*#__PURE__*/React.createElement(ScrollPick, {
-    items: MONTHS,
-    value: tmpMo,
-    onChange: setTmpMo,
-    renderLabel: m => MONTH_KR[m],
-    width: 90
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '0 16px 14px'
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setView({
-        y: tmpY,
-        mo: tmpMo
-      });
-      setPickingYM(false);
-    },
-    style: {
-      width: '100%',
-      padding: '13px',
-      border: 'none',
-      borderRadius: 14,
-      background: COLORS.ink,
-      color: '#fff',
-      fontFamily: SANS,
-      fontSize: 14,
-      fontWeight: 500,
-      cursor: 'pointer'
-    }
-  }, "\uC774 \uB2EC \uB2EC\uB825 \uBCF4\uAE30"))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '0 14px 2px',
       display: 'grid',
-      gridTemplateColumns: 'repeat(7,1fr)'
+      gridTemplateColumns: 'repeat(7,1fr)',
+      padding: '0 14px 2px'
     }
   }, DOW.map((w, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
@@ -1616,14 +1545,14 @@ function DateRangeSheet({
       fontFamily: MONO,
       fontSize: 9.5,
       letterSpacing: '0.08em',
-      color: i === 0 ? COLORS.accent : i === 6 ? 'oklch(60% 0.06 250)' : COLORS.mute,
-      padding: '4px 0'
+      padding: '2px 0 6px',
+      color: i === 0 ? COLORS.accent : i === 6 ? 'oklch(60% 0.06 250)' : COLORS.mute
     }
   }, w))), /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: '0 14px 14px',
       display: 'grid',
-      gridTemplateColumns: 'repeat(7,1fr)'
+      gridTemplateColumns: 'repeat(7,1fr)',
+      padding: '0 14px 16px'
     }
   }, cells.map((d, i) => {
     if (d === null) return /*#__PURE__*/React.createElement("div", {
@@ -1633,12 +1562,12 @@ function DateRangeSheet({
     const st = isSt(d),
       en = isEn(d),
       rng = inRng(d);
-    const hasStrip = st || en || rng;
-    const isSel = st || en;
+    const hasStrip = st || en || rng,
+      isSel = st || en;
     const isToday = today.getFullYear() === view.y && today.getMonth() === view.mo && today.getDate() === d;
-    const left = st || col === 0,
-      right = en || col === 6;
-    const stripR = !hasStrip ? '0' : left && right ? '50%' : left ? '50% 0 0 50%' : right ? '0 50% 50% 0' : '0';
+    const isL = st || rng && col === 0,
+      isR = en || rng && col === 6;
+    const stripR = !hasStrip ? '0' : isL && isR ? '50%' : isL ? '50% 0 0 50%' : isR ? '0 50% 50% 0' : '0';
     return /*#__PURE__*/React.createElement("button", {
       key: i,
       onClick: () => handleDay(d),
@@ -1652,7 +1581,7 @@ function DateRangeSheet({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: hasStrip ? 'rgba(193,79,46,0.12)' : 'transparent',
+        background: hasStrip ? 'rgba(193,79,46,0.10)' : 'transparent',
         borderRadius: stripR
       }
     }, isSel && /*#__PURE__*/React.createElement("div", {

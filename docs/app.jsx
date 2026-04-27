@@ -584,20 +584,18 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
   const cmp = (a,b) => !a||!b?0:a.y!==b.y?(a.y<b.y?-1:1):a.mo!==b.mo?(a.mo<b.mo?-1:1):a.d!==b.d?(a.d<b.d?-1:1):0;
 
   const today = new Date();
-  const [view,     setView]     = React.useState({y:today.getFullYear(),mo:today.getMonth()});
-  const [start,    setStart]    = React.useState(null);
-  const [end,      setEnd]      = React.useState(null);
-  const [picking,  setPicking]  = React.useState('start');
-  const [pickingYM,setPickingYM]= React.useState(false);
-  const [tmpY,     setTmpY]     = React.useState(today.getFullYear());
-  const [tmpMo,    setTmpMo]    = React.useState(today.getMonth());
+  const [view,    setView]    = React.useState({y:today.getFullYear(), mo:today.getMonth()});
+  const [start,   setStart]   = React.useState(null);
+  const [end,     setEnd]     = React.useState(null);
+  const [picking, setPicking] = React.useState('start');
+  const [showYM,  setShowYM]  = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return;
     const s = parseIso(startIso), e = parseIso(endIso);
     setStart(s); setEnd(e);
-    setView(s ? {y:s.y,mo:s.mo} : {y:today.getFullYear(),mo:today.getMonth()});
-    setPicking('start'); setPickingYM(false);
+    setView(s ? {y:s.y, mo:s.mo} : {y:today.getFullYear(), mo:today.getMonth()});
+    setPicking('start'); setShowYM(false);
   }, [open]);
 
   const handleDay = d => {
@@ -605,119 +603,135 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
     if (picking === 'start') { setStart(clicked); setEnd(null); setPicking('end'); }
     else {
       if (cmp(clicked, start) < 0) { setStart(clicked); setEnd(null); }
-      else { setEnd(clicked); setPicking('start'); }
+      else { setEnd(clicked); }
     }
   };
 
+  const prevMonth = () => { let {y,mo}=view; mo--; if(mo<0){mo=11;y--;} setView({y,mo}); };
+  const nextMonth = () => { let {y,mo}=view; mo++; if(mo>11){mo=0;y++;} setView({y,mo}); };
+
   const MONTH_KR = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   const DOW = ['일','월','화','수','목','금','토'];
-  const YEARS  = Array.from({length:10},(_,i)=>today.getFullYear()-2+i);
-  const MONTHS = Array.from({length:12},(_,i)=>i);
-  const IH = 44, VIS = 5;
 
-  const ScrollPick = ({items, value, onChange, renderLabel, width=90}) => {
-    const ref = React.useRef(null), timer = React.useRef(null);
-    React.useEffect(() => { const el=ref.current; if(!el) return; const idx=items.indexOf(value); if(idx>=0) el.scrollTop=idx*IH; }, [value]);
-    const onScroll = () => { clearTimeout(timer.current); timer.current=setTimeout(()=>{ const el=ref.current; if(!el) return; const idx=Math.max(0,Math.min(items.length-1,Math.round(el.scrollTop/IH))); el.scrollTo({top:idx*IH,behavior:'smooth'}); if(items[idx]!==value) onChange(items[idx]); },100); };
-    const PAD=IH*Math.floor(VIS/2), stop=e=>e.stopPropagation();
+  const firstDow = new Date(view.y, view.mo, 1).getDay();
+  const daysInMo = new Date(view.y, view.mo+1, 0).getDate();
+  const cells = [];
+  for (let i=0; i<firstDow; i++) cells.push(null);
+  for (let d=1; d<=daysInMo; d++) cells.push(d);
+
+  const isSt  = d => start && start.y===view.y && start.mo===view.mo && start.d===d;
+  const isEn  = d => end   && end.y===view.y   && end.mo===view.mo   && end.d===d;
+  const inRng = d => { if(!start||!end) return false; const c={y:view.y,mo:view.mo,d}; return cmp(c,start)>0 && cmp(c,end)<0; };
+  const fmtDate = o => o ? `${o.y}. ${o.mo+1}. ${o.d}.` : null;
+
+  /* 년/월 그리드 뷰 */
+  const YearMonthPicker = () => {
+    const YEAR_RANGE = Array.from({length:8}, (_,i) => today.getFullYear()-1+i);
     return (
-      <div style={{position:'relative',width,height:IH*VIS,overflow:'hidden'}} onClick={stop} onTouchStart={stop} onTouchMove={stop} onTouchEnd={stop}>
-        <div style={{position:'absolute',left:0,right:0,pointerEvents:'none',zIndex:2,top:IH*Math.floor(VIS/2),height:IH,borderTop:`1.5px solid ${COLORS.line}`,borderBottom:`1.5px solid ${COLORS.line}`}}/>
-        <div ref={ref} onScroll={onScroll} style={{height:'100%',overflowY:'scroll',scrollSnapType:'y mandatory',scrollbarWidth:'none',msOverflowStyle:'none',paddingTop:PAD,paddingBottom:PAD,boxSizing:'content-box'}} className="wheel-col">
-          {items.map((it,i)=>(
-            <div key={i} onClick={()=>{onChange(it);ref.current?.scrollTo({top:i*IH,behavior:'smooth'});}}
-              style={{height:IH,display:'flex',alignItems:'center',justifyContent:'center',scrollSnapAlign:'center',fontFamily:SANS,fontSize:it===value?16:14,color:it===value?COLORS.ink:COLORS.mute,fontWeight:it===value?600:400,cursor:'pointer'}}>
-              {renderLabel(it)}
-            </div>
+      <div style={{padding:'8px 16px 16px'}}>
+        {/* 년도 선택 */}
+        <div style={{display:'flex', flexWrap:'wrap', gap:6, marginBottom:14}}>
+          {YEAR_RANGE.map(y => (
+            <button key={y} onClick={()=>setView(v=>({...v,y}))} style={{
+              padding:'6px 14px', borderRadius:20, border:'none', cursor:'pointer', fontFamily:SANS,
+              fontSize:13, fontWeight:500,
+              background: y===view.y ? COLORS.ink : COLORS.softer,
+              color: y===view.y ? '#fff' : COLORS.ink,
+            }}>{y}</button>
+          ))}
+        </div>
+        {/* 월 선택 그리드 */}
+        <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6}}>
+          {MONTH_KR.map((m,i) => (
+            <button key={i} onClick={()=>{ setView(v=>({...v,mo:i})); setShowYM(false); }} style={{
+              padding:'10px 0', borderRadius:10, border:'none', cursor:'pointer', fontFamily:SANS,
+              fontSize:13, fontWeight:500,
+              background: i===view.mo ? COLORS.accent : COLORS.softer,
+              color: i===view.mo ? '#fff' : COLORS.ink,
+            }}>{m}</button>
           ))}
         </div>
       </div>
     );
   };
 
-  const firstDow = new Date(view.y,view.mo,1).getDay();
-  const daysInMo = new Date(view.y,view.mo+1,0).getDate();
-  const cells = [];
-  for (let i=0;i<firstDow;i++) cells.push(null);
-  for (let d=1;d<=daysInMo;d++) cells.push(d);
-
-  const isSt  = d => start&&start.y===view.y&&start.mo===view.mo&&start.d===d;
-  const isEn  = d => end&&end.y===view.y&&end.mo===view.mo&&end.d===d;
-  const inRng = d => { if(!start||!end) return false; const c={y:view.y,mo:view.mo,d}; return cmp(c,start)>0&&cmp(c,end)<0; };
-
   return (
     <BottomSheet open={open} onClose={onClose} title="기간 선택"
       onConfirm={() => { if(!start){onClose();return;} onPick(toIso(start),toIso(end)); onClose(); }}>
 
       {/* 시작/종료 상태 바 */}
-      <div style={{padding:'8px 16px 4px',display:'flex',gap:8}}>
-        {['start','end'].map(k => {
+      <div style={{margin:'4px 16px 14px', display:'flex', borderRadius:14, border:`1px solid ${COLORS.line}`, overflow:'hidden'}}>
+        {['start','end'].map((k,ki) => {
           const val = k==='start' ? start : end;
           const active = picking===k;
           return (
-            <button key={k} onClick={()=>setPicking(k)} style={{
-              flex:1, padding:'8px 12px', borderRadius:10, border:'none', cursor:'pointer', textAlign:'left',
-              background:active?COLORS.ink:COLORS.softer, color:active?'#fff':COLORS.ink,
+            <button key={k} onClick={()=>{ setPicking(k); setShowYM(false); }} style={{
+              flex:1, padding:'10px 14px', border:'none', cursor:'pointer', textAlign:'left',
+              background: active ? COLORS.ink : 'transparent',
+              borderRight: ki===0 ? `1px solid ${COLORS.line}` : 'none',
             }}>
-              <div style={{fontFamily:MONO,fontSize:9,letterSpacing:'0.1em',opacity:0.65}}>{k==='start'?'시작':'종료'}</div>
-              <div style={{fontFamily:SANS,fontSize:13,fontWeight:500,marginTop:2}}>
-                {val?`${val.mo+1}월 ${val.d}일`:'—'}
+              <div style={{fontFamily:MONO, fontSize:9, letterSpacing:'0.12em', marginBottom:3,
+                color: active ? 'rgba(255,255,255,0.5)' : COLORS.mute}}>
+                {k==='start' ? 'START' : 'END'}
+              </div>
+              <div style={{fontFamily:SANS, fontSize:14, fontWeight:500,
+                color: active ? '#fff' : val ? COLORS.ink : COLORS.mute}}>
+                {fmtDate(val) || '—'}
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* 년/월 헤더 */}
-      <div style={{padding:'8px 16px 6px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <button onClick={()=>{if(!pickingYM){setTmpY(view.y);setTmpMo(view.mo);} setPickingYM(p=>!p);}} style={{
-          border:'none',background:COLORS.softer,borderRadius:10,cursor:'pointer',
-          fontFamily:SERIF,fontSize:17,color:COLORS.ink,padding:'5px 12px',display:'flex',alignItems:'center',gap:6,
-        }}>
-          {view.y}년 {MONTH_KR[view.mo]}
-          <Icon name="chevron-d" size={12} color={COLORS.mute} stroke={2.5}/>
+      {/* 월 네비게이션 헤더 */}
+      <div style={{display:'flex', alignItems:'center', padding:'0 16px', marginBottom:10, gap:8}}>
+        <button onClick={prevMonth} style={{width:34,height:34,borderRadius:17,border:'none',cursor:'pointer',background:COLORS.softer,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <Icon name="chevron-l" size={13} color={COLORS.ink} stroke={2.5}/>
         </button>
-        {!pickingYM && (
-          <div style={{display:'flex',gap:4}}>
-            <button onClick={()=>{let{y,mo}=view;mo--;if(mo<0){mo=11;y--;}setView({y,mo});}} style={{width:30,height:30,borderRadius:15,border:'none',cursor:'pointer',background:COLORS.card,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="chevron-l" size={14} color={COLORS.ink} stroke={2}/></button>
-            <button onClick={()=>{let{y,mo}=view;mo++;if(mo>11){mo=0;y++;}setView({y,mo});}} style={{width:30,height:30,borderRadius:15,border:'none',cursor:'pointer',background:COLORS.card,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="chevron" size={14} color={COLORS.ink} stroke={2}/></button>
-          </div>
-        )}
+        <button onClick={()=>setShowYM(p=>!p)} style={{
+          flex:1, border:'none', cursor:'pointer', borderRadius:10,
+          background: showYM ? COLORS.softer : 'transparent',
+          padding:'6px 0', display:'flex', alignItems:'center', justifyContent:'center', gap:5,
+        }}>
+          <span style={{fontFamily:SANS, fontSize:15, fontWeight:600, color:COLORS.ink, letterSpacing:'-0.01em'}}>
+            {view.y}년 {MONTH_KR[view.mo]}
+          </span>
+          <Icon name="chevron-d" size={11} color={COLORS.mute} stroke={2.5}
+            style={{transform: showYM ? 'rotate(180deg)' : 'none', transition:'transform 0.2s'}}/>
+        </button>
+        <button onClick={nextMonth} style={{width:34,height:34,borderRadius:17,border:'none',cursor:'pointer',background:COLORS.softer,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <Icon name="chevron" size={13} color={COLORS.ink} stroke={2.5}/>
+        </button>
       </div>
 
-      {pickingYM ? (
-        <div>
-          <div style={{display:'flex',justifyContent:'center',gap:12,padding:'4px 16px 8px'}}>
-            <ScrollPick items={YEARS} value={tmpY} onChange={setTmpY} renderLabel={y=>`${y}년`} width={110}/>
-            <ScrollPick items={MONTHS} value={tmpMo} onChange={setTmpMo} renderLabel={m=>MONTH_KR[m]} width={90}/>
-          </div>
-          <div style={{padding:'0 16px 14px'}}>
-            <button onClick={()=>{setView({y:tmpY,mo:tmpMo});setPickingYM(false);}} style={{width:'100%',padding:'13px',border:'none',borderRadius:14,background:COLORS.ink,color:'#fff',fontFamily:SANS,fontSize:14,fontWeight:500,cursor:'pointer'}}>이 달 달력 보기</button>
-          </div>
-        </div>
-      ) : (
+      {showYM ? <YearMonthPicker/> : (
         <>
-          <div style={{padding:'0 14px 2px',display:'grid',gridTemplateColumns:'repeat(7,1fr)'}}>
-            {DOW.map((w,i)=><div key={i} style={{textAlign:'center',fontFamily:MONO,fontSize:9.5,letterSpacing:'0.08em',color:i===0?COLORS.accent:i===6?'oklch(60% 0.06 250)':COLORS.mute,padding:'4px 0'}}>{w}</div>)}
+          {/* 요일 헤더 */}
+          <div style={{display:'grid', gridTemplateColumns:'repeat(7,1fr)', padding:'0 14px 2px'}}>
+            {DOW.map((w,i) => (
+              <div key={i} style={{textAlign:'center', fontFamily:MONO, fontSize:9.5, letterSpacing:'0.08em', padding:'2px 0 6px',
+                color: i===0 ? COLORS.accent : i===6 ? 'oklch(60% 0.06 250)' : COLORS.mute}}>{w}</div>
+            ))}
           </div>
-          <div style={{padding:'0 14px 14px',display:'grid',gridTemplateColumns:'repeat(7,1fr)'}}>
+          {/* 날짜 그리드 */}
+          <div style={{display:'grid', gridTemplateColumns:'repeat(7,1fr)', padding:'0 14px 16px'}}>
             {cells.map((d,i) => {
               if (d===null) return <div key={i}/>;
               const col=(firstDow+d-1)%7;
               const st=isSt(d), en=isEn(d), rng=inRng(d);
-              const hasStrip=st||en||rng;
-              const isSel=st||en;
+              const hasStrip=st||en||rng, isSel=st||en;
               const isToday=today.getFullYear()===view.y&&today.getMonth()===view.mo&&today.getDate()===d;
-              const left=st||col===0, right=en||col===6;
-              const stripR=!hasStrip?'0':left&&right?'50%':left?'50% 0 0 50%':right?'0 50% 50% 0':'0';
+              const isL=st||(rng&&col===0), isR=en||(rng&&col===6);
+              const stripR=!hasStrip?'0':isL&&isR?'50%':isL?'50% 0 0 50%':isR?'0 50% 50% 0':'0';
               return (
                 <button key={i} onClick={()=>handleDay(d)} style={{
-                  aspectRatio:'1/1',border:'none',cursor:'pointer',padding:0,margin:'1px 0',
-                  position:'relative',display:'flex',alignItems:'center',justifyContent:'center',
-                  background:hasStrip?'rgba(193,79,46,0.12)':'transparent', borderRadius:stripR,
+                  aspectRatio:'1/1', border:'none', cursor:'pointer', padding:0, margin:'1px 0',
+                  position:'relative', display:'flex', alignItems:'center', justifyContent:'center',
+                  background: hasStrip ? 'rgba(193,79,46,0.10)' : 'transparent', borderRadius:stripR,
                 }}>
                   {isSel&&<div style={{position:'absolute',inset:'3px',borderRadius:'50%',background:COLORS.ink,zIndex:0}}/>}
-                  <span style={{position:'relative',zIndex:1,fontFamily:SANS,fontSize:13,fontWeight:isSel?600:400,color:isSel?'#fff':col===0?COLORS.accent:COLORS.ink}}>{d}</span>
+                  <span style={{position:'relative',zIndex:1,fontFamily:SANS,fontSize:13,fontWeight:isSel?600:400,
+                    color:isSel?'#fff':col===0?COLORS.accent:COLORS.ink}}>{d}</span>
                   {isToday&&!isSel&&<span style={{position:'absolute',bottom:3,left:'50%',transform:'translateX(-50%)',width:3,height:3,borderRadius:'50%',background:COLORS.accent,zIndex:1}}/>}
                 </button>
               );
