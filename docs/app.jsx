@@ -1464,7 +1464,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v123</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v124</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -1623,22 +1623,40 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
   const handlePickRange = (newStartIso, newEndIso) => {
     const { startIso: oldStart } = parseTripDates();
     let days = trip.days;
-    // 시작일 변경 시 모든 일정 날짜 이동
+    let hotels = trip.hotels || [];
+    // 시작일 변경 시 모든 일정 날짜 + 숙소 날짜 동시 이동
     if (newStartIso && oldStart && oldStart !== newStartIso) {
       const diffDays = Math.round(
         (new Date(newStartIso+'T12:00:00').getTime() - new Date(oldStart+'T12:00:00').getTime()) / 86400000
       );
+      const shiftIso = (iso) => {
+        if (!iso) return iso;
+        const d = new Date(new Date(iso+'T12:00:00').getTime() + diffDays*86400000);
+        return d.toISOString().slice(0,10);
+      };
+      const shiftHotelDate = (dateStr) => {
+        if (!dateStr) return dateStr;
+        const iso = dayDateToIso(dateStr, tripYear);
+        if (!iso) return dateStr;
+        const newIso = shiftIso(iso);
+        const m = newIso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        return m ? `${MONTH_NAMES_SHORT[parseInt(m[2],10)-1]} ${parseInt(m[3],10)}` : dateStr;
+      };
       days = (trip.days || []).map(d => {
         const dIso = dayDateToIso(d.date, tripYear);
         if (!dIso) return d;
-        const shifted = new Date(new Date(dIso+'T12:00:00').getTime() + diffDays*86400000);
-        const iso = shifted.toISOString().slice(0,10);
+        const iso = shiftIso(dIso);
         return { ...d, date: isoToDayDate(iso), weekday: isoToWeekday(iso) };
       });
+      hotels = hotels.map(h => ({
+        ...h,
+        checkin:  shiftHotelDate(h.checkin),
+        checkout: shiftHotelDate(h.checkout),
+      }));
     }
     const newStart = newStartIso ? isoToDayDate(newStartIso) : '';
     const newEnd   = newEndIso   ? isoToDayDate(newEndIso)   : '';
-    onEditTrip({ days, dates: newEnd ? `${newStart} — ${newEnd}` : newStart });
+    onEditTrip({ days, hotels, dates: newEnd ? `${newStart} — ${newEnd}` : newStart });
   };
 
   const { startIso, endIso } = parseTripDates();
@@ -5751,7 +5769,26 @@ function App() {
     const items = [...days[dayIdx].items];
     items[openStop.idx] = draft;
     days[dayIdx] = { ...days[dayIdx], items };
-    editTrip({ days });
+
+    // 숙소 스탑이면 메인 호텔 시간도 역방향 동기화
+    let hotels = trip.hotels;
+    if (draft._hotelRef && draft.time) {
+      const hIdx = (trip.hotels || []).findIndex(h => h.name === draft._hotelRef);
+      if (hIdx >= 0) {
+        const isCheckIn  = (draft.title || '').includes('체크인');
+        const isCheckOut = (draft.title || '').includes('체크아웃');
+        if (isCheckIn || isCheckOut) {
+          hotels = [...trip.hotels];
+          hotels[hIdx] = {
+            ...hotels[hIdx],
+            ...(isCheckIn  ? { checkinTime:  draft.time } : {}),
+            ...(isCheckOut ? { checkoutTime: draft.time } : {}),
+          };
+        }
+      }
+    }
+
+    editTrip({ days, ...(hotels !== trip.hotels ? { hotels } : {}) });
     setOpenStop(null);
   };
 
@@ -6062,7 +6099,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v123</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v124</div>
         </div>
       </div>
       <button onClick={async () => {
