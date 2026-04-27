@@ -1702,7 +1702,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v151</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v152</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3139,7 +3139,9 @@ function LocationField({ value, onChange, cityBias }) {
   const [query, setQuery]     = React.useState(value || '');
   const [results, setResults] = React.useState([]);
   const [show, setShow]       = React.useState(false);
+  const [focused, setFocused] = React.useState(false);
   const timer = React.useRef(null);
+  const focusedRef = React.useRef(false);
 
   React.useEffect(() => { setQuery(value || ''); }, [value]);
 
@@ -3153,7 +3155,7 @@ function LocationField({ value, onChange, cityBias }) {
       )).json();
       const feats = j?.features || [];
       setResults(feats);
-      if (feats.length) setShow(true);
+      if (feats.length && focusedRef.current) setShow(true);
     } catch(_) {}
   };
 
@@ -3168,8 +3170,8 @@ function LocationField({ value, onChange, cityBias }) {
       <div style={{ position:'relative' }}>
         <input value={query}
           onChange={e => { setQuery(e.target.value); onChange(e.target.value, null); }}
-          onFocus={() => results.length && setShow(true)}
-          onBlur={() => setTimeout(() => setShow(false), 150)}
+          onFocus={() => { focusedRef.current = true; setFocused(true); if (results.length) setShow(true); }}
+          onBlur={() => { focusedRef.current = false; setFocused(false); setTimeout(() => setShow(false), 150); }}
           onKeyDown={e => e.key === 'Enter' && doSearch(query)}
           placeholder="위치 검색..."
           style={{ width:'100%', padding:'8px 34px 8px 10px', borderRadius:8,
@@ -6433,7 +6435,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v151</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v152</div>
         </div>
       </div>
       <button onClick={async () => {
