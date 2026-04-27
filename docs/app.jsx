@@ -1465,7 +1465,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v115</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v116</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3615,6 +3615,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   const [renamingCat,  setRenamingCat]  = React.useState(null);
   const [addInputCat,  setAddInputCat]  = React.useState(null);
   const [addInputText, setAddInputText] = React.useState('');
+  const [editingItem,  setEditingItem]  = React.useState(null); // { ci, ii }
 
   const save = (newCats) => onEditPrep({ ...prep, cats: newCats });
 
@@ -3739,27 +3740,38 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
                 항목이 없어요
               </div>
             )}
-            {(cat.items || []).map((item, ii) => (
-              <div key={ii} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px',
-                borderBottom: ii < cat.items.length - 1 ? `1px solid ${COLORS.line}` : 'none' }}>
-                <div style={{ width:16, height:16, borderRadius:8, border:`1.5px solid ${COLORS.line}`, flexShrink:0 }}/>
-                {editing ? (
-                  <input value={item} onChange={e => updateItem(ci, ii, e.target.value)}
-                    style={{ flex:1, border:'none', outline:'none', background:'transparent',
-                      fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
-                ) : (
-                  <span style={{ flex:1, fontFamily:SANS, fontSize:13.5, color:COLORS.ink }}>{item}</span>
-                )}
-                {editing && (
-                  <button onClick={() => deleteItem(ci, ii)} style={{
-                    width:22, height:22, borderRadius:11, border:'none',
-                    background:'rgba(193,79,46,0.12)', cursor:'pointer',
-                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
-                  </button>
-                )}
-              </div>
-            ))}
+            {(cat.items || []).map((item, ii) => {
+              const isEditingThis = editingItem?.ci === ci && editingItem?.ii === ii;
+              return (
+                <SwipeableRow key={ii}
+                  onEdit={() => setEditingItem({ ci, ii })}
+                  onDelete={() => deleteItem(ci, ii)}
+                  wrapStyle={{ borderBottom: ii < cat.items.length - 1 ? `1px solid ${COLORS.line}` : 'none' }}
+                >
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', background:COLORS.card }}>
+                    <div style={{ width:16, height:16, borderRadius:8, border:`1.5px solid ${COLORS.line}`, flexShrink:0 }}/>
+                    {(editing || isEditingThis) ? (
+                      <input autoFocus={isEditingThis} value={item}
+                        onChange={e => updateItem(ci, ii, e.target.value)}
+                        onBlur={() => { if (isEditingThis) setEditingItem(null); }}
+                        onKeyDown={e => { if (e.key==='Enter' || e.key==='Escape') setEditingItem(null); }}
+                        style={{ flex:1, border:'none', outline:'none', background:'transparent',
+                          fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
+                    ) : (
+                      <span style={{ flex:1, fontFamily:SANS, fontSize:13.5, color:COLORS.ink }}>{item}</span>
+                    )}
+                    {editing && !isEditingThis && (
+                      <button onClick={() => deleteItem(ci, ii)} style={{
+                        width:22, height:22, borderRadius:11, border:'none',
+                        background:'rgba(193,79,46,0.12)', cursor:'pointer',
+                        display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                        <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
+                      </button>
+                    )}
+                  </div>
+                </SwipeableRow>
+              );
+            })}
             {/* 항목 추가 */}
             {addInputCat === ci ? (
               <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px',
@@ -5795,7 +5807,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v115</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v116</div>
         </div>
       </div>
       <button onClick={async () => {
