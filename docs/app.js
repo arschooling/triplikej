@@ -6751,7 +6751,7 @@ function App() {
     docs: [],
     pack: []
   });
-  const [activeTripId, setActiveTripId] = React.useState(null);
+  const [activeTripId, setActiveTripId] = React.useState(_nav.activeTripId || null);
   const [userTrips, setUserTrips] = React.useState([]);
   const [tripsLoading, setTripsLoading] = React.useState(false);
   const [companionOpen, setCompanionOpen] = React.useState(false);
@@ -6926,10 +6926,40 @@ function App() {
     saveNav({
       tab,
       dayIdx,
-      hotelIdx
+      hotelIdx,
+      activeTripId
     });
-  }, [tab, dayIdx, hotelIdx]);
+  }, [tab, dayIdx, hotelIdx, activeTripId]);
+
+  // 스크롤 위치 저장
   React.useEffect(() => {
+    const save = () => {
+      try {
+        sessionStorage.setItem('tlj_scrollY', String(Math.round(window.scrollY)));
+      } catch (_) {}
+    };
+    window.addEventListener('scroll', save, {
+      passive: true
+    });
+    return () => window.removeEventListener('scroll', save);
+  }, []);
+
+  // 새로고침 복원: scrollKey effect가 먼저 0으로 리셋하므로 skipScrollReset으로 막음
+  const skipScrollReset = React.useRef(!!_nav.activeTripId);
+  React.useEffect(() => {
+    if (!_nav.activeTripId) return;
+    const savedY = parseInt(sessionStorage.getItem('tlj_scrollY') || '0', 10);
+    if (!savedY) return;
+    requestAnimationFrame(() => {
+      window.scrollTo(0, savedY);
+      lastScrollTop.current = savedY;
+    });
+  }, []);
+  React.useEffect(() => {
+    if (skipScrollReset.current) {
+      skipScrollReset.current = false;
+      return;
+    }
     if (navGoingBack.current) {
       // 뒤로가기: 저장된 홈 스크롤 위치 복원
       const target = savedHomeScrollY.current || 0;
