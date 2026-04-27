@@ -3838,13 +3838,43 @@ function TripsScreen({
     style: {
       minHeight: '100vh',
       background: COLORS.bg,
-      paddingBottom: 100
+      paddingBottom: 100,
+      position: 'relative'
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onOpenCompanion,
     style: {
+      position: 'absolute',
+      top: 'calc(16px + env(safe-area-inset-top,0px))',
+      right: 20,
+      zIndex: 10,
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      background: userData?.photoURL ? 'transparent' : COLORS.softer,
+      border: `2px solid ${COLORS.line}`,
+      padding: 0,
+      cursor: 'pointer',
+      overflow: 'hidden',
       display: 'flex',
-      alignItems: 'flex-end',
-      justifyContent: 'space-between',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 1px 6px rgba(0,0,0,0.10)'
+    }
+  }, userData?.photoURL ? /*#__PURE__*/React.createElement("img", {
+    src: userData.photoURL,
+    alt: "profile",
+    style: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover'
+    }
+  }) : /*#__PURE__*/React.createElement(Icon, {
+    name: "user",
+    size: 18,
+    color: COLORS.mute
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
       paddingTop: 'calc(env(safe-area-inset-top, 0px) + 20px)',
       paddingLeft: 20,
       paddingRight: 20,
@@ -3864,35 +3894,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v136")), /*#__PURE__*/React.createElement("button", {
-    onClick: onOpenCompanion,
-    style: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      marginBottom: 2,
-      background: userData?.photoURL ? 'transparent' : COLORS.softer,
-      border: `2px solid ${COLORS.line}`,
-      padding: 0,
-      cursor: 'pointer',
-      overflow: 'hidden',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }
-  }, userData?.photoURL ? /*#__PURE__*/React.createElement("img", {
-    src: userData.photoURL,
-    alt: "profile",
-    style: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover'
-    }
-  }) : /*#__PURE__*/React.createElement(Icon, {
-    name: "user",
-    size: 18,
-    color: COLORS.mute
-  }))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v137"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -12365,7 +12367,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v136"))), /*#__PURE__*/React.createElement("button", {
+  }, "v137"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
