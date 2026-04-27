@@ -795,10 +795,7 @@ function SwipeableRow(_ref4) {
     var dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 18) return;
-      if (dy > Math.abs(dx) * 0.55) {
-        startRef.current = null;
-        return;
-      }
+      if (dy > Math.abs(dx) * 0.55) return; // 세로 스크롤 — startRef 유지, 탭 감지 보존
       dragging.current = true;
     }
     var base = open ? -REVEAL : 0;
@@ -808,12 +805,12 @@ function SwipeableRow(_ref4) {
     setX(clamped);
   };
   var onTouchEnd = function onTouchEnd() {
-    if (!startRef.current || !dragging.current) {
-      startRef.current = null;
-      return;
-    }
+    if (!startRef.current) return;
+    var wasDragging = dragging.current;
     startRef.current = null;
     dragging.current = false;
+    if (!wasDragging) return; // 탭 — 브라우저 click 이벤트로 처리
+
     var cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
       close();
@@ -3184,6 +3181,7 @@ function isoToWeekday(iso) {
 
 // ─── Home ───────────────────────────────────────────────────
 function HomeScreen(_ref19) {
+  var _featured$hero$hue, _featured$hero, _featured$hero2;
   var trip = _ref19.trip,
     onOpenDay = _ref19.onOpenDay,
     onOpenHotel = _ref19.onOpenHotel,
@@ -3450,8 +3448,8 @@ function HomeScreen(_ref19) {
       boxShadow: '0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)'
     }
   }, /*#__PURE__*/React.createElement(Photo, {
-    hue: featured.hero.hue,
-    label: featured.hero.label,
+    hue: (_featured$hero$hue = (_featured$hero = featured.hero) === null || _featured$hero === void 0 ? void 0 : _featured$hero.hue) !== null && _featured$hero$hue !== void 0 ? _featured$hero$hue : 25,
+    label: (_featured$hero2 = featured.hero) === null || _featured$hero2 === void 0 ? void 0 : _featured$hero2.label,
     height: 170
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3529,7 +3527,8 @@ function HomeScreen(_ref19) {
       letterSpacing: '0.1em'
     }
   }, trip.days.length, " DAYS \xB7 ", trip.days.reduce(function (s, d) {
-    return s + d.items.length;
+    var _d$items;
+    return s + (((_d$items = d.items) === null || _d$items === void 0 ? void 0 : _d$items.length) || 0);
   }, 0), " STOPS")), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '0 16px',
@@ -3538,6 +3537,7 @@ function HomeScreen(_ref19) {
       gap: 8
     }
   }, trip.days.map(function (d, i) {
+    var _d$hero$hue, _d$hero, _d$items$length, _d$items2;
     var dp = dayDragProps(i);
     var isDropTarget = dp['data-drop-target'];
     var isDragSource = dp['data-drag-source'];
@@ -3596,7 +3596,7 @@ function HomeScreen(_ref19) {
         flexShrink: 0
       }
     }, /*#__PURE__*/React.createElement(Photo, {
-      hue: d.hero.hue,
+      hue: (_d$hero$hue = (_d$hero = d.hero) === null || _d$hero === void 0 ? void 0 : _d$hero.hue) !== null && _d$hero$hue !== void 0 ? _d$hero$hue : 25,
       height: 64,
       small: true
     })), /*#__PURE__*/React.createElement("div", {
@@ -3649,7 +3649,7 @@ function HomeScreen(_ref19) {
       size: 11,
       color: COLORS.mute,
       stroke: 1.8
-    }), /*#__PURE__*/React.createElement("span", null, d.items.length, " stops"))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, {
+    }), /*#__PURE__*/React.createElement("span", null, (_d$items$length = (_d$items2 = d.items) === null || _d$items2 === void 0 ? void 0 : _d$items2.length) !== null && _d$items$length !== void 0 ? _d$items$length : 0, " stops"))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, {
       size: 14,
       color: COLORS.mute
     }), !isDayDragging && /*#__PURE__*/React.createElement("button", {
@@ -4109,6 +4109,7 @@ function HomeScreen(_ref19) {
 
 // ─── Day screen ─────────────────────────────────────────────
 function DayScreen(_ref20) {
+  var _day$hero$hue, _day$hero, _day$hero2, _day$items$length, _day$items;
   var trip = _ref20.trip,
     dayIdx = _ref20.dayIdx,
     onBack = _ref20.onBack,
@@ -4120,7 +4121,17 @@ function DayScreen(_ref20) {
     onReorderItems = _ref20.onReorderItems,
     editing = _ref20.editing,
     setEditing = _ref20.setEditing;
-  var day = trip.days[dayIdx];
+  var day = trip.days[dayIdx] || {
+    n: dayIdx + 1,
+    title: '',
+    date: '',
+    weekday: '',
+    hero: {
+      hue: 25,
+      label: ''
+    },
+    items: []
+  };
   var tripYear = extractTripYear(trip);
   var _React$useState55 = React.useState(function () {
       try {
@@ -4162,8 +4173,8 @@ function DayScreen(_ref20) {
       marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))'
     }
   }, /*#__PURE__*/React.createElement(Photo, {
-    hue: day.hero.hue,
-    label: day.hero.label,
+    hue: (_day$hero$hue = (_day$hero = day.hero) === null || _day$hero === void 0 ? void 0 : _day$hero.hue) !== null && _day$hero$hue !== void 0 ? _day$hero$hue : 25,
+    label: (_day$hero2 = day.hero) === null || _day$hero2 === void 0 ? void 0 : _day$hero2.label,
     height: "calc(280px + env(safe-area-inset-top, 0px))"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4336,7 +4347,7 @@ function DayScreen(_ref20) {
       color: COLORS.mute,
       letterSpacing: '0.1em'
     }
-  }, done.size, "/", day.items.length, " DONE")), /*#__PURE__*/React.createElement("div", {
+  }, done.size, "/", (_day$items$length = (_day$items = day.items) === null || _day$items === void 0 ? void 0 : _day$items.length) !== null && _day$items$length !== void 0 ? _day$items$length : 0, " DONE")), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative'
     }
@@ -4349,7 +4360,7 @@ function DayScreen(_ref20) {
       width: 1,
       background: COLORS.line
     }
-  }), day.items.map(function (it, i) {
+  }), (day.items || []).map(function (it, i) {
     var meta = CAT_META[it.cat] || {
       icon: 'pin',
       label: it.cat
@@ -7372,7 +7383,7 @@ function _readCache() {
   }
 }
 function App() {
-  var _nav$dayIdx, _nav$hotelIdx;
+  var _nav$dayIdx, _nav$hotelIdx, _trip$days$dayIdx$her, _trip$days$dayIdx;
   var _nav = loadNav();
   var _cache = _readCache(); // 캐시된 상태 (로그인된 경우)
 
@@ -7600,7 +7611,8 @@ function App() {
     } else setTrip(null);
     return fbListenGroup(activeTripId, function (data) {
       if (data === null) {
-        if (groupCreateRef.current) return;
+        // 이미 데이터가 있으면 덮어쓰지 않음 (Firestore 오류 시 데이터 보호)
+        if (groupCreateRef.current || tripRef.current) return;
         groupCreateRef.current = true;
         fbSaveGroup(activeTripId, {
           title: '새 여행',
@@ -8207,7 +8219,7 @@ function App() {
     });
     label = 'Prep';
   }
-  var dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
+  var dayHue = dayIdx !== null && trip ? (_trip$days$dayIdx$her = (_trip$days$dayIdx = trip.days[dayIdx]) === null || _trip$days$dayIdx === void 0 || (_trip$days$dayIdx = _trip$days$dayIdx.hero) === null || _trip$days$dayIdx === void 0 ? void 0 : _trip$days$dayIdx.hue) !== null && _trip$days$dayIdx$her !== void 0 ? _trip$days$dayIdx$her : 30 : 30;
 
   // ── Auth gating ───────────────────────────────────────────
   // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시

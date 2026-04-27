@@ -139,7 +139,7 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
     const dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 18) return;
-      if (dy > Math.abs(dx) * 0.55) { startRef.current = null; return; }
+      if (dy > Math.abs(dx) * 0.55) return; // 세로 스크롤 — startRef 유지, 탭 감지 보존
       dragging.current = true;
     }
     const base = open ? -REVEAL : 0;
@@ -151,8 +151,11 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
     setX(clamped);
   };
   const onTouchEnd = () => {
-    if (!startRef.current || !dragging.current) { startRef.current = null; return; }
+    if (!startRef.current) return;
+    const wasDragging = dragging.current;
     startRef.current = null; dragging.current = false;
+    if (!wasDragging) return; // 탭 — 브라우저 click 이벤트로 처리
+
     const cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
       close();
@@ -1381,7 +1384,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
         <div style={{ padding:'4px 16px 18px' }}>
           <div style={{ background:COLORS.card, borderRadius:22, overflow:'hidden',
             boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)' }}>
-            <Photo hue={featured.hero.hue} label={featured.hero.label} height={170}/>
+            <Photo hue={featured.hero?.hue ?? 25} label={featured.hero?.label} height={170}/>
             <div style={{ padding:'16px 18px 18px' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
                 <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
@@ -1410,7 +1413,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
       <div style={{ padding:'8px 24px 10px', display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
         <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>일정</div>
         <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em' }}>
-          {trip.days.length} DAYS · {trip.days.reduce((s,d)=>s+d.items.length,0)} STOPS
+          {trip.days.length} DAYS · {trip.days.reduce((s,d)=>s+(d.items?.length||0),0)} STOPS
         </div>
       </div>
       <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:8 }}>
@@ -1440,7 +1443,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
               ) : (
                 <div style={{ padding:12, display:'flex', gap:12, alignItems:'center' }}>
                   <div style={{ width:64, height:64, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
-                    <Photo hue={d.hero.hue} height={64} small/>
+                    <Photo hue={d.hero?.hue ?? 25} height={64} small/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:'flex', gap:8, alignItems:'baseline' }}>
@@ -1456,7 +1459,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
                     <div style={{ marginTop:3, fontFamily:SANS, fontSize:11.5, color:COLORS.mute,
                       display:'flex', gap:5, alignItems:'center' }}>
                       <Icon name="pin" size={11} color={COLORS.mute} stroke={1.8}/>
-                      <span>{d.items.length} stops</span>
+                      <span>{d.items?.length ?? 0} stops</span>
                     </div>
                   </div>
                   {editing ? (
@@ -1685,7 +1688,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
 // ─── Day screen ─────────────────────────────────────────────
 function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                      onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing }) {
-  const day = trip.days[dayIdx];
+  const day = trip.days[dayIdx] || { n: dayIdx+1, title:'', date:'', weekday:'', hero:{ hue:25, label:'' }, items:[] };
   const tripYear = extractTripYear(trip);
   const [done, setDone] = React.useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem('done_' + trip.title + '_' + dayIdx) || '[]')); }
@@ -1703,7 +1706,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
   return (
     <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
       <div style={{ position:'relative', marginTop:'calc(-1 * env(safe-area-inset-top, 0px))' }}>
-        <Photo hue={day.hero.hue} label={day.hero.label} height='calc(280px + env(safe-area-inset-top, 0px))'/>
+        <Photo hue={day.hero?.hue ?? 25} label={day.hero?.label} height='calc(280px + env(safe-area-inset-top, 0px))'/>
         <div style={{ position:'absolute', top:0, left:0, right:0, height:180,
           background:'linear-gradient(180deg, rgba(0,0,0,0.28), transparent)' }}/>
         <button onClick={onBack} style={{
@@ -1763,13 +1766,13 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', padding:'0 6px 12px' }}>
           <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>타임라인</div>
           <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em' }}>
-            {done.size}/{day.items.length} DONE
+            {done.size}/{day.items?.length ?? 0} DONE
           </div>
         </div>
 
         <div style={{ position:'relative' }}>
           <div style={{ position:'absolute', left:52, top:14, bottom:14, width:1, background:COLORS.line }}/>
-          {day.items.map((it, i) => {
+          {(day.items || []).map((it, i) => {
             const meta = CAT_META[it.cat] || { icon:'pin', label:it.cat };
             const isDone = done.has(i);
             const dp = itemDragProps(i);
@@ -3232,7 +3235,8 @@ function App() {
     if (cached) { tripRef.current = cached; setTrip(cached); } else setTrip(null);
     return fbListenGroup(activeTripId, (data) => {
       if (data === null) {
-        if (groupCreateRef.current) return;
+        // 이미 데이터가 있으면 덮어쓰지 않음 (Firestore 오류 시 데이터 보호)
+        if (groupCreateRef.current || tripRef.current) return;
         groupCreateRef.current = true;
         fbSaveGroup(activeTripId, {
           title: '새 여행', dates: '', hotel: '', days: [],
@@ -3561,7 +3565,7 @@ function App() {
   else if (tab === 'food') { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} editing={editing} setEditing={setEditing}/>; label='Food'; }
   else                      { screen = <PrepScreen trip={trip} prep={prep} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
-  const dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
+  const dayHue = dayIdx !== null && trip ? (trip.days[dayIdx]?.hero?.hue ?? 30) : 30;
 
   // ── Auth gating ───────────────────────────────────────────
   // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
