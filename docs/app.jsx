@@ -1160,22 +1160,20 @@ function TripsScreen({ trips, onSelect, onAdd, onShare, onDelete, loading, userD
   return (
     <div style={{ minHeight:'100vh', background:COLORS.bg,
       paddingTop:'calc(env(safe-area-inset-top) + 64px)', paddingBottom:100 }}>
-      {/* 프로필 버튼 */}
-      <button onClick={onOpenCompanion} style={{
-        position:'fixed', top:'calc(14px + env(safe-area-inset-top,0px))', right:16, zIndex:300,
-        width:38, height:38, borderRadius:19,
-        background: userData?.photoURL ? 'transparent' : COLORS.softer,
-        border:`2px solid ${COLORS.line}`, padding:0, cursor:'pointer', overflow:'hidden',
-        display:'flex', alignItems:'center', justifyContent:'center',
-        boxShadow:'0 1px 6px rgba(0,0,0,0.10)',
-      }}>
-        {userData?.photoURL
-          ? <img src={userData.photoURL} alt="profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-          : <Icon name="user" size={18} color={COLORS.mute}/>
-        }
-      </button>
-      <div style={{ padding:'0 24px 32px' }}>
-        <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink }}>My Trips</div>
+      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between',
+        padding:'0 20px 20px' }}>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips</div>
+        <button onClick={onOpenCompanion} style={{
+          width:38, height:38, borderRadius:19, marginBottom:2,
+          background: userData?.photoURL ? 'transparent' : COLORS.softer,
+          border:`2px solid ${COLORS.line}`, padding:0, cursor:'pointer', overflow:'hidden',
+          display:'flex', alignItems:'center', justifyContent:'center',
+        }}>
+          {userData?.photoURL
+            ? <img src={userData.photoURL} alt="profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+            : <Icon name="user" size={18} color={COLORS.mute}/>
+          }
+        </button>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
