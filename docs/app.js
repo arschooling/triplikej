@@ -839,14 +839,13 @@ function BottomSheet({
     style: {
       position: 'fixed',
       inset: 0,
-      zIndex: 600,
+      zIndex: 1200,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: `20px 18px ${20 + kbh}px`,
-      transition: 'padding 0.2s ease',
       background: visible && drag < 80 ? 'rgba(20,16,14,0.42)' : 'rgba(20,16,14,0)',
-      transition: 'background 240ms ease'
+      transition: 'background 240ms ease, padding 0.2s ease'
     },
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
@@ -3616,7 +3615,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v146"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v147"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -12324,7 +12323,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v146"))), /*#__PURE__*/React.createElement("button", {
+  }, "v147"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);

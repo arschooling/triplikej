@@ -365,12 +365,11 @@ function BottomSheet({ open, onClose, children, title, onConfirm, confirmLabel='
   // portal로 document.body에 직접 렌더링 → transform 부모의 영향 없이 정확히 viewport 중앙에 표시
   return ReactDOM.createPortal(
     <div style={{
-      position:'fixed', inset:0, zIndex:600,
+      position:'fixed', inset:0, zIndex:1200,
       display:'flex', alignItems:'center', justifyContent:'center',
       padding:`20px 18px ${20 + kbh}px`,
-      transition:'padding 0.2s ease',
       background: visible && drag < 80 ? 'rgba(20,16,14,0.42)' : 'rgba(20,16,14,0)',
-      transition:'background 240ms ease',
+      transition:'background 240ms ease, padding 0.2s ease',
     }} onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
@@ -1703,7 +1702,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v146</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v147</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6131,7 +6130,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v146</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v147</div>
         </div>
       </div>
       <button onClick={async () => {
