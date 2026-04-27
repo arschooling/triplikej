@@ -629,6 +629,7 @@ function CompactWheel({ items, value, onChange, renderLabel=(x=>x), width=100 })
 
 // ─── Time Picker ────────────────────────────────────────────
 function TimeField({ value, onChange }) {
+  const [open, setOpen] = React.useState(false);
   const HOURS = Array.from({ length:24 }, (_, i) => i);
   const MINS  = [0,5,10,15,20,25,30,35,40,45,50,55];
   const parse = (v) => {
@@ -642,18 +643,36 @@ function TimeField({ value, onChange }) {
   const { h, mn } = parse(value);
   const emit = (newH, newMn) =>
     onChange(`${String(newH).padStart(2,'0')}:${String(newMn).padStart(2,'0')}`);
+  if (!open) return (
+    <button type="button" onClick={() => setOpen(true)} style={{
+      width:'100%', padding:'8px 10px', borderRadius:8,
+      border:`1px solid ${COLORS.line}`, background:COLORS.card,
+      fontFamily:MONO, fontSize:14, color:COLORS.ink, cursor:'pointer',
+      display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+    }}>
+      <Icon name="clock" size={13} color={COLORS.mute} stroke={1.8}/>
+      {value || '09:00'}
+    </button>
+  );
   return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, padding:'4px 0' }}>
-      <CompactWheel items={HOURS} value={h}
-        onChange={v => emit(v, mn)}
-        renderLabel={x => String(x).padStart(2,'0')}
-        width={80}/>
-      <div style={{ fontFamily:MONO, fontSize:24, fontWeight:600, color:COLORS.ink,
-        lineHeight:1, userSelect:'none' }}>:</div>
-      <CompactWheel items={MINS} value={mn}
-        onChange={v => emit(h, v)}
-        renderLabel={x => String(x).padStart(2,'0')}
-        width={80}/>
+    <div>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, padding:'4px 0' }}>
+        <CompactWheel items={HOURS} value={h}
+          onChange={v => emit(v, mn)}
+          renderLabel={x => String(x).padStart(2,'0')}
+          width={80}/>
+        <div style={{ fontFamily:MONO, fontSize:24, fontWeight:600, color:COLORS.ink,
+          lineHeight:1, userSelect:'none' }}>:</div>
+        <CompactWheel items={MINS} value={mn}
+          onChange={v => emit(h, v)}
+          renderLabel={x => String(x).padStart(2,'0')}
+          width={80}/>
+      </div>
+      <button type="button" onClick={() => setOpen(false)} style={{
+        width:'100%', marginTop:4, padding:'7px', borderRadius:8, border:'none',
+        background:COLORS.softer, fontFamily:SANS, fontSize:12,
+        color:COLORS.mute, cursor:'pointer',
+      }}>완료</button>
     </div>
   );
 }
@@ -1407,7 +1426,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 16px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v88</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v89</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -4449,7 +4468,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v88</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v89</div>
         </div>
       </div>
       <button onClick={async () => {

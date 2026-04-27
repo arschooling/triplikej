@@ -1657,6 +1657,7 @@ function TimeField({
   value,
   onChange
 }) {
+  const [open, setOpen] = React.useState(false);
   const HOURS = Array.from({
     length: 24
   }, (_, i) => i);
@@ -1680,7 +1681,31 @@ function TimeField({
     mn
   } = parse(value);
   const emit = (newH, newMn) => onChange(`${String(newH).padStart(2, '0')}:${String(newMn).padStart(2, '0')}`);
-  return /*#__PURE__*/React.createElement("div", {
+  if (!open) return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setOpen(true),
+    style: {
+      width: '100%',
+      padding: '8px 10px',
+      borderRadius: 8,
+      border: `1px solid ${COLORS.line}`,
+      background: COLORS.card,
+      fontFamily: MONO,
+      fontSize: 14,
+      color: COLORS.ink,
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "clock",
+    size: 13,
+    color: COLORS.mute,
+    stroke: 1.8
+  }), value || '09:00');
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       alignItems: 'center',
@@ -1709,7 +1734,22 @@ function TimeField({
     onChange: v => emit(h, v),
     renderLabel: x => String(x).padStart(2, '0'),
     width: 80
-  }));
+  })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setOpen(false),
+    style: {
+      width: '100%',
+      marginTop: 4,
+      padding: '7px',
+      borderRadius: 8,
+      border: 'none',
+      background: COLORS.softer,
+      fontFamily: SANS,
+      fontSize: 12,
+      color: COLORS.mute,
+      cursor: 'pointer'
+    }
+  }, "\uC644\uB8CC"));
 }
 
 // ─── Date Range Picker ───────────────────────────────────────
@@ -3284,7 +3324,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v88")), /*#__PURE__*/React.createElement("button", {
+  }, "v89")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -9147,7 +9187,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v88"))), /*#__PURE__*/React.createElement("button", {
+  }, "v89"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
