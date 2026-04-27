@@ -3566,7 +3566,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v139")), /*#__PURE__*/React.createElement("button", {
+  }, "v140")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -7072,16 +7072,37 @@ function MapScreen({
   const fmtMin = m => m >= 60 ? `${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ''}` : `${m}분`;
   const computeRouteTip = (pts, times) => {
     if (pts.length < 2) return null;
-    // nearest-neighbor TSP (출발점 고정)
+    const toMin = t => {
+      const m = (t || '').match(/^(\d{1,2}):(\d{2})/);
+      return m ? +m[1] * 60 + +m[2] : null;
+    };
     const dist2 = (a, b) => {
       const dl = a.pos[0] - b.pos[0],
         dn = a.pos[1] - b.pos[1];
       return dl * dl + dn * dn;
     };
+
+    // 앵커 식별: 숙소 / 점심 / 저녁
+    const hotel = pts.find(p => p.cat === 'hotel') || null;
+    const foods = pts.filter(p => p.cat === 'food');
+    // 점심: 시간이 있으면 10:00~15:00, 없으면 첫 번째 food
+    const lunch = foods.find(p => {
+      const m = toMin(p.time);
+      return m && m >= 600 && m <= 900;
+    }) || foods[0] || null;
+    // 저녁: 시간이 있으면 17:00 이후, 없으면 두 번째 food
+    const dinner = foods.find(p => {
+      const m = toMin(p.time);
+      return m && m >= 1020;
+    }) || (foods.length > 1 ? foods[foods.length - 1] : null);
+    const dinnerIsLunch = dinner && lunch && dinner === lunch;
+
+    // nearest-neighbor: 숙소가 있으면 숙소부터 출발
+    const startIdx = hotel ? pts.indexOf(hotel) : 0;
     const n = pts.length;
     const visited = Array(n).fill(false);
-    const order = [0];
-    visited[0] = true;
+    const order = [startIdx];
+    visited[startIdx] = true;
     for (let step = 1; step < n; step++) {
       let best = -1,
         bestD = Infinity;
@@ -7101,13 +7122,20 @@ function MapScreen({
     const isOptimal = order.every((v, i) => v === i);
     const totalTransit = Object.values(times).reduce((s, t) => s + (t.transit || 0), 0);
     const longestLeg = Object.entries(times).sort((a, b) => (b[1].transit || 0) - (a[1].transit || 0))[0];
+
+    // 숙소 귀환 여부: 숙소가 있고 마지막 아이템이 숙소가 아닌 경우
+    const returnsToHotel = hotel ? pts[pts.length - 1].cat === 'hotel' : null;
     return {
       pts,
       order,
       isOptimal,
       totalTransit,
       longestLeg,
-      times
+      times,
+      hotel,
+      lunch,
+      dinner: dinnerIsLunch ? null : dinner,
+      returnsToHotel
     };
   };
   const city = trip.title || 'New York';
@@ -7201,7 +7229,9 @@ function MapScreen({
         if (pos) {
           pts.push({
             pos,
-            title: s.title
+            title: s.title,
+            cat: s.cat || '',
+            time: s.time || ''
           });
           if (!cancelled && mapInst.current) {
             const num = pts.length;
@@ -7510,7 +7540,7 @@ function MapScreen({
       display: 'flex',
       alignItems: 'center',
       gap: 7,
-      marginBottom: 10
+      marginBottom: 12
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
@@ -7524,22 +7554,122 @@ function MapScreen({
       letterSpacing: '0.12em',
       textTransform: 'uppercase'
     }
-  }, "Route Tip")), routeTip.totalTransit > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "Route Tip"), routeTip.totalTransit > 0 && /*#__PURE__*/React.createElement("span", {
+    style: {
+      marginLeft: 'auto',
+      fontFamily: MONO,
+      fontSize: 10,
+      color: COLORS.mute
+    }
+  }, "\uCD1D \uC774\uB3D9 ", fmtMin(routeTip.totalTransit))), (routeTip.hotel || routeTip.lunch || routeTip.dinner) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: COLORS.bg,
+      borderRadius: 10,
+      padding: '10px 12px',
+      marginBottom: 12,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 7
+    }
+  }, routeTip.hotel && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "hotel",
+    size: 13,
+    color: COLORS.mute,
+    stroke: 1.8
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 9.5,
+      color: COLORS.mute,
+      width: 28
+    }
+  }, "\uC219\uC18C"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: SANS,
-      fontSize: 13,
+      fontSize: 12.5,
       color: COLORS.ink,
-      marginBottom: 8
+      flex: 1,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
     }
-  }, /*#__PURE__*/React.createElement("span", {
+  }, routeTip.hotel.title)), routeTip.lunch && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontWeight: 600
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center'
     }
-  }, routeTip.pts.length, "\uAC1C \uC7A5\uC18C"), ' · 총 이동 약 ', /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "food",
+    size: 13,
+    color: COLORS.mute,
+    stroke: 1.8
+  }), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontWeight: 600
+      fontFamily: MONO,
+      fontSize: 9.5,
+      color: COLORS.mute,
+      width: 28
     }
-  }, fmtMin(routeTip.totalTransit))), routeTip.isOptimal ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "\uC810\uC2EC"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 12.5,
+      color: COLORS.ink,
+      flex: 1,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    }
+  }, routeTip.lunch.title), routeTip.lunch.time && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10,
+      color: COLORS.mute,
+      flexShrink: 0
+    }
+  }, routeTip.lunch.time)), routeTip.dinner && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "food",
+    size: 13,
+    color: COLORS.mute,
+    stroke: 1.8
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 9.5,
+      color: COLORS.mute,
+      width: 28
+    }
+  }, "\uC800\uB141"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 12.5,
+      color: COLORS.ink,
+      flex: 1,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    }
+  }, routeTip.dinner.title), routeTip.dinner.time && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10,
+      color: COLORS.mute,
+      flexShrink: 0
+    }
+  }, routeTip.dinner.time))), routeTip.isOptimal ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       alignItems: 'center',
@@ -7564,7 +7694,7 @@ function MapScreen({
       color: COLORS.mute,
       lineHeight: 1.6
     }
-  }, "\uC774\uB3D9 \uAC70\uB9AC\uB97C \uCD5C\uC18C\uD654\uD55C \uCD5C\uC801\uC758 \uC21C\uC11C\uC785\uB2C8\uB2E4. \uBD88\uD544\uC694\uD55C \uC774\uB3D9 \uC5C6\uC774 \uD6A8\uC728\uC801\uC73C\uB85C \uC5EC\uD589\uD558\uC2E4 \uC218 \uC788\uC5B4\uC694.")) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, routeTip.hotel ? `${routeTip.hotel.title}을 기점으로 이동 거리를 최소화한 최적 순서입니다.` : '이동 거리를 최소화한 최적의 순서입니다.')) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SANS,
       fontSize: 13,
@@ -7572,7 +7702,7 @@ function MapScreen({
       marginBottom: 6,
       lineHeight: 1.55
     }
-  }, "\uBC29\uBB38 \uC21C\uC11C\uB97C \uC870\uC815\uD558\uBA74 \uC774\uB3D9 \uAC70\uB9AC\uB97C \uC904\uC77C \uC218 \uC788\uC5B4\uC694."), /*#__PURE__*/React.createElement("div", {
+  }, routeTip.hotel ? `${routeTip.hotel.title}을 기점으로 경유지 순서를 조정하면 더 효율적이에요.` : '방문 순서를 조정하면 이동 거리를 줄일 수 있어요.'), /*#__PURE__*/React.createElement("div", {
     style: {
       background: COLORS.bg,
       borderRadius: 10,
@@ -7583,22 +7713,52 @@ function MapScreen({
       lineHeight: 1.8,
       wordBreak: 'break-word'
     }
-  }, routeTip.order.map((idx, i) => /*#__PURE__*/React.createElement("span", {
-    key: idx
-  }, i > 0 && /*#__PURE__*/React.createElement("span", {
+  }, routeTip.order.map((idx, i) => {
+    const p = routeTip.pts[idx];
+    const isAnchor = p.cat === 'hotel' || p.cat === 'food';
+    return /*#__PURE__*/React.createElement("span", {
+      key: idx
+    }, i > 0 && /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: COLORS.mute
+      }
+    }, " \u2192 "), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: isAnchor ? COLORS.accent : COLORS.ink,
+        fontWeight: isAnchor ? 600 : 400
+      }
+    }, p.title));
+  }))), routeTip.hotel && routeTip.returnsToHotel === false && /*#__PURE__*/React.createElement("div", {
     style: {
-      color: COLORS.mute
+      marginTop: 10,
+      paddingTop: 10,
+      borderTop: `1px solid ${COLORS.line}`,
+      display: 'flex',
+      gap: 7,
+      alignItems: 'flex-start'
     }
-  }, " \u2192 "), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: i === 0 ? COLORS.accent : COLORS.ink
+      fontSize: 13,
+      flexShrink: 0
     }
-  }, routeTip.pts[idx].title))))), routeTip.longestLeg && (() => {
+  }, "\uD83C\uDFE8"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 12.5,
+      color: COLORS.mute,
+      lineHeight: 1.55
+    }
+  }, "\uB9C8\uC9C0\uB9C9\uC5D0", ' ', /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: COLORS.ink,
+      fontWeight: 500
+    }
+  }, routeTip.hotel.title), "\uB85C \uB3CC\uC544\uC624\uB294 \uACBD\uB85C\uB97C \uD655\uC778\uD558\uC138\uC694.")), routeTip.longestLeg && (() => {
     const legIdx = parseInt(routeTip.longestLeg[0]) - 1;
-    const from = routeTip.pts[legIdx];
-    const to = routeTip.pts[legIdx + 1];
+    const from = routeTip.pts[legIdx],
+      to = routeTip.pts[legIdx + 1];
     if (!from || !to) return null;
-    const mins = routeTip.longestLeg[1].transit;
     return /*#__PURE__*/React.createElement("div", {
       style: {
         marginTop: 10,
@@ -7619,7 +7779,7 @@ function MapScreen({
         color: COLORS.ink,
         fontWeight: 500
       }
-    }, to.title), ` · 약 ${fmtMin(mins)}`);
+    }, to.title), ` · 약 ${fmtMin(routeTip.longestLeg[1].transit)}`);
   })())), /*#__PURE__*/React.createElement(StopSheet, {
     open: openStop,
     dayHue: day?.hero?.hue ?? 25,
@@ -12098,7 +12258,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v139"))), /*#__PURE__*/React.createElement("button", {
+  }, "v140"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);

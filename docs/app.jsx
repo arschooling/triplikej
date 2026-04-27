@@ -1672,7 +1672,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 16px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v139</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v140</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, flexShrink:0,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3409,15 +3409,26 @@ function MapScreen({ trip, onEditItem }) {
 
   const computeRouteTip = (pts, times) => {
     if (pts.length < 2) return null;
-    // nearest-neighbor TSP (출발점 고정)
-    const dist2 = (a, b) => {
-      const dl = a.pos[0]-b.pos[0], dn = a.pos[1]-b.pos[1];
-      return dl*dl + dn*dn;
-    };
+    const toMin  = t => { const m=(t||'').match(/^(\d{1,2}):(\d{2})/); return m ? +m[1]*60 + +m[2] : null; };
+    const dist2  = (a, b) => { const dl=a.pos[0]-b.pos[0],dn=a.pos[1]-b.pos[1]; return dl*dl+dn*dn; };
+
+    // 앵커 식별: 숙소 / 점심 / 저녁
+    const hotel  = pts.find(p => p.cat === 'hotel') || null;
+    const foods  = pts.filter(p => p.cat === 'food');
+    // 점심: 시간이 있으면 10:00~15:00, 없으면 첫 번째 food
+    const lunch  = foods.find(p => { const m=toMin(p.time); return m && m>=600 && m<=900; })
+                || foods[0] || null;
+    // 저녁: 시간이 있으면 17:00 이후, 없으면 두 번째 food
+    const dinner = foods.find(p => { const m=toMin(p.time); return m && m>=1020; })
+                || (foods.length > 1 ? foods[foods.length-1] : null);
+    const dinnerIsLunch = dinner && lunch && dinner === lunch;
+
+    // nearest-neighbor: 숙소가 있으면 숙소부터 출발
+    const startIdx = hotel ? pts.indexOf(hotel) : 0;
     const n = pts.length;
     const visited = Array(n).fill(false);
-    const order = [0];
-    visited[0] = true;
+    const order = [startIdx];
+    visited[startIdx] = true;
     for (let step = 1; step < n; step++) {
       let best = -1, bestD = Infinity;
       const last = order[order.length-1];
@@ -3430,11 +3441,16 @@ function MapScreen({ trip, onEditItem }) {
       visited[best] = true;
       order.push(best);
     }
-    const isOptimal = order.every((v, i) => v === i);
-    const totalTransit = Object.values(times).reduce((s, t) => s + (t.transit||0), 0);
-    const longestLeg = Object.entries(times)
-      .sort((a,b) => (b[1].transit||0) - (a[1].transit||0))[0];
-    return { pts, order, isOptimal, totalTransit, longestLeg, times };
+
+    const isOptimal = order.every((v,i) => v === i);
+    const totalTransit = Object.values(times).reduce((s,t) => s+(t.transit||0), 0);
+    const longestLeg   = Object.entries(times).sort((a,b)=>(b[1].transit||0)-(a[1].transit||0))[0];
+
+    // 숙소 귀환 여부: 숙소가 있고 마지막 아이템이 숙소가 아닌 경우
+    const returnsToHotel = hotel ? pts[pts.length-1].cat === 'hotel' : null;
+
+    return { pts, order, isOptimal, totalTransit, longestLeg, times,
+             hotel, lunch, dinner: dinnerIsLunch ? null : dinner, returnsToHotel };
   };
 
   const city = trip.title || 'New York';
@@ -3513,7 +3529,7 @@ function MapScreen({ trip, onEditItem }) {
           }
         }
         if (pos) {
-          pts.push({ pos, title: s.title });
+          pts.push({ pos, title: s.title, cat: s.cat || '', time: s.time || '' });
           if (!cancelled && mapInst.current) {
             const num = pts.length;
             const m = window.L.marker(pos, { icon: window.L.divIcon({
@@ -3655,17 +3671,48 @@ function MapScreen({ trip, onEditItem }) {
       {routeTip && (
         <div style={{ padding:'14px 16px 6px' }}>
           <div style={{ background:COLORS.card, borderRadius:16, padding:'14px 16px' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
+
+            {/* 헤더 + 총 이동 시간 */}
+            <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:12 }}>
               <span style={{ fontSize:15 }}>💡</span>
               <span style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.12em', textTransform:'uppercase' }}>Route Tip</span>
+              {routeTip.totalTransit > 0 && (
+                <span style={{ marginLeft:'auto', fontFamily:MONO, fontSize:10, color:COLORS.mute }}>
+                  총 이동 {fmtMin(routeTip.totalTransit)}
+                </span>
+              )}
             </div>
 
-            {/* 총 이동 시간 */}
-            {routeTip.totalTransit > 0 && (
-              <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, marginBottom:8 }}>
-                <span style={{ fontWeight:600 }}>{routeTip.pts.length}개 장소</span>
-                {' · 총 이동 약 '}
-                <span style={{ fontWeight:600 }}>{fmtMin(routeTip.totalTransit)}</span>
+            {/* 앵커 카드: 숙소 / 점심 / 저녁 */}
+            {(routeTip.hotel || routeTip.lunch || routeTip.dinner) && (
+              <div style={{ background:COLORS.bg, borderRadius:10, padding:'10px 12px', marginBottom:12,
+                display:'flex', flexDirection:'column', gap:7 }}>
+                {routeTip.hotel && (
+                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                    <Icon name="hotel" size={13} color={COLORS.mute} stroke={1.8}/>
+                    <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, width:28 }}>숙소</span>
+                    <span style={{ fontFamily:SANS, fontSize:12.5, color:COLORS.ink, flex:1,
+                      overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{routeTip.hotel.title}</span>
+                  </div>
+                )}
+                {routeTip.lunch && (
+                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                    <Icon name="food" size={13} color={COLORS.mute} stroke={1.8}/>
+                    <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, width:28 }}>점심</span>
+                    <span style={{ fontFamily:SANS, fontSize:12.5, color:COLORS.ink, flex:1,
+                      overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{routeTip.lunch.title}</span>
+                    {routeTip.lunch.time && <span style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, flexShrink:0 }}>{routeTip.lunch.time}</span>}
+                  </div>
+                )}
+                {routeTip.dinner && (
+                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                    <Icon name="food" size={13} color={COLORS.mute} stroke={1.8}/>
+                    <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, width:28 }}>저녁</span>
+                    <span style={{ fontFamily:SANS, fontSize:12.5, color:COLORS.ink, flex:1,
+                      overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{routeTip.dinner.title}</span>
+                    {routeTip.dinner.time && <span style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, flexShrink:0 }}>{routeTip.dinner.time}</span>}
+                  </div>
+                )}
               </div>
             )}
 
@@ -3674,47 +3721,65 @@ function MapScreen({ trip, onEditItem }) {
               <div>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
                   <span style={{ fontSize:16 }}>🎉</span>
-                  <span style={{ fontFamily:SANS, fontSize:13, fontWeight:600, color:COLORS.ink }}>
-                    완벽한 동선이에요!
-                  </span>
+                  <span style={{ fontFamily:SANS, fontSize:13, fontWeight:600, color:COLORS.ink }}>완벽한 동선이에요!</span>
                 </div>
                 <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.mute, lineHeight:1.6 }}>
-                  이동 거리를 최소화한 최적의 순서입니다. 불필요한 이동 없이 효율적으로 여행하실 수 있어요.
+                  {routeTip.hotel
+                    ? `${routeTip.hotel.title}을 기점으로 이동 거리를 최소화한 최적 순서입니다.`
+                    : '이동 거리를 최소화한 최적의 순서입니다.'}
                 </div>
               </div>
             ) : (
               <div>
                 <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, marginBottom:6, lineHeight:1.55 }}>
-                  방문 순서를 조정하면 이동 거리를 줄일 수 있어요.
+                  {routeTip.hotel
+                    ? `${routeTip.hotel.title}을 기점으로 경유지 순서를 조정하면 더 효율적이에요.`
+                    : '방문 순서를 조정하면 이동 거리를 줄일 수 있어요.'}
                 </div>
                 <div style={{ background:COLORS.bg, borderRadius:10, padding:'10px 12px',
                   fontFamily:MONO, fontSize:11, color:COLORS.ink, lineHeight:1.8, wordBreak:'break-word' }}>
-                  {routeTip.order.map((idx, i) => (
-                    <span key={idx}>
-                      {i > 0 && <span style={{ color:COLORS.mute }}> → </span>}
-                      <span style={{ color: i === 0 ? COLORS.accent : COLORS.ink }}>{routeTip.pts[idx].title}</span>
-                    </span>
-                  ))}
+                  {routeTip.order.map((idx, i) => {
+                    const p = routeTip.pts[idx];
+                    const isAnchor = p.cat === 'hotel' || p.cat === 'food';
+                    return (
+                      <span key={idx}>
+                        {i > 0 && <span style={{ color:COLORS.mute }}> → </span>}
+                        <span style={{ color: isAnchor ? COLORS.accent : COLORS.ink, fontWeight: isAnchor ? 600 : 400 }}>
+                          {p.title}
+                        </span>
+                      </span>
+                    );
+                  })}
                 </div>
+              </div>
+            )}
+
+            {/* 숙소 미귀환 경고 */}
+            {routeTip.hotel && routeTip.returnsToHotel === false && (
+              <div style={{ marginTop:10, paddingTop:10, borderTop:`1px solid ${COLORS.line}`,
+                display:'flex', gap:7, alignItems:'flex-start' }}>
+                <span style={{ fontSize:13, flexShrink:0 }}>🏨</span>
+                <span style={{ fontFamily:SANS, fontSize:12.5, color:COLORS.mute, lineHeight:1.55 }}>
+                  마지막에{' '}
+                  <span style={{ color:COLORS.ink, fontWeight:500 }}>{routeTip.hotel.title}</span>
+                  로 돌아오는 경로를 확인하세요.
+                </span>
               </div>
             )}
 
             {/* 가장 긴 구간 */}
             {routeTip.longestLeg && (() => {
               const legIdx = parseInt(routeTip.longestLeg[0]) - 1;
-              const from = routeTip.pts[legIdx];
-              const to   = routeTip.pts[legIdx + 1];
+              const from = routeTip.pts[legIdx], to = routeTip.pts[legIdx+1];
               if (!from || !to) return null;
-              const mins = routeTip.longestLeg[1].transit;
               return (
-                <div style={{ marginTop:10, paddingTop:10,
-                  borderTop:`1px solid ${COLORS.line}`,
+                <div style={{ marginTop:10, paddingTop:10, borderTop:`1px solid ${COLORS.line}`,
                   fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.55 }}>
                   가장 긴 구간{' '}
                   <span style={{ color:COLORS.ink, fontWeight:500 }}>{from.title}</span>
                   {' → '}
                   <span style={{ color:COLORS.ink, fontWeight:500 }}>{to.title}</span>
-                  {` · 약 ${fmtMin(mins)}`}
+                  {` · 약 ${fmtMin(routeTip.longestLeg[1].transit)}`}
                 </div>
               );
             })()}
@@ -6004,7 +6069,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v139</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v140</div>
         </div>
       </div>
       <button onClick={async () => {
