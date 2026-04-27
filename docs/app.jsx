@@ -1463,7 +1463,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v117</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v118</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -2107,19 +2107,19 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                 <div style={{ position:'relative' }}>
                   {!editing && (
                     <div style={{ position:'absolute', top:8, right:8, zIndex:5, display:'flex', gap:4 }}>
-                      <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('hotspot'); setNearbyStop(it); }} style={{
-                        width:26, height:26, borderRadius:13, border:'none',
-                        background:'rgba(26,24,22,0.06)', cursor:'pointer',
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                      }}>
-                        <Icon name="sparkle" size={13} color={COLORS.mute} stroke={1.8}/>
-                      </button>
                       <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('food'); setNearbyStop(it); }} style={{
                         width:26, height:26, borderRadius:13, border:'none',
                         background:'rgba(26,24,22,0.06)', cursor:'pointer',
                         display:'flex', alignItems:'center', justifyContent:'center',
                       }}>
                         <Icon name="food" size={13} color={COLORS.mute} stroke={1.8}/>
+                      </button>
+                      <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('hotspot'); setNearbyStop(it); }} style={{
+                        width:26, height:26, borderRadius:13, border:'none',
+                        background:'rgba(26,24,22,0.06)', cursor:'pointer',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                      }}>
+                        <Icon name="sparkle" size={13} color={COLORS.mute} stroke={1.8}/>
                       </button>
                     </div>
                   )}
@@ -5805,7 +5805,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v117</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v118</div>
         </div>
       </div>
       <button onClick={async () => {
