@@ -2011,10 +2011,8 @@ function TripSwipeCard(_ref11) {
     var dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 8) return;
-      if (dy > Math.abs(dx) * 0.6) {
-        startRef.current = null;
-        return;
-      }
+      // 세로 스크롤이면 startRef를 지우지 말고 그냥 무시 (탭 감지 유지)
+      if (dy > Math.abs(dx) * 0.6) return;
       dragging.current = true;
     }
     var base = open ? -REVEAL : 0;
@@ -2025,17 +2023,16 @@ function TripSwipeCard(_ref11) {
   };
   var onTouchEnd = function onTouchEnd() {
     if (!startRef.current) return;
-    if (!dragging.current) {
-      // 탭 감지: 드래그 없이 손가락 뗌
-      startRef.current = null;
+    var wasDragging = dragging.current;
+    startRef.current = null;
+    dragging.current = false;
+    if (!wasDragging) {
       if (!open && onTap) {
         tappedRef.current = true;
         onTap();
       }
       return;
     }
-    startRef.current = null;
-    dragging.current = false;
     var cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
       close();
@@ -2050,7 +2047,11 @@ function TripSwipeCard(_ref11) {
       close();
     }
   };
-  // 브라우저 synthetic click이 onTap 이후 중복 발생하는 것 방지
+  var onTouchCancel = function onTouchCancel() {
+    startRef.current = null;
+    dragging.current = false;
+    close();
+  };
   var onClickCapture = function onClickCapture(e) {
     if (tappedRef.current) {
       tappedRef.current = false;
@@ -2065,6 +2066,7 @@ function TripSwipeCard(_ref11) {
     onTouchStart: onTouchStart,
     onTouchMove: onTouchMove,
     onTouchEnd: onTouchEnd,
+    onTouchCancel: onTouchCancel,
     onClickCapture: onClickCapture
   }, /*#__PURE__*/React.createElement("div", {
     style: {
