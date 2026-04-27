@@ -856,13 +856,12 @@ function CityPicker({ current, onPick, onClose }) {
 
 // ─── TRIPS SCREEN (top level) ───────────────────────────────
 // ─── Trip Card with swipe-to-reveal share/delete ─────────────
-function TripSwipeCard({ children, onShare, onDelete, onTap, wrapStyle = {} }) {
+function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
   const [x, setX] = React.useState(0);
   const [open, setOpen] = React.useState(false);
   const startRef = React.useRef(null);
   const dragging = React.useRef(false);
   const xRef = React.useRef(0);
-  const tappedRef = React.useRef(false);
   const REVEAL = 144;
   const DELETE_EXTRA = 72;
 
@@ -871,7 +870,6 @@ function TripSwipeCard({ children, onShare, onDelete, onTap, wrapStyle = {} }) {
   const onTouchStart = (e) => {
     startRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     dragging.current = false;
-    tappedRef.current = false;
   };
   const onTouchMove = (e) => {
     if (!startRef.current) return;
@@ -879,7 +877,6 @@ function TripSwipeCard({ children, onShare, onDelete, onTap, wrapStyle = {} }) {
     const dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 8) return;
-      // 세로 스크롤이면 startRef를 지우지 말고 그냥 무시 (탭 감지 유지)
       if (dy > Math.abs(dx) * 0.6) return;
       dragging.current = true;
     }
@@ -897,7 +894,7 @@ function TripSwipeCard({ children, onShare, onDelete, onTap, wrapStyle = {} }) {
     startRef.current = null;
     dragging.current = false;
     if (!wasDragging) {
-      if (!open && onTap) { tappedRef.current = true; onTap(); }
+      if (open) close();
       return;
     }
     const cur = xRef.current;
@@ -911,15 +908,11 @@ function TripSwipeCard({ children, onShare, onDelete, onTap, wrapStyle = {} }) {
     }
   };
   const onTouchCancel = () => { startRef.current = null; dragging.current = false; close(); };
-  const onClickCapture = (e) => {
-    if (tappedRef.current) { tappedRef.current = false; e.stopPropagation(); }
-  };
 
   return (
     <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}
       onTouchStart={onTouchStart} onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd} onTouchCancel={onTouchCancel}
-      onClickCapture={onClickCapture}>
+      onTouchEnd={onTouchEnd} onTouchCancel={onTouchCancel}>
       <div style={{
         position:'absolute', right:0, top:0, bottom:0, width:REVEAL,
         display:'flex', alignItems:'center', justifyContent:'center', gap:10,
@@ -1197,7 +1190,6 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
               const isShared = Array.isArray(t.members) && t.members.length > 0 && t.members[0] !== myUid;
               return (
                 <TripSwipeCard key={t.id}
-                  onTap={() => onSelect(t.id)}
                   onShare={() => onShare(t)}
                   onDelete={() => onDelete(t.id)}
                   wrapStyle={{ borderRadius:20, border:`1px solid ${COLORS.line}` }}>
