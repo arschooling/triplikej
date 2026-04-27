@@ -139,7 +139,7 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
     const dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 18) return;
-      if (dy > Math.abs(dx) * 0.55) { startRef.current = null; return; }
+      if (dy > Math.abs(dx) * 0.55) return; // 세로 스크롤 — startRef 유지, 탭 감지 보존
       dragging.current = true;
     }
     const base = open ? -REVEAL : 0;
@@ -151,8 +151,11 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
     setX(clamped);
   };
   const onTouchEnd = () => {
-    if (!startRef.current || !dragging.current) { startRef.current = null; return; }
+    if (!startRef.current) return;
+    const wasDragging = dragging.current;
     startRef.current = null; dragging.current = false;
+    if (!wasDragging) return; // 탭 — 브라우저 click 이벤트로 처리
+
     const cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
       close();
@@ -1158,7 +1161,15 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
   );
 }
 
-function TripsScreen({ trips, onSelect, onAdd, onShare, onDelete, loading, userData, onOpenCompanion, myUid }) {
+function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loading, userData, onOpenCompanion, myUid }) {
+  const [restoring, setRestoring] = React.useState(false);
+  const [restoreErr, setRestoreErr] = React.useState('');
+  const handleRestore = async () => {
+    if (restoring || !onRestore) return;
+    setRestoring(true); setRestoreErr('');
+    try { await onRestore(); }
+    catch (e) { setRestoreErr('복원 실패. 다시 시도해 주세요.'); setRestoring(false); }
+  };
   return (
     <div style={{ minHeight:'100vh', background:COLORS.bg,
       paddingTop:'calc(env(safe-area-inset-top) + 16px)', paddingBottom:100 }}>
@@ -1214,6 +1225,22 @@ function TripsScreen({ trips, onSelect, onAdd, onShare, onDelete, loading, userD
                 </TripSwipeCard>
               );
             })}
+            {trips.length === 0 && onRestore && (
+              <div style={{ padding:'28px 20px', background:COLORS.card, borderRadius:20,
+                border:`1px solid ${COLORS.line}`, textAlign:'center', marginBottom:4 }}>
+                <div style={{ fontFamily:SERIF, fontSize:24, color:COLORS.ink, marginBottom:6 }}>New York</div>
+                <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.mute, marginBottom:18 }}>
+                  10일 뉴욕 일정을 복원합니다
+                </div>
+                {restoreErr && <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.accent, marginBottom:10 }}>{restoreErr}</div>}
+                <button onClick={handleRestore} disabled={restoring} style={{
+                  padding:'12px 28px', background: restoring ? COLORS.mute : COLORS.ink,
+                  border:'none', borderRadius:12, color:COLORS.bg,
+                  fontFamily:SANS, fontSize:13, fontWeight:500,
+                  cursor: restoring ? 'default' : 'pointer', opacity: restoring ? 0.7 : 1,
+                }}>{restoring ? '복원 중...' : '뉴욕 일정 복원하기'}</button>
+              </div>
+            )}
             <button onClick={onAdd} style={{ marginTop:4, padding:'18px 16px', background:'transparent',
               border:`1.5px dashed ${COLORS.line}`, borderRadius:20, color:COLORS.mute, cursor:'pointer',
               display:'flex', gap:8, alignItems:'center', justifyContent:'center', fontFamily:SANS, fontSize:13.5 }}>
@@ -1260,9 +1287,18 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
-                      userData, onOpenCompanion }) {
+                      userData, onOpenCompanion, onLoadSample }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [datePicker, setDatePicker] = React.useState(null); // 'start' | 'end' | null
+  const [sampleLoading, setSampleLoading] = React.useState(false);
+  const [sampleErr, setSampleErr] = React.useState('');
+  const handleLoadSample = async () => {
+    if (!onLoadSample || sampleLoading) return;
+    setSampleLoading(true); setSampleErr('');
+    try { await onLoadSample(); }
+    catch (e) { setSampleErr('저장 실패. 네트워크 확인 후 다시 시도해 주세요.'); }
+    finally { setSampleLoading(false); }
+  };
   const { itemProps: dayDragProps, isTouchDragging: isDayDragging } = useDragReorder(onReorderDays, editing);
   const { itemProps: hotelDragProps, isTouchDragging: isHotelDragging } = useDragReorder(onReorderHotels, editing);
   const featured = trip.days[0];
@@ -1381,7 +1417,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
         <div style={{ padding:'4px 16px 18px' }}>
           <div style={{ background:COLORS.card, borderRadius:22, overflow:'hidden',
             boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)' }}>
-            <Photo hue={featured.hero.hue} label={featured.hero.label} height={170}/>
+            <Photo hue={featured.hero?.hue ?? 25} label={featured.hero?.label} height={170}/>
             <div style={{ padding:'16px 18px 18px' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
                 <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
@@ -1410,7 +1446,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
       <div style={{ padding:'8px 24px 10px', display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
         <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>일정</div>
         <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em' }}>
-          {trip.days.length} DAYS · {trip.days.reduce((s,d)=>s+d.items.length,0)} STOPS
+          {trip.days.length} DAYS · {trip.days.reduce((s,d)=>s+(d.items?.length||0),0)} STOPS
         </div>
       </div>
       <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:8 }}>
@@ -1440,7 +1476,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
               ) : (
                 <div style={{ padding:12, display:'flex', gap:12, alignItems:'center' }}>
                   <div style={{ width:64, height:64, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
-                    <Photo hue={d.hero.hue} height={64} small/>
+                    <Photo hue={d.hero?.hue ?? 25} height={64} small/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:'flex', gap:8, alignItems:'baseline' }}>
@@ -1456,7 +1492,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
                     <div style={{ marginTop:3, fontFamily:SANS, fontSize:11.5, color:COLORS.mute,
                       display:'flex', gap:5, alignItems:'center' }}>
                       <Icon name="pin" size={11} color={COLORS.mute} stroke={1.8}/>
-                      <span>{d.items.length} stops</span>
+                      <span>{d.items?.length ?? 0} stops</span>
                     </div>
                   </div>
                   {editing ? (
@@ -1482,6 +1518,28 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
             </SwipeableRow>
           );
         })}
+        {(() => {
+          const hasItems = trip.days.some(d => d.items?.length > 0);
+          if ((trip.days.length === 0 || !hasItems) && onLoadSample) return (
+            <div style={{ margin:'8px 0 4px', padding:'24px 20px', background:COLORS.card,
+              borderRadius:16, textAlign:'center' }}>
+              <div style={{ fontFamily:SERIF, fontSize:20, color:COLORS.ink, marginBottom:6 }}>
+                New York
+              </div>
+              <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.mute, marginBottom:12 }}>
+                일정 데이터를 불러옵니다
+              </div>
+              {sampleErr && <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.accent, marginBottom:10 }}>{sampleErr}</div>}
+              <button onClick={handleLoadSample} disabled={sampleLoading} style={{
+                padding:'11px 24px', background: sampleLoading ? COLORS.mute : COLORS.ink,
+                border:'none', borderRadius:12,
+                color:COLORS.bg, fontFamily:SANS, fontSize:13, fontWeight:500, cursor: sampleLoading ? 'default' : 'pointer',
+                opacity: sampleLoading ? 0.7 : 1,
+              }}>{sampleLoading ? '불러오는 중...' : '뉴욕 일정 불러오기'}</button>
+            </div>
+          );
+          return null;
+        })()}
         {!editing && (
           <button onClick={onAddDay} style={{
             padding:'16px 12px', background:'transparent',
@@ -1670,7 +1728,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
 // ─── Day screen ─────────────────────────────────────────────
 function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                      onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing }) {
-  const day = trip.days[dayIdx];
+  const day = trip.days[dayIdx] || { n: dayIdx+1, title:'', date:'', weekday:'', hero:{ hue:25, label:'' }, items:[] };
   const tripYear = extractTripYear(trip);
   const [done, setDone] = React.useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem('done_' + trip.title + '_' + dayIdx) || '[]')); }
@@ -1688,7 +1746,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
   return (
     <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
       <div style={{ position:'relative', marginTop:'calc(-1 * env(safe-area-inset-top, 0px))' }}>
-        <Photo hue={day.hero.hue} label={day.hero.label} height='calc(280px + env(safe-area-inset-top, 0px))'/>
+        <Photo hue={day.hero?.hue ?? 25} label={day.hero?.label} height='calc(280px + env(safe-area-inset-top, 0px))'/>
         <div style={{ position:'absolute', top:0, left:0, right:0, height:180,
           background:'linear-gradient(180deg, rgba(0,0,0,0.28), transparent)' }}/>
         <button onClick={onBack} style={{
@@ -1748,13 +1806,13 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', padding:'0 6px 12px' }}>
           <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>타임라인</div>
           <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em' }}>
-            {done.size}/{day.items.length} DONE
+            {done.size}/{day.items?.length ?? 0} DONE
           </div>
         </div>
 
         <div style={{ position:'relative' }}>
           <div style={{ position:'absolute', left:52, top:14, bottom:14, width:1, background:COLORS.line }}/>
-          {day.items.map((it, i) => {
+          {(day.items || []).map((it, i) => {
             const meta = CAT_META[it.cat] || { icon:'pin', label:it.cat };
             const isDone = done.has(i);
             const dp = itemDragProps(i);
@@ -3095,6 +3153,21 @@ function _readCache() {
   } catch(e) { return null; }
 }
 
+// Firestore 문서에 누락된 필드를 채워주는 정규화 함수
+function normalizeTrip(data, id) {
+  if (!data) return null;
+  return {
+    title: '', dates: '', hotel: '',
+    days: [], hotels: [], food: [], members: [],
+    ...data,
+    id: id || data.id,
+    days:    Array.isArray(data.days)    ? data.days    : [],
+    hotels:  Array.isArray(data.hotels)  ? data.hotels  : [],
+    food:    Array.isArray(data.food)    ? data.food    : [],
+    members: Array.isArray(data.members) ? data.members : [],
+  };
+}
+
 function App() {
   const _nav   = loadNav();
   const _cache = _readCache(); // 캐시된 상태 (로그인된 경우)
@@ -3103,7 +3176,7 @@ function App() {
   const [authState, setAuthState]   = React.useState(_cache?.userData ? 'in' : 'loading');
   const [authUser, setAuthUser]     = React.useState(null);
   const [userData, setUserData]     = React.useState(_cache?.userData || null);
-  const [trip, setTrip]             = React.useState(_cache?.trip     || null);
+  const [trip, setTrip]             = React.useState(normalizeTrip(_cache?.trip));
   const [prep, setPrep]             = React.useState(_cache?.prep     || { checklist:[], docs:[], pack:[] });
   const [activeTripId, setActiveTripId] = React.useState(null);
   const [userTrips, setUserTrips]       = React.useState([]);
@@ -3203,7 +3276,7 @@ function App() {
     const tripIds = userData.tripIds || [userData.groupId];
     setTripsLoading(true);
     fbLoadTrips(tripIds)
-      .then(trips => { setUserTrips(trips); setTripsLoading(false); })
+      .then(trips => { setUserTrips(trips.map(t => normalizeTrip(t, t.id))); setTripsLoading(false); })
       .catch(() => setTripsLoading(false));
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
 
@@ -3213,11 +3286,13 @@ function App() {
     if (!activeTripId) return;
     groupCreateRef.current = false;
     // userTrips에 이미 있는 데이터로 즉시 표시, Firestore는 실시간 업데이트용
-    const cached = userTrips.find(t => t.id === activeTripId);
+    const rawCached = userTrips.find(t => t.id === activeTripId);
+    const cached = normalizeTrip(rawCached, activeTripId);
     if (cached) { tripRef.current = cached; setTrip(cached); } else setTrip(null);
     return fbListenGroup(activeTripId, (data) => {
       if (data === null) {
-        if (groupCreateRef.current) return;
+        // 이미 데이터가 있으면 덮어쓰지 않음 (Firestore 오류 시 데이터 보호)
+        if (groupCreateRef.current || tripRef.current) return;
         groupCreateRef.current = true;
         fbSaveGroup(activeTripId, {
           title: '새 여행', dates: '', hotel: '', days: [],
@@ -3225,10 +3300,11 @@ function App() {
         });
         return;
       }
+      const normalized = normalizeTrip(data, activeTripId);
       setTrip(prev => {
-        if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
-        tripRef.current = data;
-        return data;
+        if (JSON.stringify(prev) === JSON.stringify(normalized)) return prev;
+        tripRef.current = normalized;
+        return normalized;
       });
     });
   }, [activeTripId]);
@@ -3528,14 +3604,29 @@ function App() {
         onConvertInlineHotel={convertInlineHotel}
         onAddItemToFirstDay={addItemToFirstDay}
         editing={editing} setEditing={setEditing}
-        userData={userData} onOpenCompanion={() => setCompanionOpen(true)}/>;
+        userData={userData} onOpenCompanion={() => setCompanionOpen(true)}
+        onLoadSample={async () => {
+          const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+          const patch = {
+            title : def.title  || '내 여행',
+            dates : def.dates  || '',
+            hotel : def.hotel  || '',
+            days  : def.days   || [],
+            hotels: def.hotels || [],
+            food  : def.food   || [],
+          };
+          // Firestore에 저장 (실패 시 오류를 그대로 throw → HomeScreen에서 처리)
+          await window.fbSaveGroup(activeTripId, patch);
+          // 리스너를 기다리지 않고 로컬 상태 즉시 업데이트
+          setTrip(prev => normalizeTrip({ ...prev, ...patch }, activeTripId));
+        }}/>;
       label = 'Home';
     }
   } else if (tab === 'map')  { screen = <MapScreen trip={trip}/>; label='Map'; }
   else if (tab === 'food') { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} editing={editing} setEditing={setEditing}/>; label='Food'; }
   else                      { screen = <PrepScreen trip={trip} prep={prep} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
-  const dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
+  const dayHue = dayIdx !== null && trip ? (trip.days[dayIdx]?.hero?.hue ?? 30) : 30;
 
   // ── Auth gating ───────────────────────────────────────────
   // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
@@ -3561,6 +3652,25 @@ function App() {
           setUserTrips(prev => [...prev, { id: tripId, title, dates:'', days:[], hotels:[], members:[userData.uid], hue }]);
           setActiveTripId(tripId);
           setTab('home'); setDayIdx(null); setHotelIdx(null);
+        }}
+        onRestore={async () => {
+          const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+          const patch = {
+            title : def.title  || 'New York',
+            dates : def.dates  || '',
+            hotel : def.hotel  || '',
+            days  : def.days   || [],
+            hotels: def.hotels || [],
+            food  : def.food   || [],
+          };
+          const hue = def.days?.[0]?.hero?.hue ?? 25;
+          const { tripId } = await window.fbCreateNewTrip(userData.uid, patch.title);
+          await window.fbSaveGroup(tripId, patch);
+          const newTrip = normalizeTrip({ ...patch, members:[userData.uid], hue }, tripId);
+          setUserTrips(prev => [...prev, newTrip]);
+          setActiveTripId(tripId);
+          setTrip(newTrip);
+          setTab('home'); setDayIdx(null); setHotelIdx(null); setEditing(false);
         }}
         onShare={(t) => setShareTripTarget(t)}
         onDelete={deleteTrip}

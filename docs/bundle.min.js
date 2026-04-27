@@ -296,14 +296,13 @@ window.TRIP_DEFAULT = {
     { cat: '☕ Dessert',  name: "Ralph's Coffee",           detail: '말차 라떼',                                              price: '$',       note: '랄프로렌 플래그십 내부' },
   ],
 };
-
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
@@ -320,7 +319,7 @@ function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLim
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 // NYC Travel App — restructured
 // - Trips list (top level) -> pick a trip -> Home
@@ -796,10 +795,7 @@ function SwipeableRow(_ref4) {
     var dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 18) return;
-      if (dy > Math.abs(dx) * 0.55) {
-        startRef.current = null;
-        return;
-      }
+      if (dy > Math.abs(dx) * 0.55) return; // 세로 스크롤 — startRef 유지, 탭 감지 보존
       dragging.current = true;
     }
     var base = open ? -REVEAL : 0;
@@ -809,12 +805,12 @@ function SwipeableRow(_ref4) {
     setX(clamped);
   };
   var onTouchEnd = function onTouchEnd() {
-    if (!startRef.current || !dragging.current) {
-      startRef.current = null;
-      return;
-    }
+    if (!startRef.current) return;
+    var wasDragging = dragging.current;
     startRef.current = null;
     dragging.current = false;
+    if (!wasDragging) return; // 탭 — 브라우저 click 이벤트로 처리
+
     var cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
       close();
@@ -1876,7 +1872,7 @@ function useFxRate() {
           rate: rate,
           ts: ts || null
         });else _tryNext(i + 1);
-      }).catch(function () {
+      })["catch"](function () {
         return _tryNext(i + 1);
       });
     };
@@ -2507,7 +2503,7 @@ function ShareTripSheet(_ref12) {
       setMemberProfiles(members);
       setContacts(candidates);
       setLoading(false);
-    }).catch(function () {
+    })["catch"](function () {
       return setLoading(false);
     });
   }, [open, trip && trip.id]);
@@ -2544,7 +2540,7 @@ function ShareTripSheet(_ref12) {
   var toggleSelect = function toggleSelect(uid) {
     setSelected(function (prev) {
       var next = new Set(prev);
-      if (next.has(uid)) next.delete(uid);else next.add(uid);
+      if (next.has(uid)) next["delete"](uid);else next.add(uid);
       return next;
     });
   };
@@ -2979,12 +2975,55 @@ function TripsScreen(_ref17) {
   var trips = _ref17.trips,
     onSelect = _ref17.onSelect,
     onAdd = _ref17.onAdd,
+    onRestore = _ref17.onRestore,
     _onShare = _ref17.onShare,
     _onDelete = _ref17.onDelete,
     loading = _ref17.loading,
     userData = _ref17.userData,
     onOpenCompanion = _ref17.onOpenCompanion,
     myUid = _ref17.myUid;
+  var _React$useState51 = React.useState(false),
+    _React$useState52 = _slicedToArray(_React$useState51, 2),
+    restoring = _React$useState52[0],
+    setRestoring = _React$useState52[1];
+  var _React$useState53 = React.useState(''),
+    _React$useState54 = _slicedToArray(_React$useState53, 2),
+    restoreErr = _React$useState54[0],
+    setRestoreErr = _React$useState54[1];
+  var handleRestore = /*#__PURE__*/function () {
+    var _ref18 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var _t4;
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.p = _context4.n) {
+          case 0:
+            if (!(restoring || !onRestore)) {
+              _context4.n = 1;
+              break;
+            }
+            return _context4.a(2);
+          case 1:
+            setRestoring(true);
+            setRestoreErr('');
+            _context4.p = 2;
+            _context4.n = 3;
+            return onRestore();
+          case 3:
+            _context4.n = 5;
+            break;
+          case 4:
+            _context4.p = 4;
+            _t4 = _context4.v;
+            setRestoreErr('복원 실패. 다시 시도해 주세요.');
+            setRestoring(false);
+          case 5:
+            return _context4.a(2);
+        }
+      }, _callee3, null, [[2, 4]]);
+    }));
+    return function handleRestore() {
+      return _ref18.apply(this, arguments);
+    };
+  }();
   return /*#__PURE__*/React.createElement("div", {
     style: {
       minHeight: '100vh',
@@ -3050,8 +3089,8 @@ function TripsScreen(_ref17) {
       gap: 12
     }
   }, trips.map(function (t) {
-    var _ref18, _t$hue, _t$days, _t$days2, _t$title;
-    var hue = (_ref18 = (_t$hue = t.hue) !== null && _t$hue !== void 0 ? _t$hue : (_t$days = t.days) === null || _t$days === void 0 || (_t$days = _t$days[0]) === null || _t$days === void 0 || (_t$days = _t$days.hero) === null || _t$days === void 0 ? void 0 : _t$days.hue) !== null && _ref18 !== void 0 ? _ref18 : 25;
+    var _ref19, _t$hue, _t$days, _t$days2, _t$title;
+    var hue = (_ref19 = (_t$hue = t.hue) !== null && _t$hue !== void 0 ? _t$hue : (_t$days = t.days) === null || _t$days === void 0 || (_t$days = _t$days[0]) === null || _t$days === void 0 || (_t$days = _t$days.hero) === null || _t$days === void 0 ? void 0 : _t$days.hue) !== null && _ref19 !== void 0 ? _ref19 : 25;
     var label = ((_t$days2 = t.days) === null || _t$days2 === void 0 || (_t$days2 = _t$days2[0]) === null || _t$days2 === void 0 || (_t$days2 = _t$days2.hero) === null || _t$days2 === void 0 ? void 0 : _t$days2.label) || ((_t$title = t.title) === null || _t$title === void 0 ? void 0 : _t$title.toUpperCase()) || 'TRIP';
     var isShared = Array.isArray(t.members) && t.members.length > 0 && t.members[0] !== myUid;
     return /*#__PURE__*/React.createElement(TripSwipeCard, {
@@ -3126,7 +3165,52 @@ function TripsScreen(_ref17) {
         fontWeight: 500
       }
     }, "\uACF5\uC720\uB428")))));
-  }), /*#__PURE__*/React.createElement("button", {
+  }), trips.length === 0 && onRestore && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '28px 20px',
+      background: COLORS.card,
+      borderRadius: 20,
+      border: "1px solid ".concat(COLORS.line),
+      textAlign: 'center',
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 24,
+      color: COLORS.ink,
+      marginBottom: 6
+    }
+  }, "New York"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.mute,
+      marginBottom: 18
+    }
+  }, "10\uC77C \uB274\uC695 \uC77C\uC815\uC744 \uBCF5\uC6D0\uD569\uB2C8\uB2E4"), restoreErr && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 12,
+      color: COLORS.accent,
+      marginBottom: 10
+    }
+  }, restoreErr), /*#__PURE__*/React.createElement("button", {
+    onClick: handleRestore,
+    disabled: restoring,
+    style: {
+      padding: '12px 28px',
+      background: restoring ? COLORS.mute : COLORS.ink,
+      border: 'none',
+      borderRadius: 12,
+      color: COLORS.bg,
+      fontFamily: SANS,
+      fontSize: 13,
+      fontWeight: 500,
+      cursor: restoring ? 'default' : 'pointer',
+      opacity: restoring ? 0.7 : 1
+    }
+  }, restoring ? '복원 중...' : '뉴욕 일정 복원하기')), /*#__PURE__*/React.createElement("button", {
     onClick: onAdd,
     style: {
       marginTop: 4,
@@ -3184,35 +3268,82 @@ function isoToWeekday(iso) {
 }
 
 // ─── Home ───────────────────────────────────────────────────
-function HomeScreen(_ref19) {
-  var trip = _ref19.trip,
-    onOpenDay = _ref19.onOpenDay,
-    onOpenHotel = _ref19.onOpenHotel,
-    city = _ref19.city,
-    onPickCity = _ref19.onPickCity,
-    onEditTrip = _ref19.onEditTrip,
-    onReorderDays = _ref19.onReorderDays,
-    onAddDay = _ref19.onAddDay,
-    onDeleteDay = _ref19.onDeleteDay,
-    onBack = _ref19.onBack,
-    onAddHotel = _ref19.onAddHotel,
-    onAddHotelFromSearch = _ref19.onAddHotelFromSearch,
-    onDeleteHotel = _ref19.onDeleteHotel,
-    onReorderHotels = _ref19.onReorderHotels,
-    onConvertInlineHotel = _ref19.onConvertInlineHotel,
-    onAddItemToFirstDay = _ref19.onAddItemToFirstDay,
-    editing = _ref19.editing,
-    setEditing = _ref19.setEditing,
-    userData = _ref19.userData,
-    onOpenCompanion = _ref19.onOpenCompanion;
-  var _React$useState51 = React.useState(false),
-    _React$useState52 = _slicedToArray(_React$useState51, 2),
-    editingTitle = _React$useState52[0],
-    setEditingTitle = _React$useState52[1];
-  var _React$useState53 = React.useState(null),
-    _React$useState54 = _slicedToArray(_React$useState53, 2),
-    datePicker = _React$useState54[0],
-    setDatePicker = _React$useState54[1]; // 'start' | 'end' | null
+function HomeScreen(_ref20) {
+  var _featured$hero$hue, _featured$hero, _featured$hero2;
+  var trip = _ref20.trip,
+    onOpenDay = _ref20.onOpenDay,
+    onOpenHotel = _ref20.onOpenHotel,
+    city = _ref20.city,
+    onPickCity = _ref20.onPickCity,
+    onEditTrip = _ref20.onEditTrip,
+    onReorderDays = _ref20.onReorderDays,
+    onAddDay = _ref20.onAddDay,
+    onDeleteDay = _ref20.onDeleteDay,
+    onBack = _ref20.onBack,
+    onAddHotel = _ref20.onAddHotel,
+    onAddHotelFromSearch = _ref20.onAddHotelFromSearch,
+    onDeleteHotel = _ref20.onDeleteHotel,
+    onReorderHotels = _ref20.onReorderHotels,
+    onConvertInlineHotel = _ref20.onConvertInlineHotel,
+    onAddItemToFirstDay = _ref20.onAddItemToFirstDay,
+    editing = _ref20.editing,
+    setEditing = _ref20.setEditing,
+    userData = _ref20.userData,
+    onOpenCompanion = _ref20.onOpenCompanion,
+    onLoadSample = _ref20.onLoadSample;
+  var _React$useState55 = React.useState(false),
+    _React$useState56 = _slicedToArray(_React$useState55, 2),
+    editingTitle = _React$useState56[0],
+    setEditingTitle = _React$useState56[1];
+  var _React$useState57 = React.useState(null),
+    _React$useState58 = _slicedToArray(_React$useState57, 2),
+    datePicker = _React$useState58[0],
+    setDatePicker = _React$useState58[1]; // 'start' | 'end' | null
+  var _React$useState59 = React.useState(false),
+    _React$useState60 = _slicedToArray(_React$useState59, 2),
+    sampleLoading = _React$useState60[0],
+    setSampleLoading = _React$useState60[1];
+  var _React$useState61 = React.useState(''),
+    _React$useState62 = _slicedToArray(_React$useState61, 2),
+    sampleErr = _React$useState62[0],
+    setSampleErr = _React$useState62[1];
+  var handleLoadSample = /*#__PURE__*/function () {
+    var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      var _t5;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.p = _context5.n) {
+          case 0:
+            if (!(!onLoadSample || sampleLoading)) {
+              _context5.n = 1;
+              break;
+            }
+            return _context5.a(2);
+          case 1:
+            setSampleLoading(true);
+            setSampleErr('');
+            _context5.p = 2;
+            _context5.n = 3;
+            return onLoadSample();
+          case 3:
+            _context5.n = 5;
+            break;
+          case 4:
+            _context5.p = 4;
+            _t5 = _context5.v;
+            setSampleErr('저장 실패. 네트워크 확인 후 다시 시도해 주세요.');
+          case 5:
+            _context5.p = 5;
+            setSampleLoading(false);
+            return _context5.f(5);
+          case 6:
+            return _context5.a(2);
+        }
+      }, _callee4, null, [[2, 4, 5, 6]]);
+    }));
+    return function handleLoadSample() {
+      return _ref21.apply(this, arguments);
+    };
+  }();
   var _useDragReorder = useDragReorder(onReorderDays, editing),
     dayDragProps = _useDragReorder.itemProps,
     isDayDragging = _useDragReorder.isTouchDragging;
@@ -3450,8 +3581,8 @@ function HomeScreen(_ref19) {
       boxShadow: '0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)'
     }
   }, /*#__PURE__*/React.createElement(Photo, {
-    hue: featured.hero.hue,
-    label: featured.hero.label,
+    hue: (_featured$hero$hue = (_featured$hero = featured.hero) === null || _featured$hero === void 0 ? void 0 : _featured$hero.hue) !== null && _featured$hero$hue !== void 0 ? _featured$hero$hue : 25,
+    label: (_featured$hero2 = featured.hero) === null || _featured$hero2 === void 0 ? void 0 : _featured$hero2.label,
     height: 170
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3529,7 +3660,8 @@ function HomeScreen(_ref19) {
       letterSpacing: '0.1em'
     }
   }, trip.days.length, " DAYS \xB7 ", trip.days.reduce(function (s, d) {
-    return s + d.items.length;
+    var _d$items;
+    return s + (((_d$items = d.items) === null || _d$items === void 0 ? void 0 : _d$items.length) || 0);
   }, 0), " STOPS")), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '0 16px',
@@ -3538,6 +3670,7 @@ function HomeScreen(_ref19) {
       gap: 8
     }
   }, trip.days.map(function (d, i) {
+    var _d$hero$hue, _d$hero, _d$items$length, _d$items2;
     var dp = dayDragProps(i);
     var isDropTarget = dp['data-drop-target'];
     var isDragSource = dp['data-drag-source'];
@@ -3596,7 +3729,7 @@ function HomeScreen(_ref19) {
         flexShrink: 0
       }
     }, /*#__PURE__*/React.createElement(Photo, {
-      hue: d.hero.hue,
+      hue: (_d$hero$hue = (_d$hero = d.hero) === null || _d$hero === void 0 ? void 0 : _d$hero.hue) !== null && _d$hero$hue !== void 0 ? _d$hero$hue : 25,
       height: 64,
       small: true
     })), /*#__PURE__*/React.createElement("div", {
@@ -3649,7 +3782,7 @@ function HomeScreen(_ref19) {
       size: 11,
       color: COLORS.mute,
       stroke: 1.8
-    }), /*#__PURE__*/React.createElement("span", null, d.items.length, " stops"))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, {
+    }), /*#__PURE__*/React.createElement("span", null, (_d$items$length = (_d$items2 = d.items) === null || _d$items2 === void 0 ? void 0 : _d$items2.length) !== null && _d$items$length !== void 0 ? _d$items$length : 0, " stops"))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, {
       size: 14,
       color: COLORS.mute
     }), !isDayDragging && /*#__PURE__*/React.createElement("button", {
@@ -3679,7 +3812,58 @@ function HomeScreen(_ref19) {
       color: COLORS.mute,
       stroke: 1.8
     }))));
-  }), !editing && /*#__PURE__*/React.createElement("button", {
+  }), function () {
+    var hasItems = trip.days.some(function (d) {
+      var _d$items3;
+      return ((_d$items3 = d.items) === null || _d$items3 === void 0 ? void 0 : _d$items3.length) > 0;
+    });
+    if ((trip.days.length === 0 || !hasItems) && onLoadSample) return /*#__PURE__*/React.createElement("div", {
+      style: {
+        margin: '8px 0 4px',
+        padding: '24px 20px',
+        background: COLORS.card,
+        borderRadius: 16,
+        textAlign: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SERIF,
+        fontSize: 20,
+        color: COLORS.ink,
+        marginBottom: 6
+      }
+    }, "New York"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 13,
+        color: COLORS.mute,
+        marginBottom: 12
+      }
+    }, "\uC77C\uC815 \uB370\uC774\uD130\uB97C \uBD88\uB7EC\uC635\uB2C8\uB2E4"), sampleErr && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 12,
+        color: COLORS.accent,
+        marginBottom: 10
+      }
+    }, sampleErr), /*#__PURE__*/React.createElement("button", {
+      onClick: handleLoadSample,
+      disabled: sampleLoading,
+      style: {
+        padding: '11px 24px',
+        background: sampleLoading ? COLORS.mute : COLORS.ink,
+        border: 'none',
+        borderRadius: 12,
+        color: COLORS.bg,
+        fontFamily: SANS,
+        fontSize: 13,
+        fontWeight: 500,
+        cursor: sampleLoading ? 'default' : 'pointer',
+        opacity: sampleLoading ? 0.7 : 1
+      }
+    }, sampleLoading ? '불러오는 중...' : '뉴욕 일정 불러오기'));
+    return null;
+  }(), !editing && /*#__PURE__*/React.createElement("button", {
     onClick: onAddDay,
     style: {
       padding: '16px 12px',
@@ -4073,46 +4257,57 @@ function HomeScreen(_ref19) {
 }
 
 // ─── Day screen ─────────────────────────────────────────────
-function DayScreen(_ref20) {
-  var trip = _ref20.trip,
-    dayIdx = _ref20.dayIdx,
-    onBack = _ref20.onBack,
-    onOpenStop = _ref20.onOpenStop,
-    onNavDay = _ref20.onNavDay,
-    onEditDay = _ref20.onEditDay,
-    onAddItem = _ref20.onAddItem,
-    onDeleteItem = _ref20.onDeleteItem,
-    onReorderItems = _ref20.onReorderItems,
-    editing = _ref20.editing,
-    setEditing = _ref20.setEditing;
-  var day = trip.days[dayIdx];
+function DayScreen(_ref22) {
+  var _day$hero$hue, _day$hero, _day$hero2, _day$items$length, _day$items;
+  var trip = _ref22.trip,
+    dayIdx = _ref22.dayIdx,
+    onBack = _ref22.onBack,
+    onOpenStop = _ref22.onOpenStop,
+    onNavDay = _ref22.onNavDay,
+    onEditDay = _ref22.onEditDay,
+    onAddItem = _ref22.onAddItem,
+    onDeleteItem = _ref22.onDeleteItem,
+    onReorderItems = _ref22.onReorderItems,
+    editing = _ref22.editing,
+    setEditing = _ref22.setEditing;
+  var day = trip.days[dayIdx] || {
+    n: dayIdx + 1,
+    title: '',
+    date: '',
+    weekday: '',
+    hero: {
+      hue: 25,
+      label: ''
+    },
+    items: []
+  };
   var tripYear = extractTripYear(trip);
-  var _React$useState55 = React.useState(function () {
+  var _React$useState63 = React.useState(function () {
       try {
         return new Set(JSON.parse(localStorage.getItem('done_' + trip.title + '_' + dayIdx) || '[]'));
       } catch (e) {
         return new Set();
       }
     }),
-    _React$useState56 = _slicedToArray(_React$useState55, 2),
-    done = _React$useState56[0],
-    setDone = _React$useState56[1];
+    _React$useState64 = _slicedToArray(_React$useState63, 2),
+    done = _React$useState64[0],
+    setDone = _React$useState64[1];
   var toggle = function toggle(i) {
     return setDone(function (s) {
       var n = new Set(s);
-      n.has(i) ? n.delete(i) : n.add(i);
+      n.has(i) ? n["delete"](i) : n.add(i);
       localStorage.setItem('done_' + trip.title + '_' + dayIdx, JSON.stringify(_toConsumableArray(n)));
       return n;
     });
   };
-  var _React$useState57 = React.useState(false),
-    _React$useState58 = _slicedToArray(_React$useState57, 2),
-    editingTitle = _React$useState58[0],
-    setEditingTitle = _React$useState58[1];
-  var _React$useState59 = React.useState(false),
-    _React$useState60 = _slicedToArray(_React$useState59, 2),
-    datePickerOpen = _React$useState60[0],
-    setDatePickerOpen = _React$useState60[1];
+  var _React$useState65 = React.useState(false),
+    _React$useState66 = _slicedToArray(_React$useState65, 2),
+    editingTitle = _React$useState66[0],
+    setEditingTitle = _React$useState66[1];
+  var _React$useState67 = React.useState(false),
+    _React$useState68 = _slicedToArray(_React$useState67, 2),
+    datePickerOpen = _React$useState68[0],
+    setDatePickerOpen = _React$useState68[1];
   var _useDragReorder3 = useDragReorder(onReorderItems, editing),
     itemDragProps = _useDragReorder3.itemProps;
   return /*#__PURE__*/React.createElement("div", {
@@ -4127,8 +4322,8 @@ function DayScreen(_ref20) {
       marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))'
     }
   }, /*#__PURE__*/React.createElement(Photo, {
-    hue: day.hero.hue,
-    label: day.hero.label,
+    hue: (_day$hero$hue = (_day$hero = day.hero) === null || _day$hero === void 0 ? void 0 : _day$hero.hue) !== null && _day$hero$hue !== void 0 ? _day$hero$hue : 25,
+    label: (_day$hero2 = day.hero) === null || _day$hero2 === void 0 ? void 0 : _day$hero2.label,
     height: "calc(280px + env(safe-area-inset-top, 0px))"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4301,7 +4496,7 @@ function DayScreen(_ref20) {
       color: COLORS.mute,
       letterSpacing: '0.1em'
     }
-  }, done.size, "/", day.items.length, " DONE")), /*#__PURE__*/React.createElement("div", {
+  }, done.size, "/", (_day$items$length = (_day$items = day.items) === null || _day$items === void 0 ? void 0 : _day$items.length) !== null && _day$items$length !== void 0 ? _day$items$length : 0, " DONE")), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative'
     }
@@ -4314,7 +4509,7 @@ function DayScreen(_ref20) {
       width: 1,
       background: COLORS.line
     }
-  }), day.items.map(function (it, i) {
+  }), (day.items || []).map(function (it, i) {
     var meta = CAT_META[it.cat] || {
       icon: 'pin',
       label: it.cat
@@ -4619,17 +4814,17 @@ function DayScreen(_ref20) {
 }
 
 // ─── Hotel Detail page ──────────────────────────────────────
-function HotelDetailScreen(_ref21) {
-  var hotel = _ref21.hotel,
-    onBack = _ref21.onBack,
-    onEdit = _ref21.onEdit,
-    onOpenSearch = _ref21.onOpenSearch,
-    editing = _ref21.editing,
-    setEditing = _ref21.setEditing;
-  var _React$useState61 = React.useState(hotel),
-    _React$useState62 = _slicedToArray(_React$useState61, 2),
-    draft = _React$useState62[0],
-    setDraft = _React$useState62[1];
+function HotelDetailScreen(_ref23) {
+  var hotel = _ref23.hotel,
+    onBack = _ref23.onBack,
+    onEdit = _ref23.onEdit,
+    onOpenSearch = _ref23.onOpenSearch,
+    editing = _ref23.editing,
+    setEditing = _ref23.setEditing;
+  var _React$useState69 = React.useState(hotel),
+    _React$useState70 = _slicedToArray(_React$useState69, 2),
+    draft = _React$useState70[0],
+    setDraft = _React$useState70[1];
   React.useEffect(function () {
     return setDraft(hotel);
   }, [hotel]);
@@ -4661,10 +4856,10 @@ function HotelDetailScreen(_ref21) {
     if (!m) return iso;
     return "".concat(MONTHS[parseInt(m[2], 10) - 1], " ").concat(parseInt(m[3], 10));
   };
-  var _React$useState63 = React.useState(null),
-    _React$useState64 = _slicedToArray(_React$useState63, 2),
-    pickerOpen = _React$useState64[0],
-    setPickerOpen = _React$useState64[1]; // {key, type}
+  var _React$useState71 = React.useState(null),
+    _React$useState72 = _slicedToArray(_React$useState71, 2),
+    pickerOpen = _React$useState72[0],
+    setPickerOpen = _React$useState72[1]; // {key, type}
 
   var field = function field(key, label, placeholder) {
     var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'text';
@@ -5139,24 +5334,24 @@ function HotelDetailScreen(_ref21) {
 }
 
 // ─── Stop sheet (unchanged except pulls editing from open) ─
-function StopSheet(_ref22) {
-  var open = _ref22.open,
-    dayHue = _ref22.dayHue,
-    onClose = _ref22.onClose,
-    onSave = _ref22.onSave;
+function StopSheet(_ref24) {
+  var open = _ref24.open,
+    dayHue = _ref24.dayHue,
+    onClose = _ref24.onClose,
+    onSave = _ref24.onSave;
   if (!open) return null;
-  var _React$useState65 = React.useState(!!open.editing),
-    _React$useState66 = _slicedToArray(_React$useState65, 2),
-    editing = _React$useState66[0],
-    setEditing = _React$useState66[1];
-  var _React$useState67 = React.useState(open.stop),
-    _React$useState68 = _slicedToArray(_React$useState67, 2),
-    draft = _React$useState68[0],
-    setDraft = _React$useState68[1];
-  var _React$useState69 = React.useState(0),
-    _React$useState70 = _slicedToArray(_React$useState69, 2),
-    sheetY = _React$useState70[0],
-    setSheetY = _React$useState70[1];
+  var _React$useState73 = React.useState(!!open.editing),
+    _React$useState74 = _slicedToArray(_React$useState73, 2),
+    editing = _React$useState74[0],
+    setEditing = _React$useState74[1];
+  var _React$useState75 = React.useState(open.stop),
+    _React$useState76 = _slicedToArray(_React$useState75, 2),
+    draft = _React$useState76[0],
+    setDraft = _React$useState76[1];
+  var _React$useState77 = React.useState(0),
+    _React$useState78 = _slicedToArray(_React$useState77, 2),
+    sheetY = _React$useState78[0],
+    setSheetY = _React$useState78[1];
   var sheetTouchStart = React.useRef(null);
   var sheetScrollTop = React.useRef(0);
   var sheetRef = React.useRef(null);
@@ -5484,13 +5679,13 @@ function StopSheet(_ref22) {
     stroke: 1.8
   })))))));
 }
-function EditStopForm(_ref23) {
-  var draft = _ref23.draft,
-    setDraft = _ref23.setDraft;
-  var _React$useState71 = React.useState(false),
-    _React$useState72 = _slicedToArray(_React$useState71, 2),
-    showHotelSearch = _React$useState72[0],
-    setShowHotelSearch = _React$useState72[1];
+function EditStopForm(_ref25) {
+  var draft = _ref25.draft,
+    setDraft = _ref25.setDraft;
+  var _React$useState79 = React.useState(false),
+    _React$useState80 = _slicedToArray(_React$useState79, 2),
+    showHotelSearch = _React$useState80[0],
+    setShowHotelSearch = _React$useState80[1];
   var field = function field(key, label) {
     var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'text';
     return /*#__PURE__*/React.createElement("label", {
@@ -5541,10 +5736,10 @@ function EditStopForm(_ref23) {
         color: COLORS.ink,
         boxSizing: 'border-box'
       }
-    }, Object.entries(CAT_META).map(function (_ref24) {
-      var _ref25 = _slicedToArray(_ref24, 2),
-        k = _ref25[0],
-        v = _ref25[1];
+    }, Object.entries(CAT_META).map(function (_ref26) {
+      var _ref27 = _slicedToArray(_ref26, 2),
+        k = _ref27[0],
+        v = _ref27[1];
       return /*#__PURE__*/React.createElement("option", {
         key: k,
         value: k
@@ -5633,12 +5828,12 @@ function EditStopForm(_ref23) {
 }
 
 // ─── Map ────────────────────────────────────────────────────
-function MapScreen(_ref26) {
-  var trip = _ref26.trip;
-  var _React$useState73 = React.useState(0),
-    _React$useState74 = _slicedToArray(_React$useState73, 2),
-    selectedDay = _React$useState74[0],
-    setSelectedDay = _React$useState74[1];
+function MapScreen(_ref28) {
+  var trip = _ref28.trip;
+  var _React$useState81 = React.useState(0),
+    _React$useState82 = _slicedToArray(_React$useState81, 2),
+    selectedDay = _React$useState82[0],
+    setSelectedDay = _React$useState82[1];
   var day = trip.days[selectedDay];
   var places = day.items.filter(function (it) {
     return it.loc;
@@ -5803,11 +5998,11 @@ function MapScreen(_ref26) {
 }
 
 // ─── Food ───────────────────────────────────────────────────
-function FoodScreen(_ref27) {
-  var trip = _ref27.trip,
-    onEditFood = _ref27.onEditFood,
-    editing = _ref27.editing,
-    setEditing = _ref27.setEditing;
+function FoodScreen(_ref29) {
+  var trip = _ref29.trip,
+    onEditFood = _ref29.onEditFood,
+    editing = _ref29.editing,
+    setEditing = _ref29.setEditing;
   var grouped = {};
   (trip.food || []).forEach(function (f, idx) {
     (grouped[f.cat] = grouped[f.cat] || []).push(_objectSpread(_objectSpread({}, f), {}, {
@@ -5871,10 +6066,10 @@ function FoodScreen(_ref27) {
       flexDirection: 'column',
       gap: 18
     }
-  }, Object.entries(grouped).map(function (_ref28) {
-    var _ref29 = _slicedToArray(_ref28, 2),
-      cat = _ref29[0],
-      items = _ref29[1];
+  }, Object.entries(grouped).map(function (_ref30) {
+    var _ref31 = _slicedToArray(_ref30, 2),
+      cat = _ref31[0],
+      items = _ref31[1];
     return /*#__PURE__*/React.createElement("div", {
       key: cat
     }, /*#__PURE__*/React.createElement("div", {
@@ -6036,13 +6231,13 @@ function FoodScreen(_ref27) {
 }
 
 // ─── Prep (editable lists) ─────────────────────────────────
-function PrepScreen(_ref30) {
+function PrepScreen(_ref32) {
   var _trip$days$, _trip$days;
-  var trip = _ref30.trip,
-    prepProp = _ref30.prep,
-    onEditPrep = _ref30.onEditPrep,
-    editing = _ref30.editing,
-    setEditing = _ref30.setEditing;
+  var trip = _ref32.trip,
+    prepProp = _ref32.prep,
+    onEditPrep = _ref32.onEditPrep,
+    editing = _ref32.editing,
+    setEditing = _ref32.setEditing;
   var totalStops = trip.days.reduce(function (s, d) {
     return s + d.items.length;
   }, 0);
@@ -6083,9 +6278,9 @@ function PrepScreen(_ref30) {
       ddayColor = COLORS.mute;
     }
   }
-  var Section = function Section(_ref31) {
-    var sectionKey = _ref31.sectionKey,
-      title = _ref31.title;
+  var Section = function Section(_ref33) {
+    var sectionKey = _ref33.sectionKey,
+      title = _ref33.title;
     var items = prep[sectionKey] || [];
     var _useDragReorder4 = useDragReorder(function (from, to) {
         var list = _toConsumableArray(items);
@@ -6365,12 +6560,12 @@ function PrepScreen(_ref30) {
 }
 
 // ─── Tab bar (no edit toggle) ──────────────────────────────
-function TabBar(_ref32) {
-  var tab = _ref32.tab,
-    setTab = _ref32.setTab,
-    visible = _ref32.visible,
-    editing = _ref32.editing,
-    onToggleEdit = _ref32.onToggleEdit;
+function TabBar(_ref34) {
+  var tab = _ref34.tab,
+    setTab = _ref34.setTab,
+    visible = _ref34.visible,
+    editing = _ref34.editing,
+    onToggleEdit = _ref34.onToggleEdit;
   var tabs = [{
     id: 'home',
     icon: 'sight',
@@ -6486,20 +6681,20 @@ function saveNav(state) {
 
 // ─── Splash Screen (로그인 후 로딩 중 표시) ──────────────────
 var SPLASH_PLACES = ['✈ New York', '🗼 Paris', '🗾 Tokyo', '🌉 San Francisco', '🏝 Bali', '🎡 London'];
-function SplashScreen(_ref33) {
-  var visible = _ref33.visible;
-  var _React$useState75 = React.useState(0),
-    _React$useState76 = _slicedToArray(_React$useState75, 2),
-    idx = _React$useState76[0],
-    setIdx = _React$useState76[1];
-  var _React$useState77 = React.useState(0),
-    _React$useState78 = _slicedToArray(_React$useState77, 2),
-    animKey = _React$useState78[0],
-    setAnimKey = _React$useState78[1];
-  var _React$useState79 = React.useState(false),
-    _React$useState80 = _slicedToArray(_React$useState79, 2),
-    hiding = _React$useState80[0],
-    setHiding = _React$useState80[1];
+function SplashScreen(_ref35) {
+  var visible = _ref35.visible;
+  var _React$useState83 = React.useState(0),
+    _React$useState84 = _slicedToArray(_React$useState83, 2),
+    idx = _React$useState84[0],
+    setIdx = _React$useState84[1];
+  var _React$useState85 = React.useState(0),
+    _React$useState86 = _slicedToArray(_React$useState85, 2),
+    animKey = _React$useState86[0],
+    setAnimKey = _React$useState86[1];
+  var _React$useState87 = React.useState(false),
+    _React$useState88 = _slicedToArray(_React$useState87, 2),
+    hiding = _React$useState88[0],
+    setHiding = _React$useState88[1];
   React.useEffect(function () {
     var t = setInterval(function () {
       setIdx(function (i) {
@@ -6640,69 +6835,69 @@ function TakeoffIcon() {
 }
 
 // ─── Login Screen ────────────────────────────────────────────
-function LoginScreen(_ref34) {
-  var errorMsg = _ref34.errorMsg,
-    onLoginStart = _ref34.onLoginStart;
-  var _React$useState81 = React.useState(false),
-    _React$useState82 = _slicedToArray(_React$useState81, 2),
-    loading = _React$useState82[0],
-    setLoading = _React$useState82[1];
-  var _React$useState83 = React.useState(''),
-    _React$useState84 = _slicedToArray(_React$useState83, 2),
-    errLocal = _React$useState84[0],
-    setErrLocal = _React$useState84[1];
+function LoginScreen(_ref36) {
+  var errorMsg = _ref36.errorMsg,
+    onLoginStart = _ref36.onLoginStart;
+  var _React$useState89 = React.useState(false),
+    _React$useState90 = _slicedToArray(_React$useState89, 2),
+    loading = _React$useState90[0],
+    setLoading = _React$useState90[1];
+  var _React$useState91 = React.useState(''),
+    _React$useState92 = _slicedToArray(_React$useState91, 2),
+    errLocal = _React$useState92[0],
+    setErrLocal = _React$useState92[1];
   var handleLogin = /*#__PURE__*/function () {
-    var _ref35 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-      var _t4, _t5;
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.p = _context4.n) {
+    var _ref37 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+      var _t6, _t7;
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.p = _context6.n) {
           case 0:
             setLoading(true);
             setErrLocal('');
             if (onLoginStart) onLoginStart();
-            _context4.p = 1;
-            _context4.n = 2;
+            _context6.p = 1;
+            _context6.n = 2;
             return fbSignIn();
           case 2:
-            _context4.n = 9;
+            _context6.n = 9;
             break;
           case 3:
-            _context4.p = 3;
-            _t4 = _context4.v;
-            console.error('Login error:', _t4);
+            _context6.p = 3;
+            _t6 = _context6.v;
+            console.error('Login error:', _t6);
             setLoading(false);
-            if (!(_t4.code === 'auth/popup-blocked')) {
-              _context4.n = 8;
+            if (!(_t6.code === 'auth/popup-blocked')) {
+              _context6.n = 8;
               break;
             }
-            _context4.p = 4;
-            _context4.n = 5;
+            _context6.p = 4;
+            _context6.n = 5;
             return fbSignInRedirect();
           case 5:
-            _context4.n = 7;
+            _context6.n = 7;
             break;
           case 6:
-            _context4.p = 6;
-            _t5 = _context4.v;
-            setErrLocal('로그인 실패: ' + (_t5.message || _t5.code));
+            _context6.p = 6;
+            _t7 = _context6.v;
+            setErrLocal('로그인 실패: ' + (_t7.message || _t7.code));
           case 7:
-            _context4.n = 9;
+            _context6.n = 9;
             break;
           case 8:
-            if (_t4.code === 'auth/unauthorized-domain') {
+            if (_t6.code === 'auth/unauthorized-domain') {
               setErrLocal('이 도메인이 Firebase에 등록되지 않았습니다. Firebase 콘솔 → Authentication → Settings → Authorized domains에 현재 주소를 추가해주세요.');
-            } else if (_t4.code === 'auth/popup-closed-by-user') {
+            } else if (_t6.code === 'auth/popup-closed-by-user') {
               setErrLocal('');
             } else {
-              setErrLocal(_t4.message || '로그인 중 오류가 발생했습니다.');
+              setErrLocal(_t6.message || '로그인 중 오류가 발생했습니다.');
             }
           case 9:
-            return _context4.a(2);
+            return _context6.a(2);
         }
-      }, _callee3, null, [[4, 6], [1, 3]]);
+      }, _callee5, null, [[4, 6], [1, 3]]);
     }));
     return function handleLogin() {
-      return _ref35.apply(this, arguments);
+      return _ref37.apply(this, arguments);
     };
   }();
   var displayErr = errorMsg || errLocal;
@@ -6807,37 +7002,37 @@ function LoginScreen(_ref34) {
 }
 
 // ─── Companion Sheet ──────────────────────────────────────────
-function CompanionSheet(_ref36) {
-  var open = _ref36.open,
-    onClose = _ref36.onClose,
-    authUser = _ref36.authUser,
-    userData = _ref36.userData,
-    onUserDataUpdate = _ref36.onUserDataUpdate,
-    trips = _ref36.trips;
-  var _React$useState85 = React.useState({}),
-    _React$useState86 = _slicedToArray(_React$useState85, 2),
-    tripCompanions = _React$useState86[0],
-    setTripCompanions = _React$useState86[1];
-  var _React$useState87 = React.useState(null),
-    _React$useState88 = _slicedToArray(_React$useState87, 2),
-    expandedInvite = _React$useState88[0],
-    setExpandedInvite = _React$useState88[1];
-  var _React$useState89 = React.useState(''),
-    _React$useState90 = _slicedToArray(_React$useState89, 2),
-    inviteEmail = _React$useState90[0],
-    setInviteEmail = _React$useState90[1];
-  var _React$useState91 = React.useState(''),
-    _React$useState92 = _slicedToArray(_React$useState91, 2),
-    inviteMsg = _React$useState92[0],
-    setInviteMsg = _React$useState92[1];
-  var _React$useState93 = React.useState(false),
+function CompanionSheet(_ref38) {
+  var open = _ref38.open,
+    onClose = _ref38.onClose,
+    authUser = _ref38.authUser,
+    userData = _ref38.userData,
+    onUserDataUpdate = _ref38.onUserDataUpdate,
+    trips = _ref38.trips;
+  var _React$useState93 = React.useState({}),
     _React$useState94 = _slicedToArray(_React$useState93, 2),
-    inviting = _React$useState94[0],
-    setInviting = _React$useState94[1];
-  var _React$useState95 = React.useState([]),
+    tripCompanions = _React$useState94[0],
+    setTripCompanions = _React$useState94[1];
+  var _React$useState95 = React.useState(null),
     _React$useState96 = _slicedToArray(_React$useState95, 2),
-    pendingInvites = _React$useState96[0],
-    setPendingInvites = _React$useState96[1];
+    expandedInvite = _React$useState96[0],
+    setExpandedInvite = _React$useState96[1];
+  var _React$useState97 = React.useState(''),
+    _React$useState98 = _slicedToArray(_React$useState97, 2),
+    inviteEmail = _React$useState98[0],
+    setInviteEmail = _React$useState98[1];
+  var _React$useState99 = React.useState(''),
+    _React$useState100 = _slicedToArray(_React$useState99, 2),
+    inviteMsg = _React$useState100[0],
+    setInviteMsg = _React$useState100[1];
+  var _React$useState101 = React.useState(false),
+    _React$useState102 = _slicedToArray(_React$useState101, 2),
+    inviting = _React$useState102[0],
+    setInviting = _React$useState102[1];
+  var _React$useState103 = React.useState([]),
+    _React$useState104 = _slicedToArray(_React$useState103, 2),
+    pendingInvites = _React$useState104[0],
+    setPendingInvites = _React$useState104[1];
   var tripIds = (trips || []).map(function (t) {
     return t.id;
   }).join(',');
@@ -6862,47 +7057,47 @@ function CompanionSheet(_ref36) {
     }
   }, [open]);
   var handleInvite = /*#__PURE__*/function () {
-    var _ref37 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(tripId, tripTitle) {
+    var _ref39 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(tripId, tripTitle) {
       var res;
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.n) {
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.n) {
           case 0:
             if (inviteEmail.trim()) {
-              _context5.n = 1;
+              _context7.n = 1;
               break;
             }
-            return _context5.a(2);
+            return _context7.a(2);
           case 1:
             setInviting(true);
             setInviteMsg('');
-            _context5.n = 2;
+            _context7.n = 2;
             return fbSendTripInvite(userData, inviteEmail, tripId, tripTitle);
           case 2:
-            res = _context5.v;
+            res = _context7.v;
             setInviting(false);
             if (res.error) setInviteMsg(res.error);else {
               setInviteMsg("".concat(res.toName, "\uB2D8\uAED8 \uCD08\uB300\uB97C \uBCF4\uB0C8\uC2B5\uB2C8\uB2E4!"));
               setInviteEmail('');
             }
           case 3:
-            return _context5.a(2);
+            return _context7.a(2);
         }
-      }, _callee4);
+      }, _callee6);
     }));
     return function handleInvite(_x2, _x3) {
-      return _ref37.apply(this, arguments);
+      return _ref39.apply(this, arguments);
     };
   }();
   var handleAccept = /*#__PURE__*/function () {
-    var _ref38 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(inv) {
+    var _ref40 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(inv) {
       var tripId;
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.n) {
           case 0:
-            _context6.n = 1;
+            _context8.n = 1;
             return fbAcceptTripInvite(inv, authUser.uid);
           case 1:
-            tripId = _context6.v;
+            tripId = _context8.v;
             onUserDataUpdate(_objectSpread(_objectSpread({}, userData), {}, {
               tripIds: [].concat(_toConsumableArray(userData.tripIds || []), [tripId])
             }));
@@ -6912,12 +7107,12 @@ function CompanionSheet(_ref36) {
               });
             });
           case 2:
-            return _context6.a(2);
+            return _context8.a(2);
         }
-      }, _callee5);
+      }, _callee7);
     }));
     return function handleAccept(_x4) {
-      return _ref38.apply(this, arguments);
+      return _ref40.apply(this, arguments);
     };
   }();
   if (!open) return null;
@@ -7336,111 +7531,131 @@ function _readCache() {
     return null;
   }
 }
+
+// Firestore 문서에 누락된 필드를 채워주는 정규화 함수
+function normalizeTrip(data, id) {
+  if (!data) return null;
+  return _objectSpread(_objectSpread({
+    title: '',
+    dates: '',
+    hotel: '',
+    days: [],
+    hotels: [],
+    food: [],
+    members: []
+  }, data), {}, {
+    id: id || data.id,
+    days: Array.isArray(data.days) ? data.days : [],
+    hotels: Array.isArray(data.hotels) ? data.hotels : [],
+    food: Array.isArray(data.food) ? data.food : [],
+    members: Array.isArray(data.members) ? data.members : []
+  });
+}
 function App() {
-  var _nav$dayIdx, _nav$hotelIdx;
+  var _nav$dayIdx, _nav$hotelIdx, _trip$days$dayIdx$her, _trip$days$dayIdx;
   var _nav = loadNav();
   var _cache = _readCache(); // 캐시된 상태 (로그인된 경우)
 
   // ── Firebase auth + data state ─────────────────────────────
-  var _React$useState97 = React.useState(_cache !== null && _cache !== void 0 && _cache.userData ? 'in' : 'loading'),
-    _React$useState98 = _slicedToArray(_React$useState97, 2),
-    authState = _React$useState98[0],
-    setAuthState = _React$useState98[1];
-  var _React$useState99 = React.useState(null),
-    _React$useState100 = _slicedToArray(_React$useState99, 2),
-    authUser = _React$useState100[0],
-    setAuthUser = _React$useState100[1];
-  var _React$useState101 = React.useState((_cache === null || _cache === void 0 ? void 0 : _cache.userData) || null),
-    _React$useState102 = _slicedToArray(_React$useState101, 2),
-    userData = _React$useState102[0],
-    setUserData = _React$useState102[1];
-  var _React$useState103 = React.useState((_cache === null || _cache === void 0 ? void 0 : _cache.trip) || null),
-    _React$useState104 = _slicedToArray(_React$useState103, 2),
-    trip = _React$useState104[0],
-    setTrip = _React$useState104[1];
-  var _React$useState105 = React.useState((_cache === null || _cache === void 0 ? void 0 : _cache.prep) || {
+  var _React$useState105 = React.useState(_cache !== null && _cache !== void 0 && _cache.userData ? 'in' : 'loading'),
+    _React$useState106 = _slicedToArray(_React$useState105, 2),
+    authState = _React$useState106[0],
+    setAuthState = _React$useState106[1];
+  var _React$useState107 = React.useState(null),
+    _React$useState108 = _slicedToArray(_React$useState107, 2),
+    authUser = _React$useState108[0],
+    setAuthUser = _React$useState108[1];
+  var _React$useState109 = React.useState((_cache === null || _cache === void 0 ? void 0 : _cache.userData) || null),
+    _React$useState110 = _slicedToArray(_React$useState109, 2),
+    userData = _React$useState110[0],
+    setUserData = _React$useState110[1];
+  var _React$useState111 = React.useState(normalizeTrip(_cache === null || _cache === void 0 ? void 0 : _cache.trip)),
+    _React$useState112 = _slicedToArray(_React$useState111, 2),
+    trip = _React$useState112[0],
+    setTrip = _React$useState112[1];
+  var _React$useState113 = React.useState((_cache === null || _cache === void 0 ? void 0 : _cache.prep) || {
       checklist: [],
       docs: [],
       pack: []
     }),
-    _React$useState106 = _slicedToArray(_React$useState105, 2),
-    prep = _React$useState106[0],
-    setPrep = _React$useState106[1];
-  var _React$useState107 = React.useState(null),
-    _React$useState108 = _slicedToArray(_React$useState107, 2),
-    activeTripId = _React$useState108[0],
-    setActiveTripId = _React$useState108[1];
-  var _React$useState109 = React.useState([]),
-    _React$useState110 = _slicedToArray(_React$useState109, 2),
-    userTrips = _React$useState110[0],
-    setUserTrips = _React$useState110[1];
-  var _React$useState111 = React.useState(false),
-    _React$useState112 = _slicedToArray(_React$useState111, 2),
-    tripsLoading = _React$useState112[0],
-    setTripsLoading = _React$useState112[1];
-  var _React$useState113 = React.useState(false),
     _React$useState114 = _slicedToArray(_React$useState113, 2),
-    companionOpen = _React$useState114[0],
-    setCompanionOpen = _React$useState114[1];
+    prep = _React$useState114[0],
+    setPrep = _React$useState114[1];
   var _React$useState115 = React.useState(null),
     _React$useState116 = _slicedToArray(_React$useState115, 2),
-    shareTripTarget = _React$useState116[0],
-    setShareTripTarget = _React$useState116[1];
-  var _React$useState117 = React.useState(''),
+    activeTripId = _React$useState116[0],
+    setActiveTripId = _React$useState116[1];
+  var _React$useState117 = React.useState([]),
     _React$useState118 = _slicedToArray(_React$useState117, 2),
-    loginError = _React$useState118[0],
-    setLoginError = _React$useState118[1];
+    userTrips = _React$useState118[0],
+    setUserTrips = _React$useState118[1];
   var _React$useState119 = React.useState(false),
     _React$useState120 = _slicedToArray(_React$useState119, 2),
-    loginPending = _React$useState120[0],
-    setLoginPending = _React$useState120[1]; // 로그인 버튼 누른 후 로딩 중
+    tripsLoading = _React$useState120[0],
+    setTripsLoading = _React$useState120[1];
+  var _React$useState121 = React.useState(false),
+    _React$useState122 = _slicedToArray(_React$useState121, 2),
+    companionOpen = _React$useState122[0],
+    setCompanionOpen = _React$useState122[1];
+  var _React$useState123 = React.useState(null),
+    _React$useState124 = _slicedToArray(_React$useState123, 2),
+    shareTripTarget = _React$useState124[0],
+    setShareTripTarget = _React$useState124[1];
+  var _React$useState125 = React.useState(''),
+    _React$useState126 = _slicedToArray(_React$useState125, 2),
+    loginError = _React$useState126[0],
+    setLoginError = _React$useState126[1];
+  var _React$useState127 = React.useState(false),
+    _React$useState128 = _slicedToArray(_React$useState127, 2),
+    loginPending = _React$useState128[0],
+    setLoginPending = _React$useState128[1]; // 로그인 버튼 누른 후 로딩 중
   var tripRef = React.useRef(null); // for loop-prevention
 
   // ── UI nav state ───────────────────────────────────────────
-  var _React$useState121 = React.useState(_nav.tab || 'home'),
-    _React$useState122 = _slicedToArray(_React$useState121, 2),
-    tab = _React$useState122[0],
-    _setTab = _React$useState122[1];
-  var _React$useState123 = React.useState((_nav$dayIdx = _nav.dayIdx) !== null && _nav$dayIdx !== void 0 ? _nav$dayIdx : null),
-    _React$useState124 = _slicedToArray(_React$useState123, 2),
-    dayIdx = _React$useState124[0],
-    setDayIdx = _React$useState124[1];
-  var _React$useState125 = React.useState((_nav$hotelIdx = _nav.hotelIdx) !== null && _nav$hotelIdx !== void 0 ? _nav$hotelIdx : null),
-    _React$useState126 = _slicedToArray(_React$useState125, 2),
-    hotelIdx = _React$useState126[0],
-    setHotelIdx = _React$useState126[1];
-  var _React$useState127 = React.useState(null),
-    _React$useState128 = _slicedToArray(_React$useState127, 2),
-    openStop = _React$useState128[0],
-    setOpenStop = _React$useState128[1];
-  var _React$useState129 = React.useState(CITIES[0]),
+  var _React$useState129 = React.useState(_nav.tab || 'home'),
     _React$useState130 = _slicedToArray(_React$useState129, 2),
-    city = _React$useState130[0],
-    setCity = _React$useState130[1];
-  var _React$useState131 = React.useState(false),
+    tab = _React$useState130[0],
+    _setTab = _React$useState130[1];
+  var _React$useState131 = React.useState((_nav$dayIdx = _nav.dayIdx) !== null && _nav$dayIdx !== void 0 ? _nav$dayIdx : null),
     _React$useState132 = _slicedToArray(_React$useState131, 2),
-    cityPicker = _React$useState132[0],
-    setCityPicker = _React$useState132[1];
-  var _React$useState133 = React.useState(null),
+    dayIdx = _React$useState132[0],
+    setDayIdx = _React$useState132[1];
+  var _React$useState133 = React.useState((_nav$hotelIdx = _nav.hotelIdx) !== null && _nav$hotelIdx !== void 0 ? _nav$hotelIdx : null),
     _React$useState134 = _slicedToArray(_React$useState133, 2),
-    hotelSheet = _React$useState134[0],
-    setHotelSheet = _React$useState134[1];
-  var _React$useState135 = React.useState(0),
+    hotelIdx = _React$useState134[0],
+    setHotelIdx = _React$useState134[1];
+  var _React$useState135 = React.useState(null),
     _React$useState136 = _slicedToArray(_React$useState135, 2),
-    scrollKey = _React$useState136[0],
-    setScrollKey = _React$useState136[1];
-  var _React$useState137 = React.useState(false),
+    openStop = _React$useState136[0],
+    setOpenStop = _React$useState136[1];
+  var _React$useState137 = React.useState(CITIES[0]),
     _React$useState138 = _slicedToArray(_React$useState137, 2),
-    editing = _React$useState138[0],
-    setEditing = _React$useState138[1];
-  var _React$useState139 = React.useState(true),
+    city = _React$useState138[0],
+    setCity = _React$useState138[1];
+  var _React$useState139 = React.useState(false),
     _React$useState140 = _slicedToArray(_React$useState139, 2),
-    tabBarVisible = _React$useState140[0],
-    setTabBarVisible = _React$useState140[1];
-  var _React$useState141 = React.useState(false),
+    cityPicker = _React$useState140[0],
+    setCityPicker = _React$useState140[1];
+  var _React$useState141 = React.useState(null),
     _React$useState142 = _slicedToArray(_React$useState141, 2),
-    saveConfirm = _React$useState142[0],
-    setSaveConfirm = _React$useState142[1]; // 저장 확인 다이얼로그
+    hotelSheet = _React$useState142[0],
+    setHotelSheet = _React$useState142[1];
+  var _React$useState143 = React.useState(0),
+    _React$useState144 = _slicedToArray(_React$useState143, 2),
+    scrollKey = _React$useState144[0],
+    setScrollKey = _React$useState144[1];
+  var _React$useState145 = React.useState(false),
+    _React$useState146 = _slicedToArray(_React$useState145, 2),
+    editing = _React$useState146[0],
+    setEditing = _React$useState146[1];
+  var _React$useState147 = React.useState(true),
+    _React$useState148 = _slicedToArray(_React$useState147, 2),
+    tabBarVisible = _React$useState148[0],
+    setTabBarVisible = _React$useState148[1];
+  var _React$useState149 = React.useState(false),
+    _React$useState150 = _slicedToArray(_React$useState149, 2),
+    saveConfirm = _React$useState150[0],
+    setSaveConfirm = _React$useState150[1]; // 저장 확인 다이얼로그
   var lastScrollTop = React.useRef(0);
   var savedHomeScrollY = React.useRef(0);
   var navGoingBack = React.useRef(false);
@@ -7489,10 +7704,10 @@ function App() {
   // ── Firebase auth listener ─────────────────────────────────
   React.useEffect(function () {
     return fbOnAuth(/*#__PURE__*/function () {
-      var _ref39 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(fbUser) {
+      var _ref41 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(fbUser) {
         var fallback;
-        return _regenerator().w(function (_context7) {
-          while (1) switch (_context7.n) {
+        return _regenerator().w(function (_context9) {
+          while (1) switch (_context9.n) {
             case 0:
               if (fbUser) {
                 setAuthUser(fbUser);
@@ -7508,7 +7723,7 @@ function App() {
                 localStorage.setItem('tlj_authed', '1');
                 setAuthState('in');
                 // Firestore는 백그라운드에서 실제 데이터로 업데이트
-                fbGetOrCreateUser(fbUser).then(setUserData).catch(function () {});
+                fbGetOrCreateUser(fbUser).then(setUserData)["catch"](function () {});
               } else {
                 setAuthUser(null);
                 setUserData(null);
@@ -7527,12 +7742,12 @@ function App() {
                 setAuthState('out');
               }
             case 1:
-              return _context7.a(2);
+              return _context9.a(2);
           }
-        }, _callee6);
+        }, _callee8);
       }));
       return function (_x5) {
-        return _ref39.apply(this, arguments);
+        return _ref41.apply(this, arguments);
       };
     }());
   }, []);
@@ -7543,9 +7758,11 @@ function App() {
     var tripIds = userData.tripIds || [userData.groupId];
     setTripsLoading(true);
     fbLoadTrips(tripIds).then(function (trips) {
-      setUserTrips(trips);
+      setUserTrips(trips.map(function (t) {
+        return normalizeTrip(t, t.id);
+      }));
       setTripsLoading(false);
-    }).catch(function () {
+    })["catch"](function () {
       return setTripsLoading(false);
     });
   }, [userData === null || userData === void 0 ? void 0 : userData.uid, JSON.stringify(userData === null || userData === void 0 ? void 0 : userData.tripIds)]);
@@ -7556,16 +7773,18 @@ function App() {
     if (!activeTripId) return;
     groupCreateRef.current = false;
     // userTrips에 이미 있는 데이터로 즉시 표시, Firestore는 실시간 업데이트용
-    var cached = userTrips.find(function (t) {
+    var rawCached = userTrips.find(function (t) {
       return t.id === activeTripId;
     });
+    var cached = normalizeTrip(rawCached, activeTripId);
     if (cached) {
       tripRef.current = cached;
       setTrip(cached);
     } else setTrip(null);
     return fbListenGroup(activeTripId, function (data) {
       if (data === null) {
-        if (groupCreateRef.current) return;
+        // 이미 데이터가 있으면 덮어쓰지 않음 (Firestore 오류 시 데이터 보호)
+        if (groupCreateRef.current || tripRef.current) return;
         groupCreateRef.current = true;
         fbSaveGroup(activeTripId, {
           title: '새 여행',
@@ -7578,10 +7797,11 @@ function App() {
         });
         return;
       }
+      var normalized = normalizeTrip(data, activeTripId);
       setTrip(function (prev) {
-        if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
-        tripRef.current = data;
-        return data;
+        if (JSON.stringify(prev) === JSON.stringify(normalized)) return prev;
+        tripRef.current = normalized;
+        return normalized;
       });
     });
   }, [activeTripId]);
@@ -7600,7 +7820,7 @@ function App() {
           docs: [],
           pack: []
         };
-        fbSavePrep(authUser.uid, def).catch(console.error);
+        fbSavePrep(authUser.uid, def)["catch"](console.error);
         setPrep(def);
       } else {
         setPrep(p);
@@ -7652,17 +7872,17 @@ function App() {
     setTrip(function (prev) {
       return _objectSpread(_objectSpread({}, prev), patch);
     });
-    if (activeTripId) fbSaveGroup(activeTripId, patch).catch(console.error);
+    if (activeTripId) fbSaveGroup(activeTripId, patch)["catch"](console.error);
   };
   var editPrep = function editPrep(newPrep) {
     setPrep(newPrep);
-    if (authUser !== null && authUser !== void 0 && authUser.uid) fbSavePrep(authUser.uid, newPrep).catch(console.error);
+    if (authUser !== null && authUser !== void 0 && authUser.uid) fbSavePrep(authUser.uid, newPrep)["catch"](console.error);
   };
   var deleteTrip = /*#__PURE__*/function () {
-    var _ref40 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(tripId) {
+    var _ref42 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(tripId) {
       var t, isOwner, msg;
-      return _regenerator().w(function (_context8) {
-        while (1) switch (_context8.n) {
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
             t = userTrips.find(function (x) {
               return x.id === tripId;
@@ -7670,12 +7890,12 @@ function App() {
             isOwner = !(t !== null && t !== void 0 && t.members) || t.members[0] === (userData === null || userData === void 0 ? void 0 : userData.uid);
             msg = isOwner ? "\"".concat((t === null || t === void 0 ? void 0 : t.title) || '여행', "\"\uC744(\uB97C) \uC0AD\uC81C\uD560\uAE4C\uC694?\n\uC0AD\uC81C\uD558\uBA74 \uBCF5\uAD6C\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.") : "\"".concat((t === null || t === void 0 ? void 0 : t.title) || '여행', "\"\uC5D0\uC11C \uB098\uAC08\uAE4C\uC694?");
             if (confirm(msg)) {
-              _context8.n = 1;
+              _context0.n = 1;
               break;
             }
-            return _context8.a(2);
+            return _context0.a(2);
           case 1:
-            _context8.n = 2;
+            _context0.n = 2;
             return fbDeleteTrip(tripId, userData.uid);
           case 2:
             setUserTrips(function (prev) {
@@ -7691,12 +7911,12 @@ function App() {
               });
             });
           case 3:
-            return _context8.a(2);
+            return _context0.a(2);
         }
-      }, _callee7);
+      }, _callee9);
     }));
     return function deleteTrip(_x6) {
-      return _ref40.apply(this, arguments);
+      return _ref42.apply(this, arguments);
     };
   }();
 
@@ -8121,7 +8341,33 @@ function App() {
         userData: userData,
         onOpenCompanion: function onOpenCompanion() {
           return setCompanionOpen(true);
-        }
+        },
+        onLoadSample: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+          var def, patch;
+          return _regenerator().w(function (_context1) {
+            while (1) switch (_context1.n) {
+              case 0:
+                def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+                patch = {
+                  title: def.title || '내 여행',
+                  dates: def.dates || '',
+                  hotel: def.hotel || '',
+                  days: def.days || [],
+                  hotels: def.hotels || [],
+                  food: def.food || []
+                }; // Firestore에 저장 (실패 시 오류를 그대로 throw → HomeScreen에서 처리)
+                _context1.n = 1;
+                return window.fbSaveGroup(activeTripId, patch);
+              case 1:
+                // 리스너를 기다리지 않고 로컬 상태 즉시 업데이트
+                setTrip(function (prev) {
+                  return normalizeTrip(_objectSpread(_objectSpread({}, prev), patch), activeTripId);
+                });
+              case 2:
+                return _context1.a(2);
+            }
+          }, _callee0);
+        }))
       });
       label = 'Home';
     }
@@ -8152,7 +8398,7 @@ function App() {
     });
     label = 'Prep';
   }
-  var dayHue = dayIdx !== null && trip ? trip.days[dayIdx].hero.hue : 30;
+  var dayHue = dayIdx !== null && trip ? (_trip$days$dayIdx$her = (_trip$days$dayIdx = trip.days[dayIdx]) === null || _trip$days$dayIdx === void 0 || (_trip$days$dayIdx = _trip$days$dayIdx.hero) === null || _trip$days$dayIdx === void 0 ? void 0 : _trip$days$dayIdx.hue) !== null && _trip$days$dayIdx$her !== void 0 ? _trip$days$dayIdx$her : 30 : 30;
 
   // ── Auth gating ───────────────────────────────────────────
   // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
@@ -8184,22 +8430,22 @@ function App() {
       setHotelIdx(null);
       setEditing(false);
     },
-    onAdd: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+    onAdd: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
       var title, _yield$fbCreateNewTri, tripId, hue;
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.n) {
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.n) {
           case 0:
             title = prompt('여행 이름을 입력해 주세요\n(예: 뉴욕, 파리 7박)');
             if (title) {
-              _context9.n = 1;
+              _context10.n = 1;
               break;
             }
-            return _context9.a(2);
+            return _context10.a(2);
           case 1:
-            _context9.n = 2;
+            _context10.n = 2;
             return fbCreateNewTrip(userData.uid, title);
           case 2:
-            _yield$fbCreateNewTri = _context9.v;
+            _yield$fbCreateNewTri = _context10.v;
             tripId = _yield$fbCreateNewTri.tripId;
             hue = _yield$fbCreateNewTri.hue;
             setUserTrips(function (prev) {
@@ -8218,9 +8464,51 @@ function App() {
             setDayIdx(null);
             setHotelIdx(null);
           case 3:
-            return _context9.a(2);
+            return _context10.a(2);
         }
-      }, _callee8);
+      }, _callee1);
+    })),
+    onRestore: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+      var _def$days$0$hero$hue, _def$days;
+      var def, patch, hue, _yield$window$fbCreat, tripId, newTrip;
+      return _regenerator().w(function (_context11) {
+        while (1) switch (_context11.n) {
+          case 0:
+            def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+            patch = {
+              title: def.title || 'New York',
+              dates: def.dates || '',
+              hotel: def.hotel || '',
+              days: def.days || [],
+              hotels: def.hotels || [],
+              food: def.food || []
+            };
+            hue = (_def$days$0$hero$hue = (_def$days = def.days) === null || _def$days === void 0 || (_def$days = _def$days[0]) === null || _def$days === void 0 || (_def$days = _def$days.hero) === null || _def$days === void 0 ? void 0 : _def$days.hue) !== null && _def$days$0$hero$hue !== void 0 ? _def$days$0$hero$hue : 25;
+            _context11.n = 1;
+            return window.fbCreateNewTrip(userData.uid, patch.title);
+          case 1:
+            _yield$window$fbCreat = _context11.v;
+            tripId = _yield$window$fbCreat.tripId;
+            _context11.n = 2;
+            return window.fbSaveGroup(tripId, patch);
+          case 2:
+            newTrip = normalizeTrip(_objectSpread(_objectSpread({}, patch), {}, {
+              members: [userData.uid],
+              hue: hue
+            }), tripId);
+            setUserTrips(function (prev) {
+              return [].concat(_toConsumableArray(prev), [newTrip]);
+            });
+            setActiveTripId(tripId);
+            setTrip(newTrip);
+            _setTab('home');
+            setDayIdx(null);
+            setHotelIdx(null);
+            setEditing(false);
+          case 3:
+            return _context11.a(2);
+        }
+      }, _callee10);
     })),
     onShare: function onShare(t) {
       return setShareTripTarget(t);
