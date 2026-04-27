@@ -65,6 +65,8 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
     case 'nav':    return <svg {...p}><path d="m3 11 19-8-8 19-2-8z"/></svg>;
     case 'phone':   return <svg {...p}><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg>;
     case 'sparkle': return <svg {...p}><path d="M12 3 9.5 9.5 3 12l6.5 2.5L12 21l2.5-6.5L21 12l-6.5-2.5z"/></svg>;
+    case 'wallet':  return <svg {...p}><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg>;
+    case 'minus':   return <svg {...p}><path d="M5 12h14"/></svg>;
     default: return null;
   }
 };
@@ -1433,7 +1435,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v94</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v95</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3726,13 +3728,238 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   );
 }
 
+// ─── Budget Screen ─────────────────────────────────────────
+const BUDGET_OUT_CATS = ['교통','숙박','식비','쇼핑','관광','기타'];
+const BUDGET_IN_CATS  = ['환전','지원금','기타'];
+
+function BudgetScreen({ trip, onEditBudget }) {
+  const entries = trip.budget?.entries || [];
+  const [addOpen,  setAddOpen]  = React.useState(false);
+  const [editIdx,  setEditIdx]  = React.useState(null);
+  const [delConfirm, setDelConfirm] = React.useState(false);
+  const [form, setForm] = React.useState({ type:'out', amount:'', cat:'식비', note:'', date:'' });
+
+  const totalIn  = entries.filter(e => e.type==='in').reduce((s,e) => s+e.amount, 0);
+  const totalOut = entries.filter(e => e.type==='out').reduce((s,e) => s+e.amount, 0);
+  const balance  = totalIn - totalOut;
+
+  const openAdd = (type) => {
+    setForm({ type, amount:'', cat: type==='out' ? '식비' : '환전', note:'', date:'' });
+    setEditIdx(null);
+    setDelConfirm(false);
+    setAddOpen(true);
+  };
+  const openEdit = (idx) => {
+    const e = entries[idx];
+    setForm({ type:e.type, amount:String(e.amount), cat:e.cat, note:e.note||'', date:e.date||'' });
+    setEditIdx(idx);
+    setDelConfirm(false);
+    setAddOpen(true);
+  };
+  const saveEntry = () => {
+    const amt = parseFloat(form.amount);
+    if (!amt || isNaN(amt)) return;
+    const entry = {
+      id: editIdx !== null ? entries[editIdx].id : Date.now().toString(),
+      type: form.type, amount: amt, cat: form.cat,
+      note: form.note,
+      date: form.date || new Date().toISOString().slice(0,10),
+    };
+    const updated = editIdx !== null
+      ? entries.map((e,i) => i===editIdx ? entry : e)
+      : [...entries, entry];
+    onEditBudget({ entries: updated });
+    setAddOpen(false);
+  };
+  const deleteEntry = () => {
+    onEditBudget({ entries: entries.filter((_,i) => i!==editIdx) });
+    setAddOpen(false);
+  };
+
+  const catTotals = {};
+  entries.filter(e=>e.type==='out').forEach(e => { catTotals[e.cat] = (catTotals[e.cat]||0)+e.amount; });
+  const topCats = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,4);
+
+  return (
+    <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
+      {/* 헤더 */}
+      <div style={{ paddingTop:'calc(16px + env(safe-area-inset-top, 0px))', paddingLeft:24, paddingRight:24, paddingBottom:12 }}>
+        <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>Travel Budget</div>
+        <div style={{ marginTop:4, fontFamily:SERIF, fontSize:38, color:COLORS.ink, letterSpacing:'-0.02em' }}>여비.</div>
+      </div>
+
+      {/* 요약 카드 */}
+      <div style={{ margin:'0 16px 14px', background:COLORS.ink, borderRadius:20, padding:'20px 22px' }}>
+        <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:6 }}>Balance</div>
+        <div style={{ fontFamily:SERIF, fontSize:38, color:'#fff', letterSpacing:'-0.02em', lineHeight:1 }}>
+          {balance >= 0 ? '+' : ''}{balance.toLocaleString()}
+        </div>
+        <div style={{ display:'flex', gap:28, marginTop:18 }}>
+          <div>
+            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.1em', textTransform:'uppercase' }}>수입</div>
+            <div style={{ fontFamily:MONO, fontSize:16, color:'#7EC88A', marginTop:3, fontWeight:500 }}>+{totalIn.toLocaleString()}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.1em', textTransform:'uppercase' }}>지출</div>
+            <div style={{ fontFamily:MONO, fontSize:16, color:'#E88A7E', marginTop:3, fontWeight:500 }}>-{totalOut.toLocaleString()}</div>
+          </div>
+        </div>
+        {topCats.length > 0 && (
+          <div style={{ marginTop:18, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.1)', display:'flex', flexWrap:'wrap', gap:'8px 20px' }}>
+            {topCats.map(([cat, amt]) => (
+              <div key={cat} style={{ fontFamily:MONO, fontSize:11, color:'rgba(255,255,255,0.55)' }}>
+                {cat} <span style={{ color:'rgba(255,255,255,0.85)' }}>{amt.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 추가 버튼 */}
+      <div style={{ padding:'0 16px 16px', display:'flex', gap:8 }}>
+        <button onClick={() => openAdd('out')} style={{
+          flex:1, padding:'12px 0', background:COLORS.accent, border:'none', borderRadius:14,
+          fontFamily:SANS, fontSize:14, fontWeight:600, color:'#fff', cursor:'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+        }}>
+          <Icon name="minus" size={14} color="#fff" stroke={2.5}/> 지출 추가
+        </button>
+        <button onClick={() => openAdd('in')} style={{
+          flex:1, padding:'12px 0', background:COLORS.card, border:`1px solid ${COLORS.line}`, borderRadius:14,
+          fontFamily:SANS, fontSize:14, fontWeight:600, color:COLORS.ink, cursor:'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+        }}>
+          <Icon name="plus" size={14} color={COLORS.ink} stroke={2.5}/> 수입 추가
+        </button>
+      </div>
+
+      {/* 내역 목록 */}
+      {entries.length === 0 ? (
+        <div style={{ padding:'60px 0', textAlign:'center' }}>
+          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginBottom:8 }}>아직 기록이 없어요</div>
+          <div style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.mute }}>여행 수입과 지출을 기록해 보세요</div>
+        </div>
+      ) : (
+        <div style={{ padding:'0 16px' }}>
+          {[...entries].map((e,i) => ({ ...e, _i: i })).reverse().map(e => (
+            <div key={e.id||e._i} onClick={() => openEdit(e._i)} style={{
+              background:COLORS.card, borderRadius:14, padding:'13px 16px', marginBottom:8,
+              display:'flex', alignItems:'center', gap:12, cursor:'pointer',
+            }}>
+              <div style={{
+                width:36, height:36, borderRadius:18, flexShrink:0,
+                background: e.type==='in' ? 'rgba(126,200,138,0.15)' : 'rgba(232,138,126,0.12)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>
+                <Icon name={e.type==='in' ? 'plus' : 'minus'} size={15}
+                  color={e.type==='in' ? '#3A9B4C' : '#C14F2E'} stroke={2.5}/>
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>
+                  {e.cat}{e.note ? ` · ${e.note}` : ''}
+                </div>
+                <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:2 }}>{e.date}</div>
+              </div>
+              <div style={{
+                fontFamily:MONO, fontSize:15, fontWeight:600, flexShrink:0,
+                color: e.type==='in' ? '#3A9B4C' : COLORS.ink,
+              }}>
+                {e.type==='in' ? '+' : '-'}{e.amount.toLocaleString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 입력 시트 */}
+      {addOpen && (
+        <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.38)' }}
+          onClick={() => setAddOpen(false)}>
+          <div style={{
+            position:'absolute', bottom:0, left:0, right:0,
+            background:COLORS.bg, borderRadius:'22px 22px 0 0',
+            padding:'20px 18px', paddingBottom:'calc(24px + env(safe-area-inset-bottom,0px))',
+          }} onClick={e => e.stopPropagation()}>
+            {/* 수입/지출 토글 */}
+            <div style={{ display:'flex', gap:6, marginBottom:14, background:COLORS.softer, borderRadius:14, padding:4 }}>
+              {[{v:'out',label:'지출'},{v:'in',label:'수입'}].map(({v,label}) => (
+                <button key={v} onClick={() => setForm(f => ({ ...f, type:v, cat: v==='out'?'식비':'환전' }))}
+                  style={{ flex:1, padding:'9px 0', border:'none', borderRadius:10, cursor:'pointer',
+                    background: form.type===v ? COLORS.card : 'transparent',
+                    fontFamily:SANS, fontSize:14, fontWeight:600,
+                    color: form.type===v ? COLORS.ink : COLORS.mute }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {/* 금액 */}
+            <input type="number" inputMode="decimal" value={form.amount}
+              onChange={e => setForm(f => ({...f, amount:e.target.value}))}
+              placeholder="금액"
+              style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px', marginBottom:12,
+                border:`1px solid ${COLORS.line}`, borderRadius:12, background:COLORS.card,
+                fontFamily:MONO, fontSize:24, color:COLORS.ink, outline:'none' }}/>
+            {/* 카테고리 */}
+            <div style={{ display:'flex', flexWrap:'wrap', gap:7, marginBottom:12 }}>
+              {(form.type==='out' ? BUDGET_OUT_CATS : BUDGET_IN_CATS).map(c => (
+                <button key={c} onClick={() => setForm(f => ({...f, cat:c}))}
+                  style={{ padding:'7px 15px', borderRadius:20, cursor:'pointer',
+                    border:`1.5px solid ${form.cat===c ? COLORS.accent : COLORS.line}`,
+                    background: form.cat===c ? COLORS.accent : COLORS.card,
+                    fontFamily:SANS, fontSize:13, fontWeight: form.cat===c ? 600 : 400,
+                    color: form.cat===c ? '#fff' : COLORS.ink }}>
+                  {c}
+                </button>
+              ))}
+            </div>
+            {/* 메모 */}
+            <input value={form.note} onChange={e => setForm(f => ({...f, note:e.target.value}))}
+              placeholder="메모 (선택)"
+              style={{ width:'100%', boxSizing:'border-box', padding:'11px 16px', marginBottom:10,
+                border:`1px solid ${COLORS.line}`, borderRadius:12, background:COLORS.card,
+                fontFamily:SANS, fontSize:14, color:COLORS.ink, outline:'none' }}/>
+            {/* 날짜 */}
+            <input type="date" value={form.date} onChange={e => setForm(f => ({...f, date:e.target.value}))}
+              style={{ width:'100%', boxSizing:'border-box', padding:'11px 16px', marginBottom:16,
+                border:`1px solid ${COLORS.line}`, borderRadius:12, background:COLORS.card,
+                fontFamily:SANS, fontSize:14, color:COLORS.ink, outline:'none' }}/>
+            {/* 액션 버튼 */}
+            <div style={{ display:'flex', gap:8 }}>
+              {editIdx !== null && !delConfirm && (
+                <button onClick={() => setDelConfirm(true)} style={{
+                  padding:'13px 18px', border:'none', borderRadius:14, background:COLORS.softer,
+                  fontFamily:SANS, fontSize:14, color:COLORS.mute, cursor:'pointer' }}>
+                  삭제
+                </button>
+              )}
+              {editIdx !== null && delConfirm && (
+                <button onClick={deleteEntry} style={{
+                  padding:'13px 18px', border:'none', borderRadius:14, background:'#C14F2E',
+                  fontFamily:SANS, fontSize:14, fontWeight:600, color:'#fff', cursor:'pointer' }}>
+                  확인
+                </button>
+              )}
+              <button onClick={saveEntry} style={{
+                flex:1, padding:'13px 0', border:'none', borderRadius:14, background:COLORS.accent,
+                fontFamily:SANS, fontSize:15, fontWeight:600, color:'#fff', cursor:'pointer' }}>
+                {editIdx !== null ? '수정' : '저장'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Tab bar (no edit toggle) ──────────────────────────────
 function TabBar({ tab, setTab, visible, editing, onToggleEdit }) {
   const tabs = [
-    { id:'home', icon:'sight', label:'일정' },
-    { id:'map',  icon:'map',   label:'지도' },
-    { id:'food', icon:'food',  label:'맛집' },
-    { id:'prep', icon:'user',  label:'준비' },
+    { id:'home',   icon:'sight',  label:'일정' },
+    { id:'map',    icon:'map',    label:'지도' },
+    { id:'food',   icon:'food',   label:'맛집' },
+    { id:'prep',   icon:'user',   label:'준비' },
+    { id:'budget', icon:'wallet', label:'여비' },
   ];
   return (
     <div style={{
@@ -4605,7 +4832,7 @@ function App() {
   }, []);
 
   // ── Tab swipe + animation hooks (must be before any early returns) ───
-  const TAB_ORDER = ['home', 'map', 'food', 'prep'];
+  const TAB_ORDER = ['home', 'map', 'food', 'prep', 'budget'];
   const tabRef           = React.useRef(tab);
   const swipeBackRef     = React.useRef(null);
   const slideDirRef      = React.useRef(null);
@@ -4928,8 +5155,9 @@ function App() {
     screen = <MapScreen trip={trip} onEditItem={editMapItem}/>;
     label = 'Map';
   }
-  else if (tab === 'food') { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} editing={editing} setEditing={setEditing}/>; label='Food'; }
-  else                      { screen = <PrepScreen trip={trip} prep={prep} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
+  else if (tab === 'food')   { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} editing={editing} setEditing={setEditing}/>; label='Food'; }
+  else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })}/>; label='Budget'; }
+  else                       { screen = <PrepScreen trip={trip} prep={prep} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
   const dayHue = dayIdx !== null && trip ? (trip.days[dayIdx]?.hero?.hue ?? 30) : 30;
 
@@ -5043,7 +5271,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v94</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v95</div>
         </div>
       </div>
       <button onClick={async () => {
