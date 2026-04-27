@@ -1193,7 +1193,11 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                   onShare={() => onShare(t)}
                   onDelete={() => onDelete(t.id)}
                   wrapStyle={{ borderRadius:20, border:`1px solid ${COLORS.line}` }}>
-                  <div onClick={() => onSelect(t.id)} style={{ cursor:'pointer' }}>
+                  <button onClick={() => onSelect(t.id)} style={{
+                    display:'block', width:'100%', background:'none', border:'none',
+                    padding:0, margin:0, textAlign:'left', cursor:'pointer',
+                    WebkitTapHighlightColor:'transparent',
+                  }}>
                     <Photo hue={hue} label={label} height={130}/>
                     <div style={{ padding:'14px 18px 16px', position:'relative' }}>
                       <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
@@ -1213,7 +1217,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                         </div>
                       )}
                     </div>
-                  </div>
+                  </button>
                 </TripSwipeCard>
               );
             })}
