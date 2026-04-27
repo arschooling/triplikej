@@ -937,6 +937,7 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
   const [msg, setMsg]             = React.useState('');
   const [loading, setLoading]     = React.useState(false);
   const [sending, setSending]     = React.useState(false);
+  const [removing, setRemoving]   = React.useState(null);
 
   React.useEffect(() => {
     if (open) {
@@ -970,6 +971,14 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [open, trip && trip.id]);
+
+  const handleRemove = async (c) => {
+    if (!confirm(`"${c.displayName}"님을 이 여행에서 제외할까요?`)) return;
+    setRemoving(c.uid);
+    await window.fbRemoveTripMember(trip.id, c.uid);
+    setMemberProfiles(prev => prev.filter(m => m.uid !== c.uid));
+    setRemoving(null);
+  };
 
   const toggleSelect = (uid) => {
     setSelected(prev => {
@@ -1051,8 +1060,13 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
                         <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute,
                           overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.email}</div>
                       </div>
-                      <div style={{ fontFamily:SANS, fontSize:11, color:'#4F6BED', fontWeight:500,
-                        background:'#EEF2FF', borderRadius:20, padding:'3px 9px', flexShrink:0 }}>동행중</div>
+                      <button onClick={e => { e.stopPropagation(); handleRemove(c); }}
+                        disabled={removing === c.uid}
+                        style={{ background:'none', border:'none', cursor:'pointer', padding:4,
+                          color: COLORS.mute, opacity: removing === c.uid ? 0.4 : 1,
+                          display:'flex', alignItems:'center', flexShrink:0 }}>
+                        <Icon name="x" size={16} color={COLORS.mute} stroke={2}/>
+                      </button>
                     </div>
                   ))}
                   <div style={{ height:16 }}/>
