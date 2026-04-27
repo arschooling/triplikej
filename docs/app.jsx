@@ -944,23 +944,31 @@ function TimeWheelSheet({ open, value, onClose, onPick, title='시간 선택' })
 }
 
 // ─── FX ─────────────────────────────────────────────────────
-function useFxRate() {
+const FX_CURRENCIES = [
+  { code:'USD', sym:'$' }, { code:'EUR', sym:'€' }, { code:'JPY', sym:'¥' },
+  { code:'GBP', sym:'£' }, { code:'CNY', sym:'¥' }, { code:'HKD', sym:'HK$' },
+  { code:'TWD', sym:'NT$' }, { code:'SGD', sym:'S$' }, { code:'THB', sym:'฿' },
+  { code:'AUD', sym:'A$' }, { code:'CAD', sym:'C$' }, { code:'CHF', sym:'Fr' },
+  { code:'AED', sym:'AED' }, { code:'MYR', sym:'RM' }, { code:'VND', sym:'₫' },
+];
+
+function useFxRate(currency) {
   const [state, setState] = React.useState({ loading: true, rate: null, ts: null });
   const fetchRate = React.useCallback(() => {
     setState(s => ({ ...s, loading: true }));
-    // Try several free USD→KRW feeds in sequence; first success wins.
+    const cur = currency.toLowerCase();
     const sources = [
       {
-        url: 'https://api.frankfurter.app/latest?from=USD&to=KRW',
+        url: `https://api.frankfurter.app/latest?from=${currency}&to=KRW`,
         parse: j => ({ rate: j?.rates?.KRW, ts: j?.date }),
       },
       {
-        url: 'https://open.er-api.com/v6/latest/USD',
+        url: `https://open.er-api.com/v6/latest/${currency}`,
         parse: j => ({ rate: j?.rates?.KRW, ts: j?.time_last_update_utc?.slice(0, 16) }),
       },
       {
-        url: 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json',
-        parse: j => ({ rate: j?.usd?.krw, ts: j?.date }),
+        url: `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${cur}.json`,
+        parse: j => ({ rate: j?.[cur]?.krw, ts: j?.date }),
       },
     ];
     const tryNext = (i) => {
@@ -972,17 +980,21 @@ function useFxRate() {
       }).catch(() => tryNext(i+1));
     };
     tryNext(0);
-  }, []);
+  }, [currency]);
   React.useEffect(() => { fetchRate(); }, [fetchRate]);
   return { ...state, refresh: fetchRate };
 }
 
 function FxCard() {
-  const { loading, rate, ts, refresh } = useFxRate();
+  const [curIdx, setCurIdx] = React.useState(0);
+  const cur = FX_CURRENCIES[curIdx];
+  const { loading, rate, ts, refresh } = useFxRate(cur.code);
+  const prev = () => setCurIdx(i => (i - 1 + FX_CURRENCIES.length) % FX_CURRENCIES.length);
+  const next = () => setCurIdx(i => (i + 1) % FX_CURRENCIES.length);
   return (
     <div style={{ background:COLORS.card, borderRadius:14, padding:'13px 14px 11px' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase' }}>하나은행 · 매매기준율</div>
+        <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase' }}>환율</div>
         <button onClick={refresh} style={{ border:'none', background:'transparent', cursor:'pointer', padding:2 }}>
           <Icon name="refresh" size={12} color={COLORS.mute} stroke={1.8}/>
         </button>
@@ -990,8 +1002,19 @@ function FxCard() {
       <div style={{ marginTop:5, fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>
         {loading ? '…' : rate ? `₩${Math.round(rate).toLocaleString()}` : '—'}
       </div>
-      <div style={{ marginTop:1, fontFamily:SANS, fontSize:11, color:COLORS.mute }}>
-        = $1 {ts && <span style={{ opacity:0.7 }}>· {ts}</span>}
+      <div style={{ marginTop:4, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>
+          = {cur.sym}1 {ts && <span style={{ opacity:0.6 }}>· {ts}</span>}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:2 }}>
+          <button onClick={prev} style={{ border:'none', background:'transparent', cursor:'pointer', padding:'2px 3px', lineHeight:1 }}>
+            <Icon name="chevron-l" size={10} color={COLORS.mute} stroke={2}/>
+          </button>
+          <span style={{ fontFamily:MONO, fontSize:10, color:COLORS.ink, fontWeight:600, minWidth:28, textAlign:'center' }}>{cur.code}</span>
+          <button onClick={next} style={{ border:'none', background:'transparent', cursor:'pointer', padding:'2px 3px', lineHeight:1 }}>
+            <Icon name="chevron-r" size={10} color={COLORS.mute} stroke={2}/>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1441,7 +1464,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v109</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v110</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -5673,7 +5696,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v109</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v110</div>
         </div>
       </div>
       <button onClick={async () => {
