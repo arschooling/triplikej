@@ -316,6 +316,8 @@ const COLORS = {
 const SERIF = '"Instrument Serif", Georgia, serif';
 const SANS = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const MONO = '"JetBrains Mono", ui-monospace, monospace';
+// 탭바 위에 시트가 뜨도록 하는 bottom 오프셋
+const SHEET_BOTTOM = 'calc(max(calc(env(safe-area-inset-bottom, 0px) - 28px), 0px) + 64px)';
 const CAT_META = {
   flight: {
     icon: 'flight',
@@ -2315,58 +2317,252 @@ function TimeWheelSheet({
   })));
 }
 
+// ─── 공통 픽커 바텀 시트 ─────────────────────────────────────
+function PickerSheet({
+  open,
+  onClose,
+  title,
+  items,
+  getKey,
+  filterFn,
+  renderRow,
+  onPick,
+  selectedKey
+}) {
+  const [q, setQ] = React.useState('');
+  const [entered, setEntered] = React.useState(false);
+  const inputRef = React.useRef(null);
+  const touchY = React.useRef(null);
+  React.useEffect(() => {
+    if (!open) {
+      setEntered(false);
+      return;
+    }
+    setQ('');
+    setEntered(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+  }, [open]);
+  React.useEffect(() => {
+    if (open && entered) setTimeout(() => inputRef.current?.focus(), 120);
+  }, [open, entered]);
+  const filtered = React.useMemo(() => q ? items.filter(item => filterFn(item, q)) : items, [items, q, filterFn]);
+  if (!open) return null;
+  return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      zIndex: 600,
+      background: `rgba(0,0,0,${entered ? 0.35 : 0})`,
+      transition: 'background 0.3s'
+    },
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    onTouchStart: e => {
+      touchY.current = e.touches[0].clientY;
+    },
+    onTouchEnd: e => {
+      if (e.changedTouches[0].clientY - (touchY.current || 0) > 80) onClose();
+    },
+    style: {
+      position: 'fixed',
+      bottom: SHEET_BOTTOM,
+      left: 0,
+      right: 0,
+      background: COLORS.bg,
+      borderRadius: 22,
+      maxHeight: '78%',
+      display: 'flex',
+      flexDirection: 'column',
+      transform: `translateY(${entered ? 0 : '100vh'})`,
+      transition: 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '10px 0 4px',
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 36,
+      height: 4,
+      background: COLORS.line,
+      borderRadius: 2
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '2px 16px 10px',
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontSize: 22,
+      color: COLORS.ink,
+      marginBottom: 10
+    }
+  }, title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: COLORS.card,
+      borderRadius: 10,
+      padding: '10px 12px',
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "search",
+    size: 14,
+    color: COLORS.mute,
+    stroke: 1.8
+  }), /*#__PURE__*/React.createElement("input", {
+    ref: inputRef,
+    value: q,
+    onChange: e => setQ(e.target.value),
+    placeholder: "\uAC80\uC0C9",
+    style: {
+      border: 'none',
+      outline: 'none',
+      background: 'transparent',
+      flex: 1,
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.ink
+    }
+  }), q && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setQ(''),
+    style: {
+      border: 'none',
+      background: 'transparent',
+      padding: 0,
+      cursor: 'pointer'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "x",
+    size: 12,
+    color: COLORS.mute,
+    stroke: 2
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      overflowY: 'auto',
+      padding: '0 16px 24px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: COLORS.card,
+      borderRadius: 14,
+      overflow: 'hidden'
+    }
+  }, filtered.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '20px',
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.mute,
+      textAlign: 'center'
+    }
+  }, "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C"), filtered.map((item, i) => {
+    const k = getKey(item);
+    const sel = k === selectedKey;
+    return /*#__PURE__*/React.createElement("button", {
+      key: k,
+      onClick: () => {
+        onPick(item);
+        onClose();
+      },
+      style: {
+        width: '100%',
+        border: 'none',
+        background: sel ? COLORS.softer : 'transparent',
+        padding: '12px 14px',
+        display: 'flex',
+        gap: 10,
+        alignItems: 'center',
+        borderBottom: i < filtered.length - 1 ? `1px solid ${COLORS.line}` : 'none',
+        cursor: 'pointer',
+        textAlign: 'left'
+      }
+    }, renderRow(item, sel), sel && /*#__PURE__*/React.createElement(Icon, {
+      name: "check",
+      size: 16,
+      color: COLORS.accent,
+      stroke: 2.5
+    }));
+  }))))), document.body);
+}
+
 // ─── FX ─────────────────────────────────────────────────────
 const FX_CURRENCIES = [{
   code: 'USD',
-  sym: '$'
+  sym: '$',
+  name: '미국 달러'
 }, {
   code: 'EUR',
-  sym: '€'
+  sym: '€',
+  name: '유로'
 }, {
   code: 'JPY',
-  sym: '¥'
+  sym: '¥',
+  name: '일본 엔'
 }, {
   code: 'GBP',
-  sym: '£'
+  sym: '£',
+  name: '영국 파운드'
 }, {
   code: 'CNY',
-  sym: '¥'
+  sym: '¥',
+  name: '중국 위안'
 }, {
   code: 'HKD',
-  sym: 'HK$'
+  sym: 'HK$',
+  name: '홍콩 달러'
 }, {
   code: 'TWD',
-  sym: 'NT$'
+  sym: 'NT$',
+  name: '대만 달러'
 }, {
   code: 'SGD',
-  sym: 'S$'
+  sym: 'S$',
+  name: '싱가포르 달러'
 }, {
   code: 'THB',
-  sym: '฿'
+  sym: '฿',
+  name: '태국 바트'
 }, {
   code: 'AUD',
-  sym: 'A$'
+  sym: 'A$',
+  name: '호주 달러'
 }, {
   code: 'CAD',
-  sym: 'C$'
+  sym: 'C$',
+  name: '캐나다 달러'
 }, {
   code: 'CHF',
-  sym: 'Fr'
+  sym: 'Fr',
+  name: '스위스 프랑'
 }, {
   code: 'AED',
-  sym: 'AED'
+  sym: 'AED',
+  name: 'UAE 디르함'
 }, {
   code: 'MYR',
-  sym: 'RM'
+  sym: 'RM',
+  name: '말레이시아 링깃'
 }, {
   code: 'VND',
-  sym: '₫'
+  sym: '₫',
+  name: '베트남 동'
 }, {
   code: 'PHP',
-  sym: '₱'
+  sym: '₱',
+  name: '필리핀 페소'
 }, {
   code: 'MXN',
-  sym: 'MX$'
+  sym: 'MX$',
+  name: '멕시코 페소'
 }];
 function useFxRate(currency) {
   const [state, setState] = React.useState({
@@ -2431,14 +2627,19 @@ function useFxRate(currency) {
   };
 }
 function FxCard() {
-  const [curIdx, setCurIdx] = React.useState(0);
-  const cur = FX_CURRENCIES[curIdx];
+  const [curCode, setCurCode] = React.useState('USD');
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const cur = FX_CURRENCIES.find(c => c.code === curCode) || FX_CURRENCIES[0];
   const {
     loading,
     rate,
     ts,
     refresh
   } = useFxRate(cur.code);
+  const fxFilterFn = React.useCallback((item, q) => {
+    const ql = q.toLowerCase();
+    return item.code.toLowerCase().includes(ql) || item.name.includes(q);
+  }, []);
   return /*#__PURE__*/React.createElement("div", {
     style: {
       background: COLORS.card,
@@ -2496,26 +2697,62 @@ function FxCard() {
     style: {
       opacity: 0.6
     }
-  }, "\xB7 ", ts)), /*#__PURE__*/React.createElement("select", {
-    value: curIdx,
-    onChange: e => setCurIdx(Number(e.target.value)),
+  }, "\xB7 ", ts)), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPickerOpen(true),
     style: {
       border: 'none',
       background: 'transparent',
       cursor: 'pointer',
+      padding: '2px 0',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 3,
       fontFamily: MONO,
       fontSize: 10,
       color: COLORS.ink,
-      fontWeight: 600,
-      outline: 'none',
-      padding: '2px 0',
-      appearance: 'none',
-      WebkitAppearance: 'none'
+      fontWeight: 600
     }
-  }, FX_CURRENCIES.map((c, i) => /*#__PURE__*/React.createElement("option", {
-    key: c.code,
-    value: i
-  }, c.code)))));
+  }, cur.code, /*#__PURE__*/React.createElement(Icon, {
+    name: "chevron-d",
+    size: 10,
+    color: COLORS.mute,
+    stroke: 1.8
+  }))), /*#__PURE__*/React.createElement(PickerSheet, {
+    open: pickerOpen,
+    onClose: () => setPickerOpen(false),
+    title: "\uD1B5\uD654 \uC120\uD0DD",
+    items: FX_CURRENCIES,
+    getKey: c => c.code,
+    filterFn: fxFilterFn,
+    selectedKey: cur.code,
+    onPick: c => setCurCode(c.code),
+    renderRow: c => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: MONO,
+        fontSize: 14,
+        fontWeight: 600,
+        color: COLORS.ink,
+        minWidth: 42
+      }
+    }, c.code), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 13,
+        color: COLORS.ink
+      }
+    }, c.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: MONO,
+        fontSize: 10.5,
+        color: COLORS.mute,
+        marginTop: 1
+      }
+    }, c.sym, "1")))
+  }));
 }
 
 // ─── Timezones ──────────────────────────────────────────────
@@ -2908,165 +3145,18 @@ function TimezoneCard({
   city,
   onPick
 }) {
-  const [open, setOpen] = React.useState(false);
-  const [q, setQ] = React.useState('');
-  const [dropRect, setDropRect] = React.useState(null);
+  const [pickerOpen, setPickerOpen] = React.useState(false);
   const [, force] = React.useReducer(x => x + 1, 0);
-  const cardRef = React.useRef(null);
-  const inputRef = React.useRef(null);
   React.useEffect(() => {
     const t = setInterval(force, 30000);
     return () => clearInterval(t);
   }, []);
-  const openDrop = () => {
-    if (!cardRef.current) return;
-    setDropRect(cardRef.current.getBoundingClientRect());
-    setOpen(true);
-    setQ('');
-  };
-  const closeDrop = () => {
-    setOpen(false);
-    setQ('');
-  };
-  React.useEffect(() => {
-    if (open && inputRef.current) setTimeout(() => inputRef.current?.focus(), 60);
-  }, [open]);
-  const filtered = CITIES.filter(c => {
-    if (!q) return true;
+  const cityFilterFn = React.useCallback((item, q) => {
     const ql = q.toLowerCase();
-    return c.key.toLowerCase().includes(ql) || c.kor.includes(q);
-  });
-  const dropdown = open && dropRect && ReactDOM.createPortal(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'fixed',
-      inset: 0,
-      zIndex: 498
-    },
-    onClick: closeDrop
-  }), /*#__PURE__*/React.createElement("div", {
-    onClick: e => e.stopPropagation(),
-    style: {
-      position: 'fixed',
-      top: dropRect.bottom + 6,
-      left: dropRect.left,
-      width: dropRect.width,
-      zIndex: 499,
-      background: COLORS.card,
-      borderRadius: 14,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-      overflow: 'hidden',
-      maxHeight: Math.max(120, window.innerHeight - dropRect.bottom - 24),
-      display: 'flex',
-      flexDirection: 'column'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '10px 12px 8px',
-      flexShrink: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: COLORS.bg,
-      borderRadius: 8,
-      padding: '7px 10px',
-      display: 'flex',
-      gap: 6,
-      alignItems: 'center'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "search",
-    size: 13,
-    color: COLORS.mute,
-    stroke: 1.8
-  }), /*#__PURE__*/React.createElement("input", {
-    ref: inputRef,
-    value: q,
-    onChange: e => setQ(e.target.value),
-    placeholder: "\uB3C4\uC2DC \uAC80\uC0C9 (\uD55C\uAE00 / \uC601\uBB38)",
-    style: {
-      border: 'none',
-      outline: 'none',
-      background: 'transparent',
-      flex: 1,
-      fontFamily: SANS,
-      fontSize: 13,
-      color: COLORS.ink
-    }
-  }), q && /*#__PURE__*/React.createElement("button", {
-    onClick: () => setQ(''),
-    style: {
-      border: 'none',
-      background: 'transparent',
-      padding: 0,
-      cursor: 'pointer'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "x",
-    size: 12,
-    color: COLORS.mute,
-    stroke: 2
-  })))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      overflowY: 'auto',
-      flex: 1
-    }
-  }, filtered.length === 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '14px 12px',
-      fontFamily: SANS,
-      fontSize: 13,
-      color: COLORS.mute,
-      textAlign: 'center'
-    }
-  }, "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C"), filtered.map((c, i) => /*#__PURE__*/React.createElement("button", {
-    key: c.key,
-    onClick: () => {
-      onPick(c);
-      closeDrop();
-    },
-    style: {
-      width: '100%',
-      border: 'none',
-      background: c.key === city.key ? COLORS.softer : 'transparent',
-      padding: '10px 12px',
-      display: 'flex',
-      gap: 8,
-      alignItems: 'center',
-      borderBottom: i < filtered.length - 1 ? `1px solid ${COLORS.line}` : 'none',
-      cursor: 'pointer',
-      textAlign: 'left'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 16
-    }
-  }, c.flag), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SANS,
-      fontSize: 13,
-      color: COLORS.ink
-    }
-  }, c.key)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: MONO,
-      fontSize: 10,
-      color: COLORS.mute
-    }
-  }, formatCityTime(c.zone)), c.key === city.key && /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 14,
-    color: COLORS.accent,
-    stroke: 2.5
-  })))))), document.body);
-  return /*#__PURE__*/React.createElement("div", {
-    ref: cardRef
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: openDrop,
+    return item.key.toLowerCase().includes(ql) || item.kor.includes(q);
+  }, []);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPickerOpen(true),
     style: {
       background: COLORS.card,
       borderRadius: 14,
@@ -3140,7 +3230,39 @@ function TimezoneCard({
       overflow: 'hidden',
       textOverflow: 'ellipsis'
     }
-  }, city.flag, " ", city.key)), dropdown);
+  }, city.flag, " ", city.key)), /*#__PURE__*/React.createElement(PickerSheet, {
+    open: pickerOpen,
+    onClose: () => setPickerOpen(false),
+    title: "\uB3C4\uC2DC \uC120\uD0DD",
+    items: CITIES,
+    getKey: c => c.key,
+    filterFn: cityFilterFn,
+    selectedKey: city.key,
+    onPick: c => onPick(c),
+    renderRow: c => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 18
+      }
+    }, c.flag), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 14,
+        color: COLORS.ink
+      }
+    }, c.key), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: MONO,
+        fontSize: 10.5,
+        color: COLORS.mute,
+        marginTop: 2
+      }
+    }, formatDiffFromSeoul(c.zone), " \xB7 ", formatCityTime(c.zone))))
+  }));
 }
 
 // ─── TRIPS SCREEN (top level) ───────────────────────────────
@@ -3384,15 +3506,16 @@ function ShareTripSheet({
       background: 'rgba(0,0,0,0.4)',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'flex-end'
+      justifyContent: 'flex-end',
+      paddingBottom: SHEET_BOTTOM
     },
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
-      padding: '0 20px calc(28px + env(safe-area-inset-bottom,0px))',
+      borderRadius: 22,
+      padding: '0 20px 28px',
       maxHeight: '80vh',
       display: 'flex',
       flexDirection: 'column'
@@ -3742,7 +3865,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v131")), /*#__PURE__*/React.createElement("button", {
+  }, "v132")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -6166,6 +6289,7 @@ function NearbySheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
+      paddingBottom: SHEET_BOTTOM,
       background: `rgba(0,0,0,${Math.max(0, 0.32 - sheetY / 500)})`
     },
     onClick: onClose
@@ -6174,11 +6298,11 @@ function NearbySheet({
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
+      borderRadius: 22,
       maxHeight: '74%',
       overflowY: 'auto',
       overflowX: 'hidden',
-      paddingBottom: 'calc(20px + env(safe-area-inset-bottom,0px))',
+      paddingBottom: 20,
       transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
       transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
     }
@@ -6367,6 +6491,7 @@ function StopSheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
+      paddingBottom: SHEET_BOTTOM,
       background: `rgba(0,0,0,${Math.max(0, 0.35 - sheetY / 400)})`
     },
     onClick: onClose
@@ -6375,8 +6500,8 @@ function StopSheet({
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
-      paddingBottom: 40,
+      borderRadius: 22,
+      paddingBottom: 24,
       maxHeight: '92%',
       overflowY: 'auto',
       overflowX: 'hidden',
@@ -8785,6 +8910,7 @@ function BudgetCalcSheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
+      paddingBottom: SHEET_BOTTOM,
       background: 'rgba(0,0,0,0.4)'
     },
     onClick: onClose
@@ -8792,8 +8918,8 @@ function BudgetCalcSheet({
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
-      paddingBottom: 'env(safe-area-inset-bottom,0px)',
+      borderRadius: 22,
+      paddingBottom: 16,
       transform: `translateY(${entered ? 0 : window.innerHeight}px)`,
       transition: 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
     }
@@ -8956,6 +9082,7 @@ function SplitSheet({
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
+      paddingBottom: SHEET_BOTTOM,
       background: 'rgba(0,0,0,0.4)'
     },
     onClick: onClose
@@ -8963,9 +9090,9 @@ function SplitSheet({
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
+      borderRadius: 22,
       padding: '0 16px',
-      paddingBottom: 'calc(20px + env(safe-area-inset-bottom,0px))',
+      paddingBottom: 24,
       transform: `translateY(${entered ? 0 : window.innerHeight}px)`,
       transition: 'transform 0.34s cubic-bezier(0.32,0.72,0,1)'
     }
@@ -9633,31 +9760,59 @@ function BudgetScreen({
     const indexed = [...entries].map((e, i) => ({
       ...e,
       _i: i
-    })).reverse();
-    const incomeList = indexed.filter(e => e.type === 'in');
-    const expenseList = indexed.filter(e => e.type === 'out');
-    const renderEntry = e => /*#__PURE__*/React.createElement("div", {
-      key: e.id || e._i,
-      onClick: () => openEdit(e._i),
+    }));
+    // 날짜별 그룹핑 (최근 날짜 위)
+    const byDate = {};
+    indexed.forEach(e => {
+      const d = e.date || '날짜 없음';
+      if (!byDate[d]) byDate[d] = [];
+      byDate[d].push(e);
+    });
+    const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+    return /*#__PURE__*/React.createElement("div", {
       style: {
-        background: COLORS.card,
-        borderRadius: 12,
-        padding: '11px 12px',
-        marginBottom: 6,
-        cursor: 'pointer'
+        padding: '0 16px'
+      }
+    }, sortedDates.map(date => /*#__PURE__*/React.createElement("div", {
+      key: date,
+      style: {
+        marginBottom: 16
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
-        fontSize: 14,
-        fontWeight: 600,
-        color: e.type === 'in' ? '#3A9B4C' : COLORS.ink,
-        marginBottom: 3
+        fontSize: 10,
+        color: COLORS.mute,
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        padding: '4px 2px 8px'
       }
-    }, e.type === 'in' ? '+' : '-', fmtAmt(e.amount, e.currency || 'KRW')), /*#__PURE__*/React.createElement("div", {
+    }, date), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: COLORS.card,
+        borderRadius: 14,
+        overflow: 'hidden'
+      }
+    }, byDate[date].map((e, i) => /*#__PURE__*/React.createElement("div", {
+      key: e.id || e._i,
+      onClick: () => openEdit(e._i),
+      style: {
+        padding: '12px 14px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        borderBottom: i < byDate[date].length - 1 ? `1px solid ${COLORS.line}` : 'none'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: SANS,
-        fontSize: 11.5,
+        fontSize: 13,
         color: COLORS.ink,
         marginBottom: 2,
         whiteSpace: 'nowrap',
@@ -9670,13 +9825,7 @@ function BudgetScreen({
         alignItems: 'center',
         gap: 5
       }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontFamily: MONO,
-        fontSize: 9.5,
-        color: COLORS.mute
-      }
-    }, e.date), (e.scope || 'personal') === 'shared' && /*#__PURE__*/React.createElement("div", {
+    }, (e.scope || 'personal') === 'shared' && /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
         fontSize: 9,
@@ -9686,51 +9835,21 @@ function BudgetScreen({
         padding: '1px 5px',
         letterSpacing: '0.05em'
       }
-    }, "\uACF5\uB3D9")));
-    return /*#__PURE__*/React.createElement("div", {
-      style: {
-        padding: '0 16px'
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 8,
-        alignItems: 'start'
-      }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    }, "\uACF5\uB3D9"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
-        fontSize: 10,
-        color: '#3A9B4C',
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        padding: '4px 2px 8px'
+        fontSize: 9.5,
+        color: COLORS.mute
       }
-    }, "\uC218\uC785"), incomeList.length === 0 ? /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontFamily: SANS,
-        fontSize: 12,
-        color: COLORS.mute,
-        padding: '8px 2px'
-      }
-    }, "\uB0B4\uC5ED \uC5C6\uC74C") : incomeList.map(renderEntry)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    }, e.type === 'in' ? '수입' : '지출'))), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
-        fontSize: 10,
-        color: '#C14F2E',
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        padding: '4px 2px 8px'
+        fontSize: 14,
+        fontWeight: 600,
+        flexShrink: 0,
+        color: e.type === 'in' ? '#3A9B4C' : '#C14F2E'
       }
-    }, "\uC9C0\uCD9C"), expenseList.length === 0 ? /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontFamily: SANS,
-        fontSize: 12,
-        color: COLORS.mute,
-        padding: '8px 2px'
-      }
-    }, "\uB0B4\uC5ED \uC5C6\uC74C") : expenseList.map(renderEntry))));
+    }, e.type === 'in' ? '+' : '-', fmtAmt(e.amount, e.currency || 'KRW'))))))));
   })(), addOpen && /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
@@ -9741,14 +9860,13 @@ function BudgetScreen({
     onClick: () => setAddOpen(false)
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      position: 'absolute',
-      bottom: 0,
+      position: 'fixed',
+      bottom: SHEET_BOTTOM,
       left: 0,
       right: 0,
       background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
-      padding: '20px 18px',
-      paddingBottom: 'calc(24px + env(safe-area-inset-bottom,0px))'
+      borderRadius: 22,
+      padding: '20px 18px 28px'
     },
     onClick: e => e.stopPropagation(),
     onTouchStart: e => {
@@ -10672,18 +10790,19 @@ function ProfileSheet({
       background: 'rgba(0,0,0,0.4)',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'flex-end'
+      justifyContent: 'flex-end',
+      paddingBottom: SHEET_BOTTOM
     },
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
+      borderRadius: 22,
       maxHeight: '90%',
       display: 'flex',
       flexDirection: 'column',
-      paddingBottom: 'env(safe-area-inset-bottom,0px)'
+      paddingBottom: 16
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -12079,7 +12198,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v131"))), /*#__PURE__*/React.createElement("button", {
+  }, "v132"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);

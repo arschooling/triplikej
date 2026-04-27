@@ -11,6 +11,8 @@ const COLORS = {
 const SERIF = '"Instrument Serif", Georgia, serif';
 const SANS  = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const MONO  = '"JetBrains Mono", ui-monospace, monospace';
+// 탭바 위에 시트가 뜨도록 하는 bottom 오프셋
+const SHEET_BOTTOM = 'calc(max(calc(env(safe-area-inset-bottom, 0px) - 28px), 0px) + 64px)';
 
 const CAT_META = {
   flight:{icon:'flight',label:'Flight'}, hotel:{icon:'hotel',label:'Stay'},
@@ -944,14 +946,109 @@ function TimeWheelSheet({ open, value, onClose, onPick, title='시간 선택' })
   );
 }
 
+// ─── 공통 픽커 바텀 시트 ─────────────────────────────────────
+function PickerSheet({ open, onClose, title, items, getKey, filterFn, renderRow, onPick, selectedKey }) {
+  const [q, setQ]           = React.useState('');
+  const [entered, setEntered] = React.useState(false);
+  const inputRef = React.useRef(null);
+  const touchY   = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!open) { setEntered(false); return; }
+    setQ('');
+    setEntered(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+  }, [open]);
+
+  React.useEffect(() => {
+    if (open && entered) setTimeout(() => inputRef.current?.focus(), 120);
+  }, [open, entered]);
+
+  const filtered = React.useMemo(() =>
+    q ? items.filter(item => filterFn(item, q)) : items,
+  [items, q, filterFn]);
+
+  if (!open) return null;
+  return ReactDOM.createPortal(
+    <div style={{ position:'fixed', inset:0, zIndex:600,
+      background:`rgba(0,0,0,${entered ? 0.35 : 0})`,
+      transition:'background 0.3s',
+    }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()}
+        onTouchStart={e => { touchY.current = e.touches[0].clientY; }}
+        onTouchEnd={e => { if (e.changedTouches[0].clientY - (touchY.current||0) > 80) onClose(); }}
+        style={{
+          position:'fixed', bottom:SHEET_BOTTOM, left:0, right:0,
+          background:COLORS.bg, borderRadius:22,
+          maxHeight:'78%', display:'flex', flexDirection:'column',
+          transform:`translateY(${entered ? 0 : '100vh'})`,
+          transition:'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
+        }}>
+        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 4px', flexShrink:0 }}>
+          <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
+        </div>
+        <div style={{ padding:'2px 16px 10px', flexShrink:0 }}>
+          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginBottom:10 }}>{title}</div>
+          <div style={{ background:COLORS.card, borderRadius:10, padding:'10px 12px',
+            display:'flex', gap:8, alignItems:'center' }}>
+            <Icon name="search" size={14} color={COLORS.mute} stroke={1.8}/>
+            <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="검색"
+              style={{ border:'none', outline:'none', background:'transparent', flex:1,
+                fontFamily:SANS, fontSize:13, color:COLORS.ink }}/>
+            {q && <button onClick={() => setQ('')}
+              style={{ border:'none', background:'transparent', padding:0, cursor:'pointer' }}>
+              <Icon name="x" size={12} color={COLORS.mute} stroke={2}/>
+            </button>}
+          </div>
+        </div>
+        <div style={{ flex:1, overflowY:'auto', padding:'0 16px 24px' }}>
+          <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
+            {filtered.length === 0 && (
+              <div style={{ padding:'20px', fontFamily:SANS, fontSize:13, color:COLORS.mute, textAlign:'center' }}>검색 결과 없음</div>
+            )}
+            {filtered.map((item, i) => {
+              const k = getKey(item);
+              const sel = k === selectedKey;
+              return (
+                <button key={k} onClick={() => { onPick(item); onClose(); }} style={{
+                  width:'100%', border:'none',
+                  background: sel ? COLORS.softer : 'transparent',
+                  padding:'12px 14px', display:'flex', gap:10, alignItems:'center',
+                  borderBottom: i < filtered.length-1 ? `1px solid ${COLORS.line}` : 'none',
+                  cursor:'pointer', textAlign:'left',
+                }}>
+                  {renderRow(item, sel)}
+                  {sel && <Icon name="check" size={16} color={COLORS.accent} stroke={2.5}/>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 // ─── FX ─────────────────────────────────────────────────────
 const FX_CURRENCIES = [
-  { code:'USD', sym:'$' }, { code:'EUR', sym:'€' }, { code:'JPY', sym:'¥' },
-  { code:'GBP', sym:'£' }, { code:'CNY', sym:'¥' }, { code:'HKD', sym:'HK$' },
-  { code:'TWD', sym:'NT$' }, { code:'SGD', sym:'S$' }, { code:'THB', sym:'฿' },
-  { code:'AUD', sym:'A$' }, { code:'CAD', sym:'C$' }, { code:'CHF', sym:'Fr' },
-  { code:'AED', sym:'AED' }, { code:'MYR', sym:'RM' }, { code:'VND', sym:'₫' },
-  { code:'PHP', sym:'₱' }, { code:'MXN', sym:'MX$' },
+  { code:'USD', sym:'$',   name:'미국 달러' },
+  { code:'EUR', sym:'€',   name:'유로' },
+  { code:'JPY', sym:'¥',   name:'일본 엔' },
+  { code:'GBP', sym:'£',   name:'영국 파운드' },
+  { code:'CNY', sym:'¥',   name:'중국 위안' },
+  { code:'HKD', sym:'HK$', name:'홍콩 달러' },
+  { code:'TWD', sym:'NT$', name:'대만 달러' },
+  { code:'SGD', sym:'S$',  name:'싱가포르 달러' },
+  { code:'THB', sym:'฿',   name:'태국 바트' },
+  { code:'AUD', sym:'A$',  name:'호주 달러' },
+  { code:'CAD', sym:'C$',  name:'캐나다 달러' },
+  { code:'CHF', sym:'Fr',  name:'스위스 프랑' },
+  { code:'AED', sym:'AED', name:'UAE 디르함' },
+  { code:'MYR', sym:'RM',  name:'말레이시아 링깃' },
+  { code:'VND', sym:'₫',   name:'베트남 동' },
+  { code:'PHP', sym:'₱',   name:'필리핀 페소' },
+  { code:'MXN', sym:'MX$', name:'멕시코 페소' },
 ];
 
 function useFxRate(currency) {
@@ -988,9 +1085,16 @@ function useFxRate(currency) {
 }
 
 function FxCard() {
-  const [curIdx, setCurIdx] = React.useState(0);
-  const cur = FX_CURRENCIES[curIdx];
+  const [curCode, setCurCode]   = React.useState('USD');
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const cur = FX_CURRENCIES.find(c => c.code === curCode) || FX_CURRENCIES[0];
   const { loading, rate, ts, refresh } = useFxRate(cur.code);
+
+  const fxFilterFn = React.useCallback((item, q) => {
+    const ql = q.toLowerCase();
+    return item.code.toLowerCase().includes(ql) || item.name.includes(q);
+  }, []);
+
   return (
     <div style={{ background:COLORS.card, borderRadius:14, padding:'13px 14px 11px' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -1006,16 +1110,33 @@ function FxCard() {
         <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>
           = {cur.sym}1 {ts && <span style={{ opacity:0.6 }}>· {ts}</span>}
         </div>
-        <select value={curIdx} onChange={e => setCurIdx(Number(e.target.value))} style={{
-          border:'none', background:'transparent', cursor:'pointer',
+        <button onClick={() => setPickerOpen(true)} style={{
+          border:'none', background:'transparent', cursor:'pointer', padding:'2px 0',
+          display:'flex', alignItems:'center', gap:3,
           fontFamily:MONO, fontSize:10, color:COLORS.ink, fontWeight:600,
-          outline:'none', padding:'2px 0', appearance:'none', WebkitAppearance:'none',
         }}>
-          {FX_CURRENCIES.map((c, i) => (
-            <option key={c.code} value={i}>{c.code}</option>
-          ))}
-        </select>
+          {cur.code}
+          <Icon name="chevron-d" size={10} color={COLORS.mute} stroke={1.8}/>
+        </button>
       </div>
+      <PickerSheet
+        open={pickerOpen} onClose={() => setPickerOpen(false)}
+        title="통화 선택"
+        items={FX_CURRENCIES}
+        getKey={c => c.code}
+        filterFn={fxFilterFn}
+        selectedKey={cur.code}
+        onPick={c => setCurCode(c.code)}
+        renderRow={(c) => (
+          <>
+            <div style={{ fontFamily:MONO, fontSize:14, fontWeight:600, color:COLORS.ink, minWidth:42 }}>{c.code}</div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink }}>{c.name}</div>
+              <div style={{ fontFamily:MONO, fontSize:10.5, color:COLORS.mute, marginTop:1 }}>{c.sym}1</div>
+            </div>
+          </>
+        )}
+      />
     </div>
   );
 }
@@ -1177,91 +1298,19 @@ function formatCityDateWeekday(zone) {
 }
 
 function TimezoneCard({ city, onPick }) {
-  const [open, setOpen]   = React.useState(false);
-  const [q, setQ]         = React.useState('');
-  const [dropRect, setDropRect] = React.useState(null);
+  const [pickerOpen, setPickerOpen] = React.useState(false);
   const [, force] = React.useReducer(x => x+1, 0);
-  const cardRef  = React.useRef(null);
-  const inputRef = React.useRef(null);
 
   React.useEffect(() => { const t = setInterval(force, 30000); return () => clearInterval(t); }, []);
 
-  const openDrop = () => {
-    if (!cardRef.current) return;
-    setDropRect(cardRef.current.getBoundingClientRect());
-    setOpen(true);
-    setQ('');
-  };
-  const closeDrop = () => { setOpen(false); setQ(''); };
-
-  React.useEffect(() => {
-    if (open && inputRef.current) setTimeout(() => inputRef.current?.focus(), 60);
-  }, [open]);
-
-  const filtered = CITIES.filter(c => {
-    if (!q) return true;
+  const cityFilterFn = React.useCallback((item, q) => {
     const ql = q.toLowerCase();
-    return c.key.toLowerCase().includes(ql) || c.kor.includes(q);
-  });
-
-  const dropdown = open && dropRect && ReactDOM.createPortal(
-    <>
-      <div style={{ position:'fixed', inset:0, zIndex:498 }} onClick={closeDrop}/>
-      <div onClick={e => e.stopPropagation()} style={{
-        position:'fixed',
-        top: dropRect.bottom + 6,
-        left: dropRect.left,
-        width: dropRect.width,
-        zIndex: 499,
-        background: COLORS.card,
-        borderRadius: 14,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-        overflow: 'hidden',
-        maxHeight: Math.max(120, window.innerHeight - dropRect.bottom - 24),
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <div style={{ padding:'10px 12px 8px', flexShrink:0 }}>
-          <div style={{ background:COLORS.bg, borderRadius:8, padding:'7px 10px', display:'flex', gap:6, alignItems:'center' }}>
-            <Icon name="search" size={13} color={COLORS.mute} stroke={1.8}/>
-            <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
-              placeholder="도시 검색 (한글 / 영문)"
-              style={{ border:'none', outline:'none', background:'transparent', flex:1,
-                fontFamily:SANS, fontSize:13, color:COLORS.ink }}/>
-            {q && <button onClick={() => setQ('')} style={{ border:'none', background:'transparent', padding:0, cursor:'pointer' }}>
-              <Icon name="x" size={12} color={COLORS.mute} stroke={2}/>
-            </button>}
-          </div>
-        </div>
-        <div style={{ overflowY:'auto', flex:1 }}>
-          {filtered.length === 0 && (
-            <div style={{ padding:'14px 12px', fontFamily:SANS, fontSize:13, color:COLORS.mute, textAlign:'center' }}>검색 결과 없음</div>
-          )}
-          {filtered.map((c, i) => (
-            <button key={c.key} onClick={() => { onPick(c); closeDrop(); }} style={{
-              width:'100%', border:'none',
-              background: c.key === city.key ? COLORS.softer : 'transparent',
-              padding:'10px 12px', display:'flex', gap:8, alignItems:'center',
-              borderBottom: i < filtered.length-1 ? `1px solid ${COLORS.line}` : 'none',
-              cursor:'pointer', textAlign:'left',
-            }}>
-              <span style={{ fontSize:16 }}>{c.flag}</span>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink }}>{c.key}</div>
-              </div>
-              <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute }}>{formatCityTime(c.zone)}</div>
-              {c.key === city.key && <Icon name="check" size={14} color={COLORS.accent} stroke={2.5}/>}
-            </button>
-          ))}
-        </div>
-      </div>
-    </>,
-    document.body
-  );
+    return item.key.toLowerCase().includes(ql) || item.kor.includes(q);
+  }, []);
 
   return (
-    <div ref={cardRef}>
-      <button onClick={openDrop} style={{
+    <div>
+      <button onClick={() => setPickerOpen(true)} style={{
         background:COLORS.card, borderRadius:14, padding:'13px 14px 11px',
         border:'none', cursor:'pointer', textAlign:'left', width:'100%',
       }}>
@@ -1280,7 +1329,26 @@ function TimezoneCard({ city, onPick }) {
           {city.flag} {city.key}
         </div>
       </button>
-      {dropdown}
+      <PickerSheet
+        open={pickerOpen} onClose={() => setPickerOpen(false)}
+        title="도시 선택"
+        items={CITIES}
+        getKey={c => c.key}
+        filterFn={cityFilterFn}
+        selectedKey={city.key}
+        onPick={c => onPick(c)}
+        renderRow={(c) => (
+          <>
+            <span style={{ fontSize:18 }}>{c.flag}</span>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink }}>{c.key}</div>
+              <div style={{ fontFamily:MONO, fontSize:10.5, color:COLORS.mute, marginTop:2 }}>
+                {formatDiffFromSeoul(c.zone)} · {formatCityTime(c.zone)}
+              </div>
+            </div>
+          </>
+        )}
+      />
     </div>
   );
 }
@@ -1463,10 +1531,11 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:400, background:'rgba(0,0,0,0.4)',
-      display:'flex', flexDirection:'column', justifyContent:'flex-end' }} onClick={onClose}>
+      display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      paddingBottom:SHEET_BOTTOM }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:'22px 22px 0 0',
-        padding:'0 20px calc(28px + env(safe-area-inset-bottom,0px))',
+        background:COLORS.bg, borderRadius:22,
+        padding:'0 20px 28px',
         maxHeight:'80vh', display:'flex', flexDirection:'column',
       }}>
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px', flexShrink:0 }}>
@@ -1605,7 +1674,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v131</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v132</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -2799,11 +2868,12 @@ function NearbySheet({ stop, initialTab, onClose }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1100,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      paddingBottom:SHEET_BOTTOM,
       background:`rgba(0,0,0,${Math.max(0, 0.32 - sheetY/500)})` }} onClick={onClose}>
       <div ref={sheetRef} onClick={e=>e.stopPropagation()}
-        style={{ background:COLORS.bg, borderRadius:'22px 22px 0 0', maxHeight:'74%',
+        style={{ background:COLORS.bg, borderRadius:22, maxHeight:'74%',
           overflowY:'auto', overflowX:'hidden',
-          paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))',
+          paddingBottom:20,
           transform:`translateY(${entered ? sheetY : window.innerHeight}px)`,
           transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)' }}>
         {/* 핸들 */}
@@ -2910,11 +2980,12 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      paddingBottom:SHEET_BOTTOM,
       background:`rgba(0,0,0,${Math.max(0, 0.35 - sheetY / 400)})` }} onClick={onClose}>
       <div ref={sheetRef} onClick={(e)=>e.stopPropagation()}
         style={{
-          background:COLORS.bg, borderRadius:'22px 22px 0 0',
-          paddingBottom:40, maxHeight:'92%', overflowY:'auto', overflowX:'hidden',
+          background:COLORS.bg, borderRadius:22,
+          paddingBottom:24, maxHeight:'92%', overflowY:'auto', overflowX:'hidden',
           transform: `translateY(${entered ? sheetY : window.innerHeight}px)`,
           transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
         }}>
@@ -4061,10 +4132,11 @@ function BudgetCalcSheet({ open, onClose, onEnter }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:310,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      paddingBottom:SHEET_BOTTOM,
       background:'rgba(0,0,0,0.4)' }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:'22px 22px 0 0',
-        paddingBottom:'env(safe-area-inset-bottom,0px)',
+        background:COLORS.bg, borderRadius:22,
+        paddingBottom:16,
         transform:`translateY(${entered ? 0 : window.innerHeight}px)`,
         transition:'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
       }}>
@@ -4135,10 +4207,11 @@ function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:310,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      paddingBottom:SHEET_BOTTOM,
       background:'rgba(0,0,0,0.4)' }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:'22px 22px 0 0', padding:'0 16px',
-        paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))',
+        background:COLORS.bg, borderRadius:22, padding:'0 16px',
+        paddingBottom:24,
         transform:`translateY(${entered ? 0 : window.innerHeight}px)`,
         transition:'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
       }}>
@@ -4404,56 +4477,59 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
         </button>
       </div>
 
-      {/* 내역 목록 */}
+      {/* 내역 목록 — 날짜별 그룹 */}
       {entries.length === 0 ? (
         <div style={{ padding:'60px 0', textAlign:'center' }}>
           <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginBottom:8 }}>아직 기록이 없어요</div>
           <div style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.mute }}>여행 수입과 지출을 기록해 보세요</div>
         </div>
       ) : (() => {
-        const indexed = [...entries].map((e,i) => ({ ...e, _i:i })).reverse();
-        const incomeList  = indexed.filter(e => e.type === 'in');
-        const expenseList = indexed.filter(e => e.type === 'out');
-        const renderEntry = (e) => (
-          <div key={e.id||e._i} onClick={() => openEdit(e._i)} style={{
-            background:COLORS.card, borderRadius:12, padding:'11px 12px', marginBottom:6, cursor:'pointer',
-          }}>
-            <div style={{ fontFamily:MONO, fontSize:14, fontWeight:600, color: e.type==='in' ? '#3A9B4C' : COLORS.ink, marginBottom:3 }}>
-              {e.type==='in' ? '+' : '-'}{fmtAmt(e.amount, e.currency||'KRW')}
-            </div>
-            <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.ink, marginBottom:2,
-              whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-              {e.cat}{e.note ? ` · ${e.note}` : ''}
-            </div>
-            <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>{e.date}</div>
-              {(e.scope||'personal')==='shared' && (
-                <div style={{ fontFamily:MONO, fontSize:9, color:'#4F6BED', background:'rgba(79,107,237,0.1)',
-                  borderRadius:4, padding:'1px 5px', letterSpacing:'0.05em' }}>공동</div>
-              )}
-            </div>
-          </div>
-        );
+        const indexed = [...entries].map((e,i) => ({ ...e, _i:i }));
+        // 날짜별 그룹핑 (최근 날짜 위)
+        const byDate = {};
+        indexed.forEach(e => {
+          const d = e.date || '날짜 없음';
+          if (!byDate[d]) byDate[d] = [];
+          byDate[d].push(e);
+        });
+        const sortedDates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
         return (
           <div style={{ padding:'0 16px' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, alignItems:'start' }}>
-              <div>
-                <div style={{ fontFamily:MONO, fontSize:10, color:'#3A9B4C', letterSpacing:'0.1em',
-                  textTransform:'uppercase', padding:'4px 2px 8px' }}>수입</div>
-                {incomeList.length === 0
-                  ? <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, padding:'8px 2px' }}>내역 없음</div>
-                  : incomeList.map(renderEntry)
-                }
+            {sortedDates.map(date => (
+              <div key={date} style={{ marginBottom:16 }}>
+                <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em',
+                  textTransform:'uppercase', padding:'4px 2px 8px' }}>{date}</div>
+                <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
+                  {byDate[date].map((e, i) => (
+                    <div key={e.id||e._i} onClick={() => openEdit(e._i)}
+                      style={{
+                        padding:'12px 14px', cursor:'pointer', display:'flex', alignItems:'center', gap:12,
+                        borderBottom: i < byDate[date].length-1 ? `1px solid ${COLORS.line}` : 'none',
+                      }}>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, marginBottom:2,
+                          whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                          {e.cat}{e.note ? ` · ${e.note}` : ''}
+                        </div>
+                        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                          {(e.scope||'personal')==='shared' && (
+                            <div style={{ fontFamily:MONO, fontSize:9, color:'#4F6BED', background:'rgba(79,107,237,0.1)',
+                              borderRadius:4, padding:'1px 5px', letterSpacing:'0.05em' }}>공동</div>
+                          )}
+                          <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>
+                            {e.type==='in' ? '수입' : '지출'}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ fontFamily:MONO, fontSize:14, fontWeight:600, flexShrink:0,
+                        color: e.type==='in' ? '#3A9B4C' : '#C14F2E' }}>
+                        {e.type==='in' ? '+' : '-'}{fmtAmt(e.amount, e.currency||'KRW')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <div style={{ fontFamily:MONO, fontSize:10, color:'#C14F2E', letterSpacing:'0.1em',
-                  textTransform:'uppercase', padding:'4px 2px 8px' }}>지출</div>
-                {expenseList.length === 0
-                  ? <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, padding:'8px 2px' }}>내역 없음</div>
-                  : expenseList.map(renderEntry)
-                }
-              </div>
-            </div>
+            ))}
           </div>
         );
       })()}
@@ -4463,9 +4539,9 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
         <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.38)' }}
           onClick={() => setAddOpen(false)}>
           <div style={{
-            position:'absolute', bottom:0, left:0, right:0,
-            background:COLORS.bg, borderRadius:'22px 22px 0 0',
-            padding:'20px 18px', paddingBottom:'calc(24px + env(safe-area-inset-bottom,0px))',
+            position:'fixed', bottom:SHEET_BOTTOM, left:0, right:0,
+            background:COLORS.bg, borderRadius:22,
+            padding:'20px 18px 28px',
           }} onClick={e => e.stopPropagation()}
             onTouchStart={e => { sheetTouchY.current = e.touches[0].clientY; }}
             onTouchEnd={e => { if (e.changedTouches[0].clientY - (sheetTouchY.current||0) > 80) setAddOpen(false); }}>
@@ -4965,11 +5041,12 @@ function ProfileSheet({ open, onClose, authUser, userData, trips, onUserDataUpda
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:210, background:'rgba(0,0,0,0.4)',
-      display:'flex', flexDirection:'column', justifyContent:'flex-end' }} onClick={onClose}>
+      display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      paddingBottom:SHEET_BOTTOM }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:'22px 22px 0 0',
+        background:COLORS.bg, borderRadius:22,
         maxHeight:'90%', display:'flex', flexDirection:'column',
-        paddingBottom:'env(safe-area-inset-bottom,0px)',
+        paddingBottom:16,
       }}>
         {/* 핸들 */}
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 4px', flexShrink:0 }}>
@@ -5811,7 +5888,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v131</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v132</div>
         </div>
       </div>
       <button onClick={async () => {
