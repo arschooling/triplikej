@@ -3144,7 +3144,7 @@ function HomeScreen(_ref20) {
     color: COLORS.mute
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))'
+      paddingTop: 'calc(52px + env(safe-area-inset-top, 0px))'
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -8252,7 +8252,7 @@ function App() {
       color: COLORS.mute
     }
   }, /*#__PURE__*/React.createElement(Icon, {
-    name: "chevron-left",
+    name: "chevron-l",
     size: 14,
     color: COLORS.mute,
     stroke: 2
@@ -8307,7 +8307,7 @@ function App() {
       color: COLORS.mute
     }
   }, /*#__PURE__*/React.createElement(Icon, {
-    name: "chevron-left",
+    name: "chevron-l",
     size: 14,
     color: COLORS.mute,
     stroke: 2

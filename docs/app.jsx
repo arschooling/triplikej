@@ -1363,7 +1363,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
           }
         </button>
       )}
-      <div style={{ paddingTop:'calc(16px + env(safe-area-inset-top, 0px))' }}/>
+      <div style={{ paddingTop:'calc(52px + env(safe-area-inset-top, 0px))' }}/>
 
       <div style={{ padding:'10px 24px 18px' }}>
         {editing && editingTitle ? (
@@ -3780,7 +3780,7 @@ function App() {
           display:'flex', alignItems:'center', gap:3,
           fontFamily:SANS, fontSize:13, color:COLORS.mute,
         }}>
-          <Icon name="chevron-left" size={14} color={COLORS.mute} stroke={2}/>My Trips
+          <Icon name="chevron-l" size={14} color={COLORS.mute} stroke={2}/>My Trips
         </button>
       )}
       <SwipeBackLayer onBack={swipeBack}>
