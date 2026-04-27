@@ -1022,22 +1022,22 @@ function FxCard() {
 
 // ─── Timezones ──────────────────────────────────────────────
 const CITIES = [
-  { key:'New York', zone:'America/New_York', flag:'🇺🇸' },
-  { key:'Los Angeles', zone:'America/Los_Angeles', flag:'🇺🇸' },
-  { key:'Washington', zone:'America/New_York', flag:'🇺🇸' },
-  { key:'London', zone:'Europe/London', flag:'🇬🇧' },
-  { key:'Paris', zone:'Europe/Paris', flag:'🇫🇷' },
-  { key:'Rome', zone:'Europe/Rome', flag:'🇮🇹' },
-  { key:'Berlin', zone:'Europe/Berlin', flag:'🇩🇪' },
-  { key:'Dubai', zone:'Asia/Dubai', flag:'🇦🇪' },
-  { key:'Bangkok', zone:'Asia/Bangkok', flag:'🇹🇭' },
-  { key:'Singapore', zone:'Asia/Singapore', flag:'🇸🇬' },
-  { key:'Hong Kong', zone:'Asia/Hong_Kong', flag:'🇭🇰' },
-  { key:'Shanghai', zone:'Asia/Shanghai', flag:'🇨🇳' },
-  { key:'Tokyo', zone:'Asia/Tokyo', flag:'🇯🇵' },
-  { key:'Seoul', zone:'Asia/Seoul', flag:'🇰🇷' },
-  { key:'Sydney', zone:'Australia/Sydney', flag:'🇦🇺' },
-  { key:'Hawaii', zone:'Pacific/Honolulu', flag:'🇺🇸' },
+  { key:'New York',    kor:'뉴욕',      zone:'America/New_York',     flag:'🇺🇸' },
+  { key:'Los Angeles', kor:'로스앤젤레스',zone:'America/Los_Angeles',  flag:'🇺🇸' },
+  { key:'Washington',  kor:'워싱턴',     zone:'America/New_York',     flag:'🇺🇸' },
+  { key:'London',      kor:'런던',      zone:'Europe/London',         flag:'🇬🇧' },
+  { key:'Paris',       kor:'파리',      zone:'Europe/Paris',          flag:'🇫🇷' },
+  { key:'Rome',        kor:'로마',      zone:'Europe/Rome',           flag:'🇮🇹' },
+  { key:'Berlin',      kor:'베를린',    zone:'Europe/Berlin',          flag:'🇩🇪' },
+  { key:'Dubai',       kor:'두바이',    zone:'Asia/Dubai',             flag:'🇦🇪' },
+  { key:'Bangkok',     kor:'방콕',      zone:'Asia/Bangkok',           flag:'🇹🇭' },
+  { key:'Singapore',   kor:'싱가포르',  zone:'Asia/Singapore',         flag:'🇸🇬' },
+  { key:'Hong Kong',   kor:'홍콩',      zone:'Asia/Hong_Kong',         flag:'🇭🇰' },
+  { key:'Shanghai',    kor:'상하이',    zone:'Asia/Shanghai',          flag:'🇨🇳' },
+  { key:'Tokyo',       kor:'도쿄',      zone:'Asia/Tokyo',             flag:'🇯🇵' },
+  { key:'Seoul',       kor:'서울',      zone:'Asia/Seoul',             flag:'🇰🇷' },
+  { key:'Sydney',      kor:'시드니',    zone:'Australia/Sydney',       flag:'🇦🇺' },
+  { key:'Hawaii',      kor:'하와이',    zone:'Pacific/Honolulu',       flag:'🇺🇸' },
 ];
 
 function zoneOffsetMin(zone, d = new Date()) {
@@ -1066,84 +1066,115 @@ function formatCityDateWeekday(zone) {
   return `${date} (${weekday})`;
 }
 
-function TimezoneCard({ city, onClick }) {
+function TimezoneCard({ city, onPick }) {
+  const [open, setOpen]   = React.useState(false);
+  const [q, setQ]         = React.useState('');
+  const [dropRect, setDropRect] = React.useState(null);
   const [, force] = React.useReducer(x => x+1, 0);
-  React.useEffect(() => { const t = setInterval(force, 30000); return () => clearInterval(t); }, []);
-  return (
-    <button onClick={onClick} style={{
-      background:COLORS.card, borderRadius:14, padding:'13px 14px 11px',
-      border:'none', cursor:'pointer', textAlign:'left', width:'100%',
-    }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase' }}>시차</div>
-        <Icon name="chevron-d" size={12} color={COLORS.mute} stroke={1.8}/>
-      </div>
-      <div style={{ marginTop:5, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, flexShrink:0 }}>{formatDiffFromSeoul(city.zone)}</div>
-        <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:2 }}>
-          <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.04em' }}>{formatCityDateWeekday(city.zone)}</div>
-          <div style={{ fontFamily:MONO, fontSize:16, color:COLORS.ink, letterSpacing:'0.04em' }}>{formatCityTime(city.zone)}</div>
-        </div>
-      </div>
-      <div style={{ marginTop:5, fontFamily:SANS, fontSize:11, color:COLORS.mute, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-        {city.flag} {city.key}
-      </div>
-    </button>
-  );
-}
+  const cardRef  = React.useRef(null);
+  const inputRef = React.useRef(null);
 
-function CityPicker({ current, onPick, onClose }) {
-  const [q, setQ] = React.useState('');
-  const filtered = CITIES.filter(c => c.key.toLowerCase().includes(q.toLowerCase()));
+  React.useEffect(() => { const t = setInterval(force, 30000); return () => clearInterval(t); }, []);
+
+  const openDrop = () => {
+    if (!cardRef.current) return;
+    setDropRect(cardRef.current.getBoundingClientRect());
+    setOpen(true);
+    setQ('');
+  };
+  const closeDrop = () => { setOpen(false); setQ(''); };
+
   React.useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
-  return (
-    <div style={{ position:'fixed', inset:0, zIndex:100, background:'rgba(0,0,0,0.35)',
-      display:'flex', flexDirection:'column', justifyContent:'flex-end' }} onClick={onClose}>
+    if (open && inputRef.current) setTimeout(() => inputRef.current?.focus(), 60);
+  }, [open]);
+
+  const filtered = CITIES.filter(c => {
+    if (!q) return true;
+    const ql = q.toLowerCase();
+    return c.key.toLowerCase().includes(ql) || c.kor.includes(q);
+  });
+
+  const dropdown = open && dropRect && ReactDOM.createPortal(
+    <>
+      <div style={{ position:'fixed', inset:0, zIndex:498 }} onClick={closeDrop}/>
       <div onClick={e => e.stopPropagation()} style={{
-        background:COLORS.bg, borderRadius:'22px 22px 0 0', maxHeight:'82%',
-        display:'flex', flexDirection:'column',
+        position:'fixed',
+        top: dropRect.bottom + 6,
+        left: dropRect.left,
+        width: dropRect.width,
+        zIndex: 499,
+        background: COLORS.card,
+        borderRadius: 14,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+        overflow: 'hidden',
+        maxHeight: Math.max(120, window.innerHeight - dropRect.bottom - 24),
+        display: 'flex',
+        flexDirection: 'column',
       }}>
-        <div style={{ display:'flex', justifyContent:'center', padding:'8px 0 4px' }}>
-          <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
-        </div>
-        <div style={{ padding:'8px 20px 12px' }}>
-          <div style={{ fontFamily:SERIF, fontSize:24, color:COLORS.ink }}>도시 선택</div>
-        </div>
-        <div style={{ padding:'0 16px 10px' }}>
-          <div style={{ background:COLORS.card, borderRadius:10, padding:'10px 12px', display:'flex', gap:8, alignItems:'center' }}>
-            <Icon name="search" size={14} color={COLORS.mute} stroke={1.8}/>
-            <input value={q} onChange={e=>setQ(e.target.value)} placeholder="도시 검색"
-              style={{ border:'none', outline:'none', background:'transparent', flex:1, fontFamily:SANS, fontSize:13, color:COLORS.ink }}/>
+        <div style={{ padding:'10px 12px 8px', flexShrink:0 }}>
+          <div style={{ background:COLORS.bg, borderRadius:8, padding:'7px 10px', display:'flex', gap:6, alignItems:'center' }}>
+            <Icon name="search" size={13} color={COLORS.mute} stroke={1.8}/>
+            <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
+              placeholder="도시 검색 (한글 / 영문)"
+              style={{ border:'none', outline:'none', background:'transparent', flex:1,
+                fontFamily:SANS, fontSize:13, color:COLORS.ink }}/>
+            {q && <button onClick={() => setQ('')} style={{ border:'none', background:'transparent', padding:0, cursor:'pointer' }}>
+              <Icon name="x" size={12} color={COLORS.mute} stroke={2}/>
+            </button>}
           </div>
         </div>
-        <div style={{ flex:1, overflow:'auto', padding:'0 16px 40px' }}>
-          <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
-            {filtered.map((c, i) => (
-              <button key={c.key} onClick={() => { onPick(c); onClose(); }} style={{
-                width:'100%', border:'none', background:'transparent',
-                padding:'12px 14px', display:'flex', gap:10, alignItems:'center',
-                borderBottom: i < filtered.length-1 ? `1px solid ${COLORS.line}` : 'none',
-                cursor:'pointer', textAlign:'left',
-              }}>
-                <span style={{ fontSize:18 }}>{c.flag}</span>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink }}>{c.key}</div>
-                  <div style={{ fontFamily:MONO, fontSize:10.5, color:COLORS.mute, marginTop:2 }}>
-                    {formatDiffFromSeoul(c.zone)} · {formatCityTime(c.zone)}
-                  </div>
-                </div>
-                {c.key === current.key && <Icon name="check" size={16} color={COLORS.accent} stroke={2.5}/>}
-              </button>
-            ))}
-          </div>
+        <div style={{ overflowY:'auto', flex:1 }}>
+          {filtered.length === 0 && (
+            <div style={{ padding:'14px 12px', fontFamily:SANS, fontSize:13, color:COLORS.mute, textAlign:'center' }}>검색 결과 없음</div>
+          )}
+          {filtered.map((c, i) => (
+            <button key={c.key} onClick={() => { onPick(c); closeDrop(); }} style={{
+              width:'100%', border:'none',
+              background: c.key === city.key ? COLORS.softer : 'transparent',
+              padding:'10px 12px', display:'flex', gap:8, alignItems:'center',
+              borderBottom: i < filtered.length-1 ? `1px solid ${COLORS.line}` : 'none',
+              cursor:'pointer', textAlign:'left',
+            }}>
+              <span style={{ fontSize:16 }}>{c.flag}</span>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink }}>{c.key}</div>
+              </div>
+              <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute }}>{formatCityTime(c.zone)}</div>
+              {c.key === city.key && <Icon name="check" size={14} color={COLORS.accent} stroke={2.5}/>}
+            </button>
+          ))}
         </div>
       </div>
+    </>,
+    document.body
+  );
+
+  return (
+    <div ref={cardRef}>
+      <button onClick={openDrop} style={{
+        background:COLORS.card, borderRadius:14, padding:'13px 14px 11px',
+        border:'none', cursor:'pointer', textAlign:'left', width:'100%',
+      }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em', textTransform:'uppercase' }}>시차</div>
+          <Icon name="chevron-d" size={12} color={COLORS.mute} stroke={1.8}/>
+        </div>
+        <div style={{ marginTop:5, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, flexShrink:0 }}>{formatDiffFromSeoul(city.zone)}</div>
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:2 }}>
+            <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.04em' }}>{formatCityDateWeekday(city.zone)}</div>
+            <div style={{ fontFamily:MONO, fontSize:16, color:COLORS.ink, letterSpacing:'0.04em' }}>{formatCityTime(city.zone)}</div>
+          </div>
+        </div>
+        <div style={{ marginTop:5, fontFamily:SANS, fontSize:11, color:COLORS.mute, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+          {city.flag} {city.key}
+        </div>
+      </button>
+      {dropdown}
     </div>
   );
 }
+
 
 // ─── TRIPS SCREEN (top level) ───────────────────────────────
 // ─── Trip Card with swipe-to-reveal share/delete ─────────────
@@ -1464,7 +1495,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v127</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v128</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -1962,7 +1993,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
       </div>
       <div style={{ padding:'0 16px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
         <FxCard/>
-        <TimezoneCard city={city} onClick={onPickCity}/>
+        <TimezoneCard city={city} onPick={onPickCity}/>
       </div>
 
       {/* 날짜 달력 팝업 */}
@@ -5040,10 +5071,8 @@ function App() {
   const [hotelIdx, setHotelIdx] = React.useState(_nav.hotelIdx ?? null);
   const [slideDir,  setSlideDir]  = React.useState(null);
   const [slideKey,  setSlideKey]  = React.useState(0);
-  const [tabDrag,   setTabDrag]   = React.useState(null);
   const [openStop, setOpenStop]   = React.useState(null);
   const [city, setCity]           = React.useState(CITIES[0]);
-  const [cityPicker, setCityPicker]   = React.useState(false);
   const [hotelSheet, setHotelSheet]   = React.useState(null);
   const [scrollKey, setScrollKey]     = React.useState(0);
   const [editing, setEditing]         = React.useState(false);
@@ -5240,15 +5269,11 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ── Tab swipe + animation hooks (must be before any early returns) ───
+  // ── Tab animation hooks ───────────────────────────────────────
   const TAB_ORDER = ['home', 'map', 'food', 'prep', 'budget'];
-  const tabRef           = React.useRef(tab);
-  const swipeBackRef     = React.useRef(null);
-  const slideDirRef      = React.useRef(null);
-  const tabDragRef       = React.useRef(null); // { dir, targetTab, tx, settleComplete }
-  const edgeDragRef      = React.useRef(null);
-  const mainContainerRef = React.useRef(null);
-  const dragFlexRef      = React.useRef(null); // ref to the flex container for direct DOM update
+  const tabRef       = React.useRef(tab);
+  const swipeBackRef = React.useRef(null);
+  const slideDirRef  = React.useRef(null);
   React.useEffect(() => { tabRef.current = tab; }, [tab]);
 
   const changeTab = React.useCallback((newTab) => {
@@ -5262,115 +5287,6 @@ function App() {
     }
     setTab(newTab); setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);
   }, []);
-
-  // Called after CSS transition ends on the drag flex container
-  const handleTabDragEnd = React.useCallback(() => {
-    const d = tabDragRef.current;
-    tabDragRef.current = null;
-    setTabDrag(null); // removes both pages from DOM
-    if (d?.settleComplete) {
-      if (d.targetTab === '__trips__') {
-        setActiveTripId(null); setTrip(null); setEditing(false);
-      } else {
-        setTab(d.targetTab);
-        setDayIdx(null); setHotelIdx(null); setOpenStop(null); setEditing(false);
-      }
-    }
-  }, []);
-
-  // After tabDrag state causes the flex container to render, set its initial transform via DOM
-  React.useLayoutEffect(() => {
-    if (tabDrag && dragFlexRef.current) {
-      const W = window.innerWidth;
-      const tx = tabDragRef.current?.tx || 0;
-      const cTx = tabDrag.dir === 'prev' ? -W + tx : -tx;
-      dragFlexRef.current.style.transition = 'none';
-      dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
-    }
-  }, [tabDrag]);
-
-  React.useEffect(() => {
-    const el = mainContainerRef.current;
-    if (!el) return;
-
-    const onTouchStart = (e) => {
-      if (swipeBackRef.current) return;
-      const touch = e.touches[0];
-      const W = window.innerWidth;
-      const isLeft  = touch.clientX <= 60;
-      const isRight = touch.clientX >= W - 60;
-      if (!isLeft && !isRight) return;
-      const idx = TAB_ORDER.indexOf(tabRef.current);
-      let dir, targetTab;
-      if (isLeft) {
-        dir = 'prev';
-        if (idx > 0) targetTab = TAB_ORDER[idx - 1];
-        else if (tabRef.current === 'home') targetTab = '__trips__';
-        else return;
-      } else {
-        dir = 'next';
-        if (idx < TAB_ORDER.length - 1) targetTab = TAB_ORDER[idx + 1];
-        else return;
-      }
-      edgeDragRef.current = { x: touch.clientX, y: touch.clientY, t: Date.now(), dir, targetTab, locked: false };
-    };
-
-    const onTouchMove = (e) => {
-      const s = edgeDragRef.current;
-      if (!s) return;
-      const touch = e.touches[0];
-      const adx = touch.clientX - s.x;
-      const ady = Math.abs(touch.clientY - s.y);
-      if (!s.locked) {
-        if (ady > Math.abs(adx) + 5 && ady > 8) { edgeDragRef.current = null; return; }
-        if (s.dir === 'prev' && adx < -5) { edgeDragRef.current = null; return; }
-        if (s.dir === 'next' && adx > 5) { edgeDragRef.current = null; return; }
-        if (Math.abs(adx) < 8) return;
-        s.locked = true;
-        tabDragRef.current = { dir: s.dir, targetTab: s.targetTab, tx: 0, settleComplete: false };
-        setTabDrag({ dir: s.dir, targetTab: s.targetTab }); // triggers render of both pages
-        return;
-      }
-      e.preventDefault();
-      const W = window.innerWidth;
-      const raw = s.dir === 'prev' ? adx : -adx;
-      const tx = Math.max(0, Math.min(raw, W));
-      tabDragRef.current.tx = tx;
-      // Direct DOM update — zero React re-renders during drag
-      if (dragFlexRef.current) {
-        const cTx = s.dir === 'prev' ? -W + tx : -tx;
-        dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
-      }
-    };
-
-    const onTouchEnd = (e) => {
-      const s = edgeDragRef.current;
-      edgeDragRef.current = null;
-      if (!s || !s.locked || !tabDragRef.current) return;
-      const touch = e.changedTouches[0];
-      const raw = s.dir === 'prev' ? touch.clientX - s.x : -(touch.clientX - s.x);
-      const elapsed = Date.now() - s.t;
-      const W = window.innerWidth;
-      const complete = raw > W * 0.3 || (elapsed < 350 && raw > 50);
-      const targetTx = complete ? W : 0;
-      tabDragRef.current.settleComplete = complete;
-      // Trigger CSS transition directly on DOM — no React re-render needed
-      if (dragFlexRef.current) {
-        const cTx = s.dir === 'prev' ? -W + targetTx : -targetTx;
-        dragFlexRef.current.style.transition = 'transform 300ms cubic-bezier(0.25,1,0.35,1)';
-        dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
-      }
-    };
-
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchmove', onTouchMove, { passive: false });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-      el.removeEventListener('touchend', onTouchEnd);
-    };
-  }, [changeTab, activeTripId]);
 
   // ── Trip-level actions (Firestore) ────────────────────────
   const editTrip = (patch) => {
@@ -5632,7 +5548,7 @@ function App() {
         onBack={() => { setActiveTripId(null); setTrip(null); setEditing(false); }}
         onOpenDay={(i) => { savedHomeScrollY.current = window.scrollY; setDayIdx(i); setScrollKey(k=>k+1); }}
         onOpenHotel={(i) => { savedHomeScrollY.current = window.scrollY; setHotelIdx(i); setScrollKey(k=>k+1); }}
-        city={city} onPickCity={() => setCityPicker(true)}
+        city={city} onPickCity={setCity}
         onEditTrip={editTrip} onReorderDays={reorderDays}
         onAddDay={addDay} onDeleteDay={deleteDay}
         onAddHotel={addHotel}
@@ -5780,7 +5696,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v127</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v128</div>
         </div>
       </div>
       <button onClick={async () => {
@@ -5817,62 +5733,21 @@ function App() {
   }
   swipeBackRef.current = swipeBack;
 
-  const getScreenForTab = (targetTabId) => {
-    if (!targetTabId || targetTabId === '__trips__') return <div style={{ minHeight:'100vh', background:COLORS.bg }}/>;
-    switch(targetTabId) {
-      case 'home': return <HomeScreen trip={trip}
-        onOpenDay={() => {}} onOpenHotel={() => {}} city={city} onPickCity={() => {}}
-        onEditTrip={() => {}} onReorderDays={() => {}} onAddDay={() => {}} onDeleteDay={() => {}}
-        onAddHotel={() => {}} onAddHotelFromSearch={() => {}} onDeleteHotel={() => {}}
-        onReorderHotels={() => {}} onConvertInlineHotel={() => {}} onAddItemToFirstDay={() => {}}
-        editing={false} setEditing={() => {}} userData={userData} onOpenCompanion={() => {}}
-        onLoadSample={async () => {}}/>;
-      case 'map': return <MapScreen trip={trip} onEditItem={() => {}}/>;
-      case 'food': return <FoodScreen trip={trip} onEditFood={() => {}} editing={false} setEditing={() => {}}/>;
-      case 'prep': return <PrepScreen trip={trip} prep={prep} onEditPrep={() => {}} editing={false} setEditing={() => {}}/>;
-      case 'budget': return <BudgetScreen trip={trip} onEditBudget={() => {}}/>;
-      default: return <div style={{ minHeight:'100vh', background:COLORS.bg }}/>;
-    }
-  };
-
   return (
     <div style={{ minHeight:'100vh', fontFamily:'-apple-system, system-ui, sans-serif', background:'#F5F2EC' }}>
-      <div ref={mainContainerRef} style={{ overflowX:'hidden' }}>
-        {tabDrag ? (
-          // transform은 JSX에 없음 — useLayoutEffect + onTouchMove에서 직접 DOM 조작
-          <div ref={dragFlexRef} style={{
-            display:'flex', willChange:'transform',
-          }} onTransitionEnd={handleTabDragEnd}>
-            {tabDrag.dir === 'prev' && (
-              <div style={{ width:'100vw', minWidth:'100vw', flexShrink:0, overflow:'hidden' }}>
-                {getScreenForTab(tabDrag.targetTab)}
-              </div>
-            )}
-            <div style={{ width:'100vw', minWidth:'100vw', flexShrink:0, overflow:'hidden' }}>
-              <SwipeBackLayer onBack={swipeBack}>{screen}</SwipeBackLayer>
-            </div>
-            {tabDrag.dir === 'next' && (
-              <div style={{ width:'100vw', minWidth:'100vw', flexShrink:0, overflow:'hidden' }}>
-                {getScreenForTab(tabDrag.targetTab)}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div key={slideKey}
-            style={{ animation: slideDir ? `tab${slideDir === 'from-right' ? 'SlideFromRight' : 'SlideFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)` : 'none' }}
-            onAnimationEnd={() => setSlideDir(null)}>
-            <SwipeBackLayer onBack={swipeBack}>{screen}</SwipeBackLayer>
-          </div>
-        )}
+      <div style={{ overflowX:'hidden' }}>
+        <div key={slideKey}
+          style={{ animation: slideDir ? `tab${slideDir === 'from-right' ? 'SlideFromRight' : 'SlideFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)` : 'none' }}
+          onAnimationEnd={() => setSlideDir(null)}>
+          <SwipeBackLayer onBack={swipeBack}>{screen}</SwipeBackLayer>
+        </div>
       </div>
       <TabBar tab={tab} setTab={changeTab}
-        visible={tabBarVisible && !openStop && !profileSheetOpen && !hotelSheet && !cityPicker && !saveConfirm && !budgetSheetOpen}
+        visible={tabBarVisible && !openStop && !profileSheetOpen && !hotelSheet && !saveConfirm && !budgetSheetOpen}
         editing={editing} canEdit={canEdit} onToggleEdit={handleEditToggle}/>
       <StopSheet open={openStop} dayHue={dayHue}
         onClose={() => setOpenStop(null)} onSave={saveStop}/>
-      {cityPicker && (
-        <CityPicker current={city} onPick={setCity} onClose={() => setCityPicker(false)}/>
-      )}
+
       {hotelSheet !== null && (
         <HotelSearchSheet
           COLORS={COLORS} SERIF={SERIF} SANS={SANS} MONO={MONO} Icon={Icon}

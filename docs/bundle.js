@@ -2521,66 +2521,82 @@ function FxCard() {
 // ─── Timezones ──────────────────────────────────────────────
 const CITIES = [{
   key: 'New York',
+  kor: '뉴욕',
   zone: 'America/New_York',
   flag: '🇺🇸'
 }, {
   key: 'Los Angeles',
+  kor: '로스앤젤레스',
   zone: 'America/Los_Angeles',
   flag: '🇺🇸'
 }, {
   key: 'Washington',
+  kor: '워싱턴',
   zone: 'America/New_York',
   flag: '🇺🇸'
 }, {
   key: 'London',
+  kor: '런던',
   zone: 'Europe/London',
   flag: '🇬🇧'
 }, {
   key: 'Paris',
+  kor: '파리',
   zone: 'Europe/Paris',
   flag: '🇫🇷'
 }, {
   key: 'Rome',
+  kor: '로마',
   zone: 'Europe/Rome',
   flag: '🇮🇹'
 }, {
   key: 'Berlin',
+  kor: '베를린',
   zone: 'Europe/Berlin',
   flag: '🇩🇪'
 }, {
   key: 'Dubai',
+  kor: '두바이',
   zone: 'Asia/Dubai',
   flag: '🇦🇪'
 }, {
   key: 'Bangkok',
+  kor: '방콕',
   zone: 'Asia/Bangkok',
   flag: '🇹🇭'
 }, {
   key: 'Singapore',
+  kor: '싱가포르',
   zone: 'Asia/Singapore',
   flag: '🇸🇬'
 }, {
   key: 'Hong Kong',
+  kor: '홍콩',
   zone: 'Asia/Hong_Kong',
   flag: '🇭🇰'
 }, {
   key: 'Shanghai',
+  kor: '상하이',
   zone: 'Asia/Shanghai',
   flag: '🇨🇳'
 }, {
   key: 'Tokyo',
+  kor: '도쿄',
   zone: 'Asia/Tokyo',
   flag: '🇯🇵'
 }, {
   key: 'Seoul',
+  kor: '서울',
   zone: 'Asia/Seoul',
   flag: '🇰🇷'
 }, {
   key: 'Sydney',
+  kor: '시드니',
   zone: 'Australia/Sydney',
   flag: '🇦🇺'
 }, {
   key: 'Hawaii',
+  kor: '하와이',
   zone: 'Pacific/Honolulu',
   flag: '🇺🇸'
 }];
@@ -2631,15 +2647,167 @@ function formatCityDateWeekday(zone) {
 }
 function TimezoneCard({
   city,
-  onClick
+  onPick
 }) {
+  const [open, setOpen] = React.useState(false);
+  const [q, setQ] = React.useState('');
+  const [dropRect, setDropRect] = React.useState(null);
   const [, force] = React.useReducer(x => x + 1, 0);
+  const cardRef = React.useRef(null);
+  const inputRef = React.useRef(null);
   React.useEffect(() => {
     const t = setInterval(force, 30000);
     return () => clearInterval(t);
   }, []);
-  return /*#__PURE__*/React.createElement("button", {
-    onClick: onClick,
+  const openDrop = () => {
+    if (!cardRef.current) return;
+    setDropRect(cardRef.current.getBoundingClientRect());
+    setOpen(true);
+    setQ('');
+  };
+  const closeDrop = () => {
+    setOpen(false);
+    setQ('');
+  };
+  React.useEffect(() => {
+    if (open && inputRef.current) setTimeout(() => inputRef.current?.focus(), 60);
+  }, [open]);
+  const filtered = CITIES.filter(c => {
+    if (!q) return true;
+    const ql = q.toLowerCase();
+    return c.key.toLowerCase().includes(ql) || c.kor.includes(q);
+  });
+  const dropdown = open && dropRect && ReactDOM.createPortal(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      zIndex: 498
+    },
+    onClick: closeDrop
+  }), /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      position: 'fixed',
+      top: dropRect.bottom + 6,
+      left: dropRect.left,
+      width: dropRect.width,
+      zIndex: 499,
+      background: COLORS.card,
+      borderRadius: 14,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+      overflow: 'hidden',
+      maxHeight: Math.max(120, window.innerHeight - dropRect.bottom - 24),
+      display: 'flex',
+      flexDirection: 'column'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '10px 12px 8px',
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: COLORS.bg,
+      borderRadius: 8,
+      padding: '7px 10px',
+      display: 'flex',
+      gap: 6,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "search",
+    size: 13,
+    color: COLORS.mute,
+    stroke: 1.8
+  }), /*#__PURE__*/React.createElement("input", {
+    ref: inputRef,
+    value: q,
+    onChange: e => setQ(e.target.value),
+    placeholder: "\uB3C4\uC2DC \uAC80\uC0C9 (\uD55C\uAE00 / \uC601\uBB38)",
+    style: {
+      border: 'none',
+      outline: 'none',
+      background: 'transparent',
+      flex: 1,
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.ink
+    }
+  }), q && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setQ(''),
+    style: {
+      border: 'none',
+      background: 'transparent',
+      padding: 0,
+      cursor: 'pointer'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "x",
+    size: 12,
+    color: COLORS.mute,
+    stroke: 2
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowY: 'auto',
+      flex: 1
+    }
+  }, filtered.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '14px 12px',
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.mute,
+      textAlign: 'center'
+    }
+  }, "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C"), filtered.map((c, i) => /*#__PURE__*/React.createElement("button", {
+    key: c.key,
+    onClick: () => {
+      onPick(c);
+      closeDrop();
+    },
+    style: {
+      width: '100%',
+      border: 'none',
+      background: c.key === city.key ? COLORS.softer : 'transparent',
+      padding: '10px 12px',
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center',
+      borderBottom: i < filtered.length - 1 ? `1px solid ${COLORS.line}` : 'none',
+      cursor: 'pointer',
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16
+    }
+  }, c.flag), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 13,
+      color: COLORS.ink
+    }
+  }, c.key)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 10,
+      color: COLORS.mute
+    }
+  }, formatCityTime(c.zone)), c.key === city.key && /*#__PURE__*/React.createElement(Icon, {
+    name: "check",
+    size: 14,
+    color: COLORS.accent,
+    stroke: 2.5
+  })))))), document.body);
+  return /*#__PURE__*/React.createElement("div", {
+    ref: cardRef
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: openDrop,
     style: {
       background: COLORS.card,
       borderRadius: 14,
@@ -2713,153 +2881,7 @@ function TimezoneCard({
       overflow: 'hidden',
       textOverflow: 'ellipsis'
     }
-  }, city.flag, " ", city.key));
-}
-function CityPicker({
-  current,
-  onPick,
-  onClose
-}) {
-  const [q, setQ] = React.useState('');
-  const filtered = CITIES.filter(c => c.key.toLowerCase().includes(q.toLowerCase()));
-  React.useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'fixed',
-      inset: 0,
-      zIndex: 100,
-      background: 'rgba(0,0,0,0.35)',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-end'
-    },
-    onClick: onClose
-  }, /*#__PURE__*/React.createElement("div", {
-    onClick: e => e.stopPropagation(),
-    style: {
-      background: COLORS.bg,
-      borderRadius: '22px 22px 0 0',
-      maxHeight: '82%',
-      display: 'flex',
-      flexDirection: 'column'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      justifyContent: 'center',
-      padding: '8px 0 4px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 36,
-      height: 4,
-      background: COLORS.line,
-      borderRadius: 2
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '8px 20px 12px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SERIF,
-      fontSize: 24,
-      color: COLORS.ink
-    }
-  }, "\uB3C4\uC2DC \uC120\uD0DD")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: '0 16px 10px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: COLORS.card,
-      borderRadius: 10,
-      padding: '10px 12px',
-      display: 'flex',
-      gap: 8,
-      alignItems: 'center'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "search",
-    size: 14,
-    color: COLORS.mute,
-    stroke: 1.8
-  }), /*#__PURE__*/React.createElement("input", {
-    value: q,
-    onChange: e => setQ(e.target.value),
-    placeholder: "\uB3C4\uC2DC \uAC80\uC0C9",
-    style: {
-      border: 'none',
-      outline: 'none',
-      background: 'transparent',
-      flex: 1,
-      fontFamily: SANS,
-      fontSize: 13,
-      color: COLORS.ink
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      overflow: 'auto',
-      padding: '0 16px 40px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: COLORS.card,
-      borderRadius: 14,
-      overflow: 'hidden'
-    }
-  }, filtered.map((c, i) => /*#__PURE__*/React.createElement("button", {
-    key: c.key,
-    onClick: () => {
-      onPick(c);
-      onClose();
-    },
-    style: {
-      width: '100%',
-      border: 'none',
-      background: 'transparent',
-      padding: '12px 14px',
-      display: 'flex',
-      gap: 10,
-      alignItems: 'center',
-      borderBottom: i < filtered.length - 1 ? `1px solid ${COLORS.line}` : 'none',
-      cursor: 'pointer',
-      textAlign: 'left'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 18
-    }
-  }, c.flag), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: SANS,
-      fontSize: 14,
-      color: COLORS.ink
-    }
-  }, c.key), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: MONO,
-      fontSize: 10.5,
-      color: COLORS.mute,
-      marginTop: 2
-    }
-  }, formatDiffFromSeoul(c.zone), " \xB7 ", formatCityTime(c.zone))), c.key === current.key && /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    color: COLORS.accent,
-    stroke: 2.5
-  })))))));
+  }, city.flag, " ", city.key)), dropdown);
 }
 
 // ─── TRIPS SCREEN (top level) ───────────────────────────────
@@ -3461,7 +3483,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v127")), /*#__PURE__*/React.createElement("button", {
+  }, "v128")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -4462,7 +4484,7 @@ function HomeScreen({
     }
   }, /*#__PURE__*/React.createElement(FxCard, null), /*#__PURE__*/React.createElement(TimezoneCard, {
     city: city,
-    onClick: onPickCity
+    onPick: onPickCity
   })), /*#__PURE__*/React.createElement(DateRangeSheet, {
     open: dateRangeOpen,
     startIso: startIso,
@@ -10818,10 +10840,8 @@ function App() {
   const [hotelIdx, setHotelIdx] = React.useState(_nav.hotelIdx ?? null);
   const [slideDir, setSlideDir] = React.useState(null);
   const [slideKey, setSlideKey] = React.useState(0);
-  const [tabDrag, setTabDrag] = React.useState(null);
   const [openStop, setOpenStop] = React.useState(null);
   const [city, setCity] = React.useState(CITIES[0]);
-  const [cityPicker, setCityPicker] = React.useState(false);
   const [hotelSheet, setHotelSheet] = React.useState(null);
   const [scrollKey, setScrollKey] = React.useState(0);
   const [editing, setEditing] = React.useState(false);
@@ -11046,15 +11066,11 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ── Tab swipe + animation hooks (must be before any early returns) ───
+  // ── Tab animation hooks ───────────────────────────────────────
   const TAB_ORDER = ['home', 'map', 'food', 'prep', 'budget'];
   const tabRef = React.useRef(tab);
   const swipeBackRef = React.useRef(null);
   const slideDirRef = React.useRef(null);
-  const tabDragRef = React.useRef(null); // { dir, targetTab, tx, settleComplete }
-  const edgeDragRef = React.useRef(null);
-  const mainContainerRef = React.useRef(null);
-  const dragFlexRef = React.useRef(null); // ref to the flex container for direct DOM update
   React.useEffect(() => {
     tabRef.current = tab;
   }, [tab]);
@@ -11073,142 +11089,6 @@ function App() {
     setOpenStop(null);
     setEditing(false);
   }, []);
-
-  // Called after CSS transition ends on the drag flex container
-  const handleTabDragEnd = React.useCallback(() => {
-    const d = tabDragRef.current;
-    tabDragRef.current = null;
-    setTabDrag(null); // removes both pages from DOM
-    if (d?.settleComplete) {
-      if (d.targetTab === '__trips__') {
-        setActiveTripId(null);
-        setTrip(null);
-        setEditing(false);
-      } else {
-        setTab(d.targetTab);
-        setDayIdx(null);
-        setHotelIdx(null);
-        setOpenStop(null);
-        setEditing(false);
-      }
-    }
-  }, []);
-
-  // After tabDrag state causes the flex container to render, set its initial transform via DOM
-  React.useLayoutEffect(() => {
-    if (tabDrag && dragFlexRef.current) {
-      const W = window.innerWidth;
-      const tx = tabDragRef.current?.tx || 0;
-      const cTx = tabDrag.dir === 'prev' ? -W + tx : -tx;
-      dragFlexRef.current.style.transition = 'none';
-      dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
-    }
-  }, [tabDrag]);
-  React.useEffect(() => {
-    const el = mainContainerRef.current;
-    if (!el) return;
-    const onTouchStart = e => {
-      if (swipeBackRef.current) return;
-      const touch = e.touches[0];
-      const W = window.innerWidth;
-      const isLeft = touch.clientX <= 60;
-      const isRight = touch.clientX >= W - 60;
-      if (!isLeft && !isRight) return;
-      const idx = TAB_ORDER.indexOf(tabRef.current);
-      let dir, targetTab;
-      if (isLeft) {
-        dir = 'prev';
-        if (idx > 0) targetTab = TAB_ORDER[idx - 1];else if (tabRef.current === 'home') targetTab = '__trips__';else return;
-      } else {
-        dir = 'next';
-        if (idx < TAB_ORDER.length - 1) targetTab = TAB_ORDER[idx + 1];else return;
-      }
-      edgeDragRef.current = {
-        x: touch.clientX,
-        y: touch.clientY,
-        t: Date.now(),
-        dir,
-        targetTab,
-        locked: false
-      };
-    };
-    const onTouchMove = e => {
-      const s = edgeDragRef.current;
-      if (!s) return;
-      const touch = e.touches[0];
-      const adx = touch.clientX - s.x;
-      const ady = Math.abs(touch.clientY - s.y);
-      if (!s.locked) {
-        if (ady > Math.abs(adx) + 5 && ady > 8) {
-          edgeDragRef.current = null;
-          return;
-        }
-        if (s.dir === 'prev' && adx < -5) {
-          edgeDragRef.current = null;
-          return;
-        }
-        if (s.dir === 'next' && adx > 5) {
-          edgeDragRef.current = null;
-          return;
-        }
-        if (Math.abs(adx) < 8) return;
-        s.locked = true;
-        tabDragRef.current = {
-          dir: s.dir,
-          targetTab: s.targetTab,
-          tx: 0,
-          settleComplete: false
-        };
-        setTabDrag({
-          dir: s.dir,
-          targetTab: s.targetTab
-        }); // triggers render of both pages
-        return;
-      }
-      e.preventDefault();
-      const W = window.innerWidth;
-      const raw = s.dir === 'prev' ? adx : -adx;
-      const tx = Math.max(0, Math.min(raw, W));
-      tabDragRef.current.tx = tx;
-      // Direct DOM update — zero React re-renders during drag
-      if (dragFlexRef.current) {
-        const cTx = s.dir === 'prev' ? -W + tx : -tx;
-        dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
-      }
-    };
-    const onTouchEnd = e => {
-      const s = edgeDragRef.current;
-      edgeDragRef.current = null;
-      if (!s || !s.locked || !tabDragRef.current) return;
-      const touch = e.changedTouches[0];
-      const raw = s.dir === 'prev' ? touch.clientX - s.x : -(touch.clientX - s.x);
-      const elapsed = Date.now() - s.t;
-      const W = window.innerWidth;
-      const complete = raw > W * 0.3 || elapsed < 350 && raw > 50;
-      const targetTx = complete ? W : 0;
-      tabDragRef.current.settleComplete = complete;
-      // Trigger CSS transition directly on DOM — no React re-render needed
-      if (dragFlexRef.current) {
-        const cTx = s.dir === 'prev' ? -W + targetTx : -targetTx;
-        dragFlexRef.current.style.transition = 'transform 300ms cubic-bezier(0.25,1,0.35,1)';
-        dragFlexRef.current.style.transform = `translateX(${cTx}px)`;
-      }
-    };
-    el.addEventListener('touchstart', onTouchStart, {
-      passive: true
-    });
-    el.addEventListener('touchmove', onTouchMove, {
-      passive: false
-    });
-    el.addEventListener('touchend', onTouchEnd, {
-      passive: true
-    });
-    return () => {
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-      el.removeEventListener('touchend', onTouchEnd);
-    };
-  }, [changeTab, activeTripId]);
 
   // ── Trip-level actions (Firestore) ────────────────────────
   const editTrip = patch => {
@@ -11645,7 +11525,7 @@ function App() {
           setScrollKey(k => k + 1);
         },
         city: city,
-        onPickCity: () => setCityPicker(true),
+        onPickCity: setCity,
         onEditTrip: editTrip,
         onReorderDays: reorderDays,
         onAddDay: addDay,
@@ -11921,7 +11801,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v127"))), /*#__PURE__*/React.createElement("button", {
+  }, "v128"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
@@ -11982,71 +11862,6 @@ function App() {
     };
   }
   swipeBackRef.current = swipeBack;
-  const getScreenForTab = targetTabId => {
-    if (!targetTabId || targetTabId === '__trips__') return /*#__PURE__*/React.createElement("div", {
-      style: {
-        minHeight: '100vh',
-        background: COLORS.bg
-      }
-    });
-    switch (targetTabId) {
-      case 'home':
-        return /*#__PURE__*/React.createElement(HomeScreen, {
-          trip: trip,
-          onOpenDay: () => {},
-          onOpenHotel: () => {},
-          city: city,
-          onPickCity: () => {},
-          onEditTrip: () => {},
-          onReorderDays: () => {},
-          onAddDay: () => {},
-          onDeleteDay: () => {},
-          onAddHotel: () => {},
-          onAddHotelFromSearch: () => {},
-          onDeleteHotel: () => {},
-          onReorderHotels: () => {},
-          onConvertInlineHotel: () => {},
-          onAddItemToFirstDay: () => {},
-          editing: false,
-          setEditing: () => {},
-          userData: userData,
-          onOpenCompanion: () => {},
-          onLoadSample: async () => {}
-        });
-      case 'map':
-        return /*#__PURE__*/React.createElement(MapScreen, {
-          trip: trip,
-          onEditItem: () => {}
-        });
-      case 'food':
-        return /*#__PURE__*/React.createElement(FoodScreen, {
-          trip: trip,
-          onEditFood: () => {},
-          editing: false,
-          setEditing: () => {}
-        });
-      case 'prep':
-        return /*#__PURE__*/React.createElement(PrepScreen, {
-          trip: trip,
-          prep: prep,
-          onEditPrep: () => {},
-          editing: false,
-          setEditing: () => {}
-        });
-      case 'budget':
-        return /*#__PURE__*/React.createElement(BudgetScreen, {
-          trip: trip,
-          onEditBudget: () => {}
-        });
-      default:
-        return /*#__PURE__*/React.createElement("div", {
-          style: {
-            minHeight: '100vh',
-            background: COLORS.bg
-          }
-        });
-    }
-  };
   return /*#__PURE__*/React.createElement("div", {
     style: {
       minHeight: '100vh',
@@ -12054,44 +11869,10 @@ function App() {
       background: '#F5F2EC'
     }
   }, /*#__PURE__*/React.createElement("div", {
-    ref: mainContainerRef,
     style: {
       overflowX: 'hidden'
     }
-  }, tabDrag ?
-  /*#__PURE__*/
-  // transform은 JSX에 없음 — useLayoutEffect + onTouchMove에서 직접 DOM 조작
-  React.createElement("div", {
-    ref: dragFlexRef,
-    style: {
-      display: 'flex',
-      willChange: 'transform'
-    },
-    onTransitionEnd: handleTabDragEnd
-  }, tabDrag.dir === 'prev' && /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: '100vw',
-      minWidth: '100vw',
-      flexShrink: 0,
-      overflow: 'hidden'
-    }
-  }, getScreenForTab(tabDrag.targetTab)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: '100vw',
-      minWidth: '100vw',
-      flexShrink: 0,
-      overflow: 'hidden'
-    }
-  }, /*#__PURE__*/React.createElement(SwipeBackLayer, {
-    onBack: swipeBack
-  }, screen)), tabDrag.dir === 'next' && /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: '100vw',
-      minWidth: '100vw',
-      flexShrink: 0,
-      overflow: 'hidden'
-    }
-  }, getScreenForTab(tabDrag.targetTab))) : /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     key: slideKey,
     style: {
       animation: slideDir ? `tab${slideDir === 'from-right' ? 'SlideFromRight' : 'SlideFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)` : 'none'
@@ -12102,7 +11883,7 @@ function App() {
   }, screen))), /*#__PURE__*/React.createElement(TabBar, {
     tab: tab,
     setTab: changeTab,
-    visible: tabBarVisible && !openStop && !profileSheetOpen && !hotelSheet && !cityPicker && !saveConfirm && !budgetSheetOpen,
+    visible: tabBarVisible && !openStop && !profileSheetOpen && !hotelSheet && !saveConfirm && !budgetSheetOpen,
     editing: editing,
     canEdit: canEdit,
     onToggleEdit: handleEditToggle
@@ -12111,10 +11892,6 @@ function App() {
     dayHue: dayHue,
     onClose: () => setOpenStop(null),
     onSave: saveStop
-  }), cityPicker && /*#__PURE__*/React.createElement(CityPicker, {
-    current: city,
-    onPick: setCity,
-    onClose: () => setCityPicker(false)
   }), hotelSheet !== null && /*#__PURE__*/React.createElement(HotelSearchSheet, {
     COLORS: COLORS,
     SERIF: SERIF,
