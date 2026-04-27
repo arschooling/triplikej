@@ -606,10 +606,10 @@ function CompactWheel({ items, value, onChange, renderLabel=(x=>x), width=100 })
     }, 100);
   };
   const PAD = IH * Math.floor(VIS / 2);
-  const stop = e => { e.stopPropagation(); e.preventDefault(); };
+  const stopProp = e => e.stopPropagation();
   return (
     <div style={{ position:'relative', width, height: IH * VIS, overflow:'hidden' }}
-      onClick={stop} onTouchStart={stop} onTouchMove={stop} onTouchEnd={stop}>
+      onClick={stopProp} onTouchStart={stopProp} onTouchMove={stopProp} onTouchEnd={stopProp}>
       <div style={{
         position:'absolute', left:0, right:0, pointerEvents:'none', zIndex:2,
         top: IH * Math.floor(VIS / 2), height: IH,
@@ -1464,7 +1464,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v122</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v123</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -2703,13 +2703,11 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
   }, [open]);
 
-  // 배경 스크롤 완전 차단
+  // 배경 스크롤 차단
   React.useEffect(() => {
     const prevOverflow = document.body.style.overflow;
-    const prevTouch = document.body.style.touchAction;
     document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
-    return () => { document.body.style.overflow = prevOverflow; document.body.style.touchAction = prevTouch; };
+    return () => { document.body.style.overflow = prevOverflow; };
   }, []);
 
   // 시트 전체 드래그로 닫기 (passive:false 로 preventDefault 가능하게)
@@ -6064,7 +6062,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v122</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v123</div>
         </div>
       </div>
       <button onClick={async () => {
