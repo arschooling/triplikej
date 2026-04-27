@@ -5528,13 +5528,18 @@ function MapScreen(_ref28) {
     selectedDay = _React$useState82[0],
     setSelectedDay = _React$useState82[1];
   var day = trip.days[selectedDay];
-  var places = day.items.filter(function (it) {
-    return it.loc;
-  }).map(function (it) {
-    return "".concat(it.title, " ").concat(it.loc || '').trim();
-  });
-  var query = (places[0] || day.titleEn || 'New York') + ', New York';
-  var embedUrl = "https://www.google.com/maps?q=".concat(encodeURIComponent(query), "&output=embed");
+  var stops = day.items.filter(function (it) { return it.loc; });
+  var places = stops.map(function (it) { return "".concat(it.title, " ").concat(it.loc).trim().concat(', New York'); });
+  var embedUrl;
+  if (places.length === 0) {
+    embedUrl = "https://www.google.com/maps?q=".concat(encodeURIComponent((day.titleEn || 'New York') + ', New York'), "&output=embed");
+  } else if (places.length === 1) {
+    embedUrl = "https://www.google.com/maps?q=".concat(encodeURIComponent(places[0]), "&output=embed");
+  } else {
+    var saddr = encodeURIComponent(places[0]);
+    var daddr = places.slice(1).map(encodeURIComponent).join('+to:');
+    embedUrl = "https://maps.google.com/maps?saddr=".concat(saddr, "&daddr=").concat(daddr, "&output=embed");
+  }
   return /*#__PURE__*/React.createElement("div", {
     style: {
       background: COLORS.bg,
@@ -5605,7 +5610,7 @@ function MapScreen(_ref28) {
       border: "1px solid ".concat(COLORS.line)
     }
   }, /*#__PURE__*/React.createElement("iframe", {
-    key: query,
+    key: embedUrl,
     src: embedUrl,
     style: {
       width: '100%',
@@ -5633,9 +5638,7 @@ function MapScreen(_ref28) {
       flexDirection: 'column',
       gap: 6
     }
-  }, day.items.filter(function (it) {
-    return it.loc;
-  }).map(function (it, i) {
+  }, stops.map(function (it, i) {
     return /*#__PURE__*/React.createElement("button", {
       key: i,
       onClick: function onClick() {
@@ -5652,12 +5655,22 @@ function MapScreen(_ref28) {
         border: 'none',
         textAlign: 'left'
       }
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: "pin",
-      size: 14,
-      color: COLORS.accent,
-      stroke: 2
-    }), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        flexShrink: 0,
+        background: COLORS.accent,
+        color: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: MONO,
+        fontSize: 10,
+        fontWeight: 700
+      }
+    }, i + 1), /*#__PURE__*/React.createElement("div", {
       style: {
         flex: 1,
         minWidth: 0

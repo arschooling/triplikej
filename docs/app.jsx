@@ -2420,9 +2420,20 @@ function EditStopForm({ draft, setDraft }) {
 function MapScreen({ trip }) {
   const [selectedDay, setSelectedDay] = React.useState(0);
   const day = trip.days[selectedDay];
-  const places = day.items.filter(it => it.loc).map(it => `${it.title} ${it.loc || ''}`.trim());
-  const query = (places[0] || day.titleEn || 'New York') + ', New York';
-  const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+  const stops = day.items.filter(it => it.loc);
+  const places = stops.map(it => `${it.title} ${it.loc}`.trim() + ', New York');
+
+  let embedUrl;
+  if (places.length === 0) {
+    const fallback = encodeURIComponent((day.titleEn || 'New York') + ', New York');
+    embedUrl = `https://www.google.com/maps?q=${fallback}&output=embed`;
+  } else if (places.length === 1) {
+    embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(places[0])}&output=embed`;
+  } else {
+    const saddr = encodeURIComponent(places[0]);
+    const daddr = places.slice(1).map(encodeURIComponent).join('+to:');
+    embedUrl = `https://maps.google.com/maps?saddr=${saddr}&daddr=${daddr}&output=embed`;
+  }
 
   return (
     <div style={{ background:COLORS.bg, minHeight:'100%', paddingBottom:110 }}>
@@ -2444,7 +2455,7 @@ function MapScreen({ trip }) {
       </div>
       <div style={{ padding:'0 16px' }}>
         <div style={{ background:COLORS.card, borderRadius:18, overflow:'hidden', border:`1px solid ${COLORS.line}` }}>
-          <iframe key={query} src={embedUrl}
+          <iframe key={embedUrl} src={embedUrl}
             style={{ width:'100%', height:340, border:'none', display:'block' }}
             loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Google Maps"/>
         </div>
@@ -2455,12 +2466,17 @@ function MapScreen({ trip }) {
         </div>
       </div>
       <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:6 }}>
-        {day.items.filter(it => it.loc).map((it, i) => (
+        {stops.map((it, i) => (
           <button key={i} onClick={() => window.open(mapsDirectionsUrl(`${it.title} ${it.loc} New York`), '_blank')} style={{
             background:COLORS.card, borderRadius:12, padding:'11px 14px',
             display:'flex', gap:10, alignItems:'center', cursor:'pointer', border:'none', textAlign:'left',
           }}>
-            <Icon name="pin" size={14} color={COLORS.accent} stroke={2}/>
+            <div style={{
+              width:22, height:22, borderRadius:11, flexShrink:0,
+              background:COLORS.accent, color:'#fff',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontFamily:MONO, fontSize:10, fontWeight:700,
+            }}>{i + 1}</div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, fontWeight:500,
                 whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{it.title}</div>
