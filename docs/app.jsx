@@ -1674,7 +1674,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 20px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v133</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v134</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -3459,6 +3459,7 @@ function MapScreen({ trip, onEditItem }) {
   const mapKey = ordered.map(s => `${s.title}|${s.coords ? s.coords.join(',') : ''}`).join('~');
   React.useEffect(() => {
     if (!window.L) return;
+    setRouteTip(null);
     let cancelled = false;
     (async () => {
       // 이전 레이어 제거
@@ -3663,8 +3664,16 @@ function MapScreen({ trip, onEditItem }) {
 
             {/* 최적 여부 */}
             {routeTip.isOptimal ? (
-              <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.mute, lineHeight:1.55 }}>
-                현재 방문 순서가 이동 거리 기준으로 효율적입니다.
+              <div>
+                <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
+                  <span style={{ fontSize:16 }}>🎉</span>
+                  <span style={{ fontFamily:SANS, fontSize:13, fontWeight:600, color:COLORS.ink }}>
+                    완벽한 동선이에요!
+                  </span>
+                </div>
+                <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.mute, lineHeight:1.6 }}>
+                  이동 거리를 최소화한 최적의 순서입니다. 불필요한 이동 없이 효율적으로 여행하실 수 있어요.
+                </div>
               </div>
             ) : (
               <div>
@@ -5986,7 +5995,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v133</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v134</div>
         </div>
       </div>
       <button onClick={async () => {

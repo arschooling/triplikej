@@ -3567,7 +3567,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v133")), /*#__PURE__*/React.createElement("button", {
+  }, "v134")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -7136,6 +7136,7 @@ function MapScreen({
   const mapKey = ordered.map(s => `${s.title}|${s.coords ? s.coords.join(',') : ''}`).join('~');
   React.useEffect(() => {
     if (!window.L) return;
+    setRouteTip(null);
     let cancelled = false;
     (async () => {
       // 이전 레이어 제거
@@ -7517,14 +7518,32 @@ function MapScreen({
     style: {
       fontWeight: 600
     }
-  }, fmtMin(routeTip.totalTransit))), routeTip.isOptimal ? /*#__PURE__*/React.createElement("div", {
+  }, fmtMin(routeTip.totalTransit))), routeTip.isOptimal ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6,
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16
+    }
+  }, "\uD83C\uDF89"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: SANS,
+      fontSize: 13,
+      fontWeight: 600,
+      color: COLORS.ink
+    }
+  }, "\uC644\uBCBD\uD55C \uB3D9\uC120\uC774\uC5D0\uC694!")), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SANS,
       fontSize: 13,
       color: COLORS.mute,
-      lineHeight: 1.55
+      lineHeight: 1.6
     }
-  }, "\uD604\uC7AC \uBC29\uBB38 \uC21C\uC11C\uAC00 \uC774\uB3D9 \uAC70\uB9AC \uAE30\uC900\uC73C\uB85C \uD6A8\uC728\uC801\uC785\uB2C8\uB2E4.") : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "\uC774\uB3D9 \uAC70\uB9AC\uB97C \uCD5C\uC18C\uD654\uD55C \uCD5C\uC801\uC758 \uC21C\uC11C\uC785\uB2C8\uB2E4. \uBD88\uD544\uC694\uD55C \uC774\uB3D9 \uC5C6\uC774 \uD6A8\uC728\uC801\uC73C\uB85C \uC5EC\uD589\uD558\uC2E4 \uC218 \uC788\uC5B4\uC694.")) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SANS,
       fontSize: 13,
@@ -12053,7 +12072,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v133"))), /*#__PURE__*/React.createElement("button", {
+  }, "v134"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
