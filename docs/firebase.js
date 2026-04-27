@@ -304,3 +304,12 @@ window.fbGetUsersById = async (uids) => {
   const snaps = await Promise.all(uids.map(uid => _fbDb.collection('users').doc(uid).get()));
   return snaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
 };
+
+window.fbRemoveTripMember = async (tripId, uid) => {
+  await _fbDb.collection('groups').doc(tripId).update({
+    members: firebase.firestore.FieldValue.arrayRemove(uid),
+  });
+  await _fbDb.collection('users').doc(uid).update({
+    tripIds: firebase.firestore.FieldValue.arrayRemove(tripId),
+  });
+};
