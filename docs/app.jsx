@@ -3272,7 +3272,28 @@ function App() {
     const tripIds = userData.tripIds || [userData.groupId];
     setTripsLoading(true);
     fbLoadTrips(tripIds)
-      .then(trips => { setUserTrips(trips.map(t => normalizeTrip(t, t.id))); setTripsLoading(false); })
+      .then(async trips => {
+        const normalized = trips.map(t => normalizeTrip(t, t.id));
+        // days가 없는 여행이 있으면 TRIP_DEFAULT로 자동 초기화 (1회)
+        const primary = normalized.find(t => t.id === userData.uid) || normalized[0];
+        if (primary && (primary.days || []).length === 0) {
+          try {
+            const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+            const patch = {
+              title : def.title  || 'New York',
+              dates : def.dates  || '',
+              hotel : def.hotel  || '',
+              days  : def.days   || [],
+              hotels: def.hotels || [],
+              food  : def.food   || [],
+            };
+            await fbSaveGroup(primary.id, patch);
+            normalized[normalized.indexOf(primary)] = normalizeTrip({ ...primary, ...patch }, primary.id);
+          } catch(e) { console.warn('auto-init failed', e); }
+        }
+        setUserTrips(normalized);
+        setTripsLoading(false);
+      })
       .catch(() => setTripsLoading(false));
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
 
