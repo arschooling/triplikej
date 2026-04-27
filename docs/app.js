@@ -5024,46 +5024,84 @@ function StopSheet({
   const [editing, setEditing] = React.useState(!!open.editing);
   const [draft, setDraft] = React.useState(open.stop);
   const [sheetY, setSheetY] = React.useState(0);
-  const sheetTouchStart = React.useRef(null);
-  const sheetScrollTop = React.useRef(0);
   const sheetRef = React.useRef(null);
+  const sheetYRef = React.useRef(0);
+  const dragRef = React.useRef({
+    active: false,
+    startY: 0,
+    startScrollTop: 0
+  });
   React.useEffect(() => {
     setDraft(open.stop);
     setSheetY(0);
+    sheetYRef.current = 0;
     setEditing(!!open.editing);
   }, [open]);
 
-  // 배경 스크롤 잠금
+  // 배경 스크롤 완전 차단
   React.useEffect(() => {
-    const prev = document.body.style.overflow;
+    const prevOverflow = document.body.style.overflow;
+    const prevTouch = document.body.style.touchAction;
     document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
     return () => {
-      document.body.style.overflow = prev;
+      document.body.style.overflow = prevOverflow;
+      document.body.style.touchAction = prevTouch;
     };
   }, []);
-  const searchQuery = [draft.title, draft.en, draft.loc, 'New York'].filter(Boolean).join(' ');
 
-  // 드래그로 닫기 — 시트 스크롤이 최상단일 때만 동작
-  const onDragStart = e => {
-    sheetScrollTop.current = sheetRef.current ? sheetRef.current.scrollTop : 0;
-    sheetTouchStart.current = e.touches[0].clientY;
-  };
-  const onDragMove = e => {
-    if (sheetTouchStart.current === null) return;
-    if (sheetScrollTop.current > 8) {
-      sheetTouchStart.current = null;
-      return;
-    }
-    const dy = e.touches[0].clientY - sheetTouchStart.current;
-    if (dy > 0) {
+  // 시트 전체 드래그로 닫기 (passive:false 로 preventDefault 가능하게)
+  React.useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    const onStart = e => {
+      dragRef.current = {
+        active: true,
+        startY: e.touches[0].clientY,
+        startScrollTop: el.scrollTop
+      };
+    };
+    const onMove = e => {
+      if (!dragRef.current.active) return;
+      const {
+        startY,
+        startScrollTop
+      } = dragRef.current;
+      const dy = e.touches[0].clientY - startY;
+      if (startScrollTop > 8 || dy <= 0) {
+        dragRef.current.active = false;
+        return;
+      }
       e.preventDefault();
-      setSheetY(dy);
-    }
-  };
-  const onDragEnd = () => {
-    if (sheetY > 100) onClose();else setSheetY(0);
-    sheetTouchStart.current = null;
-  };
+      const newY = Math.max(0, dy);
+      sheetYRef.current = newY;
+      setSheetY(newY);
+    };
+    const onEnd = () => {
+      dragRef.current.active = false;
+      if (sheetYRef.current > 100) {
+        onClose();
+      } else {
+        sheetYRef.current = 0;
+        setSheetY(0);
+      }
+    };
+    el.addEventListener('touchstart', onStart, {
+      passive: true
+    });
+    el.addEventListener('touchmove', onMove, {
+      passive: false
+    });
+    el.addEventListener('touchend', onEnd, {
+      passive: true
+    });
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchmove', onMove);
+      el.removeEventListener('touchend', onEnd);
+    };
+  }, [open]);
+  const searchQuery = [draft.title, draft.en, draft.loc, 'New York'].filter(Boolean).join(' ');
   return /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
@@ -5092,13 +5130,8 @@ function StopSheet({
     style: {
       display: 'flex',
       justifyContent: 'center',
-      padding: '10px 0 6px',
-      cursor: 'grab',
-      touchAction: 'none'
-    },
-    onTouchStart: onDragStart,
-    onTouchMove: onDragMove,
-    onTouchEnd: onDragEnd
+      padding: '10px 0 6px'
+    }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       width: 36,
@@ -5108,12 +5141,8 @@ function StopSheet({
     }
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      position: 'relative',
-      touchAction: 'none'
-    },
-    onTouchStart: onDragStart,
-    onTouchMove: onDragMove,
-    onTouchEnd: onDragEnd
+      position: 'relative'
+    }
   }, /*#__PURE__*/React.createElement(Photo, {
     hue: dayHue,
     label: (draft.en || '').toUpperCase(),
