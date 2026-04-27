@@ -159,18 +159,59 @@ const SAMPLE_HOTELS = [
   { name:'The Beekman, A Thompson Hotel', area:'Financial District', stars:5, price:'$479', tags:['historic','luxe'] },
 ];
 
-// Simulated "found in email/calendar" hotels — matching the trip dates
-const MAILBOX_HOTELS = [
-  {
-    name:'Kimpton Theta New York',
-    area:'Times Square',
-    checkin:'May 4, 2025',
-    checkout:'May 13, 2025',
-    confirmation:'BK-8471293',
-    source:'Booking.com 예약 확인 · 2025-03-18',
-    price:'$289/박 × 9박',
-  },
+// ─── Gmail 이메일 파싱 ──────────────────────────────────────
+const OTA_DOMAINS = [
+  'booking.com','agoda.com','expedia.com','hotels.com','airbnb.com',
+  'marriott.com','hilton.com','hyatt.com','ihg.com','accorhotels.com',
+  'klook.com','trip.com','ctrip.com','hotelscombined.com',
 ];
+const OTA_NAME = {
+  'booking.com':'Booking.com','agoda.com':'Agoda','expedia.com':'Expedia',
+  'hotels.com':'Hotels.com','airbnb.com':'Airbnb','marriott.com':'Marriott',
+  'hilton.com':'Hilton','hyatt.com':'Hyatt','ihg.com':'IHG',
+  'accorhotels.com':'AccorHotels','klook.com':'Klook',
+  'trip.com':'Trip.com','ctrip.com':'Ctrip',
+};
+
+function parseHotelEmail(msg) {
+  const headers = msg.payload?.headers || [];
+  const h = (n) => headers.find(x => x.name.toLowerCase() === n.toLowerCase())?.value || '';
+  const subject = h('Subject');
+  const from    = h('From');
+  const date    = h('Date');
+  const snippet = msg.snippet || '';
+  const all     = subject + ' ' + snippet;
+
+  const domain = (from.match(/@([\w.-]+)/) || [])[1]?.toLowerCase() || '';
+  const ota    = OTA_DOMAINS.find(d => domain.includes(d)) || '';
+  const source = OTA_NAME[ota] || domain;
+
+  // 호텔명 추출: 여러 OTA 패턴 순서대로 시도
+  let name = '';
+  const try_ = (rx) => { if (!name) { const m = all.match(rx); if (m) name = m[1].trim(); } };
+  try_(/Booking Confirmation[:\s]+(.+?)(?:\s*[–—|,]|\s*$)/i);    // Agoda, generic
+  try_(/confirmed[:\s-–—]+(.+?)(?:\s*[–—|,]|\s*$)/i);            // Airbnb
+  try_(/(?:stay|booking|reservation)\s+(?:at|for)\s+(.+?)(?:,|is\s|\s*$)/i);
+  try_(/확인[:\s]*(.+?)(?:[,|–]|\s*$)/);                          // 한국어 subject
+  try_(/[–—-]\s*(.+?)(?:,\s*\w+\s*$|\s*$)/);                     // Booking.com 후반부
+  if (!name) name = subject.replace(/^\[.+?\]\s*/, '').slice(0, 60).trim();
+
+  // 예약번호
+  const confM = all.match(/(?:confirmation|예약\s*번호|booking\s*(?:ref|#|no|id))[.:\s#]*([A-Z0-9-]{5,20})/i);
+  const confirmation = confM ? confM[1] : '';
+
+  // 날짜
+  const dateRx = /(?:[A-Z][a-z]+\s+\d{1,2}(?:,\s*\d{4})?|\d{1,2}\s+[A-Z][a-z]+(?:\s+\d{4})?|\d{4}-\d{2}-\d{2})/g;
+  const dates  = all.match(dateRx) || [];
+  const checkin  = dates[0] || '';
+  const checkout = dates[1] || '';
+
+  const emailDate = date
+    ? new Date(date).toLocaleDateString('ko-KR', { year:'numeric', month:'short', day:'numeric' })
+    : '';
+
+  return { name, area:'', checkin, checkout, confirmation, source:`${source} · ${emailDate}`, price:'' };
+}
 
 // ─── Hotel search sheet ─────────────────────────────────────
 function HotelSearchSheet({ COLORS, SERIF, SANS, MONO, Icon, onPick, onClose }) {
@@ -178,6 +219,7 @@ function HotelSearchSheet({ COLORS, SERIF, SANS, MONO, Icon, onPick, onClose }) 
   const [tab, setTab] = React.useState('search'); // search | mailbox
   const [scanning, setScanning] = React.useState(false);
   const [found, setFound] = React.useState(null);
+  const [scanError, setScanError] = React.useState('');
 
   const filtered = SAMPLE_HOTELS.filter(h =>
     !q || h.name.toLowerCase().includes(q.toLowerCase()) ||
@@ -185,24 +227,44 @@ function HotelSearchSheet({ COLORS, SERIF, SANS, MONO, Icon, onPick, onClose }) 
     h.tags.some(t => t.includes(q.toLowerCase()))
   );
 
-  const scanMailbox = () => {
-    setScanning(true); setFound(null);
-    // Simulate scan
-    const steps = [
-      '이메일 스캔 중…',
-      '캘린더 이벤트 확인 중…',
-      '예약 확인 메일 분석 중…',
-      '일정과 매칭 중…',
-    ];
-    let i = 0;
-    const t = setInterval(() => {
-      i++;
-      if (i >= steps.length) {
-        clearInterval(t);
-        setScanning(false);
-        setFound(MAILBOX_HOTELS);
-      }
-    }, 600);
+  const scanMailbox = async () => {
+    setScanning(true); setFound(null); setScanError('');
+    try {
+      const token = await window.fbGetGmailToken();
+
+      // OTA 발신자 조건 + 예약 관련 키워드
+      const q = [
+        '(' + OTA_DOMAINS.map(d => 'from:' + d).join(' OR ') + ')',
+        '(confirmation OR reservation OR 예약확인 OR 예약 OR 확인)',
+      ].join(' ');
+
+      const listRes = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(q)}&maxResults=20`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!listRes.ok) throw new Error(`Gmail API ${listRes.status}`);
+      const listData = await listRes.json();
+      const messages = listData.messages || [];
+
+      if (!messages.length) { setScanning(false); setFound([]); return; }
+
+      // 메시지 메타데이터 병렬 조회
+      const details = await Promise.all(
+        messages.slice(0, 15).map(m =>
+          fetch(
+            `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject,From,Date`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ).then(r => r.json())
+        )
+      );
+
+      const hotels = details.map(parseHotelEmail).filter(h => h.name);
+      setScanning(false);
+      setFound(hotels);
+    } catch (e) {
+      setScanning(false);
+      setScanError(e.message?.includes('popup') ? '팝업이 차단됐어요. 브라우저 팝업 허용 후 다시 시도해 주세요.' : (e.message || '스캔 실패. 다시 시도해 주세요.'));
+    }
   };
 
   return (
@@ -327,8 +389,14 @@ function HotelSearchSheet({ COLORS, SERIF, SANS, MONO, Icon, onPick, onClose }) 
                 </div>
                 <div style={{ marginTop:14, padding:'10px 12px', background:COLORS.softer, borderRadius:10,
                   fontFamily:SANS, fontSize:11, color:COLORS.mute, lineHeight:1.45 }}>
-                  ⚠️ 이 데모에서는 샘플 데이터를 반환해요. 실제 구현 시 OAuth로 Gmail·Google Calendar API에 접근합니다.
+                  🔒 Google 계정 로그인 팝업이 열립니다. 이메일 읽기 권한(gmail.readonly)을 요청합니다.
                 </div>
+                {scanError && (
+                  <div style={{ marginTop:8, padding:'10px 12px', background:'rgba(193,79,46,0.10)', borderRadius:10,
+                    fontFamily:SANS, fontSize:11, color:COLORS.accent, lineHeight:1.45 }}>
+                    ⚠️ {scanError}
+                  </div>
+                )}
               </div>
             )}
 
@@ -350,16 +418,24 @@ function HotelSearchSheet({ COLORS, SERIF, SANS, MONO, Icon, onPick, onClose }) 
               </div>
             )}
 
-            {found && (
+            {found && found.length === 0 && (
+              <div style={{ background:COLORS.card, borderRadius:14, padding:24, textAlign:'center',
+                fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+                예약 확인 메일을 찾지 못했어요.<br/>
+                <span style={{ fontSize:11 }}>Booking.com, Agoda, Expedia, Airbnb 등의 메일을 검색합니다.</span>
+              </div>
+            )}
+
+            {found && found.length > 0 && (
               <>
                 <div style={{ padding:'4px 4px 10px', fontFamily:MONO, fontSize:10,
                   color:COLORS.accent, letterSpacing:'0.12em' }}>
-                  ✓ {found.length}개 예약 발견
+                  ✓ {found.length}개 예약 메일 발견
                 </div>
                 <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                   {found.map((h, i) => (
                     <button key={i}
-                      onClick={() => { onPick(h.name + ' (' + h.area + ')'); onClose(); }}
+                      onClick={() => { onPick(h); onClose(); }}
                       style={{
                         background:COLORS.card, border:'none', borderRadius:14,
                         padding:'14px 16px', textAlign:'left', cursor:'pointer',
@@ -380,10 +456,10 @@ function HotelSearchSheet({ COLORS, SERIF, SANS, MONO, Icon, onPick, onClose }) 
                             gridTemplateColumns:'86px 1fr', gap:'3px 10px',
                             fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.04em',
                           }}>
-                            <span style={{ whiteSpace:'nowrap' }}>CHECK-IN</span><span style={{ color:COLORS.ink }}>{h.checkin}</span>
-                            <span style={{ whiteSpace:'nowrap' }}>CHECKOUT</span><span style={{ color:COLORS.ink }}>{h.checkout}</span>
-                            <span style={{ whiteSpace:'nowrap' }}>예약번호</span><span style={{ color:COLORS.ink }}>{h.confirmation}</span>
-                            <span style={{ whiteSpace:'nowrap' }}>요금</span>    <span style={{ color:COLORS.ink }}>{h.price}</span>
+                            {h.checkin  && <><span style={{ whiteSpace:'nowrap' }}>CHECK-IN</span><span style={{ color:COLORS.ink }}>{h.checkin}</span></>}
+                            {h.checkout && <><span style={{ whiteSpace:'nowrap' }}>CHECKOUT</span><span style={{ color:COLORS.ink }}>{h.checkout}</span></>}
+                            {h.confirmation && <><span style={{ whiteSpace:'nowrap' }}>예약번호</span><span style={{ color:COLORS.ink }}>{h.confirmation}</span></>}
+                            {h.price    && <><span style={{ whiteSpace:'nowrap' }}>요금</span><span style={{ color:COLORS.ink }}>{h.price}</span></>}
                           </div>
                           <div style={{ marginTop:8, fontFamily:SANS, fontSize:10.5, color:COLORS.mute, fontStyle:'italic' }}>
                             출처: {h.source}

@@ -1702,7 +1702,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v144</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v145</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3284,11 +3284,23 @@ function EditStopForm({ draft, setDraft, cityBias }) {
       {showHotelSearch && (
         <HotelSearchSheet
           COLORS={COLORS} SERIF={SERIF} SANS={SANS} MONO={MONO} Icon={Icon}
-          onPick={(name) => {
-            const m = name.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
-            const hotelName = m ? m[1] : name;
-            const area = m ? m[2] : '';
-            setDraft({ ...draft, title: hotelName, en: hotelName, loc: area });
+          onPick={(result) => {
+            if (typeof result === 'string') {
+              const m = result.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+              setDraft({ ...draft, title: m ? m[1] : result, en: m ? m[1] : result, loc: m ? m[2] : '' });
+            } else {
+              // Gmail 스캔 결과 객체
+              setDraft({
+                ...draft,
+                title: result.name,
+                en: result.name,
+                loc: result.area || '',
+                note: [
+                  result.confirmation ? `예약번호: ${result.confirmation}` : '',
+                  result.source || '',
+                ].filter(Boolean).join(' · '),
+              });
+            }
           }}
           onClose={() => setShowHotelSearch(false)}/>
       )}
@@ -6114,7 +6126,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v144</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v145</div>
         </div>
       </div>
       <button onClick={async () => {

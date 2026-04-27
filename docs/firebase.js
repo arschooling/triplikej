@@ -324,3 +324,12 @@ window.fbRemoveTripMember = async (tripId, uid) => {
   // users/{uid} 는 상대방 문서라 권한이 없을 수 있어 별도 처리
   // 제거된 사용자의 tripIds는 로그인 시 fbGetOrCreateUser에서 정리됨
 };
+
+// ─── Gmail OAuth token ────────────────────────────────────────
+// gmail.readonly 스코프를 추가로 요청해 액세스 토큰을 반환
+window.fbGetGmailToken = async () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+  const result = await _fbAuth.signInWithPopup(provider);
+  return result.credential.accessToken;
+};

@@ -3616,7 +3616,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v144"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v145"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6834,16 +6834,25 @@ function EditStopForm({
     SANS: SANS,
     MONO: MONO,
     Icon: Icon,
-    onPick: name => {
-      const m = name.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
-      const hotelName = m ? m[1] : name;
-      const area = m ? m[2] : '';
-      setDraft({
-        ...draft,
-        title: hotelName,
-        en: hotelName,
-        loc: area
-      });
+    onPick: result => {
+      if (typeof result === 'string') {
+        const m = result.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+        setDraft({
+          ...draft,
+          title: m ? m[1] : result,
+          en: m ? m[1] : result,
+          loc: m ? m[2] : ''
+        });
+      } else {
+        // Gmail 스캔 결과 객체
+        setDraft({
+          ...draft,
+          title: result.name,
+          en: result.name,
+          loc: result.area || '',
+          note: [result.confirmation ? `예약번호: ${result.confirmation}` : '', result.source || ''].filter(Boolean).join(' · ')
+        });
+      }
     },
     onClose: () => setShowHotelSearch(false)
   }));
@@ -12313,7 +12322,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v144"))), /*#__PURE__*/React.createElement("button", {
+  }, "v145"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);
