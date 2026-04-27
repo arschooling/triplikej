@@ -3251,12 +3251,15 @@ function TripsScreen({
     style: {
       minHeight: '100vh',
       background: COLORS.bg,
-      paddingBottom: 100
+      paddingBottom: 100,
+      paddingTop: 'calc(env(safe-area-inset-top, 0px) + 72px)'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      position: 'sticky',
+      position: 'fixed',
       top: 0,
+      left: 0,
+      right: 0,
       zIndex: 50,
       background: COLORS.bg,
       display: 'flex',
@@ -3281,7 +3284,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v87")), /*#__PURE__*/React.createElement("button", {
+  }, "v88")), /*#__PURE__*/React.createElement("button", {
     onClick: onOpenCompanion,
     style: {
       width: 38,
@@ -9144,7 +9147,7 @@ function App() {
       marginTop: 4,
       opacity: 0.8
     }
-  }, "v87"))), /*#__PURE__*/React.createElement("button", {
+  }, "v88"))), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       try {
         const ts = await fbLoadTrips([activeTripId]);

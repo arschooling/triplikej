@@ -1399,14 +1399,15 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
     catch (e) { setRestoreErr('복원 실패. 다시 시도해 주세요.'); setRestoring(false); }
   };
   return (
-    <div style={{ minHeight:'100vh', background:COLORS.bg, paddingBottom:100 }}>
+    <div style={{ minHeight:'100vh', background:COLORS.bg, paddingBottom:100,
+      paddingTop:'calc(env(safe-area-inset-top, 0px) + 72px)' }}>
       <div style={{
-        position:'sticky', top:0, zIndex:50, background:COLORS.bg,
+        position:'fixed', top:0, left:0, right:0, zIndex:50, background:COLORS.bg,
         display:'flex', alignItems:'flex-end', justifyContent:'space-between',
         paddingTop:'calc(env(safe-area-inset-top, 0px) + 16px)',
         paddingLeft:20, paddingRight:20, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v87</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v88</span></div>
         <button onClick={onOpenCompanion} style={{
           width:38, height:38, borderRadius:19, marginBottom:2,
           background: userData?.photoURL ? 'transparent' : COLORS.softer,
@@ -4448,7 +4449,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v87</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v88</div>
         </div>
       </div>
       <button onClick={async () => {
