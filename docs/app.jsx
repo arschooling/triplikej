@@ -1726,17 +1726,20 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         <Icon name="bell" size={20} color={COLORS.ink} stroke={1.8}/>
         {unreadCount > 0 && (
           <div style={{
-            position:'absolute', top:2, right:2,
-            width:8, height:8, borderRadius:4,
-            background:'#E03C31',
-          }}/>
+            position:'absolute', top:0, right:0,
+            minWidth:15, height:15, borderRadius:8,
+            background:'#E03C31', padding:'0 3px',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontFamily:MONO, fontSize:9, color:'#fff', fontWeight:700,
+            boxSizing:'border-box',
+          }}>{unreadCount > 9 ? '9+' : unreadCount}</div>
         )}
       </button>
       <div style={{
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v165</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v166</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5549,6 +5552,7 @@ function NotificationsScreen({ open, onClose, authUser, notifications }) {
     if (n.type === 'invite_received') return `${name}님이 ${trip}에 초대했습니다.`;
     if (n.type === 'invite_accepted') return `${name}님이 ${trip} 초대를 수락했습니다.`;
     if (n.type === 'trip_edited')     return `${name}님이 ${trip} 일정을 수정했습니다.`;
+    if (n.type === 'contact_added')   return `${name}님이 동행인으로 추가했습니다.`;
     return '새 알림';
   };
 
@@ -5566,12 +5570,14 @@ function NotificationsScreen({ open, onClose, authUser, notifications }) {
     invite_received: '#4F6BED',
     invite_accepted: '#2E9E5B',
     trip_edited:     '#E07B39',
+    contact_added:   '#9B59B6',
   }[type] || COLORS.mute);
 
   const typeIcon = (type) => ({
     invite_received: 'users',
     invite_accepted: 'check',
     trip_edited:     'edit',
+    contact_added:   'user',
   }[type] || 'bell');
 
   return (

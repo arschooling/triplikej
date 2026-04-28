@@ -365,6 +365,12 @@ window.fbAddContact = async (myUid, contactEmail) => {
   await _fbDb.collection('users').doc(toUser.uid).update({
     contacts: firebase.firestore.FieldValue.arrayUnion(myUid),
   }).catch(() => {});
+  const mySnap = await _fbDb.collection('users').doc(myUid).get();
+  const myData = mySnap.exists ? mySnap.data() : {};
+  _fbAddNotification(toUser.uid, {
+    type: 'contact_added',
+    fromUid: myUid, fromName: myData.displayName || '', fromPhoto: myData.photoURL || '',
+  }).catch(() => {});
   return { success: true, toName: toUser.displayName };
 };
 
