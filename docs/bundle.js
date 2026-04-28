@@ -5105,6 +5105,7 @@ function DayScreen({
     return n;
   });
   const [editingTitle, setEditingTitle] = React.useState(false);
+  const [inlineItemTitle, setInlineItemTitle] = React.useState(null);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const [nearbyStop, setNearbyStop] = React.useState(null);
   const [nearbyTab, setNearbyTab] = React.useState('hotspot');
@@ -5388,28 +5389,6 @@ function DayScreen({
     }, /*#__PURE__*/React.createElement("button", {
       onClick: e => {
         e.stopPropagation();
-        setNearbyTab('food');
-        setNearbyStop(it);
-      },
-      style: {
-        width: 26,
-        height: 26,
-        borderRadius: 13,
-        border: 'none',
-        background: 'rgba(26,24,22,0.06)',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: "food",
-      size: 13,
-      color: COLORS.mute,
-      stroke: 1.8
-    })), /*#__PURE__*/React.createElement("button", {
-      onClick: e => {
-        e.stopPropagation();
         setNearbyTab('hotspot');
         setNearbyStop(it);
       },
@@ -5426,6 +5405,28 @@ function DayScreen({
       }
     }, /*#__PURE__*/React.createElement(Icon, {
       name: "sparkle",
+      size: 13,
+      color: COLORS.mute,
+      stroke: 1.8
+    })), /*#__PURE__*/React.createElement("button", {
+      onClick: e => {
+        e.stopPropagation();
+        setNearbyTab('food');
+        setNearbyStop(it);
+      },
+      style: {
+        width: 26,
+        height: 26,
+        borderRadius: 13,
+        border: 'none',
+        background: 'rgba(26,24,22,0.06)',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: "food",
       size: 13,
       color: COLORS.mute,
       stroke: 1.8
@@ -5494,14 +5495,61 @@ function DayScreen({
       style: {
         opacity: 0.4
       }
-    }, "\xB7"), /*#__PURE__*/React.createElement("span", null, it.price))), /*#__PURE__*/React.createElement("div", {
+    }, "\xB7"), /*#__PURE__*/React.createElement("span", null, it.price))), editing && inlineItemTitle?.idx === i ? /*#__PURE__*/React.createElement("input", {
+      autoFocus: true,
+      value: inlineItemTitle.title,
+      onChange: e => setInlineItemTitle({
+        idx: i,
+        title: e.target.value
+      }),
+      onBlur: () => {
+        const items = [...(day.items || [])];
+        items[i] = {
+          ...items[i],
+          title: inlineItemTitle.title
+        };
+        onEditDay({
+          items
+        });
+        setInlineItemTitle(null);
+      },
+      onKeyDown: e => {
+        if (e.key === 'Enter' || e.key === 'Escape') e.target.blur();
+      },
+      onClick: e => e.stopPropagation(),
+      style: {
+        width: '100%',
+        marginTop: 3,
+        padding: '2px 0',
+        border: 'none',
+        borderBottom: `1px solid ${COLORS.ink}`,
+        background: 'transparent',
+        fontFamily: SANS,
+        fontSize: 14.5,
+        fontWeight: 500,
+        color: COLORS.ink,
+        outline: 'none',
+        boxSizing: 'border-box'
+      }
+    }) : /*#__PURE__*/React.createElement("div", {
+      onClick: editing ? e => {
+        e.stopPropagation();
+        setInlineItemTitle({
+          idx: i,
+          title: it.title
+        });
+      } : undefined,
       style: {
         marginTop: 3,
         fontFamily: SANS,
         fontSize: 14.5,
         fontWeight: 500,
         color: COLORS.ink,
-        textDecoration: isDone ? 'line-through' : 'none'
+        textDecoration: isDone ? 'line-through' : 'none',
+        ...(editing ? {
+          cursor: 'text',
+          borderBottom: `1px dashed ${COLORS.line}`
+        } : {})
       }
     }, it.title), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -6548,6 +6596,7 @@ function StopSheet({
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
   const [draft, setDraft] = React.useState(open.stop);
+  const [editingTitleInline, setEditingTitleInline] = React.useState(false);
   const committed = React.useRef(open.stop);
   const [sheetY, setSheetY] = React.useState(0);
   const [entered, setEntered] = React.useState(false);
@@ -6763,13 +6812,45 @@ function StopSheet({
     draft: draft,
     setDraft: setDraft,
     cityBias: cityBias
-  }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }) : /*#__PURE__*/React.createElement(React.Fragment, null, editingTitleInline ? /*#__PURE__*/React.createElement("input", {
+    autoFocus: true,
+    value: draft.title,
+    onChange: e => setDraft({
+      ...draft,
+      title: e.target.value
+    }),
+    onBlur: () => {
+      setEditingTitleInline(false);
+      onSave(draft);
+      committed.current = draft;
+    },
+    onKeyDown: e => {
+      if (e.key === 'Enter' || e.key === 'Escape') e.target.blur();
+    },
+    style: {
+      marginTop: 8,
+      width: '100%',
+      border: 'none',
+      borderBottom: `1px solid ${COLORS.ink}`,
+      background: 'transparent',
+      fontFamily: SERIF,
+      fontSize: 28,
+      lineHeight: 1.12,
+      color: COLORS.ink,
+      outline: 'none',
+      boxSizing: 'border-box',
+      padding: '0'
+    }
+  }) : /*#__PURE__*/React.createElement("div", {
+    onClick: () => setEditingTitleInline(true),
     style: {
       marginTop: 8,
       fontFamily: SERIF,
       fontSize: 28,
       lineHeight: 1.12,
-      color: COLORS.ink
+      color: COLORS.ink,
+      cursor: 'text',
+      borderBottom: `1px dashed ${COLORS.line}`
     }
   }, draft.title), /*#__PURE__*/React.createElement("div", {
     style: {

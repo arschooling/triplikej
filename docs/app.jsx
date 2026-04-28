@@ -2308,6 +2308,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
     return n;
   });
   const [editingTitle, setEditingTitle] = React.useState(false);
+  const [inlineItemTitle, setInlineItemTitle] = React.useState(null);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const [nearbyStop, setNearbyStop] = React.useState(null);
   const [nearbyTab, setNearbyTab]   = React.useState('hotspot');
@@ -2412,19 +2413,19 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                 <div style={{ position:'relative' }}>
                   {!editing && (
                     <div style={{ position:'absolute', top:8, right:8, zIndex:5, display:'flex', gap:4 }}>
-                      <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('food'); setNearbyStop(it); }} style={{
-                        width:26, height:26, borderRadius:13, border:'none',
-                        background:'rgba(26,24,22,0.06)', cursor:'pointer',
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                      }}>
-                        <Icon name="food" size={13} color={COLORS.mute} stroke={1.8}/>
-                      </button>
                       <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('hotspot'); setNearbyStop(it); }} style={{
                         width:26, height:26, borderRadius:13, border:'none',
                         background:'rgba(26,24,22,0.06)', cursor:'pointer',
                         display:'flex', alignItems:'center', justifyContent:'center',
                       }}>
                         <Icon name="sparkle" size={13} color={COLORS.mute} stroke={1.8}/>
+                      </button>
+                      <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('food'); setNearbyStop(it); }} style={{
+                        width:26, height:26, borderRadius:13, border:'none',
+                        background:'rgba(26,24,22,0.06)', cursor:'pointer',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                      }}>
+                        <Icon name="food" size={13} color={COLORS.mute} stroke={1.8}/>
                       </button>
                     </div>
                   )}
@@ -2452,10 +2453,30 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                       <span>{meta.label}</span>
                       {it.price && (<><span style={{ opacity:0.4 }}>·</span><span>{it.price}</span></>)}
                     </div>
-                    <div style={{ marginTop:3, fontFamily:SANS, fontSize:14.5, fontWeight:500,
-                      color:COLORS.ink, textDecoration: isDone?'line-through':'none' }}>
-                      {it.title}
-                    </div>
+                    {editing && inlineItemTitle?.idx === i ? (
+                      <input autoFocus value={inlineItemTitle.title}
+                        onChange={e => setInlineItemTitle({ idx: i, title: e.target.value })}
+                        onBlur={() => {
+                          const items = [...(day.items || [])];
+                          items[i] = { ...items[i], title: inlineItemTitle.title };
+                          onEditDay({ items });
+                          setInlineItemTitle(null);
+                        }}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur(); }}
+                        onClick={e => e.stopPropagation()}
+                        style={{ width:'100%', marginTop:3, padding:'2px 0', border:'none',
+                          borderBottom:`1px solid ${COLORS.ink}`, background:'transparent',
+                          fontFamily:SANS, fontSize:14.5, fontWeight:500, color:COLORS.ink,
+                          outline:'none', boxSizing:'border-box' }}/>
+                    ) : (
+                      <div
+                        onClick={editing ? (e) => { e.stopPropagation(); setInlineItemTitle({ idx: i, title: it.title }); } : undefined}
+                        style={{ marginTop:3, fontFamily:SANS, fontSize:14.5, fontWeight:500,
+                          color:COLORS.ink, textDecoration: isDone?'line-through':'none',
+                          ...(editing ? { cursor:'text', borderBottom:`1px dashed ${COLORS.line}` } : {}) }}>
+                        {it.title}
+                      </div>
+                    )}
                     <div style={{ marginTop:1, fontFamily:SANS, fontSize:11.5, color:COLORS.mute, fontStyle:'italic' }}>
                       {it.en}
                     </div>
@@ -2995,6 +3016,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
   const [draft, setDraft] = React.useState(open.stop);
+  const [editingTitleInline, setEditingTitleInline] = React.useState(false);
   const committed = React.useRef(open.stop);
   const [sheetY, setSheetY] = React.useState(0);
   const [entered, setEntered] = React.useState(false);
@@ -3127,9 +3149,22 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
             <EditStopForm draft={draft} setDraft={setDraft} cityBias={cityBias}/>
           ) : (
             <>
-              <div style={{ marginTop:8, fontFamily:SERIF, fontSize:28, lineHeight:1.12, color:COLORS.ink }}>
-                {draft.title}
-              </div>
+              {editingTitleInline ? (
+                <input autoFocus value={draft.title}
+                  onChange={e => setDraft({...draft, title: e.target.value})}
+                  onBlur={() => { setEditingTitleInline(false); onSave(draft); committed.current = draft; }}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur(); }}
+                  style={{ marginTop:8, width:'100%', border:'none',
+                    borderBottom:`1px solid ${COLORS.ink}`, background:'transparent',
+                    fontFamily:SERIF, fontSize:28, lineHeight:1.12, color:COLORS.ink,
+                    outline:'none', boxSizing:'border-box', padding:'0' }}/>
+              ) : (
+                <div onClick={() => setEditingTitleInline(true)}
+                  style={{ marginTop:8, fontFamily:SERIF, fontSize:28, lineHeight:1.12, color:COLORS.ink,
+                    cursor:'text', borderBottom:`1px dashed ${COLORS.line}` }}>
+                  {draft.title}
+                </div>
+              )}
               <div style={{ marginTop:2, fontFamily:SANS, fontSize:13.5, color:COLORS.mute, fontStyle:'italic' }}>
                 {draft.en}
               </div>
