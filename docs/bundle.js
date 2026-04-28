@@ -9863,9 +9863,24 @@ function PrepCatItems({
     });
     save(next);
   };
+  const storageKey = 'prep_done_' + cat.id;
+  const [checked, setChecked] = React.useState(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(storageKey) || '[]'));
+    } catch (e) {
+      return new Set();
+    }
+  });
+  const toggle = ii => setChecked(s => {
+    const n = new Set(s);
+    n.has(ii) ? n.delete(ii) : n.add(ii);
+    localStorage.setItem(storageKey, JSON.stringify([...n]));
+    return n;
+  });
   return /*#__PURE__*/React.createElement(React.Fragment, null, (cat.items || []).map((item, ii) => {
     const isEditingThis = editingItem?.ci === ci && editingItem?.ii === ii;
     const dp = itemProps(ii);
+    const isDone = checked.has(ii);
     return /*#__PURE__*/React.createElement("div", {
       key: ii,
       ref: dp.ref,
@@ -9874,6 +9889,7 @@ function PrepCatItems({
       onTouchEnd: dp.onTouchEnd,
       style: {
         position: 'relative',
+        marginBottom: 6,
         ...(dp.style || {})
       }
     }, /*#__PURE__*/React.createElement(SwipeableRow, {
@@ -9884,11 +9900,7 @@ function PrepCatItems({
       onDelete: () => deleteItem(ii),
       isDragging: isTouchDragging,
       wrapStyle: {
-        borderBottom: ii < cat.items.length - 1 ? `1px solid ${COLORS.line}` : 'none',
-        borderTopLeftRadius: ii === 0 ? 14 : 0,
-        borderTopRightRadius: ii === 0 ? 14 : 0,
-        borderBottomLeftRadius: ii === cat.items.length - 1 ? 14 : 0,
-        borderBottomRightRadius: ii === cat.items.length - 1 ? 14 : 0
+        borderRadius: 14
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -9896,17 +9908,31 @@ function PrepCatItems({
         alignItems: 'center',
         gap: 12,
         padding: '12px 14px',
-        background: COLORS.card
+        background: COLORS.card,
+        borderRadius: 14
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => toggle(ii),
       style: {
-        width: 16,
-        height: 16,
-        borderRadius: 8,
-        border: `1.5px solid ${COLORS.line}`,
-        flexShrink: 0
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        border: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        flexShrink: 0,
+        background: isDone ? COLORS.accent : 'transparent',
+        boxShadow: isDone ? 'none' : `inset 0 0 0 1.5px ${COLORS.line}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }
-    }), editing || isEditingThis ? /*#__PURE__*/React.createElement("input", {
+    }, isDone && /*#__PURE__*/React.createElement(Icon, {
+      name: "check",
+      size: 11,
+      color: "#fff",
+      stroke: 3
+    })), editing || isEditingThis ? /*#__PURE__*/React.createElement("input", {
       autoFocus: isEditingThis,
       value: item,
       onChange: e => updateItem(ii, e.target.value),
@@ -9931,7 +9957,9 @@ function PrepCatItems({
         flex: 1,
         fontFamily: SANS,
         fontSize: 13.5,
-        color: COLORS.ink
+        color: COLORS.ink,
+        textDecoration: isDone ? 'line-through' : 'none',
+        opacity: isDone ? 0.5 : 1
       }
     }, item), editing && !isEditingThis && /*#__PURE__*/React.createElement("button", {
       onClick: () => deleteItem(ii),
@@ -9957,7 +9985,7 @@ function PrepCatItems({
         position: 'absolute',
         inset: 0,
         border: `2px dashed rgba(193,79,46,0.45)`,
-        borderRadius: 0,
+        borderRadius: 14,
         pointerEvents: 'none',
         background: 'rgba(193,79,46,0.04)'
       }
