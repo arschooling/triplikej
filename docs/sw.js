@@ -1,4 +1,4 @@
-const V = 'tlj-v186';
+const V = 'tlj-v187';
 const CACHE = [
   './', './index.html',
   './react.min.js', './react-dom.min.js',
@@ -18,10 +18,7 @@ self.addEventListener('activate', e => {
       .then(keys => Promise.all(keys.filter(k => k !== V).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
-      .then(clients => Promise.all(
-        // SW 쪽에서 직접 강제 리로드 (iOS Safari controllerchange 우회)
-        clients.map(c => c.navigate ? c.navigate(c.url) : Promise.resolve())
-      ))
+      .then(clients => clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' })))
   );
 });
 

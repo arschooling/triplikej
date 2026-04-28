@@ -81,6 +81,9 @@ if('serviceWorker' in navigator) {
     location.reload();
   }
   navigator.serviceWorker.addEventListener('controllerchange', _doReload);
+  navigator.serviceWorker.addEventListener('message', function(e) {
+    if (e.data?.type === 'SW_UPDATED') _doReload();
+  });
   function checkWaiting(r) {
     if (r.waiting) { r.waiting.postMessage({ type: 'SKIP_WAITING' }); }
   }
