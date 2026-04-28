@@ -81,12 +81,11 @@ if('serviceWorker' in navigator) {
     location.reload();
   }
   navigator.serviceWorker.addEventListener('controllerchange', _doReload);
+  function checkWaiting(r) {
+    if (r.waiting) { r.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+  }
   navigator.serviceWorker.register('./sw.js').then(function(reg) {
     reg.update();
-    // iOS Safari: 새 SW가 waiting 상태에서 활성화되도록 polling
-    function checkWaiting(r) {
-      if (r.waiting) { r.waiting.postMessage({ type: 'SKIP_WAITING' }); }
-    }
     checkWaiting(reg);
     reg.addEventListener('updatefound', function() {
       var newSW = reg.installing;
@@ -95,6 +94,15 @@ if('serviceWorker' in navigator) {
         if (newSW.state === 'installed') checkWaiting(reg);
         if (newSW.state === 'activated') _doReload();
       });
+    });
+  });
+  // 앱이 포그라운드로 올 때마다 업데이트 확인 (iOS PWA 자동 업데이트)
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState !== 'visible') return;
+    navigator.serviceWorker.getRegistration().then(function(reg) {
+      if (!reg) return;
+      checkWaiting(reg);
+      reg.update().then(function() { checkWaiting(reg); });
     });
   });
 }
