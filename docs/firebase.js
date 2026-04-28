@@ -183,6 +183,9 @@ window.fbListenSentInvites = (uid, cb) =>
     .where('fromUid','==',uid).where('status','==','pending')
     .onSnapshot(s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))));
 
+window.fbCancelInvite = (inviteId) =>
+  _fbDb.collection('invites').doc(inviteId).delete();
+
 window.fbAcceptInvite = async (invite, myUid) => {
   await _fbDb.collection('invites').doc(invite.id).update({ status:'accepted' });
   await _fbDb.collection('users').doc(myUid).update({ groupId: invite.groupId });

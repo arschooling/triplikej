@@ -1705,7 +1705,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v160</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v161</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5618,22 +5618,29 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips }) {
                   {sentInvites.map(inv => {
                     const u = inviteUsers[inv.toUid];
                     return (
-                      <div key={inv.id} style={{ background:COLORS.card, borderRadius:14, padding:'12px 14px',
-                        display:'flex', alignItems:'center', gap:12 }}>
-                        <Avatar u={u || { displayName: inv.toEmail }}/>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>
-                            {u?.displayName || inv.toEmail}
-                          </div>
-                          {inv.tripTitle && (
-                            <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.mute, marginTop:1 }}>
-                              {inv.tripTitle}
+                      <SwipeableRow key={inv.id}
+                        onDelete={async () => {
+                          if (!confirm('초대를 취소할까요?')) return;
+                          try { await fbCancelInvite(inv.id); } catch(e) { alert('취소 실패.'); }
+                        }}
+                        wrapStyle={{ borderRadius:14 }}>
+                        <div style={{ background:COLORS.card, borderRadius:14, padding:'12px 14px',
+                          display:'flex', alignItems:'center', gap:12 }}>
+                          <Avatar u={u || { displayName: inv.toEmail }}/>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>
+                              {u?.displayName || inv.toEmail}
                             </div>
-                          )}
+                            {inv.tripTitle && (
+                              <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.mute, marginTop:1 }}>
+                                {inv.tripTitle}
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ fontFamily:MONO, fontSize:9.5, color:'#B8860B',
+                            background:'#FFF8E1', borderRadius:8, padding:'3px 8px' }}>대기 중</div>
                         </div>
-                        <div style={{ fontFamily:MONO, fontSize:9.5, color:'#B8860B',
-                          background:'#FFF8E1', borderRadius:8, padding:'3px 8px' }}>대기 중</div>
-                      </div>
+                      </SwipeableRow>
                     );
                   })}
                 </div>
@@ -5653,9 +5660,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips }) {
                 <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                   {contacts.map(c => (
                     <SwipeableRow key={c.uid}
-                      onEdit={() => setAddTripFor(c)}
                       onDelete={() => removeContact(c)}
-                      editIcon="users" editBg="#4F6BED"
                       wrapStyle={{ borderRadius:14 }}>
                       <div style={{ background:COLORS.card, borderRadius:14, padding:'12px 14px',
                         display:'flex', alignItems:'center', gap:12 }}>
@@ -6719,7 +6724,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v160</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v161</div>
         </div>
       </div>
       <button onClick={async () => {
