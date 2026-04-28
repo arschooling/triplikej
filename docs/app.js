@@ -3687,7 +3687,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v174"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v175"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6380,8 +6380,8 @@ function StopSheet({
     style: {
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
-      paddingBottom: 40,
-      maxHeight: '92%',
+      paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+      maxHeight: 'calc(100dvh - env(safe-area-inset-top, 44px))',
       overflowY: 'auto',
       overflowX: 'hidden'
     }
