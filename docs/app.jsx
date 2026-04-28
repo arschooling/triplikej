@@ -1703,7 +1703,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v158</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v159</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1803,7 +1803,7 @@ function isoToWeekday(iso) {
 }
 
 // ─── Home ───────────────────────────────────────────────────
-function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
+function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPickCity,
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
@@ -2116,31 +2116,38 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
         )}
       </div>
 
-      {/* Hotels — 일정에 연결된 숙소만 표시 */}
+      {/* Hotels */}
       {(() => {
-        const allHotels = trip.hotels || [];
-        const linkedNames = new Set(
-          (trip.days || []).flatMap(d => (d.items || []).filter(it => it._hotelRef).map(it => it._hotelRef))
-        );
-        const hotelList = allHotels
-          .filter(h => linkedNames.has(h.name))
-          .slice()
+        const hotelList = (trip.hotels || [])
+          .map((h, idx) => ({ ...h, _idx: idx }))
           .sort((a, b) => (a.checkin || '') < (b.checkin || '') ? -1 : (a.checkin || '') > (b.checkin || '') ? 1 : 0);
         const total = hotelList.length;
+        const openHotel = (idx) => onOpenHotelSheet ? onOpenHotelSheet(idx) : onOpenHotel(idx);
         return (
           <>
-            <div style={{ padding:'22px 24px 8px', display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+            <div style={{ padding:'22px 24px 8px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>숙소</div>
-              <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em' }}>
-                {total} STAYS
+              <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+                {!editing && (
+                  <button onClick={() => onOpenHotelSheet ? onOpenHotelSheet('new') : onAddHotel()} style={{
+                    width:28, height:28, borderRadius:14, border:'none',
+                    background:COLORS.softer, cursor:'pointer',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                  }}>
+                    <Icon name="plus" size={14} color={COLORS.mute} stroke={2}/>
+                  </button>
+                )}
+                <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em' }}>
+                  {total} STAYS
+                </div>
               </div>
             </div>
             <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:8 }}>
               {hotelList.map((h, i) => {
-                const hp = hotelDragProps(i);
+                const hp = hotelDragProps(h._idx);
                 return (
-                  <SwipeableRow key={i} onEdit={() => onOpenHotel(i)} onDelete={() => onDeleteHotel(i)} disabled={editing} wrapStyle={{ borderRadius:16 }}>
-                  <div {...hp} onClick={() => !editing && onOpenHotel(i)} style={{
+                  <SwipeableRow key={h._idx} onEdit={() => openHotel(h._idx)} onDelete={() => onDeleteHotel(h._idx)} disabled={editing} wrapStyle={{ borderRadius:16 }}>
+                  <div {...hp} onClick={() => !editing && openHotel(h._idx)} style={{
                     background:COLORS.card, borderRadius:16, padding:12,
                     display:'flex', gap:12, alignItems:'center',
                     cursor: editing ? 'grab' : 'pointer',
@@ -2167,7 +2174,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, city, onPickCity,
                     {editing ? (
                       <>
                         <DragHandle size={14} color={COLORS.mute}/>
-                        <button onClick={(e)=>{e.stopPropagation(); onDeleteHotel(i);}} style={{
+                        <button onClick={(e)=>{e.stopPropagation(); onDeleteHotel(h._idx);}} style={{
                           width:26, height:26, borderRadius:13, border:'none',
                           background:'rgba(193,79,46,0.12)', cursor:'pointer',
                           display:'flex', alignItems:'center', justifyContent:'center',
@@ -3132,6 +3139,244 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
         transition: 'height 0.22s ease',
       }}/>}
       </div>{/* wrapper 닫기 */}
+    </div>
+  );
+}
+
+// ─── Hotel Sheet (bottom sheet for add / view / edit hotel) ──
+function HotelSheet({ open, onClose, hotel, tripDays, onSave, onDelete }) {
+  if (!open) return null;
+  const isNew = !hotel;
+  const blank = { name:'', area:'', address:'', checkin:'', checkinTime:'15:00', checkout:'', checkoutTime:'12:00', nights:'1', price:'', phone:'', confirmation:'', note:'', hue:30 };
+  const [editing, setEditing] = React.useState(isNew);
+  const [draft, setDraft] = React.useState(hotel ? { ...hotel } : blank);
+  const committed = React.useRef(draft);
+  const [sheetY, setSheetY] = React.useState(0);
+  const [entered, setEntered] = React.useState(false);
+  const sheetRef = React.useRef(null);
+  const sheetYRef = React.useRef(0);
+  const dragRef = React.useRef({ active:false, startY:0, startScrollTop:0 });
+  const kbh = useKeyboardHeight();
+
+  React.useEffect(() => {
+    const d = hotel ? { ...hotel } : blank;
+    setDraft(d); committed.current = d;
+    setEditing(isNew);
+    setSheetY(0); sheetYRef.current = 0;
+    setEntered(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+  }, [open]);
+
+  React.useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  React.useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    const onStart = e => { dragRef.current = { active:true, startY:e.touches[0].clientY, startScrollTop:el.scrollTop }; };
+    const onMove = e => {
+      if (!dragRef.current.active) return;
+      const { startY, startScrollTop } = dragRef.current;
+      const dy = e.touches[0].clientY - startY;
+      if (startScrollTop > 8 || dy <= 0) { dragRef.current.active = false; return; }
+      e.preventDefault();
+      sheetYRef.current = Math.max(0, dy); setSheetY(sheetYRef.current);
+    };
+    const onEnd = () => {
+      dragRef.current.active = false;
+      const top = sheetRef.current ? sheetRef.current.getBoundingClientRect().top : 0;
+      if (top > window.innerHeight / 2) onClose();
+      else { sheetYRef.current = 0; setSheetY(0); }
+    };
+    el.addEventListener('touchstart', onStart, { passive:true });
+    el.addEventListener('touchmove', onMove, { passive:false });
+    el.addEventListener('touchend', onEnd, { passive:true });
+    return () => { el.removeEventListener('touchstart', onStart); el.removeEventListener('touchmove', onMove); el.removeEventListener('touchend', onEnd); };
+  }, [open]);
+
+  const save = () => { onSave(draft); committed.current = { ...draft }; setEditing(false); };
+  const hue = draft.hue || 25;
+  const dayOptions = (tripDays || []).map(d => d.date).filter(Boolean);
+
+  const field = (key, label, placeholder = '') => (
+    <div style={{ marginBottom:10 }}>
+      <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>{label}</div>
+      <input value={draft[key]||''} onChange={e => setDraft({...draft, [key]:e.target.value})} placeholder={placeholder}
+        style={{ width:'100%', padding:'9px 11px', borderRadius:8, border:`1px solid ${COLORS.line}`,
+          background:COLORS.bg, fontFamily:SANS, fontSize:13, color:COLORS.ink, boxSizing:'border-box' }}/>
+    </div>
+  );
+
+  const dateField = (key, label) => (
+    <div style={{ marginBottom:10 }}>
+      <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>{label}</div>
+      {dayOptions.length > 0 ? (
+        <select value={draft[key]||''} onChange={e => setDraft({...draft, [key]:e.target.value})}
+          style={{ width:'100%', padding:'9px 11px', borderRadius:8, border:`1px solid ${COLORS.line}`,
+            background:COLORS.bg, fontFamily:SANS, fontSize:13, color:COLORS.ink, boxSizing:'border-box' }}>
+          <option value=''>날짜 선택</option>
+          {dayOptions.map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
+      ) : (
+        <input value={draft[key]||''} onChange={e => setDraft({...draft, [key]:e.target.value})} placeholder="May 4"
+          style={{ width:'100%', padding:'9px 11px', borderRadius:8, border:`1px solid ${COLORS.line}`,
+            background:COLORS.bg, fontFamily:SANS, fontSize:13, color:COLORS.ink, boxSizing:'border-box' }}/>
+      )}
+    </div>
+  );
+
+  const rows = [
+    draft.area && { icon:'pin', label:'지역', value: draft.area },
+    (draft.checkin || draft.checkout) && { icon:'clock', label:'일정', value: `${draft.checkin || '—'} 체크인  →  ${draft.checkout || '—'} 체크아웃` },
+    (draft.checkinTime || draft.checkoutTime) && { icon:'clock', label:'시간', value: `체크인 ${draft.checkinTime || '15:00'}  ·  체크아웃 ${draft.checkoutTime || '12:00'}` },
+    draft.nights && { icon:'hotel', label:'박수', value: `${draft.nights}박` },
+    draft.address && { icon:'map', label:'주소', value: draft.address },
+    draft.phone && { icon:'phone', label:'전화', value: draft.phone },
+    draft.price && { icon:'wallet', label:'요금', value: draft.price },
+    draft.confirmation && { icon:'book', label:'예약번호', value: draft.confirmation },
+    draft.note && { icon:'book', label:'메모', value: draft.note },
+  ].filter(Boolean);
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:1000,
+      display:'flex', flexDirection:'column', justifyContent:'flex-end',
+      background:`rgba(0,0,0,${Math.max(0, 0.35 - sheetY / 400)})` }} onClick={onClose}>
+      <div style={{ transform:`translateY(${entered ? sheetY : window.innerHeight}px)`,
+        transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
+        display:'flex', flexDirection:'column' }}>
+        <div ref={sheetRef} onClick={e => e.stopPropagation()}
+          style={{ background:COLORS.bg, borderRadius:'22px 22px 0 0', paddingBottom:40,
+            maxHeight: kbh > 0 ? `calc(100vh - ${kbh + 8}px)` : '92%',
+            overflowY:'auto', overflowX:'hidden' }}>
+          <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px' }}>
+            <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
+          </div>
+          <div style={{ position:'relative' }}>
+            <Photo hue={hue} label={(draft.name||'').toUpperCase().slice(0,20)} height={160}/>
+            {!editing && (
+              <button onClick={e => { e.stopPropagation(); setEditing(true); }} style={{
+                position:'absolute', top:12, right:12, zIndex:5,
+                border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
+                padding:'7px 13px', cursor:'pointer',
+                fontFamily:SANS, fontSize:12, fontWeight:500, color:COLORS.ink,
+                display:'flex', gap:5, alignItems:'center', boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
+              }}>
+                <Icon name="edit" size={12} color={COLORS.ink} stroke={2}/> 수정
+              </button>
+            )}
+          </div>
+          <div style={{ padding:'18px 20px 0' }}>
+            <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.12em', textTransform:'uppercase' }}>
+              HOTEL{draft.nights ? ` · ${draft.nights}박` : ''}
+            </div>
+            {editing ? (
+              <input value={draft.name||''} onChange={e => setDraft({...draft, name:e.target.value})}
+                placeholder="숙소 이름"
+                style={{ marginTop:6, width:'100%', fontFamily:SERIF, fontSize:28, lineHeight:1.12,
+                  color:COLORS.ink, border:'none', outline:'none', background:'transparent', padding:0 }}/>
+            ) : (
+              <div style={{ marginTop:6, fontFamily:SERIF, fontSize:28, lineHeight:1.12, color:COLORS.ink }}>
+                {draft.name || '새 숙소'}
+              </div>
+            )}
+            {!editing && draft.area && (
+              <div style={{ marginTop:4, fontFamily:SANS, fontSize:13, color:COLORS.mute, display:'flex', gap:5, alignItems:'center' }}>
+                <Icon name="pin" size={12} stroke={1.8}/> {draft.area}
+                {draft.rating && <><span style={{ opacity:0.4 }}>·</span><span>★ {draft.rating}</span></>}
+              </div>
+            )}
+
+            {editing ? (
+              <div style={{ marginTop:14, background:COLORS.card, borderRadius:14, padding:'14px 16px' }}>
+                {field('area', '지역')}
+                {field('address', '주소')}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                  {dateField('checkin', '체크인 날짜')}
+                  {dateField('checkout', '체크아웃 날짜')}
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                  {field('checkinTime', '체크인 시간', '15:00')}
+                  {field('checkoutTime', '체크아웃 시간', '12:00')}
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                  {field('nights', '박')}
+                  {field('price', '요금')}
+                </div>
+                {field('phone', '전화')}
+                {field('confirmation', '예약번호')}
+                <div>
+                  <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4 }}>메모</div>
+                  <textarea value={draft.note||''} onChange={e => setDraft({...draft, note:e.target.value})} rows={3}
+                    style={{ width:'100%', padding:'9px 11px', borderRadius:8, border:`1px solid ${COLORS.line}`,
+                      background:COLORS.bg, fontFamily:SANS, fontSize:13, color:COLORS.ink,
+                      boxSizing:'border-box', resize:'vertical' }}/>
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginTop:16, display:'flex', flexDirection:'column' }}>
+                {rows.map((r, i, arr) => (
+                  <div key={i} style={{
+                    background:COLORS.card, padding:'13px 16px',
+                    borderTopLeftRadius:i===0?12:0, borderTopRightRadius:i===0?12:0,
+                    borderBottomLeftRadius:i===arr.length-1?12:0, borderBottomRightRadius:i===arr.length-1?12:0,
+                    display:'flex', gap:12, alignItems:'flex-start',
+                    borderBottom:i<arr.length-1?`1px solid ${COLORS.line}`:'none',
+                  }}>
+                    <div style={{ paddingTop:2 }}><Icon name={r.icon} size={15} color={COLORS.mute} stroke={1.8}/></div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>{r.label}</div>
+                      <div style={{ marginTop:2, fontFamily:SANS, fontSize:13.5, color:COLORS.ink, lineHeight:1.45, whiteSpace:'pre-wrap' }}>{r.value}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ marginTop:14, display:'flex', gap:8 }}>
+              {editing ? (
+                <>
+                  <button onClick={save} style={{
+                    flex:1, background:COLORS.ink, color:COLORS.bg,
+                    border:'none', borderRadius:12, padding:'13px',
+                    fontFamily:SANS, fontSize:14, fontWeight:500, cursor:'pointer',
+                    display:'flex', gap:6, alignItems:'center', justifyContent:'center',
+                  }}>
+                    <Icon name="save" size={14} color={COLORS.bg} stroke={1.8}/> 저장
+                  </button>
+                  {!isNew && (
+                    <button onClick={() => { setDraft({ ...committed.current }); setEditing(false); }} style={{
+                      width:80, background:COLORS.card, border:`1px solid ${COLORS.line}`,
+                      borderRadius:12, cursor:'pointer', fontFamily:SANS, fontSize:13, color:COLORS.ink,
+                    }}>취소</button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <button onClick={() => window.open(mapsSearchUrl([draft.name, draft.area].filter(Boolean).join(' ')), '_blank')} style={{
+                    flex:1, background:COLORS.ink, color:COLORS.bg,
+                    border:'none', borderRadius:12, padding:'13px',
+                    fontFamily:SANS, fontSize:14, fontWeight:500, cursor:'pointer',
+                    display:'flex', gap:6, alignItems:'center', justifyContent:'center',
+                  }}>
+                    <Icon name="nav" size={14} color={COLORS.bg} stroke={1.8}/> 지도
+                  </button>
+                  <button onClick={onDelete} style={{
+                    width:60, background:COLORS.card, border:`1px solid ${COLORS.line}`,
+                    borderRadius:12, cursor:'pointer',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                  }}>
+                    <Icon name="trash" size={16} color={COLORS.accent} stroke={1.8}/>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+        {kbh > 0 && <div onClick={e => e.stopPropagation()} style={{ height:kbh, background:COLORS.bg, flexShrink:0, transition:'height 0.22s ease' }}/>}
+      </div>
     </div>
   );
 }
@@ -5713,7 +5958,8 @@ function App() {
   const [slideKey,  setSlideKey]  = React.useState(0);
   const [openStop, setOpenStop]   = React.useState(null);
   const [city, setCity]           = React.useState(CITIES[0]);
-  const [hotelSheet, setHotelSheet]   = React.useState(null);
+  const [hotelSheet, setHotelSheet]       = React.useState(null);
+  const [hotelDetailSheet, setHotelDetailSheet] = React.useState(null); // null=closed, 'new'=add, number=idx
   const [scrollKey, setScrollKey]     = React.useState(0);
   const [editing, setEditing]         = React.useState(false);
   const [tabBarVisible, setTabBarVisible] = React.useState(true);
@@ -6188,6 +6434,28 @@ function App() {
     }
   };
 
+  // ── HotelDetailSheet actions ───────────────────────────
+  const saveHotelDetailSheet = (draft) => {
+    if (hotelDetailSheet === 'new') {
+      const newHotel = { hue:30, ...draft };
+      const hotels = [...(trip.hotels || []), newHotel];
+      const days = syncHotelToDays(trip.days, newHotel, null);
+      editTrip({ hotels, days });
+    } else if (typeof hotelDetailSheet === 'number') {
+      const hotels = [...(trip.hotels || [])];
+      const prev = hotels[hotelDetailSheet];
+      const next = { ...prev, ...draft };
+      hotels[hotelDetailSheet] = next;
+      const days = syncHotelToDays(trip.days, next, prev);
+      editTrip({ hotels, days });
+    }
+    setHotelDetailSheet(null);
+  };
+  const deleteHotelDetailSheet = () => {
+    if (typeof hotelDetailSheet === 'number') deleteHotel(hotelDetailSheet);
+    setHotelDetailSheet(null);
+  };
+
   // ── Permission check ───────────────────────────────────
   const myRole = (trip?.permissions || {})[authUser?.uid];
   const canEdit = myRole !== 'view';
@@ -6216,6 +6484,7 @@ function App() {
         onBack={() => { setActiveTripId(null); setTrip(null); setEditing(false); }}
         onOpenDay={(i) => { savedHomeScrollY.current = window.scrollY; setDayIdx(i); setScrollKey(k=>k+1); }}
         onOpenHotel={(i) => { savedHomeScrollY.current = window.scrollY; setHotelIdx(i); setScrollKey(k=>k+1); }}
+        onOpenHotelSheet={(i) => setHotelDetailSheet(i)}
         city={city} onPickCity={setCity}
         onEditTrip={editTrip} onReorderDays={reorderDays}
         onAddDay={addDay} onDeleteDay={deleteDay}
@@ -6371,7 +6640,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v158</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v159</div>
         </div>
       </div>
       <button onClick={async () => {
@@ -6418,10 +6687,18 @@ function App() {
         </div>
       </div>
       <TabBar tab={tab} setTab={changeTab}
-        visible={tabBarVisible && !openStop && !profileSheetOpen && !hotelSheet && !saveConfirm && !budgetSheetOpen}
+        visible={tabBarVisible && !openStop && !profileSheetOpen && !hotelSheet && !hotelDetailSheet && !saveConfirm && !budgetSheetOpen}
         editing={editing} canEdit={canEdit} onToggleEdit={handleEditToggle}/>
       <StopSheet open={openStop} dayHue={dayHue}
         onClose={() => setOpenStop(null)} onSave={saveStop}/>
+      <HotelSheet
+        open={hotelDetailSheet !== null}
+        onClose={() => setHotelDetailSheet(null)}
+        hotel={typeof hotelDetailSheet === 'number' ? (trip?.hotels?.[hotelDetailSheet] || null) : null}
+        tripDays={trip?.days}
+        onSave={saveHotelDetailSheet}
+        onDelete={deleteHotelDetailSheet}
+      />
 
       {hotelSheet !== null && (
         <HotelSearchSheet
