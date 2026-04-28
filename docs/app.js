@@ -506,7 +506,8 @@ function SwipeableRow({
   editIcon,
   editBg,
   editLabel,
-  deleteLabel
+  deleteLabel,
+  cardSwipe
 }) {
   const [x, setX] = React.useState(0);
   const [open, setOpen] = React.useState(false);
@@ -569,6 +570,83 @@ function SwipeableRow({
       close();
     }
   };
+  if (cardSwipe) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'relative',
+        overflow: 'hidden',
+        ...wrapStyle
+      },
+      onTouchStart: onTouchStart,
+      onTouchMove: onTouchMove,
+      onTouchEnd: onTouchEnd
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        bottom: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: 8,
+        paddingRight: 10
+      }
+    }, onEdit && /*#__PURE__*/React.createElement("button", {
+      onClick: e => {
+        e.stopPropagation();
+        close();
+        setTimeout(onEdit, 100);
+      },
+      style: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        border: 'none',
+        cursor: 'pointer',
+        background: editBg || '#ffa500',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: editIcon || 'edit',
+      size: 14,
+      color: "#fff",
+      stroke: 2
+    })), /*#__PURE__*/React.createElement("button", {
+      onClick: e => {
+        e.stopPropagation();
+        close();
+        setTimeout(onDelete, 100);
+      },
+      style: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        border: 'none',
+        cursor: 'pointer',
+        background: '#B5451B',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: "trash",
+      size: 14,
+      color: "#fff",
+      stroke: 2
+    }))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        transform: `translateX(${x}px)`,
+        transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.22,1,0.36,1)',
+        willChange: 'transform',
+        WebkitTapHighlightColor: 'transparent'
+      }
+    }, children));
+  }
   return /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative',
@@ -3687,7 +3765,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v189"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v190"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -9598,6 +9676,7 @@ function PrepCatItems({
         ...(dp.style || {})
       }
     }, /*#__PURE__*/React.createElement(SwipeableRow, {
+      cardSwipe: true,
       onEdit: () => setEditingItem({
         ci,
         ii

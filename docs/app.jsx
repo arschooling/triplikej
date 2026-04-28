@@ -122,7 +122,7 @@ function EditBtn({ editing, onClick, compact }) {
 }
 
 // ─── Swipeable row (swipe-left to reveal edit/delete) ────────
-function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel }) {
+function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe }) {
   const [x, setX] = React.useState(0);
   const [open, setOpen] = React.useState(false);
   const startRef = React.useRef(null);
@@ -174,6 +174,45 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
       close();
     }
   };
+
+  if (cardSwipe) {
+    return (
+      <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}
+        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+        {/* 버튼들은 카드 뒤에 absolute로 고정 */}
+        <div style={{
+          position:'absolute', right:0, top:0, bottom:0,
+          display:'flex', alignItems:'center', justifyContent:'flex-end',
+          gap:8, paddingRight:10,
+        }}>
+          {onEdit && (
+            <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
+              width:38, height:38, borderRadius:19, border:'none', cursor:'pointer',
+              background: editBg || '#ffa500', flexShrink:0,
+              display:'flex', alignItems:'center', justifyContent:'center',
+            }}>
+              <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>
+            </button>
+          )}
+          <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onDelete,100);}} style={{
+            width:38, height:38, borderRadius:19, border:'none', cursor:'pointer',
+            background:'#B5451B', flexShrink:0,
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            <Icon name="trash" size={14} color="#fff" stroke={2}/>
+          </button>
+        </div>
+        {/* 카드 전체가 슬라이드 */}
+        <div style={{
+          transform:`translateX(${x}px)`,
+          transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.22,1,0.36,1)',
+          willChange:'transform', WebkitTapHighlightColor:'transparent',
+        }}>
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}
@@ -1740,7 +1779,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v189</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v190</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -4636,6 +4675,7 @@ function PrepCatItems({ ci, cat, cats, save, editing, editingItem, setEditingIte
           <div key={ii} ref={dp.ref} onTouchStart={dp.onTouchStart} onTouchMove={dp.onTouchMove} onTouchEnd={dp.onTouchEnd}
             style={{ position:'relative', marginBottom:6, ...(dp.style||{}) }}>
             <SwipeableRow
+              cardSwipe
               onEdit={() => setEditingItem({ ci, ii })}
               onDelete={() => deleteItem(ii)}
               isDragging={isTouchDragging}
