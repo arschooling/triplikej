@@ -178,28 +178,30 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
     <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}
       onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       <div style={{
-        position:'absolute', right:0, top:0, bottom:0, width:REVEAL,
-        display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-        zIndex:0,
-      }}>
-        <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
-          width:46, height:46, borderRadius:23, border:'none', cursor:'pointer',
-          background:'#ffa500', flexShrink:0,
-          display:'flex', alignItems:'center', justifyContent:'center',
-        }}><Icon name="edit" size={17} color="#fff" stroke={2}/></button>
-        <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onDelete,100);}} style={{
-          width:46, height:46, borderRadius:23, border:'none', cursor:'pointer',
-          background:'#B5451B', flexShrink:0,
-          display:'flex', alignItems:'center', justifyContent:'center',
-        }}><Icon name="trash" size={17} color="#fff" stroke={2}/></button>
-      </div>
-      <div style={{
+        display:'flex', width:`calc(100% + ${REVEAL}px)`,
         transform:`translateX(${x}px)`,
         transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.22,1,0.36,1)',
-        willChange:'transform', position:'relative', zIndex:1,
+        willChange:'transform',
         WebkitTapHighlightColor:'transparent',
       }}>
-        {children}
+        <div style={{ flex:1, minWidth:0 }}>
+          {children}
+        </div>
+        <div style={{
+          width:REVEAL, flexShrink:0,
+          display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+        }}>
+          <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
+            width:46, height:46, borderRadius:23, border:'none', cursor:'pointer',
+            background:'#ffa500', flexShrink:0,
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}><Icon name="edit" size={17} color="#fff" stroke={2}/></button>
+          <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onDelete,100);}} style={{
+            width:46, height:46, borderRadius:23, border:'none', cursor:'pointer',
+            background:'#B5451B', flexShrink:0,
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}><Icon name="trash" size={17} color="#fff" stroke={2}/></button>
+        </div>
       </div>
     </div>
   );
@@ -1701,7 +1703,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v157</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v158</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6369,7 +6371,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v157</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v158</div>
         </div>
       </div>
       <button onClick={async () => {
