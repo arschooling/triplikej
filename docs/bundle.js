@@ -3985,7 +3985,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v175"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v176"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -4190,6 +4190,7 @@ function HomeScreen({
   onBack,
   onAddHotel,
   onAddHotelFromSearch,
+  onAddHotelViaStop,
   onDeleteHotel,
   onReorderHotels,
   onConvertInlineHotel,
@@ -4841,7 +4842,7 @@ function HomeScreen({
         alignItems: 'center'
       }
     }, !editing && /*#__PURE__*/React.createElement("button", {
-      onClick: () => onOpenHotelSheet ? onOpenHotelSheet('new') : onAddHotel(),
+      onClick: () => onAddHotelViaStop ? onAddHotelViaStop() : onOpenHotelSheet ? onOpenHotelSheet('new') : onAddHotel(),
       style: {
         width: 28,
         height: 28,
@@ -6877,8 +6878,12 @@ function StopSheet({
     stroke: 1.8
   }), " \uC800\uC7A5"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
-      setDraft(committed.current);
-      setEditing(false);
+      if (open.hotelOnly) {
+        onClose();
+      } else {
+        setDraft(committed.current);
+        setEditing(false);
+      }
     },
     style: {
       width: 80,
@@ -14145,6 +14150,24 @@ function App() {
     return [...items].sort((a, b) => toMin(a.time) - toMin(b.time));
   };
   const saveStop = draft => {
+    if (openStop.hotelOnly) {
+      const hotelName = draft.en || (draft.title || '').replace(/\s*(체크인|체크아웃|숙박|입실|퇴실)\s*$/, '').trim() || '새 호텔';
+      const newHotel = {
+        name: hotelName,
+        area: draft.loc || '',
+        address: draft.note || '',
+        checkinTime: draft.time || '15:00',
+        hue: 30
+      };
+      const hotels = [...(trip.hotels || []), newHotel];
+      const days = syncHotelToDays(trip.days, newHotel, null);
+      editTrip({
+        hotels,
+        days
+      });
+      setOpenStop(null);
+      return;
+    }
     const days = [...trip.days];
     const items = [...days[dayIdx].items];
     let savedDraft = {
@@ -14359,6 +14382,21 @@ function App() {
     });
     setHotelIdx(hotels.length - 1);
   };
+  const addHotelViaStop = () => {
+    setOpenStop({
+      idx: -1,
+      stop: {
+        time: '15:00',
+        cat: 'hotel',
+        title: '',
+        en: '',
+        loc: '',
+        note: ''
+      },
+      editing: true,
+      hotelOnly: true
+    });
+  };
   const pickHotelFromSearch = name => {
     // name may be "Hotel Name (Area)"
     const m = name.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
@@ -14498,6 +14536,7 @@ function App() {
         onAddDay: addDay,
         onDeleteDay: deleteDay,
         onAddHotel: addHotel,
+        onAddHotelViaStop: addHotelViaStop,
         onAddHotelFromSearch: () => setHotelSheet('new'),
         onDeleteHotel: deleteHotel,
         onReorderHotels: reorderHotels,

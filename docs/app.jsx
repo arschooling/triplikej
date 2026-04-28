@@ -1739,7 +1739,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v175</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v176</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1841,7 +1841,7 @@ function isoToWeekday(iso) {
 // ─── Home ───────────────────────────────────────────────────
 function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPickCity,
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
-                      onAddHotel, onAddHotelFromSearch, onDeleteHotel, onReorderHotels,
+                      onAddHotel, onAddHotelFromSearch, onAddHotelViaStop, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
                       userData, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
@@ -2170,7 +2170,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
               <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>숙소</div>
               <div style={{ display:'flex', gap:10, alignItems:'center' }}>
                 {!editing && (
-                  <button onClick={() => onOpenHotelSheet ? onOpenHotelSheet('new') : onAddHotel()} style={{
+                  <button onClick={() => onAddHotelViaStop ? onAddHotelViaStop() : onOpenHotelSheet ? onOpenHotelSheet('new') : onAddHotel()} style={{
                     width:28, height:28, borderRadius:14, border:'none',
                     background:COLORS.softer, cursor:'pointer',
                     display:'flex', alignItems:'center', justifyContent:'center',
@@ -3171,7 +3171,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
                 }}>
                   <Icon name="save" size={14} color={COLORS.bg} stroke={1.8}/> 저장
                 </button>
-                <button onClick={() => { setDraft(committed.current); setEditing(false); }} style={{
+                <button onClick={() => { if (open.hotelOnly) { onClose(); } else { setDraft(committed.current); setEditing(false); } }} style={{
                   width:80, background:COLORS.card, border:`1px solid ${COLORS.line}`,
                   borderRadius:12, cursor:'pointer',
                   fontFamily:SANS, fontSize:13, color:COLORS.ink,
@@ -6824,6 +6824,22 @@ function App() {
   };
 
   const saveStop = (draft) => {
+    if (openStop.hotelOnly) {
+      const hotelName = draft.en
+        || (draft.title || '').replace(/\s*(체크인|체크아웃|숙박|입실|퇴실)\s*$/, '').trim()
+        || '새 호텔';
+      const newHotel = {
+        name: hotelName, area: draft.loc || '',
+        address: draft.note || '',
+        checkinTime: draft.time || '15:00',
+        hue: 30,
+      };
+      const hotels = [...(trip.hotels || []), newHotel];
+      const days = syncHotelToDays(trip.days, newHotel, null);
+      editTrip({ hotels, days });
+      setOpenStop(null);
+      return;
+    }
     const days = [...trip.days];
     const items = [...days[dayIdx].items];
     let savedDraft = { ...draft };
@@ -6986,6 +7002,14 @@ function App() {
     editTrip({ hotels });
     setHotelIdx(hotels.length - 1);
   };
+  const addHotelViaStop = () => {
+    setOpenStop({
+      idx: -1,
+      stop: { time:'15:00', cat:'hotel', title:'', en:'', loc:'', note:'' },
+      editing: true,
+      hotelOnly: true,
+    });
+  };
   const pickHotelFromSearch = (name) => {
     // name may be "Hotel Name (Area)"
     const m = name.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
@@ -7061,6 +7085,7 @@ function App() {
         onEditTrip={editTrip} onReorderDays={reorderDays}
         onAddDay={addDay} onDeleteDay={deleteDay}
         onAddHotel={addHotel}
+        onAddHotelViaStop={addHotelViaStop}
         onAddHotelFromSearch={() => setHotelSheet('new')}
         onDeleteHotel={deleteHotel}
         onReorderHotels={reorderHotels}
