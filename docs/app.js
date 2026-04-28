@@ -3687,7 +3687,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v176"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v177"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -4824,13 +4824,12 @@ function DayScreen({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative',
-      paddingTop: 'env(safe-area-inset-top, 0px)',
       background: heroBg
     }
   }, /*#__PURE__*/React.createElement(Photo, {
     hue: heroHue,
     label: day.hero?.label,
-    height: 280
+    height: 'calc(280px + env(safe-area-inset-top, 0px))'
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -5493,13 +5492,12 @@ function HotelDetailScreen({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative',
-      paddingTop: 'env(safe-area-inset-top, 0px)',
       background: hotelBg
     }
   }, /*#__PURE__*/React.createElement(Photo, {
     hue: hotelHue,
     label: (draft.name || '').toUpperCase().slice(0, 20),
-    height: 240
+    height: 'calc(240px + env(safe-area-inset-top, 0px))'
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
