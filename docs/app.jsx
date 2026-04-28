@@ -197,7 +197,6 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
         transform:`translateX(${x}px)`,
         transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.22,1,0.36,1)',
         willChange:'transform', position:'relative', zIndex:1,
-        background:COLORS.card,
         WebkitTapHighlightColor:'transparent',
       }}>
         {children}
@@ -1702,7 +1701,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:72, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v156</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v157</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2431,9 +2430,9 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                       </button>
                     </div>
                   )}
-                  {editing && dp['data-drag-over'] && (
-                    <div style={{ position:'absolute', inset:-2, border:`2px solid ${COLORS.accent}`,
-                      borderRadius:16, pointerEvents:'none' }}/>
+                  {dp['data-drag-over'] && (
+                    <div style={{ position:'absolute', inset:-2, border:`2px dashed rgba(193,79,46,0.45)`,
+                      borderRadius:16, pointerEvents:'none', background:'rgba(193,79,46,0.04)' }}/>
                   )}
                 </div>
                 </SwipeableRow>
@@ -3855,6 +3854,86 @@ function MapScreen({ trip, onEditItem }) {
 }
 
 // ─── Food ───────────────────────────────────────────────────
+function FoodCatItems({ catItems, allFood, onEditFood, editing }) {
+  const reorder = (from, to) => {
+    const globalFrom = catItems[from].idx;
+    const globalTo   = catItems[to].idx;
+    const newFood = [...allFood];
+    newFood.splice(globalTo, 0, newFood.splice(globalFrom, 1)[0]);
+    onEditFood(newFood);
+  };
+  const delFood = (globalIdx) => onEditFood(allFood.filter((_, i) => i !== globalIdx));
+  const updateFood = (globalIdx, patch) => {
+    const list = [...allFood]; list[globalIdx] = { ...list[globalIdx], ...patch }; onEditFood(list);
+  };
+  const { itemProps, isTouchDragging } = useDragReorder(reorder, true);
+  return (
+    <>
+      {catItems.map((f, i) => {
+        const dp = itemProps(i);
+        return (
+          <div key={f.idx} ref={dp.ref} onTouchStart={dp.onTouchStart} onTouchMove={dp.onTouchMove} onTouchEnd={dp.onTouchEnd}
+            style={{ position:'relative', ...(dp.style||{}) }}>
+            <SwipeableRow
+              onEdit={() => {}}
+              onDelete={() => delFood(f.idx)}
+              isDragging={isTouchDragging}
+              wrapStyle={{ borderBottom: i < catItems.length - 1 ? `1px solid ${COLORS.line}` : 'none' }}
+            >
+              <div style={{ padding:'12px 14px', position:'relative' }}>
+                {editing ? (
+                  <div style={{ display:'flex', flexDirection:'column', gap:4, paddingRight:32 }}>
+                    <input value={f.name} onChange={e => updateFood(f.idx, { name: e.target.value })}
+                      placeholder="맛집 이름"
+                      style={{ border:'none', outline:'none', background:'transparent',
+                        fontFamily:SANS, fontSize:14, fontWeight:500, color:COLORS.ink, padding:0, width:'100%' }}/>
+                    <input value={f.detail||''} onChange={e => updateFood(f.idx, { detail: e.target.value })}
+                      placeholder="상세 설명"
+                      style={{ border:'none', outline:'none', background:'transparent',
+                        fontFamily:SANS, fontSize:12, color:COLORS.mute, padding:0, width:'100%' }}/>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <input value={f.price||''} onChange={e => updateFood(f.idx, { price: e.target.value })}
+                        placeholder="가격"
+                        style={{ border:'none', outline:'none', background:'transparent',
+                          fontFamily:MONO, fontSize:11, color:COLORS.accent, padding:0, width:60 }}/>
+                      <input value={f.note||''} onChange={e => updateFood(f.idx, { note: e.target.value })}
+                        placeholder="메모"
+                        style={{ border:'none', outline:'none', background:'transparent',
+                          fontFamily:SANS, fontSize:11, color:COLORS.mute, padding:0, flex:1 }}/>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => window.open(mapsSearchUrl(f.name), '_blank')}
+                    style={{ width:'100%', padding:0, border:'none', background:'transparent', cursor:'pointer', textAlign:'left' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8 }}>
+                      <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, fontWeight:500 }}>{f.name}</div>
+                      {f.price && <div style={{ fontFamily:MONO, fontSize:10.5, color:COLORS.accent, flexShrink:0 }}>{f.price}</div>}
+                    </div>
+                    {f.detail && <div style={{ marginTop:3, fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.4 }}>{f.detail}</div>}
+                    {f.note && <div style={{ marginTop:4, fontFamily:SANS, fontSize:11, color:COLORS.mute, fontStyle:'italic', opacity:0.8 }}>— {f.note}</div>}
+                  </button>
+                )}
+                {editing && (
+                  <button onClick={() => delFood(f.idx)} style={{
+                    position:'absolute', top:8, right:8, width:24, height:24, borderRadius:12,
+                    border:'none', background:'rgba(193,79,46,0.12)', cursor:'pointer',
+                    display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
+                  </button>
+                )}
+              </div>
+            </SwipeableRow>
+            {dp['data-drag-over'] && (
+              <div style={{ position:'absolute', inset:0, border:`2px dashed rgba(193,79,46,0.45)`,
+                pointerEvents:'none', background:'rgba(193,79,46,0.04)' }}/>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function FoodScreen({ trip, onEditFood, editing, setEditing }) {
   const [query,       setQuery]       = React.useState('');
   const [newCatInput, setNewCatInput] = React.useState(false);
@@ -3946,56 +4025,7 @@ function FoodScreen({ trip, onEditFood, editing, setEditing }) {
               )}
             </div>
             <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
-              {items.map((f, i) => (
-                <SwipeableRow key={f.idx}
-                  onEdit={() => setEditing(true)}
-                  onDelete={() => delFood(f.idx)}
-                  disabled={editing}
-                  wrapStyle={{ borderBottom: i < items.length - 1 ? `1px solid ${COLORS.line}` : 'none' }}>
-                  <div style={{ padding:'12px 14px', position:'relative' }}>
-                    {editing ? (
-                      <div style={{ display:'flex', flexDirection:'column', gap:4, paddingRight:32 }}>
-                        <input value={f.name} onChange={e => updateFood(f.idx, { name: e.target.value })}
-                          placeholder="맛집 이름"
-                          style={{ border:'none', outline:'none', background:'transparent',
-                            fontFamily:SANS, fontSize:14, fontWeight:500, color:COLORS.ink, padding:0, width:'100%' }}/>
-                        <input value={f.detail||''} onChange={e => updateFood(f.idx, { detail: e.target.value })}
-                          placeholder="상세 설명"
-                          style={{ border:'none', outline:'none', background:'transparent',
-                            fontFamily:SANS, fontSize:12, color:COLORS.mute, padding:0, width:'100%' }}/>
-                        <div style={{ display:'flex', gap:8 }}>
-                          <input value={f.price||''} onChange={e => updateFood(f.idx, { price: e.target.value })}
-                            placeholder="가격"
-                            style={{ border:'none', outline:'none', background:'transparent',
-                              fontFamily:MONO, fontSize:11, color:COLORS.accent, padding:0, width:60 }}/>
-                          <input value={f.note||''} onChange={e => updateFood(f.idx, { note: e.target.value })}
-                            placeholder="메모"
-                            style={{ border:'none', outline:'none', background:'transparent',
-                              fontFamily:SANS, fontSize:11, color:COLORS.mute, padding:0, flex:1 }}/>
-                        </div>
-                      </div>
-                    ) : (
-                      <button onClick={() => window.open(mapsSearchUrl(f.name), '_blank')}
-                        style={{ width:'100%', padding:0, border:'none', background:'transparent', cursor:'pointer', textAlign:'left' }}>
-                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8 }}>
-                          <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, fontWeight:500 }}>{f.name}</div>
-                          {f.price && <div style={{ fontFamily:MONO, fontSize:10.5, color:COLORS.accent, flexShrink:0 }}>{f.price}</div>}
-                        </div>
-                        {f.detail && <div style={{ marginTop:3, fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.4 }}>{f.detail}</div>}
-                        {f.note && <div style={{ marginTop:4, fontFamily:SANS, fontSize:11, color:COLORS.mute, fontStyle:'italic', opacity:0.8 }}>— {f.note}</div>}
-                      </button>
-                    )}
-                    {editing && (
-                      <button onClick={() => delFood(f.idx)} style={{
-                        position:'absolute', top:8, right:8, width:24, height:24, borderRadius:12,
-                        border:'none', background:'rgba(193,79,46,0.12)', cursor:'pointer',
-                        display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
-                      </button>
-                    )}
-                  </div>
-                </SwipeableRow>
-              ))}
+              <FoodCatItems catItems={items} allFood={allFood} onEditFood={onEditFood} editing={editing}/>
               {/* 항목 추가 */}
               {addSelCat === cat ? (
                 <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px',
@@ -4068,6 +4098,72 @@ function normalizePrepCats(raw) {
   if (raw?.pack?.length)      result.push({ id:'cat_pack',      name:'챙길 물건',   items: raw.pack });
   if (!result.length)         result.push({ id:'cat_1', name:'체크리스트', items:[] });
   return { cats: result };
+}
+
+function PrepCatItems({ ci, cat, cats, save, editing, editingItem, setEditingItem }) {
+  const reorder = (from, to) => {
+    const next = cats.map((c, i) => {
+      if (i !== ci) return c;
+      const items = [...c.items];
+      items.splice(to, 0, items.splice(from, 1)[0]);
+      return { ...c, items };
+    });
+    save(next);
+  };
+  const { itemProps, isTouchDragging } = useDragReorder(reorder, true);
+  const deleteItem = (ii) => {
+    const next = cats.map((c, i) => i !== ci ? c : { ...c, items: c.items.filter((_, j) => j !== ii) });
+    save(next);
+  };
+  const updateItem = (ii, val) => {
+    const next = cats.map((c, i) => i !== ci ? c : { ...c, items: c.items.map((x, j) => j === ii ? val : x) });
+    save(next);
+  };
+  return (
+    <>
+      {(cat.items || []).map((item, ii) => {
+        const isEditingThis = editingItem?.ci === ci && editingItem?.ii === ii;
+        const dp = itemProps(ii);
+        return (
+          <div key={ii} ref={dp.ref} onTouchStart={dp.onTouchStart} onTouchMove={dp.onTouchMove} onTouchEnd={dp.onTouchEnd}
+            style={{ position:'relative', ...(dp.style||{}) }}>
+            <SwipeableRow
+              onEdit={() => setEditingItem({ ci, ii })}
+              onDelete={() => deleteItem(ii)}
+              isDragging={isTouchDragging}
+              wrapStyle={{ borderBottom: ii < cat.items.length - 1 ? `1px solid ${COLORS.line}` : 'none' }}
+            >
+              <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', background:COLORS.card }}>
+                <div style={{ width:16, height:16, borderRadius:8, border:`1.5px solid ${COLORS.line}`, flexShrink:0 }}/>
+                {(editing || isEditingThis) ? (
+                  <input autoFocus={isEditingThis} value={item}
+                    onChange={e => updateItem(ii, e.target.value)}
+                    onBlur={() => { if (isEditingThis) setEditingItem(null); }}
+                    onKeyDown={e => { if (e.key==='Enter' || e.key==='Escape') setEditingItem(null); }}
+                    style={{ flex:1, border:'none', outline:'none', background:'transparent',
+                      fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
+                ) : (
+                  <span style={{ flex:1, fontFamily:SANS, fontSize:13.5, color:COLORS.ink }}>{item}</span>
+                )}
+                {editing && !isEditingThis && (
+                  <button onClick={() => deleteItem(ii)} style={{
+                    width:22, height:22, borderRadius:11, border:'none',
+                    background:'rgba(193,79,46,0.12)', cursor:'pointer',
+                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
+                  </button>
+                )}
+              </div>
+            </SwipeableRow>
+            {dp['data-drag-over'] && (
+              <div style={{ position:'absolute', inset:0, border:`2px dashed rgba(193,79,46,0.45)`,
+                borderRadius:0, pointerEvents:'none', background:'rgba(193,79,46,0.04)' }}/>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
 }
 
 function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
@@ -4203,38 +4299,8 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
                 항목이 없어요
               </div>
             )}
-            {(cat.items || []).map((item, ii) => {
-              const isEditingThis = editingItem?.ci === ci && editingItem?.ii === ii;
-              return (
-                <SwipeableRow key={ii}
-                  onEdit={() => setEditingItem({ ci, ii })}
-                  onDelete={() => deleteItem(ci, ii)}
-                  wrapStyle={{ borderBottom: ii < cat.items.length - 1 ? `1px solid ${COLORS.line}` : 'none' }}
-                >
-                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', background:COLORS.card }}>
-                    <div style={{ width:16, height:16, borderRadius:8, border:`1.5px solid ${COLORS.line}`, flexShrink:0 }}/>
-                    {(editing || isEditingThis) ? (
-                      <input autoFocus={isEditingThis} value={item}
-                        onChange={e => updateItem(ci, ii, e.target.value)}
-                        onBlur={() => { if (isEditingThis) setEditingItem(null); }}
-                        onKeyDown={e => { if (e.key==='Enter' || e.key==='Escape') setEditingItem(null); }}
-                        style={{ flex:1, border:'none', outline:'none', background:'transparent',
-                          fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
-                    ) : (
-                      <span style={{ flex:1, fontFamily:SANS, fontSize:13.5, color:COLORS.ink }}>{item}</span>
-                    )}
-                    {editing && !isEditingThis && (
-                      <button onClick={() => deleteItem(ci, ii)} style={{
-                        width:22, height:22, borderRadius:11, border:'none',
-                        background:'rgba(193,79,46,0.12)', cursor:'pointer',
-                        display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                        <Icon name="trash" size={11} color={COLORS.accent} stroke={2}/>
-                      </button>
-                    )}
-                  </div>
-                </SwipeableRow>
-              );
-            })}
+            <PrepCatItems ci={ci} cat={cat} cats={cats} save={save} editing={editing}
+              editingItem={editingItem} setEditingItem={setEditingItem}/>
             {/* 항목 추가 */}
             {addInputCat === ci ? (
               <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px',
@@ -4729,31 +4795,34 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange }) {
                   textTransform:'uppercase', padding:'4px 2px 8px' }}>{date}</div>
                 <div style={{ background:COLORS.card, borderRadius:14, overflow:'hidden' }}>
                   {byDate[date].map((e, i) => (
-                    <div key={e.id||e._i} onClick={() => openEdit(e._i)}
-                      style={{
+                    <SwipeableRow key={e.id||e._i}
+                      onEdit={() => openEdit(e._i)}
+                      onDelete={() => onEditBudget({ entries: entries.filter((_,j) => j !== e._i) })}
+                      wrapStyle={{ borderBottom: i < byDate[date].length-1 ? `1px solid ${COLORS.line}` : 'none' }}>
+                      <div style={{
                         padding:'12px 14px', cursor:'pointer', display:'flex', alignItems:'center', gap:12,
-                        borderBottom: i < byDate[date].length-1 ? `1px solid ${COLORS.line}` : 'none',
-                      }}>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, marginBottom:2,
-                          whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                          {e.cat}{e.note ? ` · ${e.note}` : ''}
-                        </div>
-                        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                          {(e.scope||'personal')==='shared' && (
-                            <div style={{ fontFamily:MONO, fontSize:9, color:'#4F6BED', background:'rgba(79,107,237,0.1)',
-                              borderRadius:4, padding:'1px 5px', letterSpacing:'0.05em' }}>공동</div>
-                          )}
-                          <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>
-                            {e.type==='in' ? '수입' : '지출'}
+                      }} onClick={() => openEdit(e._i)}>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, marginBottom:2,
+                            whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                            {e.cat}{e.note ? ` · ${e.note}` : ''}
+                          </div>
+                          <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                            {(e.scope||'personal')==='shared' && (
+                              <div style={{ fontFamily:MONO, fontSize:9, color:'#4F6BED', background:'rgba(79,107,237,0.1)',
+                                borderRadius:4, padding:'1px 5px', letterSpacing:'0.05em' }}>공동</div>
+                            )}
+                            <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>
+                              {e.type==='in' ? '수입' : '지출'}
+                            </div>
                           </div>
                         </div>
+                        <div style={{ fontFamily:MONO, fontSize:14, fontWeight:600, flexShrink:0,
+                          color: e.type==='in' ? '#3A9B4C' : '#C14F2E' }}>
+                          {e.type==='in' ? '+' : '-'}{fmtAmt(e.amount, e.currency||'KRW')}
+                        </div>
                       </div>
-                      <div style={{ fontFamily:MONO, fontSize:14, fontWeight:600, flexShrink:0,
-                        color: e.type==='in' ? '#3A9B4C' : '#C14F2E' }}>
-                        {e.type==='in' ? '+' : '-'}{fmtAmt(e.amount, e.currency||'KRW')}
-                      </div>
-                    </div>
+                    </SwipeableRow>
                   ))}
                 </div>
               </div>
@@ -6300,7 +6369,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v156</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v157</div>
         </div>
       </div>
       <button onClick={async () => {

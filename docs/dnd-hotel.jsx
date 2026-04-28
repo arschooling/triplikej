@@ -64,10 +64,11 @@ function useDragReorder(onReorder, enabled=true) {
       const { from, to, dy, itemH } = td;
       if (idx === from) {
         style = {
-          transform: `translateY(${dy}px) scale(1.035)`,
-          transition: 'transform 0s, box-shadow 0.15s, opacity 0.15s',
-          zIndex: 50, opacity: 0.92, position: 'relative',
-          boxShadow: '0 16px 40px rgba(0,0,0,0.24), 0 4px 8px rgba(0,0,0,0.12)',
+          transform: `translateY(${dy}px) scale(1.04)`,
+          transition: 'transform 0s, box-shadow 0.18s',
+          zIndex: 100, opacity: 0.97, position: 'relative',
+          boxShadow: '0 28px 70px rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.18)',
+          borderRadius: 14,
         };
       } else {
         let shift = 0;
@@ -79,9 +80,10 @@ function useDragReorder(onReorder, enabled=true) {
           transition: 'transform 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.18s ease, background 0.18s ease',
           position: 'relative',
           ...(isTarget ? {
-            outline: '2.5px solid #C14F2E',
-            outlineOffset: '2px',
-            background: 'rgba(193,79,46,0.07)',
+            outline: '2px dashed rgba(193,79,46,0.45)',
+            outlineOffset: '3px',
+            background: 'rgba(193,79,46,0.05)',
+            borderRadius: 14,
           } : {}),
         };
       }
@@ -115,16 +117,19 @@ function useDragReorder(onReorder, enabled=true) {
       onDragEnd: () => { setDragIdx(null); setOverIdx(null); },
     };
 
+    const isTouchTarget = !!td && td.from !== td.to && idx === td.to;
+    const isDesktopTarget = !td && enabled && overIdx === idx && dragIdx !== null && dragIdx !== idx;
     return {
       ref: (el) => { elRefs.current[idx] = el; },
       onTouchStart, onTouchMove, onTouchEnd,
       ...html5,
       style,
-      'data-drag-over': !td && enabled && overIdx === idx && dragIdx !== null && dragIdx !== idx,
+      'data-drag-over': isTouchTarget || isDesktopTarget,
+      'data-dragging': !!td && idx === td.from,
     };
   };
 
-  return { containerProps, itemProps, dragIdx: td ? td.from : dragIdx, overIdx: td ? td.to : overIdx };
+  return { containerProps, itemProps, dragIdx: td ? td.from : dragIdx, overIdx: td ? td.to : overIdx, isTouchDragging: !!td };
 }
 
 // ─── Drag handle component ──────────────────────────────────
