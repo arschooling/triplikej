@@ -1802,12 +1802,12 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v209</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v210</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
         : <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:12 }}>
-            {trips.map(t => {
+            {[...trips].sort((a, b) => (b.sampleId ? 1 : 0) - (a.sampleId ? 1 : 0)).map(t => {
               const hue = t.hue ?? t.days?.[0]?.hero?.hue ?? 25;
               const label = t.days?.[0]?.hero?.label || t.title?.toUpperCase() || 'TRIP';
               const isShared = Array.isArray(t.members) && t.members.length > 0 && t.members[0] !== myUid;
