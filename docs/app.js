@@ -3880,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v270"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v271"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6834,7 +6834,8 @@ function StopSheet({
   onClose,
   onSave,
   cityBias,
-  onRegisterEdit
+  onRegisterEdit,
+  onTabBarToggle
 }) {
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
@@ -6995,7 +6996,10 @@ function StopSheet({
     }
   }, /*#__PURE__*/React.createElement("div", {
     ref: sheetRef,
-    onClick: e => e.stopPropagation(),
+    onClick: e => {
+      e.stopPropagation();
+      onTabBarToggle?.();
+    },
     style: {
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
@@ -16687,32 +16691,18 @@ function App() {
     editing: openStop ? false : editing,
     canEdit: canEdit,
     onToggleEdit: handleEditToggle
-  }), openStop && !tabBarPeeking && /*#__PURE__*/React.createElement("div", {
-    onTouchStart: () => {
-      clearTimeout(tabBarPeekTimer.current);
-      setTabBarPeeking(true);
-      tabBarPeekTimer.current = setTimeout(() => setTabBarPeeking(false), 3000);
-    },
-    style: {
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: 32,
-      zIndex: 1060
-    }
   }), /*#__PURE__*/React.createElement(StopSheet, {
     open: openStop,
     dayHue: dayHue,
     onClose: () => {
       setOpenStop(null);
       setTabBarPeeking(false);
-      clearTimeout(tabBarPeekTimer.current);
     },
     onSave: saveStop,
     onRegisterEdit: fn => {
       stopSheetEditRef.current = fn;
-    }
+    },
+    onTabBarToggle: () => setTabBarPeeking(p => !p)
   }), /*#__PURE__*/React.createElement(HotelSheet, {
     open: hotelDetailSheet !== null,
     onClose: () => setHotelDetailSheet(null),
