@@ -1779,7 +1779,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v199</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v200</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6935,11 +6935,14 @@ function App() {
     const next = { ...(tripRef.current || trip), ...patch };
     setTrip(prev => ({ ...prev, ...patch }));
     if (activeTripId) fbSaveGroup(activeTripId, patch).catch(console.error);
-    // 오너가 샘플 여행(NY)을 수정하면 samples/nyc도 업데이트
-    if (activeTripId && authUser?.email === 'arjungtaeng@gmail.com' && typeof fbUpdateSample === 'function') {
+    // 오너가 샘플 여행을 수정하면 해당 samples/{sampleId}도 업데이트
+    // NY: 오너의 첫 여행 (tripId === uid), Rome: sampleId 필드로 구분
+    const currentSampleId = (tripRef.current || trip)?.sampleId
+      || (activeTripId === authUser?.uid ? 'nyc' : null);
+    if (activeTripId && authUser?.email === 'arjungtaeng@gmail.com' && currentSampleId && typeof fbUpdateSample === 'function') {
       clearTimeout(updateSampleTimer.current);
       updateSampleTimer.current = setTimeout(() => {
-        fbUpdateSample('nyc', next).catch(() => {});
+        fbUpdateSample(currentSampleId, next).catch(() => {});
       }, 5000);
     }
     // 동행인에게 일정 수정 알림 (60초 디바운스)
