@@ -189,11 +189,8 @@ function DragHandle({
   onTouchMove,
   onTouchEnd,
 }) {
-  return /*#__PURE__*/React.createElement("svg", {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: color,
+  // 터치 영역을 아이콘보다 넓게 — 특히 왼쪽으로 확장
+  return /*#__PURE__*/React.createElement("div", {
     onTouchStart,
     onTouchMove,
     onTouchEnd,
@@ -201,7 +198,17 @@ function DragHandle({
       cursor: 'grab',
       touchAction: 'none',
       flexShrink: 0,
+      padding: '10px 8px 10px 14px',   // 왼쪽 14px, 위아래 10px 터치 여유
+      margin: '-10px -8px -10px -14px', // 레이아웃 변형 없이 영역만 확장
+      display: 'flex',
+      alignItems: 'center',
     }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: color,
+    style: { display: 'block', pointerEvents: 'none' }
   }, /*#__PURE__*/React.createElement("circle", {
     cx: "9",
     cy: "6",
@@ -226,7 +233,7 @@ function DragHandle({
     cx: "15",
     cy: "18",
     r: "1.4"
-  }));
+  })));
 }
 
 // ─── Sample hotel database (since we can't hit a real API) ──
