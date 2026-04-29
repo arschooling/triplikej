@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v228</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v230</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -4154,90 +4154,101 @@ function computeRouteTip(pts, times) {
 // ─── 백그라운드 프리패치: 모든 날 경로 + 이동시간 ────────────
 async function prefetchRoutes(trip) {
   if (!trip?.days?.length) return;
-  const delay = ms => new Promise(r => setTimeout(r, ms));
-  const city = trip.title || '';
-  const CITY_BIAS_MAP = {
-    'new york':[40.758,-73.985],'paris':[48.856,2.352],'london':[51.507,-0.127],
-    'tokyo':[35.690,139.692],'seoul':[37.563,126.997],'los angeles':[34.052,-118.244],
-    'rome':[41.900,12.500],'florence':[43.769,11.256],'barcelona':[41.387,2.170],
-    'amsterdam':[52.370,4.895],'berlin':[52.520,13.405],'prague':[50.088,14.420],
-  };
-  const cityBias = CITY_BIAS_MAP[city.toLowerCase().split(/[^a-z]/)[0]];
-  const bias = cityBias ? `&lat=${cityBias[0]}&lon=${cityBias[1]}` : '';
+  try {
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+    const city = trip.title || '';
+    const CITY_BIAS_MAP = {
+      'new york':[40.758,-73.985],'paris':[48.856,2.352],'london':[51.507,-0.127],
+      'tokyo':[35.690,139.692],'seoul':[37.563,126.997],'los angeles':[34.052,-118.244],
+      'rome':[41.900,12.500],'florence':[43.769,11.256],'barcelona':[41.387,2.170],
+      'amsterdam':[52.370,4.895],'berlin':[52.520,13.405],'prague':[50.088,14.420],
+    };
+    const cityBias = CITY_BIAS_MAP[city.toLowerCase().split(/[^a-z]/)[0]];
+    const bias = cityBias ? `&lat=${cityBias[0]}&lon=${cityBias[1]}` : '';
 
-  const geocode = async (query) => {
-    if (GEO_CACHE[query]) return GEO_CACHE[query];
-    try {
-      const j = await (await fetch(
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1&lang=en${bias}`
-      )).json();
-      const f = j?.features?.[0];
-      if (f) { const [lon,lat]=f.geometry.coordinates; GEO_CACHE[query]=[lat,lon]; return [lat,lon]; }
-    } catch(_) {}
-    return null;
-  };
+    const geocode = async (query) => {
+      if (GEO_CACHE[query]) return GEO_CACHE[query];
+      try {
+        const j = await (await fetch(
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1&lang=en${bias}`
+        )).json();
+        const f = j?.features?.[0];
+        if (f) { const [lon,lat]=f.geometry.coordinates; GEO_CACHE[query]=[lat,lon]; return [lat,lon]; }
+      } catch(_) {}
+      return null;
+    };
 
-  for (let dayIdx = 0; dayIdx < trip.days.length; dayIdx++) {
-    const day = trip.days[dayIdx];
-    const ordered = (day.items||[]).filter(it => it.loc).map((it,ii) => ({...it, _origIdx:ii}));
-    if (!ordered.length) continue;
+    for (let dayIdx = 0; dayIdx < trip.days.length; dayIdx++) {
+      try {
+        const day = trip.days[dayIdx];
+        const ordered = (day.items||[]).filter(it => it.loc).map((it,ii) => ({...it, _origIdx:ii}));
+        if (!ordered.length) continue;
 
-    // ① MapScreen 경로 캐시
-    const mapKey = ordered.map(s => `${s.title}|${s.coords ? s.coords.join(',') : ''}`).join('~');
-    const routeCacheKey = `route_${trip.title}_${dayIdx}_${mapKey}`;
-    if (!localStorage.getItem(routeCacheKey)) {
-      const pts = [];
-      for (const s of ordered) {
-        let pos = s.coords || null;
-        if (!pos) {
-          const queries = [s.loc ? `${s.title}, ${s.loc}, ${city}` : null, `${s.title}, ${city}`, s.title].filter(Boolean);
-          for (const q of queries) { pos = await geocode(q); if (pos) break; await delay(80); }
+        // ① MapScreen 경로 캐시
+        const mapKey = ordered.map(s => `${s.title}|${s.coords ? s.coords.join(',') : ''}`).join('~');
+        const routeCacheKey = `route_${trip.title}_${dayIdx}_${mapKey}`;
+        let alreadyCached = false;
+        try { alreadyCached = !!localStorage.getItem(routeCacheKey); } catch(_) {}
+        if (!alreadyCached) {
+          const pts = [];
+          for (const s of ordered) {
+            let pos = s.coords || null;
+            if (!pos) {
+              const queries = [s.loc ? `${s.title}, ${s.loc}, ${city}` : null, `${s.title}, ${city}`, s.title].filter(Boolean);
+              for (const q of queries) { pos = await geocode(q); if (pos) break; await delay(80); }
+            }
+            if (pos) pts.push({ pos, title:s.title, cat:s.cat||'', time:s.time||'' });
+            await delay(60);
+          }
+          if (pts.length > 1) {
+            try {
+              const coords = pts.map(p => `${p.pos[1]},${p.pos[0]}`).join(';');
+              const rd = await (await fetch(
+                `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
+              )).json();
+              if (rd.routes?.[0]) {
+                const times = {};
+                (rd.routes[0].legs||[]).forEach((leg,li) => {
+                  times[li+1] = { transit:Math.max(1,Math.round(leg.duration/60)), walk:Math.max(1,Math.round(leg.distance/83.33)) };
+                });
+                try {
+                  const tip = computeRouteTip(pts, times);
+                  localStorage.setItem(routeCacheKey, JSON.stringify({ pts, times, tip }));
+                } catch(_) {}
+              }
+            } catch(_) {}
+          }
+          await delay(400); // 날짜 간 간격
         }
-        if (pos) pts.push({ pos, title:s.title, cat:s.cat||'', time:s.time||'' });
-        await delay(60);
-      }
-      if (pts.length > 1) {
-        try {
-          const coords = pts.map(p => `${p.pos[1]},${p.pos[0]}`).join(';');
-          const rd = await (await fetch(
-            `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
-          )).json();
-          if (rd.routes?.[0]) {
-            const times = {};
-            (rd.routes[0].legs||[]).forEach((leg,li) => {
-              times[li+1] = { transit:Math.max(1,Math.round(leg.duration/60)), walk:Math.max(1,Math.round(leg.distance/83.33)) };
-            });
-            const tip = computeRouteTip(pts, times);
-            try { localStorage.setItem(routeCacheKey, JSON.stringify({ pts, times, tip })); } catch(_) {}
-          }
-        } catch(_) {}
-      }
-      await delay(300); // 날짜 간 간격
-    }
 
-    // ② DayScreen 이동시간 캐시 (coords 있는 항목만)
-    const items = day.items || [];
-    const coordsKey = items.map(it => it.coords ? it.coords.join(',') : '').join('|');
-    const ttCacheKey = `tt_day_${trip.title}_${dayIdx}_${coordsKey}`;
-    const pending = items.reduce((acc,it,i) => { if (i>0 && it.coords && items[i-1].coords) acc.push(i); return acc; }, []);
-    if (pending.length && !localStorage.getItem(ttCacheKey)) {
-      const results = {};
-      await Promise.all(pending.map(async (i) => {
-        const [lat1,lon1]=items[i-1].coords, [lat2,lon2]=items[i].coords;
-        try {
-          const r = await (await fetch(
-            `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`
-          )).json();
-          if (r.routes?.[0]) {
-            const {duration,distance}=r.routes[0];
-            results[i]={drive:Math.max(1,Math.round(duration/60)),walk:Math.max(1,Math.round(distance/83.33))};
+        // ② DayScreen 이동시간 캐시 (coords 있는 항목만)
+        const items = day.items || [];
+        const coordsKey = items.map(it => it.coords ? it.coords.join(',') : '').join('|');
+        const ttCacheKey = `tt_day_${trip.title}_${dayIdx}_${coordsKey}`;
+        const pending = items.reduce((acc,it,i) => { if (i>0 && it.coords && items[i-1].coords) acc.push(i); return acc; }, []);
+        let ttCached = false;
+        try { ttCached = !!localStorage.getItem(ttCacheKey); } catch(_) {}
+        if (pending.length && !ttCached) {
+          const results = {};
+          for (const i of pending) {
+            try {
+              const [lat1,lon1]=items[i-1].coords, [lat2,lon2]=items[i].coords;
+              const r = await (await fetch(
+                `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`
+              )).json();
+              if (r.routes?.[0]) {
+                const {duration,distance}=r.routes[0];
+                results[i]={drive:Math.max(1,Math.round(duration/60)),walk:Math.max(1,Math.round(distance/83.33))};
+              }
+            } catch(_) {}
+            await delay(120);
           }
-        } catch(_) {}
-      }));
-      try { localStorage.setItem(ttCacheKey, JSON.stringify(results)); } catch(_) {}
-      await delay(200);
+          try { localStorage.setItem(ttCacheKey, JSON.stringify(results)); } catch(_) {}
+          await delay(200);
+        }
+      } catch(_) {}
     }
-  }
+  } catch(_) {}
 }
 
 // ─── Place search sheet ───────────────────────────────────────
@@ -7614,13 +7625,15 @@ function App() {
       label = 'Home';
     }
   } else if (tab === 'map')  {
-    const editMapItem = (dayIdx, itemIdx, patch) => {
-      const days = trip.days.map((d, di) =>
-        di !== dayIdx ? d : { ...d, items: d.items.map((it, ii) => ii !== itemIdx ? it : { ...it, ...patch }) }
-      );
-      editTrip({ days });
-    };
-    screen = <MapScreen trip={trip} onEditItem={editMapItem}/>;
+    if (trip) {
+      const editMapItem = (dayIdx, itemIdx, patch) => {
+        const days = trip.days.map((d, di) =>
+          di !== dayIdx ? d : { ...d, items: d.items.map((it, ii) => ii !== itemIdx ? it : { ...it, ...patch }) }
+        );
+        editTrip({ days });
+      };
+      screen = <MapScreen trip={trip} onEditItem={editMapItem}/>;
+    }
     label = 'Map';
   }
   else if (tab === 'food')   { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} editing={editing} setEditing={setEditing}/>; label='Food'; }
