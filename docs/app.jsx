@@ -1779,7 +1779,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v195</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v197</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6762,8 +6762,8 @@ function App() {
     const tripIds = userData.tripIds || [userData.groupId];
     setTripsLoading(true);
 
-    // 샘플 싱크 (오너 아닌 경우): nyc + rome 동시에
-    const SAMPLES = ['nyc', 'rome'];
+    // 샘플 싱크: rome만 자동 추가 (nyc는 오너 전용)
+    const SAMPLES = ['rome'];
     const syncAll = (typeof fbSyncSample === 'function')
       ? Promise.all(SAMPLES.map(sid => fbSyncSample(uid, email, sid).catch(() => null)))
       : Promise.resolve([null, null]);
