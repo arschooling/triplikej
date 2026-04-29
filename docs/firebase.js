@@ -508,10 +508,12 @@ window.fbSyncSample = async (uid, userEmail, sampleId) => {
   const sampleTripSnap = tripSnaps.find(s => s.exists && s.data().sampleId === sampleId);
 
   if (!sampleTripSnap) {
+    // sampleVersions에 이미 기록된 경우 중복 생성 방지 (race condition 대비)
+    if (userVersion > 0) return null;
     // User doesn't have the sample yet — create it
     const ref = _fbDb.collection('groups').doc();
     const tripId = ref.id;
-    const hue = tripData.days?.[0]?.hero?.hue ?? 25;
+    const hue = tripData.hue ?? tripData.days?.[0]?.hero?.hue ?? 25;
     await ref.set({
       ...tripData, sampleId, sampleVersion,
       members: [uid], hue,
