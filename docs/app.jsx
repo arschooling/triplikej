@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v223</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v224</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3175,21 +3175,14 @@ function NearbySheet({ stop, initialTab, onClose }) {
         } catch(_) {}
       }
 
-      // ③ Wikipedia/Commons: 이름으로 검색 후 섬네일
+      // ③ Wikipedia/Commons: 검색+이미지를 1번 요청으로 (generator=search)
       if (!url) {
         try {
-          // 이름으로 Wikipedia 문서 검색
-          const search = await fetch(
-            `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(item.name)}&srlimit=1&srprop=&format=json&origin=*`
+          const res = await fetch(
+            `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(item.name)}&gsrlimit=1&prop=pageimages&format=json&pithumbsize=600&origin=*`
           ).then(r=>r.json());
-          const pageTitle = search.query?.search?.[0]?.title;
-          if (pageTitle) {
-            const img = await fetch(
-              `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages&format=json&pithumbsize=600&origin=*`
-            ).then(r=>r.json());
-            const page = Object.values(img.query?.pages || {})[0];
-            if (page?.thumbnail?.source) url = page.thumbnail.source;
-          }
+          const page = Object.values(res.query?.pages || {})[0];
+          if (page?.thumbnail?.source) url = page.thumbnail.source;
         } catch(_) {}
       }
 
