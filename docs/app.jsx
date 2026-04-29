@@ -204,10 +204,11 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
   if (cardSwipe) {
     return (
       // 높이 접힘용 래퍼 (overflow:hidden은 접힐 때만)
-      <div ref={outerRef} style={collapseStyle}
+      // flex:1을 여기에 적용해야 부모 flex row에서 남은 너비를 차지함
+      <div ref={outerRef} style={{ flex: wrapStyle.flex, ...collapseStyle }}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         {/* overflow 없음 → 카드가 컨테이너 밖으로 자유롭게 이동 */}
-        <div style={{ position:'relative', ...wrapStyle }}>
+        <div style={{ position:'relative', ...wrapStyle, flex: undefined }}>
           {/* 버튼들: 카드 뒤에, 날아가는 동안 숨김 */}
           {!flying && (
             <div style={{
