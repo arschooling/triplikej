@@ -1869,7 +1869,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v271</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v272</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3393,7 +3393,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
 }
 
 // ─── Stop sheet (unchanged except pulls editing from open) ─
-function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, onTabBarToggle }) {
+function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit }) {
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
   // 탭바 수정 버튼과 연동
@@ -3521,7 +3521,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
         transition: sheetY ? 'none' : 'transform 0.34s cubic-bezier(0.32,0.72,0,1)',
         display:'flex', flexDirection:'column',
       }}>
-      <div ref={sheetRef} onClick={(e)=>{ e.stopPropagation(); onTabBarToggle?.(); }}
+      <div ref={sheetRef} onClick={(e)=>e.stopPropagation()}
         style={{
           background:COLORS.bg, borderRadius:'22px 22px 0 0',
           paddingBottom:'calc(env(safe-area-inset-bottom, 0px) + 80px)',
@@ -7724,7 +7724,6 @@ function App() {
   const [editing, setEditing]         = React.useState(false);
   const [tabBarVisible, setTabBarVisible] = React.useState(true);
   const [tabBarPeeking, setTabBarPeeking] = React.useState(false);
-  const tabBarPeekTimer = React.useRef(null);
   const [budgetSheetOpen, setBudgetSheetOpen] = React.useState(false);
   const [newTripSheetOpen, setNewTripSheetOpen] = React.useState(false);
   const [saveConfirm, setSaveConfirm] = React.useState(false); // 저장 확인 다이얼로그
@@ -7986,6 +7985,24 @@ function App() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // ── 팝업 열릴 때 탭바 숨김 → 터치 시 토글 (전역) ───────────────
+  React.useEffect(() => {
+    const popupOpen = profileSheetOpen || hotelSheet !== null || hotelDetailSheet !== null || !!openStop;
+    if (!popupOpen) { setTabBarPeeking(false); return; }
+    let startY = 0;
+    const onStart = (e) => { startY = e.touches[0]?.clientY ?? 0; };
+    const onEnd = (e) => {
+      const dy = Math.abs((e.changedTouches[0]?.clientY ?? 0) - startY);
+      if (dy < 10) setTabBarPeeking(p => !p); // 탭만 반응, 스크롤 무시
+    };
+    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchend', onEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchend', onEnd);
+    };
+  }, [profileSheetOpen, hotelSheet, hotelDetailSheet, openStop]);
 
   // ── Tab animation hooks ───────────────────────────────────────
   const TAB_ORDER = ['home', 'map', 'food', 'prep', 'budget'];
@@ -8607,8 +8624,7 @@ function App() {
       <StopSheet open={openStop} dayHue={dayHue}
         onClose={() => { setOpenStop(null); setTabBarPeeking(false); }}
         onSave={saveStop}
-        onRegisterEdit={fn => { stopSheetEditRef.current = fn; }}
-        onTabBarToggle={() => setTabBarPeeking(p => !p)}/>
+        onRegisterEdit={fn => { stopSheetEditRef.current = fn; }}/>
       <HotelSheet
         open={hotelDetailSheet !== null}
         onClose={() => setHotelDetailSheet(null)}

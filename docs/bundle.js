@@ -4544,7 +4544,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v271"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v272"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -7498,8 +7498,7 @@ function StopSheet({
   onClose,
   onSave,
   cityBias,
-  onRegisterEdit,
-  onTabBarToggle
+  onRegisterEdit
 }) {
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
@@ -7660,10 +7659,7 @@ function StopSheet({
     }
   }, /*#__PURE__*/React.createElement("div", {
     ref: sheetRef,
-    onClick: e => {
-      e.stopPropagation();
-      onTabBarToggle?.();
-    },
+    onClick: e => e.stopPropagation(),
     style: {
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
@@ -16040,7 +16036,6 @@ function App() {
   const [editing, setEditing] = React.useState(false);
   const [tabBarVisible, setTabBarVisible] = React.useState(true);
   const [tabBarPeeking, setTabBarPeeking] = React.useState(false);
-  const tabBarPeekTimer = React.useRef(null);
   const [budgetSheetOpen, setBudgetSheetOpen] = React.useState(false);
   const [newTripSheetOpen, setNewTripSheetOpen] = React.useState(false);
   const [saveConfirm, setSaveConfirm] = React.useState(false); // 저장 확인 다이얼로그
@@ -16335,6 +16330,33 @@ function App() {
     });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // ── 팝업 열릴 때 탭바 숨김 → 터치 시 토글 (전역) ───────────────
+  React.useEffect(() => {
+    const popupOpen = profileSheetOpen || hotelSheet !== null || hotelDetailSheet !== null || !!openStop;
+    if (!popupOpen) {
+      setTabBarPeeking(false);
+      return;
+    }
+    let startY = 0;
+    const onStart = e => {
+      startY = e.touches[0]?.clientY ?? 0;
+    };
+    const onEnd = e => {
+      const dy = Math.abs((e.changedTouches[0]?.clientY ?? 0) - startY);
+      if (dy < 10) setTabBarPeeking(p => !p); // 탭만 반응, 스크롤 무시
+    };
+    document.addEventListener('touchstart', onStart, {
+      passive: true
+    });
+    document.addEventListener('touchend', onEnd, {
+      passive: true
+    });
+    return () => {
+      document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchend', onEnd);
+    };
+  }, [profileSheetOpen, hotelSheet, hotelDetailSheet, openStop]);
 
   // ── Tab animation hooks ───────────────────────────────────────
   const TAB_ORDER = ['home', 'map', 'food', 'prep', 'budget'];
@@ -17365,8 +17387,7 @@ function App() {
     onSave: saveStop,
     onRegisterEdit: fn => {
       stopSheetEditRef.current = fn;
-    },
-    onTabBarToggle: () => setTabBarPeeking(p => !p)
+    }
   }), /*#__PURE__*/React.createElement(HotelSheet, {
     open: hotelDetailSheet !== null,
     onClose: () => setHotelDetailSheet(null),
