@@ -1869,7 +1869,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v265</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v266</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2697,7 +2697,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
         </div>
 
         <div style={{ position:'relative' }}>
-          <div style={{ position:'absolute', left:46, top:14, bottom:14, width:1, background:COLORS.line }}/>
+          <div style={{ position:'absolute', left:40, top:14, bottom:14, width:1, background:COLORS.line }}/>
           {(day.items || []).map((it, i) => {
             const meta = CAT_META[it.cat] || { icon:'pin', label:it.cat };
             const isDone = done.has(i);
@@ -2705,10 +2705,10 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
             return (
               <div key={i} {...dp} style={{ display:'flex', alignItems:'flex-start', marginBottom:12, position:'relative', ...(dp.style || {}) }}>
                 {/* 시간 — marginTop으로 카드 첫째 줄에 맞춤 */}
-                <div style={{ width:38, flexShrink:0, marginTop:11,
+                <div style={{ width:32, flexShrink:0, marginTop:11,
                   fontFamily:MONO, fontSize:10.5, color:COLORS.mute,
                   textAlign:'right', paddingRight:4 }}>{it.time}</div>
-                {/* 체크박스: 타임라인 선 가로 중간(x=46)에 독립 배치 — 슬라이드 시 카드에 가려짐 */}
+                {/* 체크박스: 타임라인 선 가로 중간(x=40)에 독립 배치 — 슬라이드 시 카드에 가려짐 */}
                 <button onClick={(e)=>{e.stopPropagation(); toggle(i);}} style={{
                   width:16, height:16, borderRadius:8, flexShrink:0, marginTop:11,
                   boxSizing:'border-box',
