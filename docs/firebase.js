@@ -461,6 +461,86 @@ window.fbMarkAllRead = async (uid) => {
   await batch.commit();
 };
 
+// ─── Sample trips (pull-based sync) ──────────────────────────
+const SAMPLE_OWNER_EMAIL = 'arjungtaeng@gmail.com';
+
+// Get current sample data + version from Firestore
+window.fbGetSample = async (sampleId) => {
+  const snap = await _fbDb.collection('samples').doc(sampleId).get();
+  return snap.exists ? snap.data() : null;
+};
+
+// Owner: update sample when they save their trip
+window.fbUpdateSample = async (sampleId, tripData) => {
+  const sampleSnap = await _fbDb.collection('samples').doc(sampleId).get();
+  const currentVersion = sampleSnap.exists ? (sampleSnap.data().sampleVersion || 0) : 0;
+  const { sampleId: _a, sampleVersion: _b, members: _c, createdAt: _d, ...cleanData } = tripData;
+  await _fbDb.collection('samples').doc(sampleId).set({
+    tripData: cleanData,
+    sampleVersion: currentVersion + 1,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+};
+
+// On app open: add or update sample trip for non-owner users
+// Returns { tripId, updated, isNew } or null if sample should not be shown
+window.fbSyncSample = async (uid, userEmail, sampleId) => {
+  if (userEmail === SAMPLE_OWNER_EMAIL) return null;
+
+  const userSnap = await _fbDb.collection('users').doc(uid).get();
+  if (!userSnap.exists) return null;
+  const ud = userSnap.data();
+  if ((ud.deletedSamples || []).includes(sampleId)) return null;
+
+  const sampleSnap = await _fbDb.collection('samples').doc(sampleId).get();
+  if (!sampleSnap.exists) return null;
+  const { tripData, sampleVersion } = sampleSnap.data();
+
+  const userVersion = (ud.sampleVersions || {})[sampleId] || 0;
+  const tripIds = ud.tripIds || [uid];
+  const tripSnaps = await Promise.all(tripIds.map(id => _fbDb.collection('groups').doc(id).get()));
+  const sampleTripSnap = tripSnaps.find(s => s.exists && s.data().sampleId === sampleId);
+
+  if (!sampleTripSnap) {
+    // User doesn't have the sample yet — create it
+    const ref = _fbDb.collection('groups').doc();
+    const tripId = ref.id;
+    const hue = tripData.days?.[0]?.hero?.hue ?? 25;
+    await ref.set({
+      ...tripData, sampleId, sampleVersion,
+      members: [uid], hue,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await _fbDb.collection('users').doc(uid).update({
+      tripIds: firebase.firestore.FieldValue.arrayUnion(tripId),
+      [`sampleVersions.${sampleId}`]: sampleVersion,
+    });
+    return { tripId, updated: true, isNew: true, tripData };
+  }
+
+  if (sampleVersion > userVersion) {
+    // Sample was updated — sync to user's copy (keep their members list)
+    const existing = sampleTripSnap.data();
+    await _fbDb.collection('groups').doc(sampleTripSnap.id).set({
+      ...tripData, sampleId, sampleVersion,
+      members: existing.members || [uid],
+    });
+    await _fbDb.collection('users').doc(uid).update({
+      [`sampleVersions.${sampleId}`]: sampleVersion,
+    });
+    return { tripId: sampleTripSnap.id, updated: true, isNew: false, tripData };
+  }
+
+  return { tripId: sampleTripSnap.id, updated: false };
+};
+
+// Called when user deletes a sample trip
+window.fbMarkSampleDeleted = async (uid, sampleId) => {
+  await _fbDb.collection('users').doc(uid).update({
+    deletedSamples: firebase.firestore.FieldValue.arrayUnion(sampleId),
+  });
+};
+
 window.fbNotifyTripEdit = async (tripId, editorUid, editorName, editorPhoto, tripTitle) => {
   const snap = await _fbDb.collection('groups').doc(tripId).get();
   if (!snap.exists) return;

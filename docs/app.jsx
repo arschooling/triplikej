@@ -1779,7 +1779,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v193</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v194</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6630,6 +6630,7 @@ function App() {
   const [notifOpen, setNotifOpen]               = React.useState(false);
   const [notifs, setNotifs]                     = React.useState([]);
   const notifyTripEditTimer                     = React.useRef(null);
+  const updateSampleTimer                       = React.useRef(null);
   const [shareTripTarget, setShareTripTarget] = React.useState(null);
   const [loginError, setLoginError] = React.useState('');
   const [loginPending, setLoginPending] = React.useState(false); // 로그인 버튼 누른 후 로딩 중
@@ -6736,17 +6737,28 @@ function App() {
     });
   }, [authUser?.uid]);
 
-  // ── 여행 목록 로드 ─────────────────────────────────────────
+  // ── 여행 목록 로드 + 샘플 싱크 ────────────────────────────
   React.useEffect(() => {
     if (!userData?.uid) return;
+    const uid = userData.uid;
+    const email = userData.email || '';
     const tripIds = userData.tripIds || [userData.groupId];
     setTripsLoading(true);
-    fbLoadTrips(tripIds)
-      .then(async trips => {
+
+    // 샘플 싱크 (오너 아닌 경우): 새 tripId가 생기면 tripIds가 업데이트됨
+    const syncPromise = (typeof fbSyncSample === 'function')
+      ? fbSyncSample(uid, email, 'nyc').catch(() => null)
+      : Promise.resolve(null);
+
+    syncPromise.then(syncResult => {
+      // syncResult.isNew면 users/{uid}.tripIds에 새 ID가 추가됨 → 해당 ID도 포함해 로드
+      const extraId = syncResult?.isNew ? syncResult.tripId : null;
+      const allIds = extraId && !tripIds.includes(extraId) ? [...tripIds, extraId] : tripIds;
+      return fbLoadTrips(allIds).then(async trips => {
         const normalized = trips.map(t => normalizeTrip(t, t.id));
-        // days가 없는 여행은 TRIP_DEFAULT로 자동 복구
+        // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 (샘플 제외)
         for (let i = 0; i < normalized.length; i++) {
-          if ((normalized[i].days || []).length === 0) {
+          if ((normalized[i].days || []).length === 0 && !normalized[i].sampleId) {
             const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
             const patch = {
               title : def.title  || 'New York',
@@ -6756,15 +6768,19 @@ function App() {
               hotels: def.hotels || [],
               food  : def.food   || [],
             };
-            // 로컬 상태 먼저 업데이트 (Firestore 실패해도 화면에 데이터 보임)
             normalized[i] = normalizeTrip({ ...normalized[i], ...patch }, normalized[i].id);
             fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
           }
         }
+        // 샘플이 업데이트된 경우 로컬 상태도 반영
+        if (syncResult?.updated && syncResult.tripId) {
+          const idx = normalized.findIndex(t => t.id === syncResult.tripId);
+          if (idx >= 0) normalized[idx] = normalizeTrip({ ...normalized[idx], ...syncResult.tripData, sampleId: 'nyc' }, syncResult.tripId);
+        }
         setUserTrips(normalized);
         setTripsLoading(false);
-      })
-      .catch(() => setTripsLoading(false));
+      });
+    }).catch(() => setTripsLoading(false));
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
 
   // ── Firestore: shared group listener ──────────────────────
@@ -6876,8 +6892,16 @@ function App() {
 
   // ── Trip-level actions (Firestore) ────────────────────────
   const editTrip = (patch) => {
+    const next = { ...(tripRef.current || trip), ...patch };
     setTrip(prev => ({ ...prev, ...patch }));
     if (activeTripId) fbSaveGroup(activeTripId, patch).catch(console.error);
+    // 오너가 샘플 여행(NY)을 수정하면 samples/nyc도 업데이트
+    if (activeTripId && authUser?.email === 'arjungtaeng@gmail.com' && typeof fbUpdateSample === 'function') {
+      clearTimeout(updateSampleTimer.current);
+      updateSampleTimer.current = setTimeout(() => {
+        fbUpdateSample('nyc', next).catch(() => {});
+      }, 5000);
+    }
     // 동행인에게 일정 수정 알림 (60초 디바운스)
     if (activeTripId && authUser && typeof fbNotifyTripEdit === 'function') {
       clearTimeout(notifyTripEditTimer.current);
@@ -6898,6 +6922,10 @@ function App() {
       ? `"${t?.title || '여행'}"을(를) 삭제할까요?\n삭제하면 복구할 수 없습니다.`
       : `"${t?.title || '여행'}"에서 나갈까요?`;
     if (!confirm(msg)) return;
+    // 샘플 여행 삭제 시 복구 방지 플래그
+    if (t?.sampleId && userData?.uid && typeof fbMarkSampleDeleted === 'function') {
+      fbMarkSampleDeleted(userData.uid, t.sampleId).catch(() => {});
+    }
     await fbDeleteTrip(tripId, userData.uid);
     setUserTrips(prev => prev.filter(x => x.id !== tripId));
     setUserData(prev => ({ ...prev, tripIds: (prev.tripIds || []).filter(id => id !== tripId) }));
@@ -7311,7 +7339,14 @@ function App() {
           const title = prompt('여행 이름을 입력해 주세요\n(예: 뉴욕, 파리 7박)');
           if (!title) return;
           const { tripId, hue } = await fbCreateNewTrip(userData.uid, title);
-          setUserTrips(prev => [...prev, { id: tripId, title, dates:'', days:[], hotels:[], members:[userData.uid], hue }]);
+          // 새 여행은 Day 1 구조 포함
+          const template = {
+            days: [{ n:1, date:'', weekday:'', title:'Day 1', titleEn:'',
+              hero:{ hue: hue ?? 25, label:'DAY 1' }, weather:'', items:[] }],
+            hotels: [], food: [],
+          };
+          await fbSaveGroup(tripId, template).catch(() => {});
+          setUserTrips(prev => [...prev, { id: tripId, title, dates:'', ...template, members:[userData.uid], hue }]);
           setActiveTripId(tripId);
           setTab('home'); setDayIdx(null); setHotelIdx(null);
         }}
