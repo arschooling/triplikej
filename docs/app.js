@@ -3765,7 +3765,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v192"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v193"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -4853,6 +4853,8 @@ function DayScreen({
   const [travelTimes, setTravelTimes] = React.useState({});
   React.useEffect(() => {
     const items = day.items || [];
+    const coordsKey = items.map(it => it.coords ? it.coords.join(',') : '').join('|');
+    const cacheKey = `tt_day_${trip.title}_${dayIdx}_${coordsKey}`;
     const pending = items.reduce((acc, it, i) => {
       if (i > 0 && it.coords && items[i - 1].coords) acc.push(i);
       return acc;
@@ -4861,6 +4863,13 @@ function DayScreen({
       setTravelTimes({});
       return;
     }
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setTravelTimes(JSON.parse(cached));
+        return;
+      }
+    } catch (_) {}
     let alive = true;
     const results = {};
     Promise.all(pending.map(async i => {
@@ -4880,7 +4889,11 @@ function DayScreen({
         }
       } catch (_) {}
     })).then(() => {
-      if (alive) setTravelTimes(results);
+      if (!alive) return;
+      setTravelTimes(results);
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(results));
+      } catch (_) {}
     });
     return () => {
       alive = false;
@@ -8392,10 +8405,6 @@ function MapScreen({
   const mapDiv = React.useRef(null);
   const mapInst = React.useRef(null);
   const layers = React.useRef([]);
-  React.useEffect(() => {
-    setTravelTimes({});
-    setRouteTip(null);
-  }, [selDay]);
 
   // 날짜 바뀌면 지도 재초기화
   React.useEffect(() => {
@@ -8428,6 +8437,27 @@ function MapScreen({
     if (!window.L) return;
     setRouteTip(null);
     let cancelled = false;
+    const cacheKey = `route_${trip.title}_${selDay}_${mapKey}`;
+    const drawFromPts = (pts, times) => {
+      if (!mapInst.current || !pts.length) return;
+      layers.current.forEach(l => {
+        try {
+          l.remove();
+        } catch (_) {}
+      });
+      layers.current = [];
+      pts.forEach((p, idx) => {
+        const m = window.L.marker(p.pos, {
+          icon: window.L.divIcon({
+            className: '',
+            html: `<div style="width:26px;height:26px;border-radius:50%;background:#C14F2E;color:#fff;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:700;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)">${idx + 1}</div>`,
+            iconSize: [26, 26],
+            iconAnchor: [13, 13]
+          })
+        }).addTo(mapInst.current).bindPopup(`<b>${p.title}</b>`);
+        layers.current.push(m);
+      });
+    };
     (async () => {
       // 이전 레이어 제거
       layers.current.forEach(l => {
@@ -8437,6 +8467,36 @@ function MapScreen({
       });
       layers.current = [];
       if (!ordered.length || !mapInst.current) return;
+
+      // 캐시 확인
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const {
+            pts,
+            times,
+            tip
+          } = JSON.parse(cached);
+          if (pts?.length) {
+            drawFromPts(pts, times);
+            // 캐시된 route geometry가 있으면 선 그리기
+            const line = window.L.polyline(pts.map(p => p.pos), {
+              color: '#C14F2E',
+              weight: 3.5,
+              opacity: 0.85
+            }).addTo(mapInst.current);
+            layers.current.push(line);
+            mapInst.current.fitBounds(window.L.latLngBounds(pts.map(p => p.pos)), {
+              padding: [40, 40]
+            });
+            if (!cancelled) {
+              setTravelTimes(times || {});
+              setRouteTip(tip || null);
+            }
+            return;
+          }
+        }
+      } catch (_) {}
       const [bLat, bLon] = cityBias || [];
       const bias = bLat ? `&lat=${bLat}&lon=${bLon}` : '';
       const geocode = async query => {
@@ -8511,8 +8571,16 @@ function MapScreen({
               };
             });
             if (!cancelled) {
+              const tip = computeRouteTip(pts, times);
               setTravelTimes(times);
-              setRouteTip(computeRouteTip(pts, times));
+              setRouteTip(tip);
+              try {
+                localStorage.setItem(cacheKey, JSON.stringify({
+                  pts,
+                  times,
+                  tip
+                }));
+              } catch (_) {}
             }
           }
         } catch (_) {
@@ -8523,7 +8591,17 @@ function MapScreen({
             dashArray: '8 5'
           }).addTo(mapInst.current);
           layers.current.push(line);
-          if (!cancelled) setRouteTip(computeRouteTip(pts, {}));
+          if (!cancelled) {
+            const tip = computeRouteTip(pts, {});
+            setRouteTip(tip);
+            try {
+              localStorage.setItem(cacheKey, JSON.stringify({
+                pts,
+                times: {},
+                tip
+              }));
+            } catch (_) {}
+          }
         }
       }
       if (!cancelled && mapInst.current) mapInst.current.fitBounds(window.L.latLngBounds(pts.map(p => p.pos)), {
