@@ -33,27 +33,18 @@ window.fbGetOrCreateUser = async (fbUser) => {
   await _load();
   const ref  = _fbDb.collection('users').doc(fbUser.uid);
   const snap = await ref.get({ source: 'server' }).catch(() => ref.get());
+  const isOwner = fbUser.email === SAMPLE_OWNER_EMAIL;
   if (!snap.exists) {
+    // 신규 유저: 빈 tripIds로 시작, 기본 여행 없음
     const data = {
       displayName : fbUser.displayName || '여행자',
       email       : fbUser.email       || '',
       photoURL    : fbUser.photoURL    || '',
       groupId     : fbUser.uid,
-      tripIds     : [fbUser.uid],
+      tripIds     : [],
       createdAt   : firebase.firestore.FieldValue.serverTimestamp(),
     };
     await ref.set(data);
-    // 신규 유저는 빈 여행으로 시작 (뉴욕 기본값 X)
-    await _fbDb.collection('groups').doc(fbUser.uid).set({
-      title   : '내 여행',
-      dates   : '',
-      hotel   : '',
-      days    : [],
-      hotels  : [],
-      food    : [],
-      members : [fbUser.uid],
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
     await _fbDb.collection('preps').doc(fbUser.uid).set({
       prep: { checklist:[], docs:[], pack:[] },
     });
@@ -61,33 +52,32 @@ window.fbGetOrCreateUser = async (fbUser) => {
   }
   const existing = snap.data();
 
-  // groups/{uid} 문서가 없으면 생성 (데이터가 사라진 경우 복구)
-  const groupRef  = _fbDb.collection('groups').doc(fbUser.uid);
-  const groupSnap = await groupRef.get();
-  const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
-  const tripDefault = {
-    title   : def.title  || 'New York',
-    dates   : def.dates  || '',
-    hotel   : def.hotel  || '',
-    days    : def.days   || [],
-    hotels  : def.hotels || [],
-    food    : def.food   || [],
-  };
-  const isOwner = fbUser.email === SAMPLE_OWNER_EMAIL;
-  if (!groupSnap.exists) {
-    // 오너: TRIP_DEFAULT로 복구 / 일반 유저: 빈 여행으로 생성
-    const initData = isOwner ? tripDefault : { title:'내 여행', dates:'', hotel:'', days:[], hotels:[], food:[] };
-    console.warn('[TripLikeJ] groups/' + fbUser.uid + ' 없음 → 새로 생성');
-    await groupRef.set({ ...initData, members: [fbUser.uid], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  } else if (!(groupSnap.data().days || []).length && isOwner) {
-    // days 비어있을 때 TRIP_DEFAULT 복구는 오너 전용
-    console.warn('[TripLikeJ] groups/' + fbUser.uid + ' days 비어있음 → TRIP_DEFAULT로 복구 (오너 전용)');
-    await groupRef.set(tripDefault, { merge: true });
+  // 오너 전용: groups/{uid} 복구
+  if (isOwner) {
+    const groupRef  = _fbDb.collection('groups').doc(fbUser.uid);
+    const groupSnap = await groupRef.get();
+    const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+    const tripDefault = {
+      title   : def.title  || 'New York',
+      dates   : def.dates  || '',
+      hotel   : def.hotel  || '',
+      days    : def.days   || [],
+      hotels  : def.hotels || [],
+      food    : def.food   || [],
+    };
+    if (!groupSnap.exists) {
+      console.warn('[TripLikeJ] groups/' + fbUser.uid + ' 없음 → TRIP_DEFAULT로 복구 (오너)');
+      await groupRef.set({ ...tripDefault, members: [fbUser.uid], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    } else if (!(groupSnap.data().days || []).length) {
+      console.warn('[TripLikeJ] groups/' + fbUser.uid + ' days 비어있음 → TRIP_DEFAULT로 복구 (오너)');
+      await groupRef.set(tripDefault, { merge: true });
+    }
   }
 
   // tripIds 정리: 실제 멤버로 남아있는 여행만 유지
-  let tripIds = existing.tripIds || [fbUser.uid];
-  if (!tripIds.includes(fbUser.uid)) tripIds = [fbUser.uid, ...tripIds];
+  // 오너는 uid 기반 레거시 트립 포함, 일반 유저는 tripIds 그대로 사용
+  let tripIds = existing.tripIds != null ? existing.tripIds : (isOwner ? [fbUser.uid] : []);
+  if (isOwner && !tripIds.includes(fbUser.uid)) tripIds = [fbUser.uid, ...tripIds];
   const groupSnaps = await Promise.all(tripIds.map(id => _fbDb.collection('groups').doc(id).get()));
   const validTripIds = tripIds.filter((id, i) =>
     groupSnaps[i].exists && (groupSnaps[i].data().members || []).includes(fbUser.uid)
