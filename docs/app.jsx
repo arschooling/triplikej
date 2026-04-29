@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v222</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v223</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3123,6 +3123,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
               name: nm,
               type: e.tags?.amenity || e.tags?.tourism || e.tags?.historic || e.tags?.leisure || '',
               wikipedia: e.tags?.wikipedia || '',
+              image: e.tags?.image || '',   // ① OSM 직접 첨부 이미지
               dist: haversineM(lat, lon, e.lat, e.lon),
               lat: e.lat, lon: e.lon,
             });
@@ -3146,28 +3147,54 @@ function NearbySheet({ stop, initialTab, onClose }) {
     return () => ctrl.abort();
   }, [stop]);
 
-  // Wikipedia 사진 fetch (캐시 우선)
+  // 사진 fetch: ① OSM image → ② Wikipedia 태그 → ③ Wikipedia/Commons 이름 검색
   React.useEffect(() => {
-    [...(hotspots||[]), ...(food||[])].forEach(item => {
-      if (!item.wikipedia || item.name in photos) return;
+    [...(hotspots||[]), ...(food||[])].forEach(async (item) => {
+      if (item.name in photos) return;
       const photoKey = `nearby_photo_${item.name}`;
       const cachedUrl = ncGet(photoKey, NC_PHOTO_TTL);
       if (cachedUrl !== undefined) {
-        // '' 이면 사진 없음으로 저장된 것 (재요청 방지)
-        if (cachedUrl) setPhotos(p => ({...p, [item.name]: cachedUrl}));
-        else setPhotos(p => ({...p, [item.name]: null}));
+        setPhotos(p => ({...p, [item.name]: cachedUrl || null}));
         return;
       }
       setPhotos(p => ({...p, [item.name]: null}));
-      const title = item.wikipedia.replace(/^[a-z-]+:/, '').replace(/ /g,'_');
-      fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`)
-        .then(r=>r.json())
-        .then(d => {
-          const url = d.thumbnail?.source || '';
-          ncSet(photoKey, url);  // 사진 있으면 URL, 없으면 '' 저장
-          if (url) setPhotos(p=>({...p, [item.name]: url}));
-        })
-        .catch(() => {});
+
+      let url = '';
+
+      // ① OSM image 태그 (API 호출 없음)
+      if (item.image) {
+        url = item.image;
+      }
+
+      // ② Wikipedia 태그로 섬네일
+      if (!url && item.wikipedia) {
+        try {
+          const t = item.wikipedia.replace(/^[a-z-]+:/, '').replace(/ /g, '_');
+          const d = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`).then(r=>r.json());
+          if (d.thumbnail?.source) url = d.thumbnail.source;
+        } catch(_) {}
+      }
+
+      // ③ Wikipedia/Commons: 이름으로 검색 후 섬네일
+      if (!url) {
+        try {
+          // 이름으로 Wikipedia 문서 검색
+          const search = await fetch(
+            `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(item.name)}&srlimit=1&srprop=&format=json&origin=*`
+          ).then(r=>r.json());
+          const pageTitle = search.query?.search?.[0]?.title;
+          if (pageTitle) {
+            const img = await fetch(
+              `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages&format=json&pithumbsize=600&origin=*`
+            ).then(r=>r.json());
+            const page = Object.values(img.query?.pages || {})[0];
+            if (page?.thumbnail?.source) url = page.thumbnail.source;
+          }
+        } catch(_) {}
+      }
+
+      ncSet(photoKey, url);
+      if (url) setPhotos(p => ({...p, [item.name]: url}));
     });
   }, [hotspots, food]);
 
