@@ -1869,7 +1869,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v284</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v285</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -4335,7 +4335,8 @@ async function prefetchRoutes(trip) {
                 });
                 try {
                   const tip = computeRouteTip(pts, times);
-                  localStorage.setItem(routeCacheKey, JSON.stringify({ pts, times, tip }));
+                  const geometry = rd.routes[0].geometry;
+                  localStorage.setItem(routeCacheKey, JSON.stringify({ pts, times, tip, geometry }));
                 } catch(_) {}
               }
             } catch(_) {}
@@ -4596,14 +4597,21 @@ function MapScreen({ trip, onEditItem }) {
       try {
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
-          const { pts, times, tip } = JSON.parse(cached);
+          const { pts, times, tip, geometry } = JSON.parse(cached);
           if (pts?.length) {
             drawFromPts(pts, times);
-            // 캐시된 route geometry가 있으면 선 그리기
-            const line = window.L.polyline(pts.map(p => p.pos), {
-              color:'#C14F2E', weight:3.5, opacity:0.85,
-            }).addTo(mapInst.current);
-            layers.current.push(line);
+            // 캐시된 route geometry로 선 그리기
+            if (geometry) {
+              const route = window.L.geoJSON(geometry, {
+                style: { color:'#C14F2E', weight:3.5, opacity:0.85 },
+              }).addTo(mapInst.current);
+              layers.current.push(route);
+            } else {
+              const line = window.L.polyline(pts.map(p => p.pos), {
+                color:'#C14F2E', weight:3, opacity:0.7, dashArray:'8 5',
+              }).addTo(mapInst.current);
+              layers.current.push(line);
+            }
             mapInst.current.fitBounds(window.L.latLngBounds(pts.map(p => p.pos)), { padding:[40,40] });
             if (!cancelled) { setTravelTimes(times || {}); setRouteTip(tip || null); }
             return;
@@ -4685,9 +4693,10 @@ function MapScreen({ trip, onEditItem }) {
             });
             if (!cancelled) {
               const tip = computeRouteTip(pts, times);
+              const geometry = rd.routes[0].geometry;
               setTravelTimes(times);
               setRouteTip(tip);
-              try { localStorage.setItem(cacheKey, JSON.stringify({ pts, times, tip })); } catch(_) {}
+              try { localStorage.setItem(cacheKey, JSON.stringify({ pts, times, tip, geometry })); } catch(_) {}
             }
           }
         } catch(_) {
