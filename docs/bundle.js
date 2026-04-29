@@ -4544,7 +4544,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v264"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v265"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6126,7 +6126,7 @@ function DayScreen({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
-      left: 52,
+      left: 46,
       top: 14,
       bottom: 14,
       width: 1,
@@ -6151,7 +6151,7 @@ function DayScreen({
       }
     }), /*#__PURE__*/React.createElement("div", {
       style: {
-        width: 44,
+        width: 38,
         flexShrink: 0,
         marginTop: 11,
         fontFamily: MONO,

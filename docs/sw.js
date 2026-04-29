@@ -1,4 +1,4 @@
-const V = 'tlj-v264';
+const V = 'tlj-v265';
 const CACHE = [
   './', './index.html',
   './react.min.js', './react-dom.min.js',
