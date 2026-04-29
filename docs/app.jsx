@@ -123,31 +123,48 @@ function EditBtn({ editing, onClick, compact }) {
 
 // ─── Swipeable row (swipe-left to reveal edit/delete) ────────
 function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe }) {
-  const [x, setX] = React.useState(0);
-  const [open, setOpen] = React.useState(false);
-  const startRef = React.useRef(null);
-  const dragging = React.useRef(false);
-  const xRef = React.useRef(0);
-  const REVEAL = onEdit ? 104 : 58;
+  const [x, setX]             = React.useState(0);
+  const [open, setOpen]       = React.useState(false);
+  const [flying, setFlying]   = React.useState(false);  // 날아가는 중
+  const [collapseH, setCollapseH] = React.useState(null); // null=auto, px=고정, 0=접힘
+  const outerRef  = React.useRef(null);
+  const startRef  = React.useRef(null);
+  const dragging  = React.useRef(false);
+  const xRef      = React.useRef(0);
+  const REVEAL     = onEdit ? 104 : 58;
   const DELETE_EXTRA = 72;
 
   const close = () => { setX(0); xRef.current = 0; setOpen(false); };
   React.useEffect(() => { if (disabled) close(); }, [disabled]);
-  // 드래그 중에는 스와이프 버튼 즉시 닫기
   React.useEffect(() => { if (isDragging) close(); }, [isDragging]);
 
+  // 카드를 화면 밖으로 날린 뒤 높이를 접고 onDelete 호출
+  const flyOff = () => {
+    if (flying) return;
+    const h = outerRef.current?.offsetHeight || 0;
+    if (h) setCollapseH(h); // 현재 높이 고정 (접기 시작점)
+    setFlying(true);
+    const w = window.innerWidth || 400;
+    setX(-w); xRef.current = -w;
+    // ① 카드 날아감(260ms) → ② 높이 접힘(160ms) → ③ onDelete
+    setTimeout(() => {
+      setCollapseH(0);
+      setTimeout(() => onDelete?.(), 160);
+    }, 260);
+  };
+
   const onTouchStart = (e) => {
-    if (disabled) return;
+    if (disabled || flying) return;
     startRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     dragging.current = false;
   };
   const onTouchMove = (e) => {
-    if (!startRef.current) return;
+    if (!startRef.current || flying) return;
     const dx = e.touches[0].clientX - startRef.current.x;
     const dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 18) return;
-      if (dy > Math.abs(dx) * 0.55) return; // 세로 스크롤 — startRef 유지, 탭 감지 보존
+      if (dy > Math.abs(dx) * 0.55) return;
       dragging.current = true;
     }
     const base = open ? -REVEAL : 0;
@@ -162,12 +179,11 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
     if (!startRef.current) return;
     const wasDragging = dragging.current;
     startRef.current = null; dragging.current = false;
-    if (!wasDragging) return; // 탭 — 브라우저 click 이벤트로 처리
+    if (!wasDragging) return;
 
     const cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
-      close();
-      setTimeout(() => onDelete(), 260);
+      flyOff(); // 충분히 당겼으면 날려버리기
     } else if (cur < -REVEAL / 2) {
       xRef.current = -REVEAL; setX(-REVEAL); setOpen(true);
     } else {
@@ -175,86 +191,102 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
     }
   };
 
+  const flyTransition  = 'transform 0.26s cubic-bezier(0.4,0,1,1)';
+  const snapTransition = 'transform 0.28s cubic-bezier(0.22,1,0.36,1)';
+
+  // 높이 접힘 래퍼 스타일
+  const collapseStyle = collapseH !== null ? {
+    height: collapseH,
+    overflow: 'hidden',
+    transition: collapseH === 0 ? 'height 0.16s ease-in' : 'none',
+  } : {};
+
   if (cardSwipe) {
     return (
-      <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}
+      <div ref={outerRef} style={collapseStyle}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        {/* 버튼들은 카드 뒤에 absolute로 고정 */}
-        <div style={{
-          position:'absolute', right:0, top:0, bottom:0,
-          display:'flex', alignItems:'center', justifyContent:'flex-end',
-          gap:8, paddingRight:10,
-        }}>
-          {onEdit && (
-            <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
-              width:38, height:38, borderRadius:19, border:'none', cursor:'pointer',
-              background: editBg || '#ffa500', flexShrink:0,
-              display:'flex', alignItems:'center', justifyContent:'center',
+        <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}>
+          {/* 버튼들 — 날아가는 동안 숨김 */}
+          {!flying && (
+            <div style={{
+              position:'absolute', right:0, top:0, bottom:0,
+              display:'flex', alignItems:'center', justifyContent:'flex-end',
+              gap:8, paddingRight:10,
             }}>
-              <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>
-            </button>
+              {onEdit && (
+                <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
+                  width:38, height:38, borderRadius:19, border:'none', cursor:'pointer',
+                  background: editBg || '#ffa500', flexShrink:0,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                }}>
+                  <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>
+                </button>
+              )}
+              <button onClick={(e)=>{e.stopPropagation(); flyOff();}} style={{
+                width:38, height:38, borderRadius:19, border:'none', cursor:'pointer',
+                background:'#B5451B', flexShrink:0,
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>
+                <Icon name="trash" size={14} color="#fff" stroke={2}/>
+              </button>
+            </div>
           )}
-          <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onDelete,100);}} style={{
-            width:38, height:38, borderRadius:19, border:'none', cursor:'pointer',
-            background:'#B5451B', flexShrink:0,
-            display:'flex', alignItems:'center', justifyContent:'center',
+          {/* 카드 전체 슬라이드 */}
+          <div style={{
+            transform:`translateX(${x}px)`,
+            transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
+            willChange:'transform', WebkitTapHighlightColor:'transparent',
           }}>
-            <Icon name="trash" size={14} color="#fff" stroke={2}/>
-          </button>
-        </div>
-        {/* 카드 전체가 슬라이드 */}
-        <div style={{
-          transform:`translateX(${x}px)`,
-          transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.22,1,0.36,1)',
-          willChange:'transform', WebkitTapHighlightColor:'transparent',
-        }}>
-          {children}
+            {children}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}
+    <div ref={outerRef} style={collapseStyle}
       onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-      <div style={{
-        display:'flex', width:`calc(100% + ${REVEAL}px)`,
-        transform:`translateX(${x}px)`,
-        transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.22,1,0.36,1)',
-        willChange:'transform',
-        WebkitTapHighlightColor:'transparent',
-      }}>
-        <div style={{ flex:1, minWidth:0 }}>
-          {children}
-        </div>
+      <div style={{ position:'relative', overflow:'hidden', ...wrapStyle }}>
         <div style={{
-          width:REVEAL, flexShrink:0,
-          display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+          display:'flex', width:`calc(100% + ${REVEAL}px)`,
+          transform:`translateX(${x}px)`,
+          transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
+          willChange:'transform',
+          WebkitTapHighlightColor:'transparent',
         }}>
-          {onEdit && (
-            <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
-              width: editLabel ? 46 : 38, height: editLabel ? 34 : 38,
-              borderRadius: editLabel ? 9 : 19,
+          <div style={{ flex:1, minWidth:0 }}>
+            {children}
+          </div>
+          <div style={{
+            width:REVEAL, flexShrink:0,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+          }}>
+            {onEdit && (
+              <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
+                width: editLabel ? 46 : 38, height: editLabel ? 34 : 38,
+                borderRadius: editLabel ? 9 : 19,
+                border:'none', cursor:'pointer',
+                background: editBg || '#ffa500', flexShrink:0,
+                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2,
+              }}>
+                {editLabel
+                  ? <span style={{ fontFamily:SANS, fontSize:10, fontWeight:600, color:'#fff' }}>{editLabel}</span>
+                  : <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>}
+              </button>
+            )}
+            <button onClick={(e)=>{e.stopPropagation(); flyOff();}} style={{
+              width: deleteLabel ? 46 : 38, height: deleteLabel ? 34 : 38,
+              borderRadius: deleteLabel ? 9 : 19,
               border:'none', cursor:'pointer',
-              background: editBg || '#ffa500', flexShrink:0,
+              background:'#B5451B', flexShrink:0,
               display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2,
             }}>
-              {editLabel
-                ? <span style={{ fontFamily:SANS, fontSize:10, fontWeight:600, color:'#fff' }}>{editLabel}</span>
-                : <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>}
+              {deleteLabel
+                ? <span style={{ fontFamily:SANS, fontSize:10, fontWeight:600, color:'#fff' }}>{deleteLabel}</span>
+                : <Icon name="trash" size={14} color="#fff" stroke={2}/>}
             </button>
-          )}
-          <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onDelete,100);}} style={{
-            width: deleteLabel ? 46 : 38, height: deleteLabel ? 34 : 38,
-            borderRadius: deleteLabel ? 9 : 19,
-            border:'none', cursor:'pointer',
-            background:'#B5451B', flexShrink:0,
-            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2,
-          }}>
-            {deleteLabel
-              ? <span style={{ fontFamily:SANS, fontSize:10, fontWeight:600, color:'#fff' }}>{deleteLabel}</span>
-              : <Icon name="trash" size={14} color="#fff" stroke={2}/>}
-          </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1451,22 +1483,39 @@ function TimezoneCard({ city, onPick }) {
 // ─── TRIPS SCREEN (top level) ───────────────────────────────
 // ─── Trip Card with swipe-to-reveal share/delete ─────────────
 function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
-  const [x, setX] = React.useState(0);
-  const [open, setOpen] = React.useState(false);
-  const startRef = React.useRef(null);
-  const dragging = React.useRef(false);
-  const xRef = React.useRef(0);
+  const [x, setX]           = React.useState(0);
+  const [open, setOpen]     = React.useState(false);
+  const [flying, setFlying] = React.useState(false);
+  const [collapseH, setCollapseH] = React.useState(null);
+  const outerRef  = React.useRef(null);
+  const startRef  = React.useRef(null);
+  const dragging  = React.useRef(false);
+  const xRef      = React.useRef(0);
   const REVEAL = 144;
   const DELETE_EXTRA = 72;
 
   const close = () => { setX(0); xRef.current = 0; setOpen(false); };
 
+  const flyOff = () => {
+    if (flying) return;
+    const h = outerRef.current?.offsetHeight || 0;
+    if (h) setCollapseH(h);
+    setFlying(true);
+    const w = window.innerWidth || 400;
+    setX(-w); xRef.current = -w;
+    setTimeout(() => {
+      setCollapseH(0);
+      setTimeout(() => onDelete?.(), 160);
+    }, 260);
+  };
+
   const onTouchStart = (e) => {
+    if (flying) return;
     startRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     dragging.current = false;
   };
   const onTouchMove = (e) => {
-    if (!startRef.current) return;
+    if (!startRef.current || flying) return;
     const dx = e.touches[0].clientX - startRef.current.x;
     const dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
@@ -1493,8 +1542,7 @@ function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
     }
     const cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
-      close();
-      setTimeout(() => onDelete(), 260);
+      flyOff();
     } else if (cur < -REVEAL / 2) {
       xRef.current = -REVEAL; setX(-REVEAL); setOpen(true);
     } else {
@@ -1503,34 +1551,44 @@ function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
   };
   const onTouchCancel = () => { startRef.current = null; dragging.current = false; close(); };
 
+  const flyTransition = 'transform 0.26s cubic-bezier(0.4,0,1,1)';
+  const collapseStyle = collapseH !== null ? {
+    height: collapseH, overflow:'hidden',
+    transition: collapseH === 0 ? 'height 0.16s ease-in' : 'none',
+  } : {};
+
   return (
-    <div style={{ position:'relative' }}
+    <div ref={outerRef} style={collapseStyle}
       onTouchStart={onTouchStart} onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd} onTouchCancel={onTouchCancel}>
-      <div style={{
-        position:'absolute', right:0, top:0, bottom:0, width:REVEAL,
-        display:'flex', alignItems:'center', justifyContent:'center', gap:10,
-      }}>
-        <button onClick={(e) => { e.stopPropagation(); close(); setTimeout(onShare, 100); }} style={{
-          width:50, height:50, borderRadius:25, border:'none', cursor:'pointer',
-          background:'#ffa500', flexShrink:0,
-          display:'flex', alignItems:'center', justifyContent:'center',
-        }}><Icon name="share" size={18} color="#fff" stroke={2}/></button>
-        <button onClick={(e) => { e.stopPropagation(); close(); setTimeout(onDelete, 100); }} style={{
-          width:50, height:50, borderRadius:25, border:'none', cursor:'pointer',
-          background:'#B5451B', flexShrink:0,
-          display:'flex', alignItems:'center', justifyContent:'center',
-        }}><Icon name="trash" size={18} color="#fff" stroke={2}/></button>
-      </div>
-      <div style={{
-        transform:`translateX(${x}px)`,
-        transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.25,1,0.5,1)',
-        background:COLORS.card,
-        position:'relative', zIndex:1,
-        overflow:'hidden',
-        ...wrapStyle,
-      }}>
-        {children}
+      <div style={{ position:'relative' }}>
+        {!flying && (
+          <div style={{
+            position:'absolute', right:0, top:0, bottom:0, width:REVEAL,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:10,
+          }}>
+            <button onClick={(e) => { e.stopPropagation(); close(); setTimeout(onShare, 100); }} style={{
+              width:50, height:50, borderRadius:25, border:'none', cursor:'pointer',
+              background:'#ffa500', flexShrink:0,
+              display:'flex', alignItems:'center', justifyContent:'center',
+            }}><Icon name="share" size={18} color="#fff" stroke={2}/></button>
+            <button onClick={(e) => { e.stopPropagation(); flyOff(); }} style={{
+              width:50, height:50, borderRadius:25, border:'none', cursor:'pointer',
+              background:'#B5451B', flexShrink:0,
+              display:'flex', alignItems:'center', justifyContent:'center',
+            }}><Icon name="trash" size={18} color="#fff" stroke={2}/></button>
+          </div>
+        )}
+        <div style={{
+          transform:`translateX(${x}px)`,
+          transition: flying ? flyTransition : dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.25,1,0.5,1)',
+          background:COLORS.card,
+          position:'relative', zIndex:1,
+          overflow:'hidden',
+          ...wrapStyle,
+        }}>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -1802,7 +1860,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v232</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v233</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
