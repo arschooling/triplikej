@@ -4544,7 +4544,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v266"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v267"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6189,6 +6189,7 @@ function DayScreen({
       cardSwipe: true,
       wrapStyle: {
         flex: 1,
+        marginLeft: 12,
         borderRadius: 14
       },
       disabled: editing,
