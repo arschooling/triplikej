@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v215</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v216</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1954,11 +1954,53 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const [featuredAnim, setFeaturedAnim] = React.useState({ key: 0, dir: 0 });
   const featuredTouchRef = React.useRef({ x: 0, y: 0 });
   React.useEffect(() => { setFeaturedIdx(calcFeaturedIdx()); }, [trip.days.length]);
+  // 슬라이더 상태
+  const [fOffset, setFOffset]       = React.useState(0);
+  const [fAnimate, setFAnimate]     = React.useState(false);
+  const fGesture = React.useRef({ on:false, startX:0, startY:0, drag:false });
+  const fWrapRef = React.useRef(null);
+  const fW = () => fWrapRef.current?.offsetWidth || 360;
+
   const changeFeatured = (newIdx) => {
-    if (newIdx === featuredIdx) return;
-    const dir = newIdx > featuredIdx ? 1 : -1;
+    if (newIdx < 0 || newIdx >= trip.days.length || newIdx === featuredIdx) return;
+    setFAnimate(true);
     setFeaturedIdx(newIdx);
-    setFeaturedAnim(a => ({ key: a.key + 1, dir }));
+    setFOffset(0);
+  };
+  const onFStart = e => {
+    fGesture.current = { on:true, startX:e.touches[0].clientX, startY:e.touches[0].clientY, drag:false };
+  };
+  const onFMove = e => {
+    const g = fGesture.current;
+    if (!g.on) return;
+    const dx = e.touches[0].clientX - g.startX;
+    const dy = Math.abs(e.touches[0].clientY - g.startY);
+    if (!g.drag) {
+      if (dy > Math.abs(dx) + 8) { g.on = false; return; }
+      if (Math.abs(dx) > 6) g.drag = true;
+    }
+    if (!g.drag) return;
+    const limited = dx < 0
+      ? Math.max(dx, featuredIdx >= trip.days.length - 1 ? 0 : -fW() * 1.2)
+      : Math.min(dx, featuredIdx <= 0 ? 0 : fW() * 1.2);
+    setFAnimate(false);
+    setFOffset(limited);
+  };
+  const onFEnd = () => {
+    const g = fGesture.current;
+    fGesture.current = { ...g, on:false, drag:false };
+    if (!g.drag) return;
+    const threshold = fW() * 0.22;
+    setFAnimate(true);
+    if (fOffset < -threshold && featuredIdx < trip.days.length - 1) {
+      setFOffset(-fW());
+      setTimeout(() => { setFeaturedIdx(i => i + 1); setFOffset(0); setFAnimate(false); }, 300);
+    } else if (fOffset > threshold && featuredIdx > 0) {
+      setFOffset(fW());
+      setTimeout(() => { setFeaturedIdx(i => i - 1); setFOffset(0); setFAnimate(false); }, 300);
+    } else {
+      setFOffset(0);
+    }
   };
   const featured = trip.days[featuredIdx];
 
@@ -2138,61 +2180,48 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
 
       {/* Featured */}
       {featured && (
-        <div style={{ padding:'4px 16px 18px' }}
-          onTouchStart={e => { featuredTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
-          onTouchEnd={e => {
-            const dx = e.changedTouches[0].clientX - featuredTouchRef.current.x;
-            const dy = Math.abs(e.changedTouches[0].clientY - featuredTouchRef.current.y);
-            if (Math.abs(dx) < 44 || dy > Math.abs(dx)) return;
-            const next = dx < 0
-              ? Math.min(trip.days.length - 1, featuredIdx + 1)
-              : Math.max(0, featuredIdx - 1);
-            changeFeatured(next);
-          }}
-        >
-          <div style={{ background:COLORS.card, borderRadius:22, overflow:'hidden',
-            boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)' }}>
-            <div key={featuredAnim.key} style={{
-              animation: featuredAnim.key > 0
-                ? `${featuredAnim.dir > 0 ? 'tabSlideFromRight' : 'tabSlideFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)`
-                : 'none',
+        <div style={{ padding:'4px 16px 18px' }}>
+          {/* 슬라이더 트랙: overflow:hidden 컨테이너 */}
+          <div ref={fWrapRef}
+            onTouchStart={onFStart} onTouchMove={onFMove} onTouchEnd={onFEnd}
+            style={{ borderRadius:22, overflow:'hidden',
+              boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)',
+              background:COLORS.card, position:'relative',
             }}>
-              <Photo hue={(featuredIdx === 0 ? (trip.hue ?? featured.hero?.hue) : featured.hero?.hue) ?? 25} label={featured.hero?.label} height={170}/>
-              <div style={{ padding:'16px 18px 18px' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
-                  <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
-                    DAY {String(featured.n).padStart(2,'0')} · {featured.weekday.toUpperCase()}
+            {/* 모든 날을 가로로 늘어놓은 트랙 */}
+            <div style={{
+              display:'flex',
+              transform: `translateX(calc(${-featuredIdx * 100}% + ${fOffset}px))`,
+              transition: fAnimate ? 'transform 0.3s cubic-bezier(0.22,1,0.36,1)' : 'none',
+              willChange: 'transform',
+            }}>
+              {trip.days.map((d, i) => (
+                <div key={i} style={{ minWidth:'100%', flexShrink:0 }}>
+                  <Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>
+                  <div style={{ padding:'16px 18px 18px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+                      <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
+                        DAY {String(d.n).padStart(2,'0')} · {d.weekday.toUpperCase()}
+                      </div>
+                      <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{d.date}</div>
+                    </div>
+                    <div style={{ marginTop:7, fontFamily:SERIF, fontSize:28, lineHeight:1.1, color:COLORS.ink }}>
+                      {d.title}
+                    </div>
+                    <button onClick={() => !fGesture.current.drag && onOpenDay(i)} style={{
+                      marginTop:16, width:'100%', border:'none', cursor:'pointer',
+                      background:COLORS.ink, color:COLORS.bg, borderRadius:12,
+                      padding:'13px 16px', fontFamily:SANS, fontSize:14, fontWeight:500,
+                      display:'flex', justifyContent:'space-between', alignItems:'center',
+                    }}>
+                      <span>{i === 0 ? '첫날 일정 보기' : `Day ${d.n} 일정 보기`}</span>
+                      <Icon name="chevron" size={16} color={COLORS.bg}/>
+                    </button>
                   </div>
-                  <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{featured.date}</div>
                 </div>
-                <div style={{ marginTop:7, fontFamily:SERIF, fontSize:28, lineHeight:1.1, color:COLORS.ink }}>
-                  {featured.title}
-                </div>
-                <button onClick={() => onOpenDay(featuredIdx)} style={{
-                  marginTop:16, width:'100%', border:'none', cursor:'pointer',
-                  background:COLORS.ink, color:COLORS.bg, borderRadius:12,
-                  padding:'13px 16px', fontFamily:SANS, fontSize:14, fontWeight:500,
-                  display:'flex', justifyContent:'space-between', alignItems:'center',
-                }}>
-                  <span>{featuredIdx === 0 ? '첫날 일정 보기' : `Day ${featured.n} 일정 보기`}</span>
-                  <Icon name="chevron" size={16} color={COLORS.bg}/>
-                </button>
-              </div>
-            </div>
-          </div>
-          {/* 페이지 도트 */}
-          {trip.days.length > 1 && (
-            <div style={{ display:'flex', justifyContent:'center', gap:5, marginTop:10 }}>
-              {trip.days.map((_, i) => (
-                <div key={i} onClick={() => changeFeatured(i)} style={{
-                  width: i === featuredIdx ? 16 : 5, height:5,
-                  borderRadius:3, cursor:'pointer',
-                  background: i === featuredIdx ? COLORS.ink : COLORS.line,
-                  transition:'all 0.2s ease',
-                }}/>
               ))}
             </div>
-          )}
+          </div>
         </div>
       )}
 
