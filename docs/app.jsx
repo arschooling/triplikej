@@ -1863,7 +1863,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v238</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v239</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2697,30 +2697,28 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
             const isDone = done.has(i);
             const dp = itemDragProps(i);
             return (
-              <div key={i} {...dp} style={{ display:'flex', marginBottom:12, position:'relative', ...(dp.style || {}) }}>
-                <div style={{ width:44, flexShrink:0, paddingTop:14,
+              <div key={i} {...dp} style={{ display:'flex', alignItems:'center', marginBottom:12, position:'relative', ...(dp.style || {}) }}>
+                {/* 시간 — alignItems:center로 수직 중앙 정렬됨 */}
+                <div style={{ width:44, flexShrink:0,
                   fontFamily:MONO, fontSize:10.5, color:COLORS.mute,
                   textAlign:'right', paddingRight:4 }}>{it.time}</div>
+                {/* 체크박스: 타임라인 선 가로 중간(x=52)에 독립 배치 — 슬라이드 시 카드에 가려짐 */}
+                <button onClick={(e)=>{e.stopPropagation(); toggle(i);}} style={{
+                  width:16, height:16, borderRadius:8, flexShrink:0,
+                  border:`1.5px solid ${isDone?COLORS.accent:COLORS.ink}`,
+                  background: isDone?COLORS.accent:COLORS.bg, cursor:'pointer', padding:0,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                }}>
+                  {isDone && <Icon name="check" size={10} color="#fff" stroke={3}/>}
+                </button>
                 <SwipeableRow
                   cardSwipe
                   wrapStyle={{ flex:1, borderRadius:14 }}
                   disabled={editing}
                   onEdit={() => onOpenStop({ idx: i, stop: it, editing: true })}
                   onDelete={() => onDeleteItem(i)}>
-                {/* 체크박스 + 카드 가로 배치 — 체크박스가 카드와 함께 슬라이드 */}
-                <div style={{ display:'flex', alignItems:'center' }}>
-                  {/* 체크박스: SwipeableRow 왼쪽 끝 → 타임라인 선 중앙(x=8) 정렬 */}
-                  <button onClick={(e)=>{e.stopPropagation(); toggle(i);}} style={{
-                    width:16, height:16, borderRadius:8, flexShrink:0,
-                    border:`1.5px solid ${isDone?COLORS.accent:COLORS.ink}`,
-                    background: isDone?COLORS.accent:COLORS.bg, cursor:'pointer', padding:0,
-                    display:'flex', alignItems:'center', justifyContent:'center',
-                    position:'relative', zIndex:2,
-                  }}>
-                    {isDone && <Icon name="check" size={10} color="#fff" stroke={3}/>}
-                  </button>
-                  {/* 카드 본체 */}
-                  <div style={{ flex:1, marginLeft:10, position:'relative' }}>
+                {/* 카드 본체 */}
+                <div style={{ position:'relative' }}>
                   {!editing && (
                     <div style={{ position:'absolute', top:8, right:8, zIndex:5, display:'flex', gap:4 }}>
                       <button onClick={(e)=>{ e.stopPropagation(); setNearbyTab('hotspot'); setNearbyStop(it); }} style={{
@@ -2820,8 +2818,7 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                     <div style={{ position:'absolute', inset:-2, border:`2px dashed rgba(193,79,46,0.45)`,
                       borderRadius:16, pointerEvents:'none', background:'rgba(193,79,46,0.04)' }}/>
                   )}
-                  </div>{/* /카드 본체 */}
-                </div>{/* /flex row */}
+                </div>{/* /카드 본체 */}
                 </SwipeableRow>
               </div>
             );
@@ -3503,7 +3500,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
         style={{
           background:COLORS.bg, borderRadius:'22px 22px 0 0',
           paddingBottom:'calc(env(safe-area-inset-bottom, 0px) + 24px)',
-          maxHeight:'calc(100dvh - env(safe-area-inset-top, 44px))',
+          maxHeight:'calc(100dvh - var(--sat, 44px) - 8px)',
           overflowY:'auto', overflowX:'hidden',
         }}>
         {/* 드래그 핸들 */}
@@ -8012,4 +8009,12 @@ function App() {
   );
 }
 
+// CSS 안전영역 변수 초기화 — StopSheet 최대 높이 + 드래그 핸들 제한에 사용
+(function(){
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0px);left:0;width:0;height:0;pointer-events:none';
+  document.body.appendChild(d);
+  document.documentElement.style.setProperty('--sat', Math.max(0, d.getBoundingClientRect().top) + 'px');
+  document.body.removeChild(d);
+})();
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);

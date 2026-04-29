@@ -3863,7 +3863,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v238"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v239"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -5463,6 +5463,7 @@ function DayScreen({
     }, dp, {
       style: {
         display: 'flex',
+        alignItems: 'center',
         marginBottom: 12,
         position: 'relative',
         ...(dp.style || {})
@@ -5471,32 +5472,13 @@ function DayScreen({
       style: {
         width: 44,
         flexShrink: 0,
-        paddingTop: 14,
         fontFamily: MONO,
         fontSize: 10.5,
         color: COLORS.mute,
         textAlign: 'right',
         paddingRight: 4
       }
-    }, it.time), /*#__PURE__*/React.createElement(SwipeableRow, {
-      cardSwipe: true,
-      wrapStyle: {
-        flex: 1,
-        borderRadius: 14
-      },
-      disabled: editing,
-      onEdit: () => onOpenStop({
-        idx: i,
-        stop: it,
-        editing: true
-      }),
-      onDelete: () => onDeleteItem(i)
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: 'flex',
-        alignItems: 'center'
-      }
-    }, /*#__PURE__*/React.createElement("button", {
+    }, it.time), /*#__PURE__*/React.createElement("button", {
       onClick: e => {
         e.stopPropagation();
         toggle(i);
@@ -5512,19 +5494,28 @@ function DayScreen({
         padding: 0,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        zIndex: 2
+        justifyContent: 'center'
       }
     }, isDone && /*#__PURE__*/React.createElement(Icon, {
       name: "check",
       size: 10,
       color: "#fff",
       stroke: 3
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
+    })), /*#__PURE__*/React.createElement(SwipeableRow, {
+      cardSwipe: true,
+      wrapStyle: {
         flex: 1,
-        marginLeft: 10,
+        borderRadius: 14
+      },
+      disabled: editing,
+      onEdit: () => onOpenStop({
+        idx: i,
+        stop: it,
+        editing: true
+      }),
+      onDelete: () => onDeleteItem(i)
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
         position: 'relative'
       }
     }, !editing && /*#__PURE__*/React.createElement("div", {
@@ -5776,7 +5767,7 @@ function DayScreen({
         pointerEvents: 'none',
         background: 'rgba(193,79,46,0.04)'
       }
-    })))));
+    }))));
   }), editing && /*#__PURE__*/React.createElement("button", {
     onClick: onAddItem,
     style: {
@@ -6970,7 +6961,7 @@ function StopSheet({
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
       paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
-      maxHeight: 'calc(100dvh - env(safe-area-inset-top, 44px))',
+      maxHeight: 'calc(100dvh - var(--sat, 44px) - 8px)',
       overflowY: 'auto',
       overflowX: 'hidden'
     }
@@ -15629,4 +15620,13 @@ function App() {
     }
   }, "\uC800\uC7A5")))), document.body));
 }
+
+// CSS 안전영역 변수 초기화 — StopSheet 최대 높이 + 드래그 핸들 제한에 사용
+(function () {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0px);left:0;width:0;height:0;pointer-events:none';
+  document.body.appendChild(d);
+  document.documentElement.style.setProperty('--sat', Math.max(0, d.getBoundingClientRect().top) + 'px');
+  document.body.removeChild(d);
+})();
 ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));
