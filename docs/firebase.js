@@ -557,6 +557,39 @@ window.fbMarkSampleDeleted = async (uid, sampleId) => {
   });
 };
 
+// ─── 계정 탈퇴 ────────────────────────────────────────────────
+// 1) Google 재인증 → 2) Firestore 데이터 삭제 → 3) Auth 계정 삭제
+window.fbDeleteAccount = async (uid, tripIds) => {
+  // Google 재인증 (Firebase Auth 계정 삭제 전 필수)
+  const user = _fbAuth.currentUser;
+  if (!user) throw new Error('로그인 상태가 아닙니다');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  await user.reauthenticateWithPopup(provider);
+
+  // Firestore: 본인이 유일한 멤버인 trip만 삭제 (공유 trip은 멤버에서만 제거)
+  const groupSnaps = await Promise.all((tripIds || []).map(id => _fbDb.collection('groups').doc(id).get()));
+  const batch = _fbDb.batch();
+  groupSnaps.forEach((snap, i) => {
+    if (!snap.exists) return;
+    const members = snap.data().members || [];
+    if (members.length <= 1) {
+      // 나만 있는 trip → 완전 삭제
+      batch.delete(_fbDb.collection('groups').doc(tripIds[i]));
+    } else {
+      // 다른 멤버도 있는 trip → 멤버에서만 제거
+      batch.update(_fbDb.collection('groups').doc(tripIds[i]), {
+        members: firebase.firestore.FieldValue.arrayRemove(uid),
+      });
+    }
+  });
+  batch.delete(_fbDb.collection('users').doc(uid));
+  batch.delete(_fbDb.collection('preps').doc(uid));
+  await batch.commit();
+
+  // Firebase Auth 계정 삭제
+  await user.delete();
+};
+
 window.fbNotifyTripEdit = async (tripId, editorUid, editorName, editorPhoto, tripTitle) => {
   const snap = await _fbDb.collection('groups').doc(tripId).get();
   if (!snap.exists) return;

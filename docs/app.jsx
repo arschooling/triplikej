@@ -1863,7 +1863,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v244</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v246</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7065,8 +7065,32 @@ function AddCompanionSheet({ open, onClose, authUser, userData, trips, onUserDat
   );
 }
 
-function ProfileSheet({ open, onClose, authUser, trips, onAddCompanion, onViewCompanions }) {
+function ProfileSheet({ open, onClose, authUser, trips, onAddCompanion, onViewCompanions, onDeleteAccount }) {
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
+  const [deleteError, setDeleteError] = React.useState('');
+
+  React.useEffect(() => { if (!open) { setConfirmDelete(false); setDeleting(false); setDeleteError(''); } }, [open]);
+
   if (!open || !authUser) return null;
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const tripIds = (trips || []).map(t => t.id).filter(Boolean);
+      await fbDeleteAccount(authUser.uid, tripIds);
+      onDeleteAccount();
+    } catch(e) {
+      setDeleting(false);
+      if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
+        setDeleteError('');
+        setConfirmDelete(false);
+      } else {
+        setDeleteError('오류가 발생했어요. 다시 시도해 주세요.');
+      }
+    }
+  };
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.4)',
@@ -7125,6 +7149,46 @@ function ProfileSheet({ open, onClose, authUser, trips, onAddCompanion, onViewCo
               }}>추가</button>
             </div>
           </div>
+
+          {/* 계정 탈퇴 */}
+          {!confirmDelete ? (
+            <button onClick={() => setConfirmDelete(true)} style={{
+              width:'100%', marginTop:4, padding:'12px 0',
+              background:'transparent', border:'none', cursor:'pointer',
+              fontFamily:SANS, fontSize:12, color:COLORS.mute,
+              textAlign:'center',
+            }}>계정 탈퇴</button>
+          ) : (
+            <div style={{
+              background:'#FFF5F5', borderRadius:14, border:'1px solid #FFCDD2',
+              padding:'16px', marginTop:4,
+            }}>
+              <div style={{ fontFamily:SANS, fontSize:13, fontWeight:600, color:'#C62828', marginBottom:6 }}>
+                정말 탈퇴할까요?
+              </div>
+              <div style={{ fontFamily:SANS, fontSize:12, color:'#B71C1C', lineHeight:1.5, marginBottom:14 }}>
+                모든 여행 데이터가 영구 삭제되며 복구할 수 없어요.
+                Google 계정으로 재인증 후 진행됩니다.
+              </div>
+              {deleteError && (
+                <div style={{ fontFamily:SANS, fontSize:11.5, color:'#C62828', marginBottom:10 }}>{deleteError}</div>
+              )}
+              <div style={{ display:'flex', gap:8 }}>
+                <button onClick={() => { setConfirmDelete(false); setDeleteError(''); }} style={{
+                  flex:1, padding:'10px 0', borderRadius:10,
+                  border:`1px solid ${COLORS.line}`, background:'transparent',
+                  fontFamily:SANS, fontSize:13, color:COLORS.ink, cursor:'pointer',
+                }}>취소</button>
+                <button onClick={handleDelete} disabled={deleting} style={{
+                  flex:1, padding:'10px 0', borderRadius:10,
+                  border:'none', background:'#C62828',
+                  fontFamily:SANS, fontSize:13, fontWeight:600, color:'#fff',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  opacity: deleting ? 0.7 : 1,
+                }}>{deleting ? '삭제 중...' : '탈퇴하기'}</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -7965,7 +8029,12 @@ function App() {
       <ProfileSheet open={profileSheetOpen} onClose={() => setProfileSheetOpen(false)}
         authUser={authUser} trips={userTrips}
         onAddCompanion={(tripId) => setAddCompanionOpen(tripId || false)}
-        onViewCompanions={() => { setProfileSheetOpen(false); setCompanionsScreenOpen(true); }}/>
+        onViewCompanions={() => { setProfileSheetOpen(false); setCompanionsScreenOpen(true); }}
+        onDeleteAccount={() => {
+          ['tlj_authed','tlj_userData','tlj_trip','tlj_prep','tlj_nav'].forEach(k => localStorage.removeItem(k));
+          setAuthState('out'); setAuthUser(null); setUserData(null);
+          setProfileSheetOpen(false);
+        }}/>
       <AddCompanionSheet open={addCompanionOpen !== null} onClose={() => setAddCompanionOpen(null)}
         authUser={authUser} userData={userData} trips={userTrips}
         defaultTripId={addCompanionOpen || null}
@@ -8081,7 +8150,12 @@ function App() {
       <ProfileSheet open={profileSheetOpen} onClose={() => setProfileSheetOpen(false)}
         authUser={authUser} trips={userTrips}
         onAddCompanion={(tripId) => setAddCompanionOpen(tripId || false)}
-        onViewCompanions={() => { setProfileSheetOpen(false); setCompanionsScreenOpen(true); }}/>
+        onViewCompanions={() => { setProfileSheetOpen(false); setCompanionsScreenOpen(true); }}
+        onDeleteAccount={() => {
+          ['tlj_authed','tlj_userData','tlj_trip','tlj_prep','tlj_nav'].forEach(k => localStorage.removeItem(k));
+          setAuthState('out'); setAuthUser(null); setUserData(null);
+          setProfileSheetOpen(false);
+        }}/>
       <AddCompanionSheet open={addCompanionOpen !== null} onClose={() => setAddCompanionOpen(null)}
         authUser={authUser} userData={userData} trips={userTrips}
         defaultTripId={addCompanionOpen || null}
