@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v226</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v227</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1956,12 +1956,18 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   React.useEffect(() => { setFeaturedIdx(calcFeaturedIdx()); }, [trip.days.length]);
   // 슬라이더 상태
   const [fOffset, setFOffset] = React.useState(0);
+  const [fWidth, setFWidth]   = React.useState(window.innerWidth);  // 측정된 실제 너비
   const fOffsetRef = React.useRef(0);
   const fGesture   = React.useRef({ on:false, startX:0, startY:0, drag:false });
-  const fVelSamples = React.useRef([]);   // 속도 계산용 최근 터치 샘플
+  const fVelSamples = React.useRef([]);
   const fWrapRef   = React.useRef(null);
   const fTrackRef  = React.useRef(null);
-  const fW = () => fWrapRef.current?.offsetWidth || 360;
+  const fW = () => fWrapRef.current?.offsetWidth || fWidth;
+
+  // 마운트 후 실제 너비 측정 (다른 화면 갔다 돌아올 때도 정확히 반영)
+  React.useLayoutEffect(() => {
+    if (fWrapRef.current) setFWidth(fWrapRef.current.offsetWidth);
+  }, []);
 
   const fTrans = (dur, ease) => {
     if (fTrackRef.current)
