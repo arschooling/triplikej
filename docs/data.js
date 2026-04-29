@@ -295,41 +295,6 @@ window.TRIP_DEFAULT = {
     { cat: '🍪 Dessert',  name: "Junior's Cheesecake",      detail: '오리지널 NY 치즈케익',                                   price: '$',       note: '타임스퀘어/그랜드센트럴' },
     { cat: '☕ Dessert',  name: "Ralph's Coffee",           detail: '말차 라떼',                                              price: '$',       note: '랄프로렌 플래그십 내부' },
   ],
-  budget: {
-    entries: [
-      // ── 수입 ──────────────────────────────────────────────────────
-      { id:'b01', type:'in',  amount:2000000, currency:'KRW', cat:'환전',   note:'출발 전 환전 $1,500', date:'May 3',  scope:'personal' },
-
-      // ── 교통 ──────────────────────────────────────────────────────
-      { id:'b02', type:'out', amount:1850000, currency:'KRW', cat:'교통',   note:'인천 → JFK 왕복 항공권', date:'May 4', scope:'personal' },
-      { id:'b03', type:'out', amount:68,      currency:'USD', cat:'교통',   note:'JFK → 타임스퀘어 택시', date:'May 4',  scope:'personal' },
-      { id:'b04', type:'out', amount:33,      currency:'USD', cat:'교통',   note:'7-day 메트로카드',       date:'May 4',  scope:'personal' },
-      { id:'b05', type:'out', amount:29,      currency:'USD', cat:'교통',   note:'NYC → DC 암트랙',        date:'May 9',  scope:'personal' },
-      { id:'b06', type:'out', amount:31,      currency:'USD', cat:'교통',   note:'DC → NYC 암트랙',        date:'May 11', scope:'personal' },
-
-      // ── 숙박 ──────────────────────────────────────────────────────
-      { id:'b07', type:'out', amount:1445,    currency:'USD', cat:'숙박',   note:'Kimpton Theta 5박',      date:'May 4',  scope:'personal' },
-      { id:'b08', type:'out', amount:378,     currency:'USD', cat:'숙박',   note:'Royal Sonesta DC 2박',   date:'May 9',  scope:'personal' },
-      { id:'b09', type:'out', amount:747,     currency:'USD', cat:'숙박',   note:'RIU Plaza 3박',          date:'May 11', scope:'personal' },
-
-      // ── 식비 ──────────────────────────────────────────────────────
-      { id:'b10', type:'out', amount:24,      currency:'USD', cat:'식비',   note:'Katz\'s Deli 파스트라미', date:'May 5',  scope:'personal' },
-      { id:'b11', type:'out', amount:120,     currency:'USD', cat:'식비',   note:'Peter Luger 스테이크',   date:'May 6',  scope:'personal' },
-      { id:'b12', type:'out', amount:18,      currency:'USD', cat:'식비',   note:'Shake Shack 버거+쉐이크', date:'May 7', scope:'personal' },
-      { id:'b13', type:'out', amount:9,       currency:'USD', cat:'식비',   note:'Levain Bakery 쿠키',     date:'May 8',  scope:'personal' },
-      { id:'b14', type:'out', amount:22,      currency:'USD', cat:'식비',   note:'랍스터 롤 (첼시마켓)',    date:'May 12', scope:'personal' },
-
-      // ── 관광 ──────────────────────────────────────────────────────
-      { id:'b15', type:'out', amount:23,      currency:'USD', cat:'관광',   note:'자유의 여신상 투어',      date:'May 5',  scope:'personal' },
-      { id:'b16', type:'out', amount:44,      currency:'USD', cat:'관광',   note:'엠파이어스테이트 빌딩',   date:'May 6',  scope:'personal' },
-      { id:'b17', type:'out', amount:30,      currency:'USD', cat:'관광',   note:'MoMA 입장료',             date:'May 7',  scope:'personal' },
-      { id:'b18', type:'out', amount:25,      currency:'USD', cat:'관광',   note:'서밋 원 밴더빌트',        date:'May 8',  scope:'personal' },
-
-      // ── 쇼핑 ──────────────────────────────────────────────────────
-      { id:'b19', type:'out', amount:85,      currency:'USD', cat:'쇼핑',   note:'ZARA 5번가',              date:'May 11', scope:'personal' },
-      { id:'b20', type:'out', amount:42,      currency:'USD', cat:'쇼핑',   note:'기념품 (자유의여신상)',    date:'May 5',  scope:'personal' },
-    ],
-  },
 };
 
 // ─── Rome & Florence & Assisi — 11일 샘플 ─────────────────────
