@@ -485,7 +485,8 @@ window.fbUpdateSample = async (sampleId, tripData) => {
 // On app open: add or update sample trip for non-owner users
 // Returns { tripId, updated, isNew } or null if sample should not be shown
 window.fbSyncSample = async (uid, userEmail, sampleId) => {
-  if (userEmail === SAMPLE_OWNER_EMAIL) return null;
+  // 오너는 자신이 관리하는 샘플(nyc)만 건너뜀 — 다른 샘플은 받음
+  if (userEmail === SAMPLE_OWNER_EMAIL && sampleId === 'nyc') return null;
 
   const userSnap = await _fbDb.collection('users').doc(uid).get();
   if (!userSnap.exists) return null;
