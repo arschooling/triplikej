@@ -507,21 +507,30 @@ window.fbSyncSample = async (uid, userEmail, sampleId) => {
   const sampleTripSnap = tripSnaps.find(s => s.exists && s.data().sampleId === sampleId);
 
   if (!sampleTripSnap) {
-    // sampleVersions에 이미 기록된 경우 중복 생성 방지 (race condition 대비)
-    if (userVersion > 0) return null;
-    // User doesn't have the sample yet — create it
-    const ref = _fbDb.collection('groups').doc();
-    const tripId = ref.id;
-    const hue = tripData.hue ?? tripData.days?.[0]?.hero?.hue ?? 25;
-    await ref.set({
-      ...tripData, sampleId, sampleVersion,
-      members: [uid], hue,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    // Transaction으로 원자적 생성 — 동시 호출 시 중복 생성 방지
+    let tripId = null;
+    let created = false;
+    await _fbDb.runTransaction(async (tx) => {
+      const freshSnap = await tx.get(_fbDb.collection('users').doc(uid));
+      if (!freshSnap.exists) return;
+      const freshUd = freshSnap.data();
+      // 이미 다른 호출이 먼저 생성했으면 건너뜀
+      if ((freshUd.sampleVersions || {})[sampleId] > 0) return;
+      const ref = _fbDb.collection('groups').doc();
+      tripId = ref.id;
+      const hue = tripData.hue ?? tripData.days?.[0]?.hero?.hue ?? 25;
+      tx.set(ref, {
+        ...tripData, sampleId, sampleVersion,
+        members: [uid], hue,
+        createdAt: new Date(),
+      });
+      tx.update(_fbDb.collection('users').doc(uid), {
+        tripIds: firebase.firestore.FieldValue.arrayUnion(tripId),
+        [`sampleVersions.${sampleId}`]: sampleVersion,
+      });
+      created = true;
     });
-    await _fbDb.collection('users').doc(uid).update({
-      tripIds: firebase.firestore.FieldValue.arrayUnion(tripId),
-      [`sampleVersions.${sampleId}`]: sampleVersion,
-    });
+    if (!created) return null;
     return { tripId, updated: true, isNew: true, tripData };
   }
 
