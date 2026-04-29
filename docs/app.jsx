@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v213</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v214</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -4493,7 +4493,7 @@ function MapScreen({ trip, onEditItem }) {
 
       <StopSheet
         open={openStop}
-        dayHue={day?.hero?.hue ?? 25}
+        dayHue={heroHue}
         cityBias={cityBias}
         onClose={() => setOpenStop(null)}
         onSave={(draft) => {
@@ -7365,7 +7365,9 @@ function App() {
   else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })} onSheetChange={setBudgetSheetOpen}/>; label='Budget'; }
   else                       { screen = <PrepScreen trip={trip} prep={prep} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
-  const dayHue = dayIdx !== null && trip ? (trip.days[dayIdx]?.hero?.hue ?? 30) : 30;
+  const dayHue = dayIdx !== null && trip
+    ? ((dayIdx === 0 ? (trip.hue ?? trip.days[0]?.hero?.hue) : trip.days[dayIdx]?.hero?.hue) ?? 30)
+    : 30;
 
   // ── Auth gating ───────────────────────────────────────────
   // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
