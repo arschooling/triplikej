@@ -1869,7 +1869,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v282</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v283</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3438,10 +3438,21 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit }) 
       if (!dragRef.current.active) return;
       const { startY, startScrollTop } = dragRef.current;
       const dy = e.touches[0].clientY - startY;
+      // 확장 상태: 최상단에서 아래로 당길 때만 시트 드래그, 나머지는 자유 스크롤
+      if (expandedRef.current) {
+        if (startScrollTop <= 8 && dy > 0) {
+          e.preventDefault();
+          sheetYRef.current = dy; setSheetY(dy);
+        } else {
+          dragRef.current.active = false;
+        }
+        return;
+      }
+      // 비확장 상태: 전체 드래그 제어
       if (startScrollTop > 8 && dy <= 0) { dragRef.current.active = false; return; }
       e.preventDefault();
       if (dy < -40) {
-        if (!expandedRef.current) { expandedRef.current = true; setExpanded(true); }
+        expandedRef.current = true; setExpanded(true);
         dragRef.current.active = false; return;
       }
       if (dy <= 0) return;
