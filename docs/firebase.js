@@ -499,10 +499,13 @@ window.fbSyncSample = async (uid, userEmail, sampleId) => {
                   : sampleId === 'rome' ? (window.ROME_DEFAULT || null)
                   : null;
   if (!sampleSnap.exists && !localData) return null;
-  // Firestore 없으면 로컬 데이터의 sampleVersion 사용 (업데이트 강제용)
+  // 로컬 data.js 버전이 Firestore보다 높으면 로컬을 정본으로 사용 (업데이트 강제용)
   const localVersion = localData?.sampleVersion || 1;
-  const sampleVersion = sampleSnap.exists ? (sampleSnap.data().sampleVersion || 1) : localVersion;
-  const tripData = sampleSnap.exists ? sampleSnap.data().tripData : localData;
+  const firestoreVersion = sampleSnap.exists ? (sampleSnap.data().sampleVersion || 1) : 0;
+  const sampleVersion = Math.max(firestoreVersion, localVersion);
+  const tripData = (localVersion > firestoreVersion && localData)
+    ? localData
+    : (sampleSnap.exists ? sampleSnap.data().tripData : localData);
 
   const userVersion = (ud.sampleVersions || {})[sampleId] || 0;
   const tripIds = ud.tripIds || [uid];
