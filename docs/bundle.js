@@ -4544,7 +4544,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v269"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v270"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -13607,7 +13607,9 @@ function NotificationsScreen({
   open,
   onClose,
   authUser,
-  notifications
+  notifications,
+  onGoToCompanions,
+  onGoToTrip
 }) {
   const [visible, setVisible] = React.useState(false); // DOM에 마운트 여부
   const [entered, setEntered] = React.useState(false); // 슬라이드 인 완료 여부
@@ -13663,6 +13665,17 @@ function NotificationsScreen({
   })[type] || 'bell';
   const deleteNotif = id => {
     if (authUser?.uid && typeof fbDeleteNotification === 'function') fbDeleteNotification(authUser.uid, id).catch(() => {});
+  };
+  const COMPANION_TYPES = new Set(['contact_added', 'contact_accepted', 'invite_received']);
+  const TRIP_TYPES = new Set(['invite_accepted', 'trip_edited']);
+  const handleNotifTap = n => {
+    if (COMPANION_TYPES.has(n.type)) {
+      onClose();
+      onGoToCompanions?.();
+    } else if (TRIP_TYPES.has(n.type) && n.tripId) {
+      onClose();
+      onGoToTrip?.(n.tripId);
+    }
   };
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -13744,6 +13757,7 @@ function NotificationsScreen({
         borderRadius: 14
       }
     }, /*#__PURE__*/React.createElement("div", {
+      onClick: () => handleNotifTap(n),
       style: {
         background: n.read ? COLORS.card : `${color}12`,
         borderRadius: 14,
@@ -13751,7 +13765,8 @@ function NotificationsScreen({
         display: 'flex',
         alignItems: 'flex-start',
         gap: 12,
-        border: `1.5px solid ${n.read ? 'transparent' : color + '30'}`
+        border: `1.5px solid ${n.read ? 'transparent' : color + '30'}`,
+        cursor: COMPANION_TYPES.has(n.type) || TRIP_TYPES.has(n.type) && n.tripId ? 'pointer' : 'default'
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -17160,7 +17175,17 @@ function App() {
     open: notifOpen,
     onClose: () => setNotifOpen(false),
     authUser: authUser,
-    notifications: notifs
+    notifications: notifs,
+    onGoToCompanions: () => {
+      setNotifOpen(false);
+      setCompanionsScreenOpen(true);
+    },
+    onGoToTrip: tripId => {
+      setNotifOpen(false);
+      setActiveTripId(tripId);
+      setTab('home');
+      setDayIdx(null);
+    }
   }), /*#__PURE__*/React.createElement(NewTripSheet, {
     open: newTripSheetOpen,
     onClose: () => setNewTripSheetOpen(false),
@@ -17421,7 +17446,17 @@ function App() {
     open: notifOpen,
     onClose: () => setNotifOpen(false),
     authUser: authUser,
-    notifications: notifs
+    notifications: notifs,
+    onGoToCompanions: () => {
+      setNotifOpen(false);
+      setCompanionsScreenOpen(true);
+    },
+    onGoToTrip: tripId => {
+      setNotifOpen(false);
+      setActiveTripId(tripId);
+      setTab('home');
+      setDayIdx(null);
+    }
   }), saveConfirm && ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
