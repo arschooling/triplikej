@@ -1779,7 +1779,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v197</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v199</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2082,6 +2082,24 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
           <span style={{ color:COLORS.mute, opacity:0.4, fontSize:13 }}>·</span>
           <span style={{ fontFamily:SANS, fontSize:13, color:COLORS.mute }}>{trip.days.length} days</span>
         </div>
+        {/* 색깔 선택 (수정 모드) */}
+        {editing && (
+          <div style={{ marginTop:12, display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }}>
+            {[20, 45, 90, 140, 200, 240, 280, 320, 350, 0].map(h => {
+              const sel = (trip.hue ?? 25) === h;
+              return (
+                <button key={h} onClick={() => onEditTrip({ hue: h })} style={{
+                  width: sel ? 30 : 24, height: sel ? 30 : 24,
+                  borderRadius: '50%', padding: 0, cursor: 'pointer', flexShrink: 0,
+                  background: `oklch(0.78 0.07 ${h})`,
+                  border: sel ? `3px solid ${COLORS.ink}` : `2px solid rgba(0,0,0,0.08)`,
+                  boxShadow: sel ? '0 0 0 2px rgba(0,0,0,0.12)' : 'none',
+                  transition: 'all 0.15s',
+                }}/>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Featured */}

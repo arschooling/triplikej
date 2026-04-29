@@ -304,7 +304,7 @@ window.ROME_DEFAULT = {
   dates: 'Oct 5 — Oct 15, 2025',
   travelers: 'Solo trip',
   hotel: "Hotel Campo de' Fiori (Rome)",
-  hue: 20,
+  hue: 200,
   hotels: [
     {
       name: "Hotel Campo de' Fiori",
