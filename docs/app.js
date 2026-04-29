@@ -3880,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v267"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v268"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6841,8 +6841,10 @@ function StopSheet({
   const committed = React.useRef(open.stop);
   const [sheetY, setSheetY] = React.useState(0);
   const [entered, setEntered] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(false);
   const sheetRef = React.useRef(null);
   const sheetYRef = React.useRef(0);
+  const expandedRef = React.useRef(false);
   const dragRef = React.useRef({
     active: false,
     startY: 0,
@@ -6855,6 +6857,8 @@ function StopSheet({
     setSheetY(0);
     sheetYRef.current = 0;
     setEditing(!!open.editing);
+    setExpanded(false);
+    expandedRef.current = false;
     setEntered(false);
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
   }, [open]);
@@ -6896,24 +6900,32 @@ function StopSheet({
         return;
       }
       e.preventDefault();
-      if (dy <= 0) {
-        // 위로 드래그: 러버밴드 + 상태바 아래로 클램프
-        const sheetTop = el.getBoundingClientRect().top + dy;
-        const minTop = getSafeTop();
-        if (sheetTop < minTop) return; // 상태바 넘어가면 무시
-        const newY = dy * 0.15; // 러버밴드 저항
-        sheetYRef.current = newY;
-        setSheetY(newY);
-      } else {
-        sheetYRef.current = dy;
-        setSheetY(dy);
+      if (dy < -40) {
+        // 위로 충분히 스와이프 → 확장
+        if (!expandedRef.current) {
+          expandedRef.current = true;
+          setExpanded(true);
+        }
+        dragRef.current.active = false;
+        return;
       }
+      if (dy <= 0) return; // 작은 위 방향 무시
+      sheetYRef.current = dy;
+      setSheetY(dy);
     };
     const onEnd = () => {
       dragRef.current.active = false;
-      const topPos = sheetRef.current ? sheetRef.current.getBoundingClientRect().top : 0;
-      if (topPos > window.innerHeight / 2) {
-        onClose();
+      const cur = sheetYRef.current;
+      if (cur > 100) {
+        if (expandedRef.current) {
+          // 확장 상태에서 내리면 → 축소
+          expandedRef.current = false;
+          setExpanded(false);
+          sheetYRef.current = 0;
+          setSheetY(0);
+        } else {
+          onClose();
+        }
       } else {
         sheetYRef.current = 0;
         setSheetY(0);
@@ -6982,9 +6994,10 @@ function StopSheet({
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
       paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
-      maxHeight: 'calc(100dvh - var(--sat, 44px) - 8px)',
-      overflowY: 'auto',
-      overflowX: 'hidden'
+      maxHeight: expanded ? 'calc(100dvh - var(--sat, 44px) - 8px)' : '62dvh',
+      overflowY: expanded ? 'auto' : 'hidden',
+      overflowX: 'hidden',
+      transition: 'max-height 0.36s cubic-bezier(0.32,0.72,0,1)'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
