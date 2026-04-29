@@ -3880,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v285"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v286"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6846,14 +6846,10 @@ function StopSheet({
   const [draft, setDraft] = React.useState(open.stop);
   const committed = React.useRef(open.stop);
   const [sheetY, setSheetY] = React.useState(0);
-  const [sheetUp, setSheetUp] = React.useState(0);
   const [entered, setEntered] = React.useState(false);
-  const [expanded, setExpanded] = React.useState(false);
   const [closing, setClosing] = React.useState(false);
   const sheetRef = React.useRef(null);
   const sheetYRef = React.useRef(0);
-  const sheetUpRef = React.useRef(0);
-  const expandedRef = React.useRef(false);
   const dragRef = React.useRef({
     active: false,
     startY: 0,
@@ -6865,11 +6861,7 @@ function StopSheet({
     committed.current = open.stop;
     setSheetY(0);
     sheetYRef.current = 0;
-    setSheetUp(0);
-    sheetUpRef.current = 0;
     setEditing(!!open.editing);
-    setExpanded(false);
-    expandedRef.current = false;
     setClosing(false);
     setEntered(false);
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
@@ -6884,7 +6876,7 @@ function StopSheet({
     };
   }, []);
 
-  // 시트 전체 드래그로 닫기
+  // 시트 드래그: 아래로 닫기 + 위로 고무줄 효과
   React.useEffect(() => {
     const el = sheetRef.current;
     if (!el) return;
@@ -6902,64 +6894,26 @@ function StopSheet({
         startScrollTop
       } = dragRef.current;
       const dy = e.touches[0].clientY - startY;
-      // 확장 상태: 최상단에서 아래로만 드래그, 나머지는 자유 스크롤
-      if (expandedRef.current) {
-        if (startScrollTop <= 8 && dy > 0) {
-          e.preventDefault();
-          sheetYRef.current = dy;
-          setSheetY(dy);
-        } else {
-          dragRef.current.active = false;
-        }
-        return;
-      }
-      // 비확장 상태
-      if (startScrollTop > 8 && dy <= 0) {
-        dragRef.current.active = false;
-        return;
-      }
       e.preventDefault();
       if (dy < 0) {
-        // 위로 드래그 → maxHeight 손가락 따라 확장
-        const up = Math.min(Math.abs(dy), window.innerHeight * 0.15 + 60);
-        sheetUpRef.current = up;
-        setSheetUp(up);
-        return;
+        // 위로 → 고무줄 (저항 0.25)
+        sheetYRef.current = dy * 0.25;
+        setSheetY(dy * 0.25);
+      } else {
+        // 아래로 → 닫기
+        sheetYRef.current = dy;
+        setSheetY(dy);
       }
-      // 아래로 드래그
-      sheetUpRef.current = 0;
-      setSheetUp(0);
-      sheetYRef.current = dy;
-      setSheetY(dy);
     };
     const onEnd = () => {
       dragRef.current.active = false;
-      const curUp = sheetUpRef.current;
       const cur = sheetYRef.current;
-      // 위로 충분히 → 확장
-      if (curUp > 60) {
-        expandedRef.current = true;
-        setExpanded(true);
-        sheetUpRef.current = 0;
-        setSheetUp(0);
-        return;
-      }
-      sheetUpRef.current = 0;
-      setSheetUp(0);
       if (cur > 100) {
-        if (expandedRef.current) {
-          expandedRef.current = false;
-          setExpanded(false);
-          sheetYRef.current = 0;
-          setSheetY(0);
-        } else {
-          // 닫기 애니메이션 후 onClose
-          setClosing(true);
-          setTimeout(() => onClose(), 340);
-        }
+        setClosing(true);
+        setTimeout(() => onClose(), 340);
       } else {
         sheetYRef.current = 0;
-        setSheetY(0);
+        setSheetY(0); // 고무줄 원위치 or 작은 드래그 복귀
       }
     };
     el.addEventListener('touchstart', onStart, {
@@ -7024,11 +6978,10 @@ function StopSheet({
     style: {
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
-      paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
-      maxHeight: expanded ? 'calc(100dvh - var(--sat, 44px) - 8px)' : `calc(85dvh + ${sheetUp}px)`,
-      overflowY: expanded ? 'auto' : 'hidden',
-      overflowX: 'hidden',
-      transition: sheetUp > 0 ? 'none' : 'max-height 0.36s cubic-bezier(0.32,0.72,0,1)'
+      paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
+      maxHeight: '85dvh',
+      overflowY: 'hidden',
+      overflowX: 'hidden'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -15709,34 +15662,10 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ── 팝업 열릴 때 탭바 숨김 → 터치 시 토글 (전역) ───────────────
+  // ── 팝업 닫힐 때 tabBarPeeking 리셋 ─────────────────────────────
   React.useEffect(() => {
     const popupOpen = profileSheetOpen || hotelSheet !== null || hotelDetailSheet !== null || !!openStop;
-    if (!popupOpen) {
-      setTabBarPeeking(false);
-      return;
-    }
-    let startY = 0;
-    const onStart = e => {
-      startY = e.touches[0]?.clientY ?? 0;
-    };
-    const onEnd = e => {
-      const dy = Math.abs((e.changedTouches[0]?.clientY ?? 0) - startY);
-      if (dy < 10) {
-        setTabBarVisible(true);
-        setTabBarPeeking(p => !p);
-      } // 탭만 반응, 스크롤 무시
-    };
-    document.addEventListener('touchstart', onStart, {
-      passive: true
-    });
-    document.addEventListener('touchend', onEnd, {
-      passive: true
-    });
-    return () => {
-      document.removeEventListener('touchstart', onStart);
-      document.removeEventListener('touchend', onEnd);
-    };
+    if (!popupOpen) setTabBarPeeking(false);
   }, [profileSheetOpen, hotelSheet, hotelDetailSheet, openStop]);
 
   // ── Tab animation hooks ───────────────────────────────────────
@@ -16754,7 +16683,7 @@ function App() {
   }, screen))), /*#__PURE__*/React.createElement(TabBar, {
     tab: tab,
     setTab: changeTab,
-    visible: tabBarVisible && !profileSheetOpen && !hotelSheet && !hotelDetailSheet && !saveConfirm && (!openStop || tabBarPeeking),
+    visible: tabBarVisible && !saveConfirm,
     editing: openStop ? false : editing,
     canEdit: canEdit,
     onToggleEdit: handleEditToggle
