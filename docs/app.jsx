@@ -1232,6 +1232,17 @@ const CITIES = [
   { key:'Hawaii',      kor:'하와이',     zone:'Pacific/Honolulu',    flag:'🇺🇸', lat:21.31,  lon:-157.86 },
 ];
 
+// 여행 제목에서 도시 자동 감지
+function detectCityFromTitle(title) {
+  if (!title) return null;
+  const lower = title.toLowerCase();
+  // 긴 키 먼저 매칭 (e.g. 'new york' before 'york')
+  const sorted = [...CITIES].sort((a, b) => b.key.length - a.key.length);
+  return sorted.find(c =>
+    lower.includes(c.key.toLowerCase()) || lower.includes(c.kor)
+  ) || null;
+}
+
 // WMO 날씨 코드 → 설명 + 이모지
 const WMO = {
   0:  ['맑음',        '☀️'],
@@ -1779,7 +1790,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v205</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v208</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6853,6 +6864,12 @@ function App() {
       }
     });
   }, [authUser?.uid]);
+
+  // 여행 제목 바뀌면 시차 도시 자동 감지
+  React.useEffect(() => {
+    const detected = detectCityFromTitle(trip?.title);
+    if (detected) setCity(detected);
+  }, [trip?.title]);
 
   React.useEffect(() => { saveNav({ tab, dayIdx, hotelIdx, activeTripId }); }, [tab, dayIdx, hotelIdx, activeTripId]);
 
