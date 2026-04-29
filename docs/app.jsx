@@ -1863,7 +1863,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v241</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v242</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7971,6 +7971,23 @@ function App() {
         authUser={authUser} userData={userData} trips={userTrips}/>
       <NotificationsScreen open={notifOpen} onClose={() => setNotifOpen(false)}
         authUser={authUser} notifications={notifs}/>
+      <NewTripSheet
+        open={newTripSheetOpen}
+        onClose={() => setNewTripSheetOpen(false)}
+        existingHues={userTrips.map(t => t.hue ?? t.days?.[0]?.hero?.hue ?? 25)}
+        onSubmit={async (title, hue) => {
+          const { tripId } = await fbCreateNewTrip(userData.uid, title);
+          const template = {
+            hue,
+            days: [{ n:1, date:'', weekday:'', title:'Day 1', titleEn:'',
+              hero:{ hue, label:'DAY 1' }, weather:'', items:[] }],
+            hotels: [], food: [],
+          };
+          await fbSaveGroup(tripId, template).catch(() => {});
+          setUserTrips(prev => [...prev, { id: tripId, title, dates:'', ...template, members:[userData.uid], hue }]);
+          setActiveTripId(tripId);
+          setTab('home'); setDayIdx(null); setHotelIdx(null);
+        }}/>
     </>
   );
 
