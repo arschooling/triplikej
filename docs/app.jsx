@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v219</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v220</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1956,20 +1956,22 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   React.useEffect(() => { setFeaturedIdx(calcFeaturedIdx()); }, [trip.days.length]);
   // 슬라이더 상태
   const [fOffset, setFOffset] = React.useState(0);
-  const fGesture  = React.useRef({ on:false, startX:0, startY:0, drag:false });
-  const fWrapRef  = React.useRef(null);  // 클립 컨테이너
-  const fTrackRef = React.useRef(null);  // 트랙 div (transition 직접 제어)
+  const fOffsetRef = React.useRef(0);  // stale closure 없이 현재 offset 읽기
+  const fGesture   = React.useRef({ on:false, startX:0, startY:0, drag:false });
+  const fWrapRef   = React.useRef(null);  // 클립 컨테이너
+  const fTrackRef  = React.useRef(null);  // 트랙 div (transition 직접 제어)
   const fW = () => fWrapRef.current?.offsetWidth || 360;
   const F_EASE = 'transform 0.32s cubic-bezier(0.22,1,0.36,1)';
 
   const fSetEase = () => { if (fTrackRef.current) fTrackRef.current.style.transition = F_EASE; };
   const fSetNone = () => { if (fTrackRef.current) fTrackRef.current.style.transition = 'none'; };
+  const fSet = (v) => { fOffsetRef.current = v; setFOffset(v); };
 
   const changeFeatured = (newIdx) => {
     if (newIdx < 0 || newIdx >= trip.days.length || newIdx === featuredIdx) return;
     fSetEase();
     setFeaturedIdx(newIdx);
-    setFOffset(0);
+    fSet(0);
   };
   const onFStart = e => {
     fGesture.current = { on:true, startX:e.touches[0].clientX, startY:e.touches[0].clientY, drag:false };
@@ -1984,11 +1986,12 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
       if (Math.abs(dx) > 6) g.drag = true;
     }
     if (!g.drag) return;
-    fSetNone();  // 드래그 중 transition 없이 즉각 반응
+    fSetNone();  // 드래그 중 즉각 반응 (transition 없음)
+    const w = fW();
     const limited = dx < 0
-      ? Math.max(dx, featuredIdx >= trip.days.length - 1 ? 0 : -fW() * 1.2)
-      : Math.min(dx, featuredIdx <= 0 ? 0 : fW() * 1.2);
-    setFOffset(limited);
+      ? Math.max(dx, featuredIdx >= trip.days.length - 1 ? 0 : -w * 1.2)
+      : Math.min(dx, featuredIdx <= 0 ? 0 : w * 1.2);
+    fSet(limited);
   };
   const onFEnd = () => {
     const g = fGesture.current;
@@ -1996,15 +1999,16 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
     if (!g.drag) return;
     const w = fW();
     const threshold = w * 0.22;
-    fSetEase();  // DOM에 먼저 transition 적용 → React 렌더 전에 CSS 확정
-    if (fOffset < -threshold && featuredIdx < trip.days.length - 1) {
-      setFOffset(-w);
-      setTimeout(() => { fSetNone(); setFeaturedIdx(i => i + 1); setFOffset(0); }, 330);
-    } else if (fOffset > threshold && featuredIdx > 0) {
-      setFOffset(w);
-      setTimeout(() => { fSetNone(); setFeaturedIdx(i => i - 1); setFOffset(0); }, 330);
+    const cur = fOffsetRef.current;  // stale closure 없이 정확한 현재값
+    fSetEase();  // DOM에 먼저 transition 활성화 → React 렌더 전에 CSS 확정
+    if (cur < -threshold && featuredIdx < trip.days.length - 1) {
+      fSet(-w);
+      setTimeout(() => { fSetNone(); setFeaturedIdx(i => i + 1); fSet(0); }, 330);
+    } else if (cur > threshold && featuredIdx > 0) {
+      fSet(w);
+      setTimeout(() => { fSetNone(); setFeaturedIdx(i => i - 1); fSet(0); }, 330);
     } else {
-      setFOffset(0);  // 중앙으로 스냅백 (transition 이미 활성화됨)
+      fSet(0);  // 중앙으로 스냅백
     }
   };
   const featured = trip.days[featuredIdx];
@@ -2192,12 +2196,13 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
           {/* 트랙: 모든 날 + 각 날의 여백이 함께 이동 */}
           <div ref={fTrackRef} style={{
             display:'flex',
-            transform: `translateX(calc(${-featuredIdx * 100}% + ${fOffset}px))`,
+            /* px 기반 translation: CSS % 기준값 불안정 문제 방지 */
+            transform: `translateX(${-(featuredIdx * fW()) + fOffset}px)`,
             willChange: 'transform',
           }}>
             {trip.days.map((d, i) => (
-              /* 여백을 슬라이드 아이템 안에 포함 → 카드+여백이 하나의 단위로 이동 */
-              <div key={i} style={{ minWidth:'100%', flexShrink:0, padding:'4px 16px 18px' }}>
+              /* border-box: padding 포함한 전체 너비 = fW() → 슬라이드 1칸 = 화면 너비 */
+              <div key={i} style={{ width:fW(), flexShrink:0, boxSizing:'border-box', padding:'4px 16px 18px' }}>
                 <div style={{
                   borderRadius:22, overflow:'hidden',
                   boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)',
