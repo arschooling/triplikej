@@ -1863,7 +1863,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v237</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v238</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3419,6 +3419,12 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   React.useEffect(() => {
     const el = sheetRef.current;
     if (!el) return;
+    // 상태바 하단까지의 안전 거리 (px) — 핸들이 이보다 위로 올라가지 않음
+    const getSafeTop = () => {
+      const sat = parseFloat(getComputedStyle(document.documentElement)
+        .getPropertyValue('--sat') || '0') || 0;
+      return Math.max(sat, 44) + 8; // safe-area-inset-top + 여유 8px
+    };
     const onStart = (e) => {
       dragRef.current = { active: true, startY: e.touches[0].clientY, startScrollTop: el.scrollTop };
     };
@@ -3426,11 +3432,20 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
       if (!dragRef.current.active) return;
       const { startY, startScrollTop } = dragRef.current;
       const dy = e.touches[0].clientY - startY;
-      if (startScrollTop > 8 || dy <= 0) { dragRef.current.active = false; return; }
+      if (startScrollTop > 8 && dy <= 0) { dragRef.current.active = false; return; }
       e.preventDefault();
-      const newY = Math.max(0, dy);
-      sheetYRef.current = newY;
-      setSheetY(newY);
+      if (dy <= 0) {
+        // 위로 드래그: 러버밴드 + 상태바 아래로 클램프
+        const sheetTop = el.getBoundingClientRect().top + dy;
+        const minTop = getSafeTop();
+        if (sheetTop < minTop) return; // 상태바 넘어가면 무시
+        const newY = dy * 0.15; // 러버밴드 저항
+        sheetYRef.current = newY;
+        setSheetY(newY);
+      } else {
+        sheetYRef.current = dy;
+        setSheetY(dy);
+      }
     };
     const onEnd = () => {
       dragRef.current.active = false;

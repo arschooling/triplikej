@@ -296,6 +296,372 @@ window.TRIP_DEFAULT = {
     { cat: '☕ Dessert',  name: "Ralph's Coffee",           detail: '말차 라떼',                                              price: '$',       note: '랄프로렌 플래그십 내부' },
   ],
 };
+
+// ─── Rome & Florence & Assisi — 11일 샘플 ─────────────────────
+window.ROME_DEFAULT = {
+  title: 'Rome & Florence',
+  subtitleKo: '로마·피렌체·아씨시 · 11일',
+  dates: 'Oct 5 — Oct 15, 2025',
+  travelers: 'Solo trip',
+  hotel: "Hotel Campo de' Fiori (Rome)",
+  hue: 200,
+  sampleVersion: 2,
+  hotels: [
+    {
+      name: "Hotel Campo de' Fiori",
+      area: 'Historic Center, Rome',
+      checkin: 'Oct 5, 2025',    checkinTime: '14:00',
+      checkout: 'Oct 10, 2025',  checkoutTime: '11:00',
+      nights: 5,
+      price: '€180/박',
+      address: 'Via del Biscione 6, 00186 Roma, Italy',
+      phone: '+39 06 6880 6865',
+      confirmation: '',
+      amenities: ['Free WiFi', 'Rooftop Terrace', 'Concierge', '24h Front Desk'],
+      note: '캄포 데 피오리 광장 도보 1분. 루프탑 테라스에서 로마 파노라마 뷰. 체크인 14시, 체크아웃 11시.',
+      rating: 4.4, hue: 20,
+    },
+    {
+      name: 'Soprarno Suites',
+      area: 'Oltrarno, Florence',
+      checkin: 'Oct 10, 2025',   checkinTime: '15:00',
+      checkout: 'Oct 15, 2025',  checkoutTime: '11:00',
+      nights: 5,
+      price: '€220/박',
+      address: 'Via Maggio 35, 50125 Firenze, Italy',
+      phone: '+39 055 046 8748',
+      confirmation: '',
+      amenities: ['Free WiFi', 'Garden Terrace', 'Kitchen', 'Concierge'],
+      note: '올트라르노 지구. 폰테 베키오 도보 7분. 체크인 15시, 체크아웃 11시. 조용하고 로컬 분위기.',
+      rating: 4.7, hue: 200,
+    },
+  ],
+  days: [
+    {
+      n: 1, date: 'Oct 5', weekday: 'Sun',
+      title: '로마 도착, 스페인 계단',
+      titleEn: 'Arrival & Spanish Steps',
+      hero: { hue: 20, label: 'ROMA ETERNA' },
+      weather: '맑음 · 22°',
+      items: [
+        { time: '10:30', cat: 'flight', title: '로마 피우미치노 도착',     en: 'Arrive — Rome Fiumicino (FCO)', loc: 'Leonardo da Vinci Airport',
+          note: '공항→호텔:\n① Leonardo Express: FCO→Roma Termini (32분, €14)\n② 택시: 고정 요금 €50 (시내 고정 요금제)\n공항 도착→L0 레벨→"Trains to Rome" 표지판\n탑승 전 기계에서 표에 도장(validazione) 필수 — 안 찍으면 벌금' },
+        { time: '13:00', cat: 'hotel',  title: '호텔 짐 맡기기',           en: "Hotel Campo de' Fiori", loc: 'Via del Biscione 6',
+          note: '체크인 14시 전이면 짐 맡기기\n"Buongiorno, posso lasciare il bagaglio?" (짐 맡길 수 있을까요?)\n루프탑 테라스에서 로마 전망 먼저 감상 (무료)' },
+        { time: '13:30', cat: 'food',   title: '점심: 카르보나라 성지',     en: 'Da Enzo al 29 — Carbonara', loc: 'Trastevere',
+          note: '로마 정통 카르보나라 맛집\nCacio e Pepe, Carbonara, Amatriciana\n예약 추천 (+39 06 581 2260)\nCoperto(자릿세) €2–3 청구 — 이탈리아 식당 기본', price: '$$' },
+        { time: '15:30', cat: 'sight',  title: '스페인 계단',              en: 'Spanish Steps — Trinità dei Monti', loc: 'Piazza di Spagna',
+          note: '135개 계단 — 로마 최고의 인증샷 포인트\n계단에 앉아 음식 먹으면 벌금 €400\n계단 아래 베르니니의 바르카차 분수(Fontana della Barcaccia)\n트리니타 데이 몬티 성당 내부 입장 가능 (무료)', duration: '1h' },
+        { time: '17:00', cat: 'view',   title: '핀초 언덕 석양',           en: 'Terrazza del Pincio Sunset', loc: 'Viale della Trinità dei Monti',
+          note: '석양 시간 30분 전에 핀초 언덕 테라스에 올라가기\n로마 도심 전경과 성 베드로 성당 돔이 한눈에\n무료 입장, 올라가는 길은 스페인 계단 꼭대기에서 연결', duration: '45m' },
+        { time: '20:00', cat: 'food',   title: '저녁: 스페인 계단 근처',   en: 'Il Sorpasso / Osteria del Pegno', loc: 'Near Piazza di Spagna',
+          note: 'Antipasto: Bruschetta al Pomodoro\nPrimo: Spaghetti alle Vongole (바지락 스파게티)\n식후 젤라또: Fatamorgana (창작 젤라또, Via dei Gracchi)', price: '$$' },
+      ],
+    },
+    {
+      n: 2, date: 'Oct 6', weekday: 'Mon',
+      title: '콜로세움, 포로 로마노',
+      titleEn: 'Colosseum & Roman Forum',
+      hero: { hue: 38, label: 'COLOSSEO' },
+      weather: '맑음 · 21°',
+      items: [
+        { time: '08:30', cat: 'sight',  title: '콜로세움',                 en: 'Colosseum (Colosseo)', loc: 'Piazza del Colosseo',
+          note: '반드시 사전 예약 필수 (coopculture.it, €16–22)\n줄 없이 시간제 입장\n내부: 2층 아레나 레벨 — 검투사들이 싸운 공간\n콘스탄티누스 개선문(Arco di Costantino)도 감상\n입장권에 포로 로마노·팔라티노 언덕 포함 (당일 사용)', price: '€16–22', duration: '1h 30m' },
+        { time: '10:30', cat: 'sight',  title: '포로 로마노 & 팔라티노',   en: 'Roman Forum + Palatine Hill', loc: 'Via Sacra',
+          note: '콜로세움 티켓으로 입장\n포로 로마노: 고대 로마 정치·종교·상업 중심지\n비아 사크라(Via Sacra): 로마 황제들의 개선 행진 도로\n팔라티노 언덕: 황제 궁전 터, 전망대에서 포로 로마노 전체 뷰', duration: '2h' },
+        { time: '13:00', cat: 'food',   title: '점심: 조각 피자',          en: 'Pizza al Taglio Near Colosseum', loc: 'Near Colosseo',
+          note: 'Pizza al Taglio: 무게 달아 파는 로마 조각 피자\n로마 피자는 얇고 바삭한 것이 특징 (나폴리 피자와 다름)\nSupplì Roma: 로마식 라이스볼 (Supplì al Telefono)', price: '$' },
+        { time: '14:30', cat: 'walk',   title: '치르코 마시모',            en: 'Circus Maximus', loc: 'Via del Circo Massimo',
+          note: '고대 로마 최대 전차 경주장 (25만 명 수용), 지금은 잔디 공원\n아벤티노 언덕 Malta Priory 추천:\n- 열쇠 구멍으로 성 베드로 돔이 보임!\n- 주소: Piazza dei Cavalieri di Malta', duration: '45m' },
+        { time: '16:00', cat: 'walk',   title: '트라스테베레',             en: 'Trastevere Evening Stroll', loc: 'Trastevere',
+          note: '로마 강 건너편 오래된 서민 동네\n좁은 돌길과 벽화, 오렌지 나무들\n산타 마리아 인 트라스테베레 성당 (12세기 모자이크)\n저녁 7시 이후 현지인들이 식사하러 나옴', duration: '1h 30m' },
+        { time: '19:30', cat: 'food',   title: '저녁: 트라스테베레',       en: 'Da Enzo al 29 / Tonnarello', loc: 'Trastevere',
+          note: 'Da Enzo al 29: 예약 필수, 정통 로마 파스타\nTonnarello: 야외석, 활기찬 분위기\nAmatriciana (토마토+판체타): 필수 주문\n식후: Fior di Luna 수제 젤라또', price: '$$' },
+      ],
+    },
+    {
+      n: 3, date: 'Oct 7', weekday: 'Tue',
+      title: '바티칸, 성 베드로 성당',
+      titleEn: 'Vatican & St. Peter\'s',
+      hero: { hue: 210, label: 'CITTÀ DEL VATICANO' },
+      weather: '맑음 · 20°',
+      items: [
+        { time: '08:00', cat: 'sight',  title: '바티칸 박물관 & 시스티나 예배당', en: 'Vatican Museums + Sistine Chapel', loc: 'Viale Vaticano',
+          note: '오픈런 필수 (museivaticani.va, €17–27)\n8시 오픈 30분 전 도착 추천\n관람 순서: 이집트관→지도의 갤러리(120m 복도)→라파엘로의 방→시스티나 예배당\n시스티나 예배당: 미켈란젤로 천장화(천지창조)+제단화(최후의 심판)\n내부 사진 촬영 금지 / 소음 자제 / 복장 규정(어깨+무릎 가리기)\n오디오 가이드 렌탈 추천 (€7)', price: '€17–27', duration: '3h' },
+        { time: '12:00', cat: 'food',   title: '점심: 프라티 트라토리아',   en: "Osteria dell'Angelo", loc: 'Prati',
+          note: '고정 메뉴(Menù fisso) €18: 샐러드+파스타+메인+와인+물 포함\n매우 알뜰하고 맛있음 — 현지인 단골', price: '$$' },
+        { time: '13:30', cat: 'sight',  title: '성 베드로 성당 & 쿠폴라',  en: "St. Peter's Basilica + Dome", loc: 'Piazza San Pietro',
+          note: '광장: 베르니니 설계, 284개 기둥\n내부 무료 입장 (복장: 반바지·민소매 금지)\n미켈란젤로의 피에타(Pietà)→청동 발다키노→베드로 묘\n쿠폴라 등반: 엘리베이터 €8 (or 계단만 €6)\n551계단 or 엘베+320계단 — 정상서 로마 360° 뷰', price: '€6–8', duration: '2h' },
+        { time: '16:00', cat: 'sight',  title: '카스텔 산탄젤로',          en: "Castel Sant'Angelo", loc: 'Lungotevere Castello',
+          note: '하드리아누스 황제 영묘→교황 요새→현재 박물관\n성 천사교(Ponte Sant\'Angelo)의 12 천사 조각 감상\n내부 입장 €14 (외관만 봐도 충분)\n성채 꼭대기에서 성 베드로 대성당+강변 뷰', price: '€14', duration: '1h' },
+        { time: '18:00', cat: 'walk',   title: '테베레 강변 아페리티보',   en: 'Lungotevere Aperitivo', loc: 'Tevere River',
+          note: '카스텔 산탄젤로에서 강변 산책로를 따라 남쪽으로\n석양 시간대에 테베레강 반영 감상\n강변 노천카페에서 Aperol Spritz 한 잔', duration: '45m' },
+        { time: '20:00', cat: 'food',   title: '저녁: 프라티',             en: 'Dinner in Prati', loc: 'Prati',
+          note: 'Rigatoni alla Gricia (구안치알레+페코리노)\n또는 Supplì Roma 앞에서 Supplì al Telefono (로마식 라이스볼)', price: '$$' },
+      ],
+    },
+    {
+      n: 4, date: 'Oct 8', weekday: 'Wed',
+      title: '판테온, 트레비, 피아차 나보나',
+      titleEn: 'Pantheon, Trevi & Navona',
+      hero: { hue: 15, label: 'FONTANA DI TREVI' },
+      weather: '맑음 · 22°',
+      items: [
+        { time: '09:00', cat: 'sight',  title: '판테온',                   en: 'Pantheon', loc: 'Piazza della Rotonda',
+          note: '9시 오픈 — 아침 일찍 가야 줄 짧음\n입장료 €5 (pantheonroma.com 예약 가능)\n콘크리트 돔: 직경=높이=43.3m (완벽한 비율)\n오쿨루스(oculus): 돔 꼭대기 구멍으로 빛 입사\n라파엘로 묘소 + 이탈리아 초대 왕 묘소', price: '€5', duration: '45m' },
+        { time: '10:00', cat: 'food',   title: '카페 타차 도로',            en: "Caffè Tazza d'Oro", loc: 'Via degli Orfani 84',
+          note: '1946년부터 이어온 전설적인 카페 — 판테온 바로 옆\n에스프레소 서서 마시기 (이탈리아 바 문화)\nGranita di Caffè (커피 그라니타+생크림) 강추\n앉으면 2배 → 스탠딩 바 이용', price: '$' },
+        { time: '10:45', cat: 'sight',  title: '피아차 나보나',            en: 'Piazza Navona', loc: 'Piazza Navona',
+          note: '고대 로마 경기장 위에 만들어진 타원형 광장\n3개 분수:\n① 베르니니 4대강 분수(나일·갠지스·도나우·라플라타)\n② 무어인 분수\n③ 넵튠 분수\n야외 화가들의 초상화도 로마 정취', duration: '1h' },
+        { time: '12:00', cat: 'food',   title: '점심: 캄포 데 피오리 시장', en: "Campo de' Fiori Market", loc: "Campo de' Fiori",
+          note: '월~토 오전 시장 (12시~12:30 철거)\n신선한 채소·과일·올리브·치즈\nLa Prosciutteria: 프로슈토·치즈 플레이트 테이크아웃\n포카치아 + 길거리 아티초크', price: '$' },
+        { time: '14:30', cat: 'sight',  title: '트레비 분수',              en: 'Fontana di Trevi', loc: 'Piazza di Trevi',
+          note: '세계에서 가장 유명한 분수 (1762년)\n등지고 동전 1개: 다시 로마에 온다\n등지고 동전 2개: 사랑이 이루어진다\n아침 7시 전이 가장 한산 (오후는 초만원)', duration: '45m' },
+        { time: '16:00', cat: 'shop',   title: '비아 콘도티 명품 거리',    en: 'Via Condotti Stroll', loc: 'Via Condotti',
+          note: '구찌·프라다·루이비통·불가리 플래그십\n비아 보르고뇨나: 발렌티노·페라가모\nTax Refund: €154.94 이상 구매 시 IVA 환급 (20–22%)', duration: '1h' },
+        { time: '18:30', cat: 'bar',    title: '아페리티보',               en: 'Roman Aperitivo', loc: 'Near Piazza Navona',
+          note: 'Aperol Spritz 또는 Negroni 주문 시 무료 안주 제공\n추천: Il Sorpasso (Prati) / Barnum Cafe', price: '$' },
+        { time: '20:00', cat: 'food',   title: '저녁: 캄포 데 피오리 근처', en: "Dinner near Campo de' Fiori", loc: 'Historic Center',
+          note: 'Da Francesco: 로마식 피자+파스타\nRistorante Roscioli: 최고급 치즈·햄 (예약 필수)\n숙소 도보 1분', price: '$$' },
+      ],
+    },
+    {
+      n: 5, date: 'Oct 9', weekday: 'Thu',
+      title: '보르게세 갤러리, 로마 마지막 날',
+      titleEn: 'Borghese Gallery & Last Day Rome',
+      hero: { hue: 90, label: 'VILLA BORGHESE' },
+      weather: '맑음 · 21°',
+      items: [
+        { time: '09:00', cat: 'sight',  title: '보르게세 갤러리',          en: 'Galleria Borghese', loc: 'Piazzale Scipione Borghese 5',
+          note: '예약 필수! galleriaborghese.it (€15+예약비 €2)\n2시간 시간제 입장 (9·11·13·15·17시 선택)\n대표 작품:\n① 베르니니 <아폴로와 다프네>: 신이 내린 대리석 조각\n② 베르니니 <페르세포네의 납치>: 손가락이 살을 파고드는 표현\n③ 베르니니 <다비드>: 투석기 쏘는 순간\n④ 카라바조 <아픈 바쿠스>·<과일 바구니>\n입장 전 짐 라커룸에 맡겨야 함 (€1 동전 필요)', price: '€17', duration: '2h' },
+        { time: '11:30', cat: 'walk',   title: '빌라 보르게세 공원',       en: 'Villa Borghese Park', loc: 'Villa Borghese',
+          note: '갤러리 출구에서 바로 연결\n핀초 언덕(Terrazza del Pincio) 방향 산책\n자전거 대여 €4–5/30min\n공원 내 작은 호수에서 보트 타기도 가능', duration: '1h' },
+        { time: '13:00', cat: 'food',   title: '점심',                    en: 'Lunch near Piazza del Popolo', loc: 'Piazza del Popolo',
+          note: 'Osteria della Frezza: 앤티파스토 뷔페+파스타\n또는 근처 CONAD 슈퍼마켓에서 간단히', price: '$$' },
+        { time: '14:30', cat: 'shop',   title: '이탈리아 수공예 기념품',   en: 'Artisan Souvenirs — Via del Governo Vecchio', loc: 'Via del Governo Vecchio',
+          note: '빈티지숍, 수공예 가죽 제품, 도자기\n추천 기념품: 이탈리아산 레더 지갑, 도자기, 올리브오일\n캄포 데 피오리 근처 소규모 공방 탐색', duration: '1h 30m' },
+        { time: '18:30', cat: 'view',   title: '캄피돌리오 언덕 야경',    en: 'Capitoline Hill Night View', loc: 'Piazza del Campidoglio',
+          note: '미켈란젤로가 설계한 캄피돌리오 광장\n광장 뒤편 테라스에서 포로 로마노 야경\n입장 무료, 야경이 환상적', duration: '45m' },
+        { time: '20:30', cat: 'food',   title: '마지막 로마 저녁',         en: 'Last Dinner in Rome', loc: 'Trastevere or Historic Center',
+          note: '로마 마지막 밤\nEnoteca Regionale Palatium: 라치오 지역 와인+치즈\nAbbazia: 트라스테베레 현지인 단골\n식후 루프탑 테라스에서 마지막 로마 밤 감상', price: '$$$' },
+      ],
+    },
+    {
+      n: 6, date: 'Oct 10', weekday: 'Fri',
+      title: '피렌체 이동, 두오모',
+      titleEn: 'Travel to Florence & Duomo',
+      hero: { hue: 340, label: 'FIRENZE' },
+      weather: '맑음 · 19°',
+      items: [
+        { time: '08:00', cat: 'hotel',  title: '로마 호텔 체크아웃',       en: 'Check out — Rome Hotel', loc: "Hotel Campo de' Fiori",
+          note: '체크아웃 11시. 일찍 나가면 짐 맡기기 가능\n기차역까지 택시 이용 (약 €12–15)' },
+        { time: '09:00', cat: 'flight', title: '로마 → 피렌체 고속열차',   en: 'Roma Termini → Firenze SMN (Frecciarossa)', loc: 'Roma Termini Station',
+          note: 'Frecciarossa(고속열차): 1시간 30분, €29–60\ntrenitalia.com 또는 italotreno.it 사전 예약 시 할인\n피렌체 산타 마리아 노벨라역(SMN) 도착 — 도심 한복판\n역에서 호텔까지 도보 or 택시', price: '€29–60', duration: '1h 30m' },
+        { time: '11:00', cat: 'hotel',  title: '피렌체 호텔 체크인',       en: 'Soprarno Suites', loc: 'Via Maggio 35',
+          note: '체크인 15시 전이면 짐만 맡기기\n올트라르노(Oltrarno): 강 남쪽, 조용하고 로컬스러운 동네\n폰테 베키오 도보 7분', _hotelRef: 'Soprarno Suites' },
+        { time: '12:00', cat: 'food',   title: '점심: 메르카토 첸트랄레',   en: 'Mercato Centrale Florence', loc: "Via dell'Ariento",
+          note: '1층: 신선식품 시장 / 2층: 푸드홀\n피렌체 명물: Lampredotto 샌드위치 (소 위장+그린소스)\nNino Zuccon: 리볼리타(Ribollita, 토스카나 수프)\n2층 홀 분위기가 아름다움', price: '$' },
+        { time: '14:00', cat: 'sight',  title: '피렌체 두오모',            en: 'Cattedrale di Santa Maria del Fiore', loc: 'Piazza del Duomo',
+          note: '브루넬레스키 팔각형 돔(1436년)\nFirenzeCard €29: 돔+박물관+세례당+캄파닐레 통합 입장권\n성당 내부: 무료 입장 (복장 규정 있음)\n돔 등반: 예약 필수, 463계단, 피렌체 360° 뷰\n조토의 종탑(Campanile): 414계단, 두오모 측면 뷰\n산 조반니 세례당: 기베르티의 황금 문(천국의 문) 복제본', price: '€29', duration: '2h' },
+        { time: '17:00', cat: 'walk',   title: '피아차 델라 레푸블리카',   en: 'Piazza della Repubblica', loc: 'Piazza della Repubblica',
+          note: '피렌체 도심 광장 (옛 로마 포럼 자리)\nCaffè Gilli: 1733년 개업, 역사적인 카페\nVia Calzaiuoli: 두오모~시뇨리아 광장 연결 쇼핑가', duration: '45m' },
+        { time: '19:30', cat: 'food',   title: '저녁: 올트라르노',         en: 'Dinner in Oltrarno', loc: 'Oltrarno',
+          note: 'Borro Antico: 토스카나 와인과 전통 요리\nIl Magazzino: 현지인이 많은 작은 트라토리아\n추천 와인: Chianti Classico (€12–20/병)', price: '$$' },
+      ],
+    },
+    {
+      n: 7, date: 'Oct 11', weekday: 'Sat',
+      title: '우피치, 폰테 베키오',
+      titleEn: 'Uffizi Gallery & Ponte Vecchio',
+      hero: { hue: 300, label: 'UFFIZI' },
+      weather: '맑음 · 20°',
+      items: [
+        { time: '09:00', cat: 'sight',  title: '우피치 갤러리',            en: 'Uffizi Gallery', loc: 'Piazzale degli Uffizi',
+          note: '예약 필수 (uffizi.it, €20+예약비 €4)\n2층부터 시작 추천:\n① 보티첼리 <비너스의 탄생>·<봄(Primavera)>\n② 레오나르도 다빈치 <수태고지(Annunciazione)>\n③ 미켈란젤로 <성 가족(Doni Tondo)>\n④ 카라바조 <메두사>\n3층 테라스: 폰테 베키오+아르노강 뷰', price: '€24', duration: '2h 30m' },
+        { time: '12:00', cat: 'sight',  title: '피아차 델라 시뇨리아',    en: 'Piazza della Signoria', loc: 'Piazza della Signoria',
+          note: '피렌체 야외 조각 박물관\n복제 다비드상 (원본은 아카데미아)\n로지아 데이 란치:\n- 첼리니 <메두사를 든 페르세우스>\n- 잠볼로냐 <사비니 여인들의 납치>', duration: '30m' },
+        { time: '12:30', cat: 'food',   title: '점심: 트리파 피오렌티나', en: 'Lampredotto Sandwich', loc: 'Near Mercato Nuovo',
+          note: 'Lampredotto 샌드위치: 소 위장+그린소스 — 피렌체 길거리 소울푸드\nMercato Nuovo 행운의 돼지코상 문지르기도 잊지 말기', price: '$' },
+        { time: '13:30', cat: 'sight',  title: '폰테 베키오',              en: 'Ponte Vecchio', loc: 'Ponte Vecchio',
+          note: '1345년 건설, 피렌체 현존 최고(最古) 다리\n다리 위 금세공품·보석 상점들\n메디치 가문의 바사리 회랑이 위를 지나감\n오후가 사진 찍기 좋음 (서향 조명)\n올트라르노 쪽이 더 한산', duration: '30m' },
+        { time: '14:30', cat: 'sight',  title: '보볼리 정원',              en: 'Boboli Gardens', loc: 'Piazza Pitti',
+          note: '피티 궁전 뒤편 메디치 가문의 정원 (€10)\n이탈리아 정형식 정원의 정수\n정원 높은 곳에서 피렌체 도시 뷰', price: '€10', duration: '1h' },
+        { time: '17:00', cat: 'bar',    title: '아르노 뷰 아페리티보',    en: 'Aperitivo with Arno View', loc: 'Lungarno degli Acciaiuoli',
+          note: 'Volpi e l\'Uva: 폰테 베키오 옆, 토스카나 와인 특화\n아르노강 반영이 아름다운 해질 녘', price: '$' },
+        { time: '19:30', cat: 'food',   title: '저녁: 피렌체 비스테카',    en: "Buca dell'Orafo", loc: 'Near Ponte Vecchio',
+          note: "Buca dell'Orafo: 1945년 개업, 폰테 베키오 바로 옆\n비스테카 알라 피오렌티나(Bistecca alla Fiorentina): 1kg+ T본 스테이크, 레어 서빙, €55/kg\nPappardelle al Cinghiale (멧돼지 라구)", price: '$$$' },
+      ],
+    },
+    {
+      n: 8, date: 'Oct 12', weekday: 'Sun',
+      title: '아카데미아, 미켈란젤로 광장',
+      titleEn: "Accademia & Piazzale Michelangelo",
+      hero: { hue: 50, label: 'PIAZZALE MICHELANGELO' },
+      weather: '맑음 · 18°',
+      items: [
+        { time: '08:30', cat: 'sight',  title: '아카데미아 — 다비드',      en: "Galleria dell'Accademia", loc: 'Via Ricasoli 58–60',
+          note: '예약 필수 (galleriaaccademiafirenze.it, €12+예약비 €4)\n미켈란젤로의 다비드: 5.17m, 순백 카라라 대리석 (1501–1504)\n감상 팁: 오른손이 왼손보다 크게 — 높은 곳에서 보이도록 의도\n미완성 노예 조각들(Prigioni): 대리석에서 빠져나오려는 형상', price: '€16', duration: '1h 30m' },
+        { time: '10:30', cat: 'sight',  title: '산 로렌초 & 메디치 예배당', en: 'Basilica di San Lorenzo + Medici Chapels', loc: 'Piazza di San Lorenzo',
+          note: '메디치 가문 교구 성당\n메디치 예배당: 미켈란젤로의 <밤·낮·새벽·황혼> 조각 (€9)\n로렌초 도서관(Biblioteca Medicea Laurenziana): 미켈란젤로 계단 설계', price: '€9', duration: '1h' },
+        { time: '12:30', cat: 'food',   title: '점심: 메르카토 첸트랄레',  en: 'Mercato Centrale 2F Food Hall', loc: 'Mercato Centrale',
+          note: 'Lampredotto·Trippa·전통 토스카나 파스타\n2층 중앙 홀 분위기가 아름다움', price: '$' },
+        { time: '14:30', cat: 'walk',   title: '산 미니아토 알 몬테',     en: 'Basilica di San Miniato al Monte', loc: 'Via delle Porte Sante 34',
+          note: '도심에서 도보 25–30분 or 버스 12번\n11세기 로마네스크 양식 — 피렌체 최고(最古) 성당\n그린·화이트 대리석 파사드 (두오모와 유사)\n성당 앞 계단에서 피렌체 전망 감상', duration: '1h' },
+        { time: '16:30', cat: 'view',   title: '피아찰레 미켈란젤로 일몰', en: 'Piazzale Michelangelo Sunset', loc: 'Piazzale Michelangelo',
+          note: '피렌체 최고의 일몰 포인트 — 절대 필수!\n산 미니아토에서 도보 5분 (계단길)\n두오모·베키오 탑·시뇨리아 광장 파노라마\n일몰 30분 전 도착 추천\n광장 야외 바에서 스프리츠 마시며 감상\n일몰 후 블루아워 야경도 아름다움', duration: '1h 30m' },
+        { time: '19:30', cat: 'food',   title: '저녁: 에노테카 와인바',   en: 'Enoteca in Oltrarno', loc: 'Oltrarno',
+          note: 'Olive & Co: 올리브오일 바+간단한 요리\nBuca Mario: 1886년 개업, 피렌체 최고령 레스토랑\n추천 와인: Brunello di Montalcino, Vino Nobile di Montepulciano', price: '$$' },
+      ],
+    },
+    {
+      n: 9, date: 'Oct 13', weekday: 'Mon',
+      title: '아씨시 당일치기',
+      titleEn: 'Day Trip to Assisi',
+      hero: { hue: 160, label: 'ASSISI' },
+      weather: '맑음 · 17°',
+      items: [
+        { time: '07:30', cat: 'flight', title: '피렌체 → 아씨시',         en: 'Train: Firenze SMN → Assisi', loc: 'Firenze Santa Maria Novella',
+          note: 'Firenze SMN → Assisi역(Santa Maria degli Angeli): 약 2시간\n페루자(Perugia) 또는 폴리뇨(Foligno) 경유\n기차 예약: trenitalia.com\n아씨시역→구시가지: 버스 C (€1.30, 약 15분)\n구시가지 버스 종점 하차 → 도보', price: '€20–35', duration: '2h' },
+        { time: '10:00', cat: 'sight',  title: '성 프란치스코 대성당',    en: "Basilica di San Francesco d'Assisi", loc: "Piazza Inferiore di S. Francesco",
+          note: 'UNESCO 세계유산\n하부 성당(Lower Basilica): 치마부에의 프레스코화, 성 프란치스코 무덤 (지하 크립트)\n상부 성당(Upper Basilica): 조토의 <성 프란치스코의 생애> 28장면 — 이탈리아 미술사의 전환점\n복장 규정: 소매+무릎 가리기 필수\n입장 무료', duration: '1h 30m' },
+        { time: '12:00', cat: 'walk',   title: '아씨시 구시가지',         en: 'Assisi Medieval Town', loc: 'Assisi Historic Center',
+          note: '핑크빛 석회암(pietra rosata di Assisi)으로 만들어진 중세 마을\n피아차 델 코무네: 1세기 로마 미네르바 신전이 남아있음\n좁은 골목 탐색 — 공방과 소품 상점', duration: '1h' },
+        { time: '13:30', cat: 'food',   title: '점심: 움브리아 요리',     en: 'Trattoria Pallotta', loc: 'Assisi',
+          note: 'Strangozzi al tartufo (트뤼플 파스타)\nPorchetta 샌드위치 — 길거리 음식\n움브리아 와인: Sagrantino, Grechetto', price: '$$' },
+        { time: '15:00', cat: 'sight',  title: '산타 키아라 대성당',      en: 'Basilica di Santa Chiara', loc: 'Piazza Santa Chiara',
+          note: '성녀 클라라의 성당 (핑크·화이트 줄무늬 파사드)\n성녀 클라라 유해 (지하 크립트)\n성당 앞 광장에서 움브리아 평원 뷰', duration: '45m' },
+        { time: '16:00', cat: 'view',   title: '로카 마조레 성채',        en: 'Rocca Maggiore', loc: 'Via della Rocca',
+          note: '중세 성채 (€3.50)\n성벽 위에서 아씨시+움브리아 계곡 파노라마\n구시가지에서 도보 20분 (가파름, 편한 신발 필수)', price: '€3.50', duration: '1h' },
+        { time: '17:30', cat: 'flight', title: '피렌체로 귀환',           en: 'Return to Florence', loc: 'Assisi → Firenze SMN',
+          note: '버스 C → 아씨시역 → 기차로 피렌체 귀환 (2시간)\n피렌체 도착 예상 19:30~20:00', duration: '2h' },
+        { time: '20:00', cat: 'food',   title: '저녁: 간단히',            en: 'Light Dinner — Oltrarno', loc: 'Oltrarno',
+          note: '아씨시 당일치기 후 피곤하므로 간단히\n호텔 근처 피자 al taglio 또는 Il Santo Bevitore 예약', price: '$' },
+      ],
+    },
+    {
+      n: 10, date: 'Oct 14', weekday: 'Tue',
+      title: '산타 크로체, 마지막 피렌체',
+      titleEn: 'Santa Croce & Last Florence',
+      hero: { hue: 55, label: 'SANTA CROCE' },
+      weather: '구름 조금 · 17°',
+      items: [
+        { time: '09:30', cat: 'sight',  title: '산타 크로체 성당',        en: 'Basilica di Santa Croce', loc: 'Piazza di Santa Croce',
+          note: '이탈리아 위인들의 판테온 (€8)\n미켈란젤로·갈릴레오·마키아벨리·로시니 무덤\n조토의 프레스코화 (바르디·페루치 예배당)\n브루넬레스키 설계 파치 예배당 (완벽한 비례)\n광장에서 성당 정면이 아름답게 보임', price: '€8', duration: '1h 30m' },
+        { time: '11:30', cat: 'walk',   title: '산탐브로조 시장',         en: "Mercato di Sant'Ambrogio", loc: 'Piazza Lorenzo Ghiberti',
+          note: '피렌체 현지인 일상 시장 (관광객 거의 없음)\n신선 채소·과일·치즈·살루미\n내부 Trattoria da Rocco: €5–8 파스타, 현지인 소울푸드', duration: '1h' },
+        { time: '13:00', cat: 'food',   title: '점심: 트라토리아 다 로코', en: 'Trattoria da Rocco', loc: "Mercato di Sant'Ambrogio",
+          note: '매일 바뀌는 메뉴 (칠판에 표시)\n€6–8에 파스타+세컨드+와인\n포리나타(Farinata): 병아리콩 팬케이크', price: '$' },
+        { time: '14:30', cat: 'shop',   title: '가죽 공예 쇼핑',          en: 'Artisan Leather — Scuola del Cuoio', loc: 'Via San Giuseppe 5r',
+          note: '산타 크로체 성당 뒤편 가죽 학교\n장인이 직접 만드는 가죽 제품 (지갑·벨트·백)\n피렌체 = 이탈리아 가죽 공예의 수도\nRoberta Firenze: 수제 금박 문구류', duration: '1h 30m' },
+        { time: '17:00', cat: 'view',   title: '피아찰레 미켈란젤로 황혼', en: 'Piazzale Michelangelo — Dusk', loc: 'Piazzale Michelangelo',
+          note: '마지막으로 보는 피렌체 황혼\n블루아워(blue hour): 일몰 후 20–30분, 하늘 색이 가장 아름다운 시간\n도시 불빛이 켜지는 야경이 일몰보다 더 황홀', duration: '1h' },
+        { time: '19:00', cat: 'food',   title: '마지막 피렌체 저녁',       en: 'Final Dinner — Il Santo Bevitore', loc: 'Oltrarno',
+          note: '예약 필수, 올트라르노 최고 레스토랑\nPappardelle al Cinghiale (야생 멧돼지 라구)\nBistecca alla Fiorentina (T본 스테이크 최소 1kg)\nChianti Classico Gran Selezione\n식후: 아르노 강변 마지막 야경 산책', price: '$$$' },
+      ],
+    },
+    {
+      n: 11, date: 'Oct 15', weekday: 'Wed',
+      title: '출발',
+      titleEn: 'Departure',
+      hero: { hue: 220, label: 'ARRIVEDERCI' },
+      weather: '맑음 · 16°',
+      items: [
+        { time: '08:00', cat: 'hotel',  title: '호텔 체크아웃',            en: 'Check out — Soprarno Suites', loc: 'Via Maggio 35',
+          note: '체크아웃 11시\n피렌체 공항(FLR, Peretola): 택시 €20–25, 15분\n피사 공항(PSA): 피렌체 SMN→피사 첸트랄레 기차 50분+공항버스 10분\n짐 많으면 택시 추천' },
+        { time: '09:00', cat: 'food',   title: '마지막 이탈리아 조식',     en: 'Last Cornetto e Caffè', loc: 'Pasticceria Nencioni',
+          note: '이탈리아 바에서 마지막 에스프레소\nCornetto: 살구잼(albicocca) 또는 크레마(커스터드) 필링\nCappuccino는 아침에만 (오후엔 에스프레소 문화)\n마지막 인사: "Grazie! Arrivederci!" (감사합니다! 또 만나요!)', price: '$' },
+        { time: '10:00', cat: 'shop',   title: '마지막 기념품',            en: 'Last Souvenirs Near SMN', loc: 'Near Santa Maria Novella Station',
+          note: 'Officina Profumo-Farmaceutica di Santa Maria Novella: 1612년 약방, 세계 최고 향수·허브 제품\n슈퍼마켓 기념품: 피렌체 올리브오일, 트뤼플 소스, 파스타\nBaci Perugina: 페루자 산 헤이즐넛 초콜릿', duration: '1h' },
+        { time: '12:00', cat: 'flight', title: '공항 출발',               en: 'Departure — FLR or PSA Airport', loc: 'Florence / Pisa Airport',
+          note: '출국 2시간 전 도착 추천\nBuon viaggio! (좋은 여행 되세요!)' },
+      ],
+    },
+  ],
+
+  prep: {
+    checklist: [
+      '항공권 예매', '숙소 예매 (로마 5박+피렌체 5박)',
+      '우피치·아카데미아 사전 예약', '바티칸 박물관 예약',
+      '보르게세 갤러리 예약', '콜로세움 예약',
+      '로마↔피렌체 기차 예약', '피렌체↔아씨시 기차 예약',
+      '짐 싸기', '로밍/유심 준비', '여행자 보험',
+      '택시 앱 설치 (Free Now / itTaxi)',
+      '구글 오프라인 지도 다운로드 (로마·피렌체·아씨시)',
+    ],
+    docs: [
+      '왕복 항공권 e-ticket',
+      '호텔 예약 확인서 (로마+피렌체)',
+      '박물관 예약 확인서',
+      '기차 예약 확인서',
+      '여행자 보험 증서',
+      '여권 (유효기간 6개월 이상)',
+    ],
+    pack: [
+      '걷기 편한 신발 필수 (자갈길 많음)',
+      '보조 배터리',
+      '얇은 가디건 (성당 내부 복장용)',
+      '선크림',
+      '소형 우산 or 우비',
+      '재사용 가방 (시장 쇼핑용)',
+      '물통 (로마 나스코네 수돗물 이용 가능)',
+    ],
+  },
+
+  food: [
+    { cat: '🍝 Pasta',   name: 'Carbonara (로마)',         detail: '달걀·페코리노·구안치알레·후추 — 크림 없음이 정통', price: '€12–16', note: 'Da Enzo al 29 추천' },
+    { cat: '🍝 Pasta',   name: 'Cacio e Pepe',            detail: '치즈+후추만으로 완성, 단순함의 극치',             price: '€10–14', note: '로마 3대 파스타' },
+    { cat: '🍝 Pasta',   name: 'Amatriciana',             detail: '토마토+구안치알레, 매콤달콤',                     price: '€12–16', note: '로마 3대 파스타' },
+    { cat: '🍝 Pasta',   name: 'Pappardelle al Cinghiale', detail: '넓은 파파르델레 + 야생 멧돼지 라구',             price: '€14–18', note: '피렌체·토스카나 명물' },
+    { cat: '🍝 Pasta',   name: 'Strangozzi al Tartufo',   detail: '움브리아 수제 파스타 + 트뤼플',                   price: '€16–22', note: '아씨시·움브리아 명물' },
+    { cat: '🥩 Meat',    name: 'Bistecca alla Fiorentina', detail: '피렌체 T본 스테이크 1kg+, 레어, €55/kg',         price: '$$$$',   note: "Buca dell'Orafo 추천" },
+    { cat: '🥩 Meat',    name: 'Lampredotto',             detail: '피렌체 소 위장 샌드위치 — 현지인 소울푸드',        price: '€5–8',   note: '메르카토 첸트랄레' },
+    { cat: '🥩 Meat',    name: 'Porchetta',               detail: '아씨시 광장 허브 로스트 통돼지 샌드위치',          price: '€5',     note: '아씨시 피아차' },
+    { cat: '🍕 Pizza',   name: 'Pizza al Taglio',         detail: '무게 달아 파는 로마 조각 피자',                   price: '€4–8',   note: '로마 전역' },
+    { cat: '🍨 Gelato',  name: '정통 수제 젤라또',         detail: '표면 평평+덮개 없는 것이 수제 (소프트아이스크림 아님)', price: '€2.5–4', note: 'Fatamorgana(로마), Gelateria dei Neri(피렌체)' },
+    { cat: '☕ Coffee',  name: 'Espresso al Banco',       detail: '서서 마시면 €1.20, 앉으면 €2.50+',               price: '€1.20',  note: '카페 타차 도로 추천' },
+    { cat: '☕ Coffee',  name: 'Granita di Caffè',        detail: '커피 그라니타+생크림 — 로마 여름 특선',            price: '€3–4',   note: '카페 타차 도로 한정' },
+    { cat: '🍷 Wine',    name: 'Chianti Classico',        detail: '토스카나 대표 레드와인, 산조베제 품종',            price: '€12–20', note: '피렌체 에노테카' },
+    { cat: '🍷 Wine',    name: 'Brunello di Montalcino',  detail: '이탈리아 최고급 와인 중 하나',                    price: '€30–80', note: '특별한 날에' },
+    { cat: '🍷 Wine',    name: 'Sagrantino di Montefalco', detail: '움브리아 토착 품종, 타닌 강렬',                  price: '€15–25', note: '아씨시·움브리아' },
+    { cat: '🍹 Drink',   name: 'Aperol Spritz',          detail: 'Aperol+프로세코+소다, 이탈리아 아페리티보 필수',   price: '€7–12',  note: '저녁 식사 전 필수' },
+    { cat: '🧁 Pastry',  name: 'Cornetto e Cappuccino',  detail: '이탈리아 아침: 크루아상+카푸치노 서서 마시기',     price: '€3–5',   note: '아침에만 카푸치노' },
+  ],
+  budget: {
+    entries: [
+      // ── 수입 ──────────────────────────────────────────────────────
+      { id:'r01', type:'in',  amount:2500000, currency:'KRW', cat:'환전',   note:'출발 전 환전 €1,600',      date:'Oct 4',  scope:'personal' },
+
+      // ── 교통 ──────────────────────────────────────────────────────
+      { id:'r02', type:'out', amount:1680000, currency:'KRW', cat:'교통',   note:'인천 → 로마 FCO 왕복',     date:'Oct 5',  scope:'personal' },
+      { id:'r03', type:'out', amount:8,       currency:'EUR', cat:'교통',   note:'FCO 공항 → 테르미니 기차',  date:'Oct 5',  scope:'personal' },
+      { id:'r04', type:'out', amount:18,      currency:'EUR', cat:'교통',   note:'로마 지하철 10회권',        date:'Oct 5',  scope:'personal' },
+      { id:'r05', type:'out', amount:11,      currency:'EUR', cat:'교통',   note:'로마 → 아씨시 기차',        date:'Oct 10', scope:'personal' },
+      { id:'r06', type:'out', amount:19,      currency:'EUR', cat:'교통',   note:'아씨시 → 피렌체 기차',      date:'Oct 11', scope:'personal' },
+      { id:'r07', type:'out', amount:35,      currency:'EUR', cat:'교통',   note:'피렌체 → FCO 공항 이타로',  date:'Oct 14', scope:'personal' },
+
+      // ── 숙박 ──────────────────────────────────────────────────────
+      { id:'r08', type:'out', amount:1190,    currency:'EUR', cat:'숙박',   note:'호텔 아르테미데 로마 7박',  date:'Oct 5',  scope:'personal' },
+      { id:'r09', type:'out', amount:210,     currency:'EUR', cat:'숙박',   note:'아씨시 B&B 1박',           date:'Oct 10', scope:'personal' },
+      { id:'r10', type:'out', amount:590,     currency:'EUR', cat:'숙박',   note:'피렌체 호텔 3박',           date:'Oct 11', scope:'personal' },
+
+      // ── 식비 ──────────────────────────────────────────────────────
+      { id:'r11', type:'out', amount:28,      currency:'EUR', cat:'식비',   note:'트라스테베레 파스타+와인',  date:'Oct 6',  scope:'personal' },
+      { id:'r12', type:'out', amount:14,      currency:'EUR', cat:'식비',   note:'나보나 젤라또+에스프레소', date:'Oct 7',  scope:'personal' },
+      { id:'r13', type:'out', amount:45,      currency:'EUR', cat:'식비',   note:'피렌체 비스테카 피오렌티나', date:'Oct 12', scope:'personal' },
+      { id:'r14', type:'out', amount:9,       currency:'EUR', cat:'식비',   note:'코르네토+카푸치노 (매일)',  date:'Oct 8',  scope:'personal' },
+
+      // ── 관광 ──────────────────────────────────────────────────────
+      { id:'r15', type:'out', amount:18,      currency:'EUR', cat:'관광',   note:'콜로세움+포로로마노 입장',  date:'Oct 6',  scope:'personal' },
+      { id:'r16', type:'out', amount:20,      currency:'EUR', cat:'관광',   note:'바티칸 박물관+시스티나',    date:'Oct 8',  scope:'personal' },
+      { id:'r17', type:'out', amount:12,      currency:'EUR', cat:'관광',   note:'우피치 미술관 (피렌체)',    date:'Oct 12', scope:'personal' },
+      { id:'r18', type:'out', amount:8,       currency:'EUR', cat:'관광',   note:'두오모 전망대 (피렌체)',    date:'Oct 13', scope:'personal' },
+
+      // ── 쇼핑 ──────────────────────────────────────────────────────
+      { id:'r19', type:'out', amount:68,      currency:'EUR', cat:'쇼핑',   note:'가죽 지갑 (산 로렌초 시장)', date:'Oct 12', scope:'personal' },
+      { id:'r20', type:'out', amount:24,      currency:'EUR', cat:'쇼핑',   note:'올리브오일+트러플소스 기념품', date:'Oct 13', scope:'personal' },
+    ],
+  },
+};
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 // NYC Travel App — restructured
 // - Trips list (top level) -> pick a trip -> Home
@@ -809,6 +1175,9 @@ function SwipeableRow({
 }) {
   const [x, setX] = React.useState(0);
   const [open, setOpen] = React.useState(false);
+  const [flying, setFlying] = React.useState(false); // 날아가는 중
+  const [collapseH, setCollapseH] = React.useState(null); // null=auto, px=고정, 0=접힘
+  const outerRef = React.useRef(null);
   const startRef = React.useRef(null);
   const dragging = React.useRef(false);
   const xRef = React.useRef(0);
@@ -822,12 +1191,27 @@ function SwipeableRow({
   React.useEffect(() => {
     if (disabled) close();
   }, [disabled]);
-  // 드래그 중에는 스와이프 버튼 즉시 닫기
   React.useEffect(() => {
     if (isDragging) close();
   }, [isDragging]);
+
+  // 카드를 화면 밖으로 날린 뒤 높이를 접고 onDelete 호출
+  const flyOff = () => {
+    if (flying) return;
+    const h = outerRef.current?.offsetHeight || 0;
+    if (h) setCollapseH(h); // 현재 높이 고정 (접기 시작점)
+    setFlying(true);
+    const w = window.innerWidth || 400;
+    setX(-w);
+    xRef.current = -w;
+    // ① 카드 날아감(260ms) → ② 높이 접힘(160ms) → ③ onDelete
+    setTimeout(() => {
+      setCollapseH(0);
+      setTimeout(() => onDelete?.(), 160);
+    }, 260);
+  };
   const onTouchStart = e => {
-    if (disabled) return;
+    if (disabled || flying) return;
     startRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
@@ -835,12 +1219,12 @@ function SwipeableRow({
     dragging.current = false;
   };
   const onTouchMove = e => {
-    if (!startRef.current) return;
+    if (!startRef.current || flying) return;
     const dx = e.touches[0].clientX - startRef.current.x;
     const dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
       if (Math.abs(dx) < 18) return;
-      if (dy > Math.abs(dx) * 0.55) return; // 세로 스크롤 — startRef 유지, 탭 감지 보존
+      if (dy > Math.abs(dx) * 0.55) return;
       dragging.current = true;
     }
     const base = open ? -REVEAL : 0;
@@ -854,12 +1238,10 @@ function SwipeableRow({
     const wasDragging = dragging.current;
     startRef.current = null;
     dragging.current = false;
-    if (!wasDragging) return; // 탭 — 브라우저 click 이벤트로 처리
-
+    if (!wasDragging) return;
     const cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
-      close();
-      setTimeout(() => onDelete(), 260);
+      flyOff(); // 충분히 당겼으면 날려버리기
     } else if (cur < -REVEAL / 2) {
       xRef.current = -REVEAL;
       setX(-REVEAL);
@@ -868,98 +1250,117 @@ function SwipeableRow({
       close();
     }
   };
+  const flyTransition = 'transform 0.26s cubic-bezier(0.4,0,1,1)';
+  const snapTransition = 'transform 0.28s cubic-bezier(0.22,1,0.36,1)';
+
+  // 높이 접힘 래퍼 스타일
+  const collapseStyle = collapseH !== null ? {
+    height: collapseH,
+    overflow: 'hidden',
+    transition: collapseH === 0 ? 'height 0.16s ease-in' : 'none'
+  } : {};
   if (cardSwipe) {
-    return /*#__PURE__*/React.createElement("div", {
-      style: {
-        position: 'relative',
-        overflow: 'hidden',
-        ...wrapStyle
-      },
-      onTouchStart: onTouchStart,
-      onTouchMove: onTouchMove,
-      onTouchEnd: onTouchEnd
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        gap: 8,
-        paddingRight: 10
-      }
-    }, onEdit && /*#__PURE__*/React.createElement("button", {
-      onClick: e => {
-        e.stopPropagation();
-        close();
-        setTimeout(onEdit, 100);
-      },
-      style: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        border: 'none',
-        cursor: 'pointer',
-        background: editBg || '#ffa500',
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: editIcon || 'edit',
-      size: 14,
-      color: "#fff",
-      stroke: 2
-    })), /*#__PURE__*/React.createElement("button", {
-      onClick: e => {
-        e.stopPropagation();
-        close();
-        setTimeout(onDelete, 100);
-      },
-      style: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        border: 'none',
-        cursor: 'pointer',
-        background: '#B5451B',
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: "trash",
-      size: 14,
-      color: "#fff",
-      stroke: 2
-    }))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        transform: `translateX(${x}px)`,
-        transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.22,1,0.36,1)',
-        willChange: 'transform',
-        WebkitTapHighlightColor: 'transparent'
-      }
-    }, children));
+    return (
+      /*#__PURE__*/
+      // 높이 접힘용 래퍼 (overflow:hidden은 접힐 때만)
+      React.createElement("div", {
+        ref: outerRef,
+        style: collapseStyle,
+        onTouchStart: onTouchStart,
+        onTouchMove: onTouchMove,
+        onTouchEnd: onTouchEnd
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          position: 'relative',
+          ...wrapStyle
+        }
+      }, !flying && /*#__PURE__*/React.createElement("div", {
+        style: {
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 8,
+          paddingRight: 10
+        }
+      }, onEdit && /*#__PURE__*/React.createElement("button", {
+        onClick: e => {
+          e.stopPropagation();
+          close();
+          setTimeout(onEdit, 100);
+        },
+        style: {
+          width: 38,
+          height: 38,
+          borderRadius: 19,
+          border: 'none',
+          cursor: 'pointer',
+          background: editBg || '#ffa500',
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: editIcon || 'edit',
+        size: 14,
+        color: "#fff",
+        stroke: 2
+      })), /*#__PURE__*/React.createElement("button", {
+        onClick: e => {
+          e.stopPropagation();
+          flyOff();
+        },
+        style: {
+          width: 38,
+          height: 38,
+          borderRadius: 19,
+          border: 'none',
+          cursor: 'pointer',
+          background: '#B5451B',
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: "trash",
+        size: 14,
+        color: "#fff",
+        stroke: 2
+      }))), /*#__PURE__*/React.createElement("div", {
+        style: {
+          position: 'relative',
+          zIndex: 1,
+          transform: `translateX(${x}px)`,
+          transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
+          willChange: 'transform',
+          WebkitTapHighlightColor: 'transparent'
+        }
+      }, children)))
+    );
   }
   return /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'relative',
-      overflow: 'hidden',
-      ...wrapStyle
-    },
+    ref: outerRef,
+    style: collapseStyle,
     onTouchStart: onTouchStart,
     onTouchMove: onTouchMove,
     onTouchEnd: onTouchEnd
   }, /*#__PURE__*/React.createElement("div", {
     style: {
+      position: 'relative',
+      overflow: 'hidden',
+      ...wrapStyle
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
       display: 'flex',
       width: `calc(100% + ${REVEAL}px)`,
       transform: `translateX(${x}px)`,
-      transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.22,1,0.36,1)',
+      transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
       willChange: 'transform',
       WebkitTapHighlightColor: 'transparent'
     }
@@ -1012,8 +1413,7 @@ function SwipeableRow({
   })), /*#__PURE__*/React.createElement("button", {
     onClick: e => {
       e.stopPropagation();
-      close();
-      setTimeout(onDelete, 100);
+      flyOff();
     },
     style: {
       width: deleteLabel ? 46 : 38,
@@ -1041,7 +1441,7 @@ function SwipeableRow({
     size: 14,
     color: "#fff",
     stroke: 2
-  })))));
+  }))))));
 }
 
 // ─── Swipe-back edge gesture wrapper ─────────────────────────
@@ -2751,8 +3151,10 @@ function useFxRate(currency) {
     refresh: fetchRate
   };
 }
-function FxCard() {
-  const [curCode, setCurCode] = React.useState('USD');
+function FxCard({
+  curCode,
+  onSetCurCode
+}) {
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const cur = FX_CURRENCIES.find(c => c.code === curCode) || FX_CURRENCIES[0];
   const {
@@ -2850,7 +3252,7 @@ function FxCard() {
     getKey: c => c.code,
     filterFn: fxFilterFn,
     selectedKey: cur.code,
-    onPick: c => setCurCode(c.code),
+    onPick: c => onSetCurCode(c.code),
     renderRow: c => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: MONO,
@@ -2887,113 +3289,151 @@ const CITIES = [{
   zone: 'America/New_York',
   flag: '🇺🇸',
   lat: 40.71,
-  lon: -74.01
+  lon: -74.01,
+  currency: 'USD'
 }, {
   key: 'Los Angeles',
   kor: '로스앤젤레스',
   zone: 'America/Los_Angeles',
   flag: '🇺🇸',
   lat: 34.05,
-  lon: -118.24
+  lon: -118.24,
+  currency: 'USD'
 }, {
   key: 'Washington',
   kor: '워싱턴',
   zone: 'America/New_York',
   flag: '🇺🇸',
   lat: 38.91,
-  lon: -77.04
+  lon: -77.04,
+  currency: 'USD'
 }, {
   key: 'London',
   kor: '런던',
   zone: 'Europe/London',
   flag: '🇬🇧',
   lat: 51.51,
-  lon: -0.13
+  lon: -0.13,
+  currency: 'EUR'
 }, {
   key: 'Paris',
   kor: '파리',
   zone: 'Europe/Paris',
   flag: '🇫🇷',
   lat: 48.85,
-  lon: 2.35
+  lon: 2.35,
+  currency: 'EUR'
 }, {
   key: 'Rome',
   kor: '로마',
   zone: 'Europe/Rome',
   flag: '🇮🇹',
   lat: 41.90,
-  lon: 12.50
+  lon: 12.50,
+  currency: 'EUR'
 }, {
   key: 'Berlin',
   kor: '베를린',
   zone: 'Europe/Berlin',
   flag: '🇩🇪',
   lat: 52.52,
-  lon: 13.40
+  lon: 13.40,
+  currency: 'EUR'
 }, {
   key: 'Dubai',
   kor: '두바이',
   zone: 'Asia/Dubai',
   flag: '🇦🇪',
   lat: 25.20,
-  lon: 55.27
+  lon: 55.27,
+  currency: 'USD'
 }, {
   key: 'Bangkok',
   kor: '방콕',
   zone: 'Asia/Bangkok',
   flag: '🇹🇭',
   lat: 13.75,
-  lon: 100.52
+  lon: 100.52,
+  currency: 'USD'
 }, {
   key: 'Singapore',
   kor: '싱가포르',
   zone: 'Asia/Singapore',
   flag: '🇸🇬',
   lat: 1.35,
-  lon: 103.82
+  lon: 103.82,
+  currency: 'USD'
 }, {
   key: 'Hong Kong',
   kor: '홍콩',
   zone: 'Asia/Hong_Kong',
   flag: '🇭🇰',
   lat: 22.32,
-  lon: 114.17
+  lon: 114.17,
+  currency: 'USD'
 }, {
   key: 'Shanghai',
   kor: '상하이',
   zone: 'Asia/Shanghai',
   flag: '🇨🇳',
   lat: 31.23,
-  lon: 121.47
+  lon: 121.47,
+  currency: 'CNY'
 }, {
   key: 'Tokyo',
   kor: '도쿄',
   zone: 'Asia/Tokyo',
   flag: '🇯🇵',
   lat: 35.68,
-  lon: 139.69
+  lon: 139.69,
+  currency: 'JPY'
 }, {
   key: 'Seoul',
   kor: '서울',
   zone: 'Asia/Seoul',
   flag: '🇰🇷',
   lat: 37.57,
-  lon: 126.98
+  lon: 126.98,
+  currency: 'USD'
 }, {
   key: 'Sydney',
   kor: '시드니',
   zone: 'Australia/Sydney',
   flag: '🇦🇺',
   lat: -33.87,
-  lon: 151.21
+  lon: 151.21,
+  currency: 'USD'
 }, {
   key: 'Hawaii',
   kor: '하와이',
   zone: 'Pacific/Honolulu',
   flag: '🇺🇸',
   lat: 21.31,
-  lon: -157.86
+  lon: -157.86,
+  currency: 'USD'
 }];
+
+// 여행 제목에서 도시 자동 감지
+function detectCityFromTitle(title) {
+  if (!title) return null;
+  const lower = title.toLowerCase();
+  // 긴 키 먼저 매칭 (e.g. 'new york' before 'york')
+  const sorted = [...CITIES].sort((a, b) => b.key.length - a.key.length);
+  return sorted.find(c => lower.includes(c.key.toLowerCase()) || lower.includes(c.kor)) || null;
+}
+
+// 여행 제목에서 통화 자동 감지 (달러/유로/엔/위안/페소)
+function detectCurrencyFromTitle(title) {
+  if (!title) return 'USD';
+  const city = detectCityFromTitle(title);
+  if (city?.currency) return city.currency;
+  const t = title.toLowerCase();
+  if (/japan|일본|osaka|교토|오사카|나고야/.test(t)) return 'JPY';
+  if (/china|중국|beijing|베이징|guangzhou|광저우/.test(t)) return 'CNY';
+  if (/mexico|멕시코/.test(t)) return 'MXN';
+  if (/europe|유럽|france|프랑스|italy|이탈리아|florence|피렌체|venice|베네치아|milan|밀라노|germany|독일|spain|스페인|barcelona|마드리드|madrid|netherlands|amsterdam|amsterdam|portugal|lisbon|리스본|greece|athens|아테네|vienna|빈|switzerland|취리히|prague|프라하|budapest|부다페스트/.test(t)) return 'EUR';
+  return 'USD';
+}
 
 // WMO 날씨 코드 → 설명 + 이모지
 const WMO = {
@@ -3400,6 +3840,9 @@ function TripSwipeCard({
 }) {
   const [x, setX] = React.useState(0);
   const [open, setOpen] = React.useState(false);
+  const [flying, setFlying] = React.useState(false);
+  const [collapseH, setCollapseH] = React.useState(null);
+  const outerRef = React.useRef(null);
   const startRef = React.useRef(null);
   const dragging = React.useRef(false);
   const xRef = React.useRef(0);
@@ -3410,7 +3853,21 @@ function TripSwipeCard({
     xRef.current = 0;
     setOpen(false);
   };
+  const flyOff = () => {
+    if (flying) return;
+    const h = outerRef.current?.offsetHeight || 0;
+    if (h) setCollapseH(h);
+    setFlying(true);
+    const w = window.innerWidth || 400;
+    setX(-w);
+    xRef.current = -w;
+    setTimeout(() => {
+      setCollapseH(0);
+      setTimeout(() => onDelete?.(), 160);
+    }, 260);
+  };
   const onTouchStart = e => {
+    if (flying) return;
     startRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
@@ -3418,7 +3875,7 @@ function TripSwipeCard({
     dragging.current = false;
   };
   const onTouchMove = e => {
-    if (!startRef.current) return;
+    if (!startRef.current || flying) return;
     const dx = e.touches[0].clientX - startRef.current.x;
     const dy = Math.abs(e.touches[0].clientY - startRef.current.y);
     if (!dragging.current) {
@@ -3443,8 +3900,7 @@ function TripSwipeCard({
     }
     const cur = xRef.current;
     if (cur < -(REVEAL + DELETE_EXTRA / 2)) {
-      close();
-      setTimeout(() => onDelete(), 260);
+      flyOff();
     } else if (cur < -REVEAL / 2) {
       xRef.current = -REVEAL;
       setX(-REVEAL);
@@ -3458,15 +3914,24 @@ function TripSwipeCard({
     dragging.current = false;
     close();
   };
+  const flyTransition = 'transform 0.26s cubic-bezier(0.4,0,1,1)';
+  const collapseStyle = collapseH !== null ? {
+    height: collapseH,
+    overflow: 'hidden',
+    transition: collapseH === 0 ? 'height 0.16s ease-in' : 'none'
+  } : {};
   return /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'relative'
-    },
+    ref: outerRef,
+    style: collapseStyle,
     onTouchStart: onTouchStart,
     onTouchMove: onTouchMove,
     onTouchEnd: onTouchEnd,
     onTouchCancel: onTouchCancel
   }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative'
+    }
+  }, !flying && /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
       right: 0,
@@ -3504,8 +3969,7 @@ function TripSwipeCard({
   })), /*#__PURE__*/React.createElement("button", {
     onClick: e => {
       e.stopPropagation();
-      close();
-      setTimeout(onDelete, 100);
+      flyOff();
     },
     style: {
       width: 50,
@@ -3527,14 +3991,14 @@ function TripSwipeCard({
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       transform: `translateX(${x}px)`,
-      transition: dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.25,1,0.5,1)',
+      transition: flying ? flyTransition : dragging.current ? 'none' : 'transform 0.28s cubic-bezier(0.25,1,0.5,1)',
       background: COLORS.card,
       position: 'relative',
       zIndex: 1,
       overflow: 'hidden',
       ...wrapStyle
     }
-  }, children));
+  }, children)));
 }
 
 // ─── Share Trip Sheet ─────────────────────────────────────────
@@ -4063,7 +4527,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v193"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v238"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -4078,10 +4542,11 @@ function TripsScreen({
       flexDirection: 'column',
       gap: 12
     }
-  }, trips.map(t => {
+  }, [...trips].sort((a, b) => (b.sampleId ? 1 : 0) - (a.sampleId ? 1 : 0)).map(t => {
     const hue = t.hue ?? t.days?.[0]?.hero?.hue ?? 25;
     const label = t.days?.[0]?.hero?.label || t.title?.toUpperCase() || 'TRIP';
     const isShared = Array.isArray(t.members) && t.members.length > 0 && t.members[0] !== myUid;
+    const isSample = !!t.sampleId;
     return /*#__PURE__*/React.createElement(TripSwipeCard, {
       key: t.id,
       onShare: () => onShare(t),
@@ -4128,11 +4593,39 @@ function TripsScreen({
         color: COLORS.ink,
         letterSpacing: '-0.015em'
       }
-    }, t.title || '새 여행'), isShared && /*#__PURE__*/React.createElement("div", {
+    }, t.title || '새 여행'), (isSample || isShared) && /*#__PURE__*/React.createElement("div", {
       style: {
         position: 'absolute',
         top: 14,
         right: 16,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6
+      }
+    }, isSample && /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 3,
+        background: '#FFF5EB',
+        borderRadius: 20,
+        padding: '4px 10px',
+        border: '1px solid rgba(193,79,46,0.15)'
+      }
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: "sparkle",
+      size: 10,
+      color: COLORS.accent,
+      stroke: 1.8
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: SANS,
+        fontSize: 10,
+        color: COLORS.accent,
+        fontWeight: 500
+      }
+    }, "\uC0D8\uD50C")), isShared && /*#__PURE__*/React.createElement("div", {
+      style: {
         display: 'flex',
         alignItems: 'center',
         gap: 4,
@@ -4152,7 +4645,7 @@ function TripsScreen({
         color: '#4F6BED',
         fontWeight: 500
       }
-    }, "\uACF5\uC720\uB428")))));
+    }, "\uACF5\uC720\uB428"))))));
   }), (trips.length === 0 || trips.every(t => !(t.days || []).length)) && onRestore && /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '28px 20px',
@@ -4261,6 +4754,8 @@ function HomeScreen({
   onOpenHotelSheet,
   city,
   onPickCity,
+  curCode,
+  onSetCurCode,
   onEditTrip,
   onReorderDays,
   onAddDay,
@@ -4310,15 +4805,146 @@ function HomeScreen({
   } = useDragReorder(onReorderHotels, editing);
   const tripYear = extractTripYear(trip);
   const todayIso = new Date().toISOString().slice(0, 10);
-  const featuredIdx = (() => {
+  const calcFeaturedIdx = () => {
     const isos = trip.days.map(d => dayDateToIso(d.date, tripYear) || '');
     const todayIdx = isos.findIndex(iso => iso === todayIso);
-    if (todayIdx >= 0) return todayIdx; // 여행 중: 오늘
+    if (todayIdx >= 0) return todayIdx;
     const future = isos.findIndex(iso => iso > todayIso);
-    if (future === 0 || isos.every(iso => !iso)) return 0; // 여행 전: 첫째 날
-    if (future < 0) return trip.days.length - 1; // 여행 후: 마지막 날
-    return future - 1; // 사이 공백: 가장 가까운 지난 날
-  })();
+    if (future === 0 || isos.every(iso => !iso)) return 0;
+    if (future < 0) return trip.days.length - 1;
+    return future - 1;
+  };
+  const [featuredIdx, setFeaturedIdx] = React.useState(calcFeaturedIdx);
+  const [featuredAnim, setFeaturedAnim] = React.useState({
+    key: 0,
+    dir: 0
+  });
+  const featuredTouchRef = React.useRef({
+    x: 0,
+    y: 0
+  });
+  React.useEffect(() => {
+    setFeaturedIdx(calcFeaturedIdx());
+  }, [trip.days.length]);
+  // 슬라이더 상태
+  const [fOffset, setFOffset] = React.useState(0);
+  const [fWidth, setFWidth] = React.useState(window.innerWidth); // 측정된 실제 너비
+  const fOffsetRef = React.useRef(0);
+  const fGesture = React.useRef({
+    on: false,
+    startX: 0,
+    startY: 0,
+    drag: false
+  });
+  const fVelSamples = React.useRef([]);
+  const fWrapRef = React.useRef(null);
+  const fTrackRef = React.useRef(null);
+  const fW = () => fWrapRef.current?.offsetWidth || fWidth;
+
+  // 마운트 후 실제 너비 측정 (다른 화면 갔다 돌아올 때도 정확히 반영)
+  React.useLayoutEffect(() => {
+    if (fWrapRef.current) setFWidth(fWrapRef.current.offsetWidth);
+  }, []);
+  const fTrans = (dur, ease) => {
+    if (fTrackRef.current) fTrackRef.current.style.transition = `transform ${dur}ms ${ease}`;
+  };
+  const fSetNone = () => {
+    if (fTrackRef.current) fTrackRef.current.style.transition = 'none';
+  };
+  const fSet = v => {
+    fOffsetRef.current = v;
+    setFOffset(v);
+  };
+  const changeFeatured = newIdx => {
+    if (newIdx < 0 || newIdx >= trip.days.length || newIdx === featuredIdx) return;
+    fTrans(320, 'cubic-bezier(0.4,0,0.2,1)');
+    setFeaturedIdx(newIdx);
+    fSet(0);
+  };
+  const onFStart = e => {
+    fGesture.current = {
+      on: true,
+      startX: e.touches[0].clientX,
+      startY: e.touches[0].clientY,
+      drag: false
+    };
+    fVelSamples.current = [];
+  };
+  const onFMove = e => {
+    const g = fGesture.current;
+    if (!g.on) return;
+    const x = e.touches[0].clientX;
+    const dx = x - g.startX;
+    const dy = Math.abs(e.touches[0].clientY - g.startY);
+    if (!g.drag) {
+      if (dy > Math.abs(dx) + 8) {
+        g.on = false;
+        return;
+      }
+      if (Math.abs(dx) > 6) g.drag = true;
+    }
+    if (!g.drag) return;
+    // 속도 샘플 기록 (최근 6개 유지)
+    const now = Date.now();
+    fVelSamples.current.push({
+      x,
+      t: now
+    });
+    if (fVelSamples.current.length > 6) fVelSamples.current.shift();
+    fSetNone();
+    const w = fW();
+    // 첫/마지막 카드에서 약한 저항감 (rubber band)
+    let limited;
+    if (dx < 0 && featuredIdx >= trip.days.length - 1) limited = dx * 0.18;else if (dx > 0 && featuredIdx <= 0) limited = dx * 0.18;else limited = dx < 0 ? Math.max(dx, -w * 1.1) : Math.min(dx, w * 1.1);
+    fSet(limited);
+  };
+  const onFEnd = () => {
+    const g = fGesture.current;
+    fGesture.current = {
+      ...g,
+      on: false,
+      drag: false
+    };
+    if (!g.drag) return;
+    const w = fW();
+    const cur = fOffsetRef.current;
+    // 최근 샘플로 속도 계산 (px/ms)
+    const samples = fVelSamples.current;
+    let vel = 0;
+    if (samples.length >= 2) {
+      const a = samples[0],
+        b = samples[samples.length - 1];
+      const dt = b.t - a.t;
+      if (dt > 0) vel = (b.x - a.x) / dt;
+    }
+    const byDist = Math.abs(cur) > w * 0.2;
+    const byFlick = Math.abs(vel) > 0.25; // 0.25 px/ms 이상이면 빠른 스와이프
+    const toNext = cur < 0 && (byDist || byFlick) && featuredIdx < trip.days.length - 1;
+    const toPrev = cur > 0 && (byDist || byFlick) && featuredIdx > 0;
+    // 이동 거리에 비례한 애니메이션 속도 (빠른 스와이프 = 짧은 duration)
+    const remaining = toNext ? w + cur : toPrev ? w - cur : Math.abs(cur);
+    const dur = Math.min(360, Math.max(180, remaining * 0.9));
+    fTrans(dur, 'cubic-bezier(0.25,0.46,0.45,0.94)');
+    if (toNext) {
+      fSet(-w);
+      setTimeout(() => {
+        fSetNone();
+        setFeaturedIdx(i => i + 1);
+        fSet(0);
+      }, dur + 20);
+    } else if (toPrev) {
+      fSet(w);
+      setTimeout(() => {
+        fSetNone();
+        setFeaturedIdx(i => i - 1);
+        fSet(0);
+      }, dur + 20);
+    } else {
+      // 스냅백: 스프링 느낌
+      fTrans(380, 'cubic-bezier(0.22,1,0.36,1)');
+      fSet(0);
+    }
+  };
   const featured = trip.days[featuredIdx];
 
   // trip.dates 파싱: "May 4 — May 13, 2025"
@@ -4599,20 +5225,75 @@ function HomeScreen({
       fontSize: 13,
       color: COLORS.mute
     }
-  }, trip.days.length, " days"))), featured && /*#__PURE__*/React.createElement("div", {
+  }, trip.days.length, " days")), editing && /*#__PURE__*/React.createElement("div", {
     style: {
+      marginTop: 12,
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center',
+      flexWrap: 'wrap'
+    }
+  }, [20, 45, 90, 140, 200, 240, 280, 320, 350, 0].map(h => {
+    const sel = (trip.hue ?? 25) === h;
+    return /*#__PURE__*/React.createElement("button", {
+      key: h,
+      onClick: () => onEditTrip({
+        hue: h
+      }),
+      style: {
+        width: sel ? 30 : 24,
+        height: sel ? 30 : 24,
+        borderRadius: '50%',
+        padding: 0,
+        cursor: 'pointer',
+        flexShrink: 0,
+        background: `oklch(0.78 0.07 ${h})`,
+        border: sel ? `3px solid ${COLORS.ink}` : `2px solid rgba(0,0,0,0.08)`,
+        boxShadow: sel ? '0 0 0 2px rgba(0,0,0,0.12)' : 'none',
+        transition: 'all 0.15s'
+      }
+    });
+  }))), featured &&
+  /*#__PURE__*/
+  /* 클립 컨테이너: 화면 전체 너비, 오버플로만 숨김 */
+  React.createElement("div", {
+    ref: fWrapRef,
+    onTouchStart: onFStart,
+    onTouchMove: onFMove,
+    onTouchEnd: onFEnd,
+    style: {
+      overflow: 'hidden',
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: fTrackRef,
+    style: {
+      display: 'flex',
+      /* px 기반 translation: CSS % 기준값 불안정 문제 방지 */
+      transform: `translateX(${-(featuredIdx * fW()) + fOffset}px)`,
+      willChange: 'transform'
+    }
+  }, trip.days.map((d, i) =>
+  /*#__PURE__*/
+  /* border-box: padding 포함한 전체 너비 = fW() → 슬라이드 1칸 = 화면 너비 */
+  React.createElement("div", {
+    key: i,
+    style: {
+      width: fW(),
+      flexShrink: 0,
+      boxSizing: 'border-box',
       padding: '4px 16px 18px'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      background: COLORS.card,
       borderRadius: 22,
       overflow: 'hidden',
-      boxShadow: '0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)'
+      boxShadow: '0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)',
+      background: COLORS.card
     }
   }, /*#__PURE__*/React.createElement(Photo, {
-    hue: featured.hero?.hue ?? 25,
-    label: featured.hero?.label,
+    hue: (i === 0 ? trip.hue ?? d.hero?.hue : d.hero?.hue) ?? 25,
+    label: d.hero?.label,
     height: 170
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4631,13 +5312,13 @@ function HomeScreen({
       color: COLORS.accent,
       letterSpacing: '0.14em'
     }
-  }, "DAY ", String(featured.n).padStart(2, '0'), " \xB7 ", featured.weekday.toUpperCase()), /*#__PURE__*/React.createElement("div", {
+  }, "DAY ", String(d.n).padStart(2, '0'), " \xB7 ", d.weekday.toUpperCase()), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SANS,
       fontSize: 11,
       color: COLORS.mute
     }
-  }, featured.date)), /*#__PURE__*/React.createElement("div", {
+  }, d.date)), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 7,
       fontFamily: SERIF,
@@ -4645,8 +5326,8 @@ function HomeScreen({
       lineHeight: 1.1,
       color: COLORS.ink
     }
-  }, featured.title), /*#__PURE__*/React.createElement("button", {
-    onClick: () => onOpenDay(featuredIdx),
+  }, d.title), /*#__PURE__*/React.createElement("button", {
+    onClick: () => !fGesture.current.drag && onOpenDay(i),
     style: {
       marginTop: 16,
       width: '100%',
@@ -4663,11 +5344,11 @@ function HomeScreen({
       justifyContent: 'space-between',
       alignItems: 'center'
     }
-  }, /*#__PURE__*/React.createElement("span", null, featuredIdx === 0 ? '첫날 일정 보기' : `Day ${featured.n} 일정 보기`), /*#__PURE__*/React.createElement(Icon, {
+  }, /*#__PURE__*/React.createElement("span", null, i === 0 ? '첫날 일정 보기' : `Day ${d.n} 일정 보기`), /*#__PURE__*/React.createElement(Icon, {
     name: "chevron",
     size: 16,
     color: COLORS.bg
-  }))))), /*#__PURE__*/React.createElement("div", {
+  })))))))), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '8px 24px 10px',
       display: 'flex',
@@ -4735,7 +5416,7 @@ function HomeScreen({
         flexShrink: 0
       }
     }, /*#__PURE__*/React.createElement(Photo, {
-      hue: d.hero?.hue ?? 25,
+      hue: (i === 0 ? trip.hue ?? d.hero?.hue : d.hero?.hue) ?? 25,
       height: 64,
       small: true
     })), /*#__PURE__*/React.createElement("div", {
@@ -4788,10 +5469,10 @@ function HomeScreen({
       size: 11,
       color: COLORS.mute,
       stroke: 1.8
-    }), /*#__PURE__*/React.createElement("span", null, d.items?.length ?? 0, " stops"))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, {
+    }), /*#__PURE__*/React.createElement("span", null, d.items?.length ?? 0, " stops"))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, _extends({
       size: 14,
       color: COLORS.mute
-    }), !isDayDragging && /*#__PURE__*/React.createElement("button", {
+    }, dp.handleProps)), !isDayDragging && /*#__PURE__*/React.createElement("button", {
       onClick: e => {
         e.stopPropagation();
         onDeleteDay(i);
@@ -5053,10 +5734,10 @@ function HomeScreen({
         style: {
           opacity: 0.4
         }
-      }, "\xB7"), /*#__PURE__*/React.createElement("span", null, h.price)))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, {
+      }, "\xB7"), /*#__PURE__*/React.createElement("span", null, h.price)))), editing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DragHandle, _extends({
         size: 14,
         color: COLORS.mute
-      }), /*#__PURE__*/React.createElement("button", {
+      }, hp.handleProps)), /*#__PURE__*/React.createElement("button", {
         onClick: e => {
           e.stopPropagation();
           onDeleteHotel(h._idx);
@@ -5101,7 +5782,10 @@ function HomeScreen({
       gridTemplateColumns: '1fr 1fr',
       gap: 8
     }
-  }, /*#__PURE__*/React.createElement(FxCard, null), /*#__PURE__*/React.createElement(TimezoneCard, {
+  }, /*#__PURE__*/React.createElement(FxCard, {
+    curCode: curCode,
+    onSetCurCode: onSetCurCode
+  }), /*#__PURE__*/React.createElement(TimezoneCard, {
     city: city,
     onPick: onPickCity
   })), /*#__PURE__*/React.createElement("div", {
@@ -5219,7 +5903,7 @@ function DayScreen({
   const {
     itemProps: itemDragProps
   } = useDragReorder(onReorderItems, editing);
-  const heroHue = day.hero?.hue ?? 25;
+  const heroHue = (dayIdx === 0 ? trip.hue ?? day.hero?.hue : day.hero?.hue) ?? 25;
   const heroBg = `oklch(0.88 0.035 ${heroHue})`;
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -5334,36 +6018,59 @@ function DayScreen({
       fontSize: 11,
       color: COLORS.mute
     }
-  }, day.weekday, day.weekday && day.date ? ' · ' : '', day.date)), editing && editingTitle ? /*#__PURE__*/React.createElement("input", {
-    autoFocus: true,
+  }, day.weekday, day.weekday && day.date ? ' · ' : '', day.date)), editing ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("input", {
     value: day.title,
     onChange: e => onEditDay({
       title: e.target.value
     }),
-    onBlur: () => setEditingTitle(false),
+    placeholder: "\uB0A0 \uC81C\uBAA9",
     style: {
-      marginTop: 8,
-      fontFamily: SERIF,
-      fontSize: 30,
-      lineHeight: 1.08,
-      color: COLORS.ink,
-      border: 'none',
-      outline: 'none',
-      background: 'transparent',
       width: '100%',
-      padding: 0
+      padding: '8px 10px',
+      borderRadius: 8,
+      boxSizing: 'border-box',
+      border: `1px solid ${COLORS.line}`,
+      background: COLORS.card,
+      fontFamily: SERIF,
+      fontSize: 20,
+      color: COLORS.ink,
+      outline: 'none'
     }
-  }) : /*#__PURE__*/React.createElement("div", {
-    onClick: () => editing && setEditingTitle(true),
+  }), /*#__PURE__*/React.createElement("input", {
+    value: day.titleEn || '',
+    onChange: e => onEditDay({
+      titleEn: e.target.value
+    }),
+    placeholder: "Subtitle (English)",
+    style: {
+      width: '100%',
+      padding: '8px 10px',
+      borderRadius: 8,
+      boxSizing: 'border-box',
+      border: `1px solid ${COLORS.line}`,
+      background: COLORS.card,
+      fontFamily: SANS,
+      fontSize: 13,
+      fontStyle: 'italic',
+      color: COLORS.mute,
+      outline: 'none'
+    }
+  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 8,
       fontFamily: SERIF,
       fontSize: 30,
       lineHeight: 1.08,
-      color: COLORS.ink,
-      cursor: editing ? 'text' : 'default'
+      color: COLORS.ink
     }
-  }, day.title), /*#__PURE__*/React.createElement("div", {
+  }, day.title), day.titleEn && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 2,
       fontFamily: SANS,
@@ -5371,7 +6078,7 @@ function DayScreen({
       color: COLORS.mute,
       fontStyle: 'italic'
     }
-  }, day.titleEn)))), /*#__PURE__*/React.createElement("div", {
+  }, day.titleEn))))), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '48px 16px 0'
     }
@@ -5435,43 +6142,10 @@ function DayScreen({
         textAlign: 'right',
         paddingRight: 4
       }
-    }, it.time), /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: 16,
-        flexShrink: 0,
-        display: 'flex',
-        justifyContent: 'center',
-        paddingTop: 15,
-        position: 'relative',
-        zIndex: 2
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: e => {
-        e.stopPropagation();
-        toggle(i);
-      },
-      style: {
-        width: 16,
-        height: 16,
-        borderRadius: 8,
-        border: `1.5px solid ${isDone ? COLORS.accent : COLORS.ink}`,
-        background: isDone ? COLORS.accent : COLORS.bg,
-        cursor: 'pointer',
-        padding: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }
-    }, isDone && /*#__PURE__*/React.createElement(Icon, {
-      name: "check",
-      size: 10,
-      color: "#fff",
-      stroke: 3
-    }))), /*#__PURE__*/React.createElement(SwipeableRow, {
+    }, it.time), /*#__PURE__*/React.createElement(SwipeableRow, {
       cardSwipe: true,
       wrapStyle: {
         flex: 1,
-        marginLeft: 10,
         borderRadius: 14
       },
       disabled: editing,
@@ -5483,6 +6157,38 @@ function DayScreen({
       onDelete: () => onDeleteItem(i)
     }, /*#__PURE__*/React.createElement("div", {
       style: {
+        display: 'flex',
+        alignItems: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: e => {
+        e.stopPropagation();
+        toggle(i);
+      },
+      style: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        flexShrink: 0,
+        border: `1.5px solid ${isDone ? COLORS.accent : COLORS.ink}`,
+        background: isDone ? COLORS.accent : COLORS.bg,
+        cursor: 'pointer',
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        zIndex: 2
+      }
+    }, isDone && /*#__PURE__*/React.createElement(Icon, {
+      name: "check",
+      size: 10,
+      color: "#fff",
+      stroke: 3
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        marginLeft: 10,
         position: 'relative'
       }
     }, !editing && /*#__PURE__*/React.createElement("div", {
@@ -5551,8 +6257,11 @@ function DayScreen({
         border: 'none',
         cursor: 'pointer',
         padding: '11px 14px 13px',
-        textAlign: 'left',
-        opacity: isDone ? 0.5 : 1
+        textAlign: 'left'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        opacity: isDone ? 0.45 : 1
       }
     }, travelTimes[i] && /*#__PURE__*/React.createElement("div", {
       style: {
@@ -5678,7 +6387,7 @@ function DayScreen({
         color: COLORS.mute,
         lineHeight: 1.45
       }
-    }, it.note)), editing && /*#__PURE__*/React.createElement("div", {
+    }, it.note))), editing && /*#__PURE__*/React.createElement("div", {
       style: {
         position: 'absolute',
         top: 8,
@@ -5731,7 +6440,7 @@ function DayScreen({
         pointerEvents: 'none',
         background: 'rgba(193,79,46,0.04)'
       }
-    }))));
+    })))));
   }), editing && /*#__PURE__*/React.createElement("button", {
     onClick: onAddItem,
     style: {
@@ -6339,6 +7048,35 @@ function haversineM(lat1, lon1, lat2, lon2) {
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * toR) * Math.cos(lat2 * toR) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+
+// 캐시 헬퍼: localStorage에 TTL 포함 저장/읽기
+const NC_PLACES_TTL = 24 * 60 * 60 * 1000; // 장소 목록 24시간
+const NC_PHOTO_TTL = 7 * 24 * 60 * 60 * 1000; // 사진 URL 7일
+function ncGet(key, ttl) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return undefined;
+    const {
+      t,
+      d
+    } = JSON.parse(raw);
+    if (Date.now() - t > ttl) {
+      localStorage.removeItem(key);
+      return undefined;
+    }
+    return d;
+  } catch {
+    return undefined;
+  }
+}
+function ncSet(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify({
+      t: Date.now(),
+      d: data
+    }));
+  } catch (_) {}
+}
 function NearbySheet({
   stop,
   initialTab,
@@ -6371,10 +7109,19 @@ function NearbySheet({
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
   }, [stop, initialTab]);
 
-  // 두 타입 병렬 fetch
+  // 두 타입 병렬 fetch (캐시 우선)
   React.useEffect(() => {
     if (!stop) return;
     const ctrl = new AbortController();
+    // 캐시 키: 좌표가 있으면 좌표 기반, 없으면 타이틀 기반
+    const stopKey = stop.coords ? `${stop.coords[0].toFixed(3)}_${stop.coords[1].toFixed(3)}` : (stop.title || '').replace(/\s+/g, '_');
+    const cacheKey = `nearby_places_${stopKey}`;
+    const cached = ncGet(cacheKey, NC_PLACES_TTL);
+    if (cached) {
+      setHotspots(cached.hotspots);
+      setFood(cached.food);
+      return;
+    }
     (async () => {
       try {
         let lat, lon;
@@ -6403,6 +7150,8 @@ function NearbySheet({
               name: nm,
               type: e.tags?.amenity || e.tags?.tourism || e.tags?.historic || e.tags?.leisure || '',
               wikipedia: e.tags?.wikipedia || '',
+              image: e.tags?.image || '',
+              // ① OSM 직접 첨부 이미지
               dist: haversineM(lat, lon, e.lat, e.lon),
               lat: e.lat,
               lon: e.lon
@@ -6418,8 +7167,14 @@ function NearbySheet({
         }).then(r => r.json()), fetch(base + encodeURIComponent(fQ), {
           signal: ctrl.signal
         }).then(r => r.json())]);
-        setHotspots(parse(hR));
-        setFood(parse(fR));
+        const hotspotsParsed = parse(hR);
+        const foodParsed = parse(fR);
+        ncSet(cacheKey, {
+          hotspots: hotspotsParsed,
+          food: foodParsed
+        }); // 캐시 저장
+        setHotspots(hotspotsParsed);
+        setFood(foodParsed);
       } catch (e) {
         if (!ctrl.signal.aborted) {
           setHotspots([]);
@@ -6430,21 +7185,52 @@ function NearbySheet({
     return () => ctrl.abort();
   }, [stop]);
 
-  // Wikipedia 사진 fetch
+  // 사진 fetch: ① OSM image → ② Wikipedia 태그 → ③ Wikipedia/Commons 이름 검색
   React.useEffect(() => {
-    [...(hotspots || []), ...(food || [])].forEach(item => {
-      if (!item.wikipedia || item.name in photos) return;
+    [...(hotspots || []), ...(food || [])].forEach(async item => {
+      if (item.name in photos) return;
+      const photoKey = `nearby_photo_${item.name}`;
+      const cachedUrl = ncGet(photoKey, NC_PHOTO_TTL);
+      if (cachedUrl !== undefined) {
+        setPhotos(p => ({
+          ...p,
+          [item.name]: cachedUrl || null
+        }));
+        return;
+      }
       setPhotos(p => ({
         ...p,
         [item.name]: null
       }));
-      const title = item.wikipedia.replace(/^[a-z-]+:/, '').replace(/ /g, '_');
-      fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`).then(r => r.json()).then(d => {
-        if (d.thumbnail?.source) setPhotos(p => ({
-          ...p,
-          [item.name]: d.thumbnail.source
-        }));
-      }).catch(() => {});
+      let url = '';
+
+      // ① OSM image 태그 (API 호출 없음)
+      if (item.image) {
+        url = item.image;
+      }
+
+      // ② Wikipedia 태그로 섬네일
+      if (!url && item.wikipedia) {
+        try {
+          const t = item.wikipedia.replace(/^[a-z-]+:/, '').replace(/ /g, '_');
+          const d = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`).then(r => r.json());
+          if (d.thumbnail?.source) url = d.thumbnail.source;
+        } catch (_) {}
+      }
+
+      // ③ Wikipedia/Commons: 검색+이미지를 1번 요청으로 (generator=search)
+      if (!url) {
+        try {
+          const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(item.name)}&gsrlimit=1&prop=pageimages&format=json&pithumbsize=600&origin=*`).then(r => r.json());
+          const page = Object.values(res.query?.pages || {})[0];
+          if (page?.thumbnail?.source) url = page.thumbnail.source;
+        } catch (_) {}
+      }
+      ncSet(photoKey, url);
+      if (url) setPhotos(p => ({
+        ...p,
+        [item.name]: url
+      }));
     });
   }, [hotspots, food]);
 
@@ -6585,7 +7371,7 @@ function NearbySheet({
       stroke: 2
     }));
   };
-  return /*#__PURE__*/React.createElement("div", {
+  return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
       inset: 0,
@@ -6690,7 +7476,7 @@ function NearbySheet({
       fontSize: 13,
       color: COLORS.mute
     }
-  }, "\uC8FC\uBCC0\uC5D0 ", tab === 'hotspot' ? '핫플이' : '음식점이', " \uC5C6\uC5B4\uC694"), !loading && currentData.length > 0 && /*#__PURE__*/React.createElement("div", null, currentData.map(renderItem))));
+  }, "\uC8FC\uBCC0\uC5D0 ", tab === 'hotspot' ? '핫플이' : '음식점이', " \uC5C6\uC5B4\uC694"), !loading && currentData.length > 0 && /*#__PURE__*/React.createElement("div", null, currentData.map(renderItem)))), document.body);
 }
 
 // ─── Stop sheet (unchanged except pulls editing from open) ─
@@ -6704,7 +7490,6 @@ function StopSheet({
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
   const [draft, setDraft] = React.useState(open.stop);
-  const [editingTitleInline, setEditingTitleInline] = React.useState(false);
   const committed = React.useRef(open.stop);
   const [sheetY, setSheetY] = React.useState(0);
   const [entered, setEntered] = React.useState(false);
@@ -6739,6 +7524,11 @@ function StopSheet({
   React.useEffect(() => {
     const el = sheetRef.current;
     if (!el) return;
+    // 상태바 하단까지의 안전 거리 (px) — 핸들이 이보다 위로 올라가지 않음
+    const getSafeTop = () => {
+      const sat = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0') || 0;
+      return Math.max(sat, 44) + 8; // safe-area-inset-top + 여유 8px
+    };
     const onStart = e => {
       dragRef.current = {
         active: true,
@@ -6753,14 +7543,23 @@ function StopSheet({
         startScrollTop
       } = dragRef.current;
       const dy = e.touches[0].clientY - startY;
-      if (startScrollTop > 8 || dy <= 0) {
+      if (startScrollTop > 8 && dy <= 0) {
         dragRef.current.active = false;
         return;
       }
       e.preventDefault();
-      const newY = Math.max(0, dy);
-      sheetYRef.current = newY;
-      setSheetY(newY);
+      if (dy <= 0) {
+        // 위로 드래그: 러버밴드 + 상태바 아래로 클램프
+        const sheetTop = el.getBoundingClientRect().top + dy;
+        const minTop = getSafeTop();
+        if (sheetTop < minTop) return; // 상태바 넘어가면 무시
+        const newY = dy * 0.15; // 러버밴드 저항
+        sheetYRef.current = newY;
+        setSheetY(newY);
+      } else {
+        sheetYRef.current = dy;
+        setSheetY(dy);
+      }
     };
     const onEnd = () => {
       dragRef.current.active = false;
@@ -6920,53 +7719,24 @@ function StopSheet({
     draft: draft,
     setDraft: setDraft,
     cityBias: cityBias
-  }) : /*#__PURE__*/React.createElement(React.Fragment, null, editingTitleInline ? /*#__PURE__*/React.createElement("input", {
-    autoFocus: true,
-    value: draft.title,
-    onChange: e => setDraft({
-      ...draft,
-      title: e.target.value
-    }),
-    onBlur: () => {
-      setEditingTitleInline(false);
-      onSave(draft);
-      committed.current = draft;
-    },
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === 'Escape') e.target.blur();
-    },
+  }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 8,
-      width: '100%',
-      border: 'none',
-      borderBottom: `1px solid ${COLORS.ink}`,
-      background: 'transparent',
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
       fontFamily: SERIF,
       fontSize: 28,
       lineHeight: 1.12,
-      color: COLORS.ink,
-      outline: 'none',
-      boxSizing: 'border-box',
-      padding: '0'
+      color: COLORS.ink
     }
-  }) : /*#__PURE__*/React.createElement("div", {
-    onClick: () => setEditingTitleInline(true),
+  }, draft.title)), draft.en && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 8,
-      fontFamily: SERIF,
-      fontSize: 28,
-      lineHeight: 1.12,
-      color: COLORS.ink,
-      cursor: 'text',
-      borderBottom: `1px dashed ${COLORS.line}`
-    }
-  }, draft.title), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 2,
+      marginTop: 4,
       fontFamily: SANS,
       fontSize: 13.5,
-      color: COLORS.mute,
-      fontStyle: 'italic'
+      fontStyle: 'italic',
+      color: COLORS.mute
     }
   }, draft.en), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -8376,6 +9146,245 @@ function EditStopForm({
 // ─── Geocoding cache ─────────────────────────────────────────
 const GEO_CACHE = {};
 
+// ─── Route tip 계산 (MapScreen 밖으로 추출) ───────────────────
+function computeRouteTip(pts, times) {
+  if (pts.length < 2) return null;
+  const toMin = t => {
+    const m = (t || '').match(/^(\d{1,2}):(\d{2})/);
+    return m ? +m[1] * 60 + +m[2] : null;
+  };
+  const dist2 = (a, b) => {
+    const dl = a.pos[0] - b.pos[0],
+      dn = a.pos[1] - b.pos[1];
+    return dl * dl + dn * dn;
+  };
+  const hotel = pts.find(p => p.cat === 'hotel') || null;
+  const foods = pts.filter(p => p.cat === 'food');
+  const lunch = foods.find(p => {
+    const m = toMin(p.time);
+    return m && m >= 600 && m <= 900;
+  }) || foods[0] || null;
+  const dinner = foods.find(p => {
+    const m = toMin(p.time);
+    return m && m >= 1020;
+  }) || (foods.length > 1 ? foods[foods.length - 1] : null);
+  const dinnerIsLunch = dinner && lunch && dinner === lunch;
+  const startIdx = hotel ? pts.indexOf(hotel) : 0;
+  const n = pts.length;
+  const visited = Array(n).fill(false);
+  const order = [startIdx];
+  visited[startIdx] = true;
+  for (let step = 1; step < n; step++) {
+    let best = -1,
+      bestD = Infinity;
+    const last = order[order.length - 1];
+    for (let j = 0; j < n; j++) {
+      if (!visited[j]) {
+        const d = dist2(pts[last], pts[j]);
+        if (d < bestD) {
+          bestD = d;
+          best = j;
+        }
+      }
+    }
+    visited[best] = true;
+    order.push(best);
+  }
+  const isOptimal = order.every((v, i) => v === i);
+  const totalTransit = Object.values(times).reduce((s, t) => s + (t.transit || 0), 0);
+  const longestLeg = Object.entries(times).sort((a, b) => (b[1].transit || 0) - (a[1].transit || 0))[0];
+  const returnsToHotel = hotel ? pts[pts.length - 1].cat === 'hotel' : null;
+  return {
+    pts,
+    order,
+    isOptimal,
+    totalTransit,
+    longestLeg,
+    times,
+    hotel,
+    lunch,
+    dinner: dinnerIsLunch ? null : dinner,
+    returnsToHotel
+  };
+}
+
+// ─── 백그라운드 프리패치: 모든 날 경로 + 이동시간 ────────────
+async function prefetchRoutes(trip) {
+  if (!trip?.days?.length) return;
+  try {
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+    const city = trip.title || '';
+    const CITY_BIAS_MAP = {
+      'new york': [40.758, -73.985],
+      'paris': [48.856, 2.352],
+      'london': [51.507, -0.127],
+      'tokyo': [35.690, 139.692],
+      'seoul': [37.563, 126.997],
+      'los angeles': [34.052, -118.244],
+      'rome': [41.900, 12.500],
+      'florence': [43.769, 11.256],
+      'barcelona': [41.387, 2.170],
+      'amsterdam': [52.370, 4.895],
+      'berlin': [52.520, 13.405],
+      'prague': [50.088, 14.420]
+    };
+    const cityBias = CITY_BIAS_MAP[city.toLowerCase().split(/[^a-z]/)[0]];
+    const bias = cityBias ? `&lat=${cityBias[0]}&lon=${cityBias[1]}` : '';
+    const geocode = async query => {
+      if (GEO_CACHE[query]) return GEO_CACHE[query];
+      try {
+        const j = await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1&lang=en${bias}`)).json();
+        const f = j?.features?.[0];
+        if (f) {
+          const [lon, lat] = f.geometry.coordinates;
+          GEO_CACHE[query] = [lat, lon];
+          return [lat, lon];
+        }
+      } catch (_) {}
+      return null;
+    };
+    for (let dayIdx = 0; dayIdx < trip.days.length; dayIdx++) {
+      try {
+        const day = trip.days[dayIdx];
+        const ordered = (day.items || []).filter(it => it.loc).map((it, ii) => ({
+          ...it,
+          _origIdx: ii
+        }));
+        if (!ordered.length) continue;
+
+        // ① MapScreen 경로 캐시
+        const mapKey = ordered.map(s => `${s.title}|${s.coords ? s.coords.join(',') : ''}`).join('~');
+        const routeCacheKey = `route_${trip.title}_${dayIdx}_${mapKey}`;
+        let alreadyCached = false;
+        try {
+          alreadyCached = !!localStorage.getItem(routeCacheKey);
+        } catch (_) {}
+        if (!alreadyCached) {
+          const pts = [];
+          for (const s of ordered) {
+            let pos = s.coords || null;
+            if (!pos) {
+              const queries = [s.loc ? `${s.title}, ${s.loc}, ${city}` : null, `${s.title}, ${city}`, s.title].filter(Boolean);
+              for (const q of queries) {
+                pos = await geocode(q);
+                if (pos) break;
+                await delay(80);
+              }
+            }
+            if (pos) pts.push({
+              pos,
+              title: s.title,
+              cat: s.cat || '',
+              time: s.time || ''
+            });
+            await delay(60);
+          }
+          if (pts.length > 1) {
+            try {
+              const coords = pts.map(p => `${p.pos[1]},${p.pos[0]}`).join(';');
+              const rd = await (await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`)).json();
+              if (rd.routes?.[0]) {
+                const times = {};
+                (rd.routes[0].legs || []).forEach((leg, li) => {
+                  times[li + 1] = {
+                    transit: Math.max(1, Math.round(leg.duration / 60)),
+                    walk: Math.max(1, Math.round(leg.distance / 83.33))
+                  };
+                });
+                try {
+                  const tip = computeRouteTip(pts, times);
+                  localStorage.setItem(routeCacheKey, JSON.stringify({
+                    pts,
+                    times,
+                    tip
+                  }));
+                } catch (_) {}
+              }
+            } catch (_) {}
+          }
+          await delay(400); // 날짜 간 간격
+        }
+
+        // ② DayScreen 이동시간 캐시 (coords 있는 항목만)
+        const items = day.items || [];
+        const coordsKey = items.map(it => it.coords ? it.coords.join(',') : '').join('|');
+        const ttCacheKey = `tt_day_${trip.title}_${dayIdx}_${coordsKey}`;
+        const pending = items.reduce((acc, it, i) => {
+          if (i > 0 && it.coords && items[i - 1].coords) acc.push(i);
+          return acc;
+        }, []);
+        let ttCached = false;
+        try {
+          ttCached = !!localStorage.getItem(ttCacheKey);
+        } catch (_) {}
+        if (pending.length && !ttCached) {
+          const results = {};
+          for (const i of pending) {
+            try {
+              const [lat1, lon1] = items[i - 1].coords,
+                [lat2, lon2] = items[i].coords;
+              const r = await (await fetch(`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`)).json();
+              if (r.routes?.[0]) {
+                const {
+                  duration,
+                  distance
+                } = r.routes[0];
+                results[i] = {
+                  drive: Math.max(1, Math.round(duration / 60)),
+                  walk: Math.max(1, Math.round(distance / 83.33))
+                };
+              }
+            } catch (_) {}
+            await delay(120);
+          }
+          try {
+            localStorage.setItem(ttCacheKey, JSON.stringify(results));
+          } catch (_) {}
+          await delay(200);
+        }
+      } catch (_) {}
+    }
+
+    // ③ NearbySheet 장소 목록 프리패치 (coords 있는 스탑만, 사진 제외)
+    const allStops = trip.days.flatMap(d => (d.items || []).filter(it => it.coords));
+    const overpassBase = 'https://overpass-api.de/api/interpreter?data=';
+    const parseOverpass = (d, lat, lon) => {
+      const seen = new Set();
+      return (d.elements || []).reduce((acc, e) => {
+        const nm = e.tags?.name || e.tags?.['name:en'] || '';
+        if (!nm || seen.has(nm) || !e.lat) return acc;
+        seen.add(nm);
+        acc.push({
+          name: nm,
+          type: e.tags?.amenity || e.tags?.tourism || e.tags?.historic || e.tags?.leisure || '',
+          wikipedia: e.tags?.wikipedia || '',
+          image: e.tags?.image || '',
+          dist: haversineM(lat, lon, e.lat, e.lon),
+          lat: e.lat,
+          lon: e.lon
+        });
+        return acc;
+      }, []).sort((a, b) => a.dist - b.dist);
+    };
+    for (const s of allStops) {
+      try {
+        const [lat, lon] = s.coords;
+        const stopKey = `${lat.toFixed(3)}_${lon.toFixed(3)}`;
+        const cacheKey = `nearby_places_${stopKey}`;
+        if (ncGet(cacheKey, NC_PLACES_TTL) !== undefined) continue; // 이미 캐시됨
+        const hQ = `[out:json][timeout:10];(node["tourism"~"attraction|museum|viewpoint|gallery|theme_park|zoo"](around:900,${lat},${lon});node["historic"~"monument|castle|ruins|memorial"](around:900,${lat},${lon});node["leisure"~"park|garden"](around:900,${lat},${lon}););out 30;`;
+        const fQ = `[out:json][timeout:10];(node["amenity"~"restaurant|cafe|bar|fast_food|pub|biergarten|food_court"](around:600,${lat},${lon}););out 30;`;
+        const [hR, fR] = await Promise.all([fetch(overpassBase + encodeURIComponent(hQ)).then(r => r.json()), fetch(overpassBase + encodeURIComponent(fQ)).then(r => r.json())]);
+        ncSet(cacheKey, {
+          hotspots: parseOverpass(hR, lat, lon),
+          food: parseOverpass(fR, lat, lon)
+        });
+        await delay(2000); // Overpass 부담 최소화
+      } catch (_) {}
+    }
+  } catch (_) {}
+}
+
 // ─── Place search sheet ───────────────────────────────────────
 function PlaceSearchSheet({
   open,
@@ -8622,74 +9631,7 @@ function MapScreen({
   const [travelTimes, setTravelTimes] = React.useState({});
   const [routeTip, setRouteTip] = React.useState(null);
   const fmtMin = m => m >= 60 ? `${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ''}` : `${m}분`;
-  const computeRouteTip = (pts, times) => {
-    if (pts.length < 2) return null;
-    const toMin = t => {
-      const m = (t || '').match(/^(\d{1,2}):(\d{2})/);
-      return m ? +m[1] * 60 + +m[2] : null;
-    };
-    const dist2 = (a, b) => {
-      const dl = a.pos[0] - b.pos[0],
-        dn = a.pos[1] - b.pos[1];
-      return dl * dl + dn * dn;
-    };
-
-    // 앵커 식별: 숙소 / 점심 / 저녁
-    const hotel = pts.find(p => p.cat === 'hotel') || null;
-    const foods = pts.filter(p => p.cat === 'food');
-    // 점심: 시간이 있으면 10:00~15:00, 없으면 첫 번째 food
-    const lunch = foods.find(p => {
-      const m = toMin(p.time);
-      return m && m >= 600 && m <= 900;
-    }) || foods[0] || null;
-    // 저녁: 시간이 있으면 17:00 이후, 없으면 두 번째 food
-    const dinner = foods.find(p => {
-      const m = toMin(p.time);
-      return m && m >= 1020;
-    }) || (foods.length > 1 ? foods[foods.length - 1] : null);
-    const dinnerIsLunch = dinner && lunch && dinner === lunch;
-
-    // nearest-neighbor: 숙소가 있으면 숙소부터 출발
-    const startIdx = hotel ? pts.indexOf(hotel) : 0;
-    const n = pts.length;
-    const visited = Array(n).fill(false);
-    const order = [startIdx];
-    visited[startIdx] = true;
-    for (let step = 1; step < n; step++) {
-      let best = -1,
-        bestD = Infinity;
-      const last = order[order.length - 1];
-      for (let j = 0; j < n; j++) {
-        if (!visited[j]) {
-          const d = dist2(pts[last], pts[j]);
-          if (d < bestD) {
-            bestD = d;
-            best = j;
-          }
-        }
-      }
-      visited[best] = true;
-      order.push(best);
-    }
-    const isOptimal = order.every((v, i) => v === i);
-    const totalTransit = Object.values(times).reduce((s, t) => s + (t.transit || 0), 0);
-    const longestLeg = Object.entries(times).sort((a, b) => (b[1].transit || 0) - (a[1].transit || 0))[0];
-
-    // 숙소 귀환 여부: 숙소가 있고 마지막 아이템이 숙소가 아닌 경우
-    const returnsToHotel = hotel ? pts[pts.length - 1].cat === 'hotel' : null;
-    return {
-      pts,
-      order,
-      isOptimal,
-      totalTransit,
-      longestLeg,
-      times,
-      hotel,
-      lunch,
-      dinner: dinnerIsLunch ? null : dinner,
-      returnsToHotel
-    };
-  };
+  const heroHue = (selDay === 0 ? trip.hue ?? day?.hero?.hue : day?.hero?.hue) ?? 25;
   const city = trip.title || 'New York';
   const CITY_BIAS_MAP = {
     'new york': [40.758, -73.985],
@@ -9399,7 +10341,7 @@ function MapScreen({
     }, to.title), ` · 약 ${fmtMin(routeTip.longestLeg[1].transit)}`);
   })())), /*#__PURE__*/React.createElement(StopSheet, {
     open: openStop,
-    dayHue: day?.hero?.hue ?? 25,
+    dayHue: heroHue,
     cityBias: cityBias,
     onClose: () => setOpenStop(null),
     onSave: draft => {
@@ -13920,6 +14862,7 @@ function App() {
   const [notifOpen, setNotifOpen] = React.useState(false);
   const [notifs, setNotifs] = React.useState([]);
   const notifyTripEditTimer = React.useRef(null);
+  const updateSampleTimer = React.useRef(null);
   const [shareTripTarget, setShareTripTarget] = React.useState(null);
   const [loginError, setLoginError] = React.useState('');
   const [loginPending, setLoginPending] = React.useState(false); // 로그인 버튼 누른 후 로딩 중
@@ -13933,6 +14876,7 @@ function App() {
   const [slideKey, setSlideKey] = React.useState(0);
   const [openStop, setOpenStop] = React.useState(null);
   const [city, setCity] = React.useState(CITIES[0]);
+  const [curCode, setCurCode] = React.useState('USD');
   const [hotelSheet, setHotelSheet] = React.useState(null);
   const [hotelDetailSheet, setHotelDetailSheet] = React.useState(null); // null=closed, 'new'=add, number=idx
   const [scrollKey, setScrollKey] = React.useState(0);
@@ -14038,35 +14982,56 @@ function App() {
     });
   }, [authUser?.uid]);
 
-  // ── 여행 목록 로드 ─────────────────────────────────────────
+  // ── 여행 목록 로드 + 샘플 싱크 ────────────────────────────
   React.useEffect(() => {
     if (!userData?.uid) return;
+    const uid = userData.uid;
+    const email = userData.email || '';
     const tripIds = userData.tripIds || [userData.groupId];
     setTripsLoading(true);
-    fbLoadTrips(tripIds).then(async trips => {
-      const normalized = trips.map(t => normalizeTrip(t, t.id));
-      // days가 없는 여행은 TRIP_DEFAULT로 자동 복구
-      for (let i = 0; i < normalized.length; i++) {
-        if ((normalized[i].days || []).length === 0) {
-          const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
-          const patch = {
-            title: def.title || 'New York',
-            dates: def.dates || '',
-            hotel: def.hotel || '',
-            days: def.days || [],
-            hotels: def.hotels || [],
-            food: def.food || []
-          };
-          // 로컬 상태 먼저 업데이트 (Firestore 실패해도 화면에 데이터 보임)
-          normalized[i] = normalizeTrip({
-            ...normalized[i],
-            ...patch
-          }, normalized[i].id);
-          fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
+
+    // 샘플 싱크: rome만 자동 추가 (nyc는 오너 전용)
+    const SAMPLES = ['rome'];
+    const syncAll = typeof fbSyncSample === 'function' ? Promise.all(SAMPLES.map(sid => fbSyncSample(uid, email, sid).catch(() => null))) : Promise.resolve([null, null]);
+    syncAll.then(syncResults => {
+      // 새로 추가된 샘플 tripId 수집
+      const newIds = syncResults.filter(r => r?.isNew && r.tripId && !tripIds.includes(r.tripId)).map(r => r.tripId);
+      const allIds = [...tripIds, ...newIds];
+      return fbLoadTrips(allIds).then(async trips => {
+        const normalized = trips.map(t => normalizeTrip(t, t.id));
+        // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 (샘플 제외)
+        for (let i = 0; i < normalized.length; i++) {
+          if ((normalized[i].days || []).length === 0 && !normalized[i].sampleId) {
+            const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+            const patch = {
+              title: def.title || 'New York',
+              dates: def.dates || '',
+              hotel: def.hotel || '',
+              days: def.days || [],
+              hotels: def.hotels || [],
+              food: def.food || []
+            };
+            normalized[i] = normalizeTrip({
+              ...normalized[i],
+              ...patch
+            }, normalized[i].id);
+            fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
+          }
         }
-      }
-      setUserTrips(normalized);
-      setTripsLoading(false);
+        // 업데이트된 샘플 반영
+        syncResults.forEach(r => {
+          if (r?.updated && r.tripId && r.tripData) {
+            const idx = normalized.findIndex(t => t.id === r.tripId);
+            if (idx >= 0) normalized[idx] = normalizeTrip({
+              ...normalized[idx],
+              ...r.tripData,
+              sampleId: normalized[idx].sampleId
+            }, r.tripId);
+          }
+        });
+        setUserTrips(normalized);
+        setTripsLoading(false);
+      });
     }).catch(() => setTripsLoading(false));
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
 
@@ -14104,6 +15069,24 @@ function App() {
       }
     });
   }, [authUser?.uid]);
+
+  // 여행 제목 바뀌면 시차 도시 · 환율 자동 감지
+  React.useEffect(() => {
+    const detected = detectCityFromTitle(trip?.title);
+    if (detected) setCity(detected);
+    setCurCode(detectCurrencyFromTitle(trip?.title));
+  }, [trip?.title]);
+
+  // 백그라운드 프리패치: 지도·경로·이동시간을 미리 캐싱
+  // → Map 탭 클릭 시 즉시 표시, DayScreen 타임라인도 즉시 표시
+  React.useEffect(() => {
+    if (!trip?.days?.length) return;
+    // 3초 후 idle하게 시작 (초기 렌더 블록 방지)
+    const t = setTimeout(() => {
+      prefetchRoutes(trip);
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [trip?.title, trip?.days?.length]);
   React.useEffect(() => {
     saveNav({
       tab,
@@ -14198,11 +15181,28 @@ function App() {
 
   // ── Trip-level actions (Firestore) ────────────────────────
   const editTrip = patch => {
+    const next = {
+      ...(tripRef.current || trip),
+      ...patch
+    };
     setTrip(prev => ({
       ...prev,
       ...patch
     }));
+    // My Trips 목록도 즉시 반영 (색상 등 변경 시 카드가 바로 업데이트)
+    if (activeTripId) setUserTrips(prev => prev.map(t => t.id === activeTripId ? {
+      ...t,
+      ...patch
+    } : t));
     if (activeTripId) fbSaveGroup(activeTripId, patch).catch(console.error);
+    // 오너가 샘플 여행(sampleId 있는 것만)을 수정하면 samples/{sampleId} 업데이트
+    const currentSampleId = (tripRef.current || trip)?.sampleId;
+    if (activeTripId && authUser?.email === 'arjungtaeng@gmail.com' && currentSampleId && typeof fbUpdateSample === 'function') {
+      clearTimeout(updateSampleTimer.current);
+      updateSampleTimer.current = setTimeout(() => {
+        fbUpdateSample(currentSampleId, next).catch(() => {});
+      }, 5000);
+    }
     // 동행인에게 일정 수정 알림 (60초 디바운스)
     if (activeTripId && authUser && typeof fbNotifyTripEdit === 'function') {
       clearTimeout(notifyTripEditTimer.current);
@@ -14220,6 +15220,10 @@ function App() {
     const isOwner = !t?.members || t.members[0] === userData?.uid;
     const msg = isOwner ? `"${t?.title || '여행'}"을(를) 삭제할까요?\n삭제하면 복구할 수 없습니다.` : `"${t?.title || '여행'}"에서 나갈까요?`;
     if (!confirm(msg)) return;
+    // 샘플 여행 삭제 시 복구 방지 플래그
+    if (t?.sampleId && userData?.uid && typeof fbMarkSampleDeleted === 'function') {
+      fbMarkSampleDeleted(userData.uid, t.sampleId).catch(() => {});
+    }
     await fbDeleteTrip(tripId, userData.uid);
     setUserTrips(prev => prev.filter(x => x.id !== tripId));
     setUserData(prev => ({
@@ -14299,7 +15303,7 @@ function App() {
       time: '12:00',
       cat: 'sight',
       title: '새 일정',
-      en: 'New stop',
+      en: '',
       loc: '',
       note: ''
     };
@@ -14322,7 +15326,7 @@ function App() {
       time: '12:00',
       cat: 'sight',
       title: '새 일정',
-      en: 'New stop',
+      en: '',
       loc: '',
       note: ''
     };
@@ -14381,8 +15385,10 @@ function App() {
     }
     const days = [...trip.days];
     const items = [...days[dayIdx].items];
+    // en 자동 채움: 비어있으면 loc → title 순으로
     let savedDraft = {
-      ...draft
+      ...draft,
+      en: draft.en || draft.loc || draft.title || ''
     };
     let hotels = [...(trip.hotels || [])];
     if (draft.cat === 'hotel') {
@@ -14742,6 +15748,8 @@ function App() {
         onOpenHotelSheet: i => setHotelDetailSheet(i),
         city: city,
         onPickCity: setCity,
+        curCode: curCode,
+        onSetCurCode: setCurCode,
         onEditTrip: editTrip,
         onReorderDays: reorderDays,
         onAddDay: addDay,
@@ -14781,22 +15789,24 @@ function App() {
       label = 'Home';
     }
   } else if (tab === 'map') {
-    const editMapItem = (dayIdx, itemIdx, patch) => {
-      const days = trip.days.map((d, di) => di !== dayIdx ? d : {
-        ...d,
-        items: d.items.map((it, ii) => ii !== itemIdx ? it : {
-          ...it,
-          ...patch
-        })
+    if (trip) {
+      const editMapItem = (dayIdx, itemIdx, patch) => {
+        const days = trip.days.map((d, di) => di !== dayIdx ? d : {
+          ...d,
+          items: d.items.map((it, ii) => ii !== itemIdx ? it : {
+            ...it,
+            ...patch
+          })
+        });
+        editTrip({
+          days
+        });
+      };
+      screen = /*#__PURE__*/React.createElement(MapScreen, {
+        trip: trip,
+        onEditItem: editMapItem
       });
-      editTrip({
-        days
-      });
-    };
-    screen = /*#__PURE__*/React.createElement(MapScreen, {
-      trip: trip,
-      onEditItem: editMapItem
-    });
+    }
     label = 'Map';
   } else if (tab === 'food') {
     screen = /*#__PURE__*/React.createElement(FoodScreen, {
@@ -14830,7 +15840,7 @@ function App() {
     });
     label = 'Prep';
   }
-  const dayHue = dayIdx !== null && trip ? trip.days[dayIdx]?.hero?.hue ?? 30 : 30;
+  const dayHue = dayIdx !== null && trip ? (dayIdx === 0 ? trip.hue ?? trip.days[0]?.hero?.hue : trip.days[dayIdx]?.hero?.hue) ?? 30 : 30;
 
   // ── Auth gating ───────────────────────────────────────────
   // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
@@ -14856,12 +15866,13 @@ function App() {
     onSelect: id => {
       const found = userTrips.find(t => t.id === id);
       let tripToShow = found;
-      // days 없으면 TRIP_DEFAULT로 즉시 채워서 표시
+      // days 없으면 샘플 또는 TRIP_DEFAULT로 즉시 채워서 표시
       if (found && !found.days?.length) {
-        const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+        const localSrc = found.sampleId === 'rome' ? window.ROME_DEFAULT : found.sampleId === 'nyc' ? window.TRIP_DEFAULT : window.TRIP_DEFAULT;
+        const def = JSON.parse(JSON.stringify(localSrc));
         tripToShow = normalizeTrip({
           ...found,
-          title: def.title || found.title,
+          title: found.title || def.title,
           dates: def.dates || '',
           hotel: def.hotel || '',
           days: def.days || [],
@@ -14899,18 +15910,47 @@ function App() {
     onAdd: async () => {
       const title = prompt('여행 이름을 입력해 주세요\n(예: 뉴욕, 파리 7박)');
       if (!title) return;
+      // 기존 여행들과 가장 다른 색상 자동 선택
+      const PALETTE = [20, 45, 90, 140, 200, 240, 280, 320, 350, 0];
+      const hueDist = (a, b) => {
+        const d = Math.abs(a - b) % 360;
+        return Math.min(d, 360 - d);
+      };
+      const existingHues = userTrips.map(t => t.hue ?? t.days?.[0]?.hero?.hue ?? 25);
+      const bestHue = existingHues.length === 0 ? 200 : PALETTE.reduce((best, h) => {
+        const minDist = Math.min(...existingHues.map(e => hueDist(h, e)));
+        const bestDist = Math.min(...existingHues.map(e => hueDist(best, e)));
+        return minDist > bestDist ? h : best;
+      }, PALETTE[0]);
       const {
-        tripId,
-        hue
+        tripId
       } = await fbCreateNewTrip(userData.uid, title);
+      const template = {
+        hue: bestHue,
+        days: [{
+          n: 1,
+          date: '',
+          weekday: '',
+          title: 'Day 1',
+          titleEn: '',
+          hero: {
+            hue: bestHue,
+            label: 'DAY 1'
+          },
+          weather: '',
+          items: []
+        }],
+        hotels: [],
+        food: []
+      };
+      await fbSaveGroup(tripId, template).catch(() => {});
       setUserTrips(prev => [...prev, {
         id: tripId,
         title,
         dates: '',
-        days: [],
-        hotels: [],
+        ...template,
         members: [userData.uid],
-        hue
+        hue: bestHue
       }]);
       setActiveTripId(tripId);
       setTab('home');
