@@ -3880,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v272"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v273"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -6999,7 +6999,7 @@ function StopSheet({
     style: {
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
-      paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
+      paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
       maxHeight: expanded ? 'calc(100dvh - var(--sat, 44px) - 8px)' : '80dvh',
       overflowY: expanded ? 'auto' : 'hidden',
       overflowX: 'hidden',
@@ -15680,7 +15680,10 @@ function App() {
     };
     const onEnd = e => {
       const dy = Math.abs((e.changedTouches[0]?.clientY ?? 0) - startY);
-      if (dy < 10) setTabBarPeeking(p => !p); // 탭만 반응, 스크롤 무시
+      if (dy < 10) {
+        setTabBarVisible(true);
+        setTabBarPeeking(p => !p);
+      } // 탭만 반응, 스크롤 무시
     };
     document.addEventListener('touchstart', onStart, {
       passive: true

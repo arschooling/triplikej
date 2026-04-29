@@ -1869,7 +1869,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v272</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v273</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3524,7 +3524,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit }) 
       <div ref={sheetRef} onClick={(e)=>e.stopPropagation()}
         style={{
           background:COLORS.bg, borderRadius:'22px 22px 0 0',
-          paddingBottom:'calc(env(safe-area-inset-bottom, 0px) + 80px)',
+          paddingBottom:'calc(env(safe-area-inset-bottom, 0px) + 24px)',
           maxHeight: expanded
             ? 'calc(100dvh - var(--sat, 44px) - 8px)'
             : '80dvh',
@@ -7994,7 +7994,7 @@ function App() {
     const onStart = (e) => { startY = e.touches[0]?.clientY ?? 0; };
     const onEnd = (e) => {
       const dy = Math.abs((e.changedTouches[0]?.clientY ?? 0) - startY);
-      if (dy < 10) setTabBarPeeking(p => !p); // 탭만 반응, 스크롤 무시
+      if (dy < 10) { setTabBarVisible(true); setTabBarPeeking(p => !p); } // 탭만 반응, 스크롤 무시
     };
     document.addEventListener('touchstart', onStart, { passive: true });
     document.addEventListener('touchend', onEnd, { passive: true });
