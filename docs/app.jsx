@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v225</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v226</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2585,20 +2585,31 @@ function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
                 </div>
               )}
             </div>
-            {editing && editingTitle ? (
-              <input autoFocus value={day.title} onChange={e => onEditDay({ title: e.target.value })}
-                onBlur={() => setEditingTitle(false)}
-                style={{ marginTop:8, fontFamily:SERIF, fontSize:30, lineHeight:1.08, color:COLORS.ink,
-                  border:'none', outline:'none', background:'transparent', width:'100%', padding:0 }}/>
+            {editing ? (
+              <div style={{ marginTop:8, display:'flex', flexDirection:'column', gap:6 }}>
+                <input value={day.title} onChange={e => onEditDay({ title: e.target.value })}
+                  placeholder="날 제목"
+                  style={{ width:'100%', padding:'8px 10px', borderRadius:8, boxSizing:'border-box',
+                    border:`1px solid ${COLORS.line}`, background:COLORS.card,
+                    fontFamily:SERIF, fontSize:20, color:COLORS.ink, outline:'none' }}/>
+                <input value={day.titleEn || ''} onChange={e => onEditDay({ titleEn: e.target.value })}
+                  placeholder="Subtitle (English)"
+                  style={{ width:'100%', padding:'8px 10px', borderRadius:8, boxSizing:'border-box',
+                    border:`1px solid ${COLORS.line}`, background:COLORS.card,
+                    fontFamily:SANS, fontSize:13, fontStyle:'italic', color:COLORS.mute, outline:'none' }}/>
+              </div>
             ) : (
-              <div onClick={() => editing && setEditingTitle(true)} style={{
-                marginTop:8, fontFamily:SERIF, fontSize:30, lineHeight:1.08, color:COLORS.ink,
-                cursor: editing ? 'text' : 'default',
-              }}>{day.title}</div>
+              <>
+                <div style={{ marginTop:8, fontFamily:SERIF, fontSize:30, lineHeight:1.08, color:COLORS.ink }}>
+                  {day.title}
+                </div>
+                {day.titleEn && (
+                  <div style={{ marginTop:2, fontFamily:SANS, fontSize:13, color:COLORS.mute, fontStyle:'italic' }}>
+                    {day.titleEn}
+                  </div>
+                )}
+              </>
             )}
-            <div style={{ marginTop:2, fontFamily:SANS, fontSize:13, color:COLORS.mute, fontStyle:'italic' }}>
-              {day.titleEn}
-            </div>
           </div>
         </div>
       </div>
