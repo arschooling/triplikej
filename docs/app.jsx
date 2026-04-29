@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v221</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v222</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3051,6 +3051,22 @@ function haversineM(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// 캐시 헬퍼: localStorage에 TTL 포함 저장/읽기
+const NC_PLACES_TTL = 24 * 60 * 60 * 1000;  // 장소 목록 24시간
+const NC_PHOTO_TTL  =  7 * 24 * 60 * 60 * 1000;  // 사진 URL 7일
+function ncGet(key, ttl) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return undefined;
+    const { t, d } = JSON.parse(raw);
+    if (Date.now() - t > ttl) { localStorage.removeItem(key); return undefined; }
+    return d;
+  } catch { return undefined; }
+}
+function ncSet(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch(_) {}
+}
+
 function NearbySheet({ stop, initialTab, onClose }) {
   const [tab, setTab] = React.useState('hotspot');
   const [hotspots, setHotspots] = React.useState(null);
@@ -3071,10 +3087,21 @@ function NearbySheet({ stop, initialTab, onClose }) {
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
   }, [stop, initialTab]);
 
-  // 두 타입 병렬 fetch
+  // 두 타입 병렬 fetch (캐시 우선)
   React.useEffect(() => {
     if (!stop) return;
     const ctrl = new AbortController();
+    // 캐시 키: 좌표가 있으면 좌표 기반, 없으면 타이틀 기반
+    const stopKey = stop.coords
+      ? `${stop.coords[0].toFixed(3)}_${stop.coords[1].toFixed(3)}`
+      : (stop.title || '').replace(/\s+/g, '_');
+    const cacheKey = `nearby_places_${stopKey}`;
+    const cached = ncGet(cacheKey, NC_PLACES_TTL);
+    if (cached) {
+      setHotspots(cached.hotspots);
+      setFood(cached.food);
+      return;
+    }
     (async () => {
       try {
         let lat, lon;
@@ -3109,22 +3136,37 @@ function NearbySheet({ stop, initialTab, onClose }) {
           fetch(base + encodeURIComponent(hQ), { signal:ctrl.signal }).then(r=>r.json()),
           fetch(base + encodeURIComponent(fQ), { signal:ctrl.signal }).then(r=>r.json()),
         ]);
-        setHotspots(parse(hR));
-        setFood(parse(fR));
+        const hotspotsParsed = parse(hR);
+        const foodParsed = parse(fR);
+        ncSet(cacheKey, { hotspots: hotspotsParsed, food: foodParsed });  // 캐시 저장
+        setHotspots(hotspotsParsed);
+        setFood(foodParsed);
       } catch(e) { if (!ctrl.signal.aborted) { setHotspots([]); setFood([]); } }
     })();
     return () => ctrl.abort();
   }, [stop]);
 
-  // Wikipedia 사진 fetch
+  // Wikipedia 사진 fetch (캐시 우선)
   React.useEffect(() => {
     [...(hotspots||[]), ...(food||[])].forEach(item => {
       if (!item.wikipedia || item.name in photos) return;
+      const photoKey = `nearby_photo_${item.name}`;
+      const cachedUrl = ncGet(photoKey, NC_PHOTO_TTL);
+      if (cachedUrl !== undefined) {
+        // '' 이면 사진 없음으로 저장된 것 (재요청 방지)
+        if (cachedUrl) setPhotos(p => ({...p, [item.name]: cachedUrl}));
+        else setPhotos(p => ({...p, [item.name]: null}));
+        return;
+      }
       setPhotos(p => ({...p, [item.name]: null}));
       const title = item.wikipedia.replace(/^[a-z-]+:/, '').replace(/ /g,'_');
       fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`)
         .then(r=>r.json())
-        .then(d => { if (d.thumbnail?.source) setPhotos(p=>({...p, [item.name]: d.thumbnail.source})); })
+        .then(d => {
+          const url = d.thumbnail?.source || '';
+          ncSet(photoKey, url);  // 사진 있으면 URL, 없으면 '' 저장
+          if (url) setPhotos(p=>({...p, [item.name]: url}));
+        })
         .catch(() => {});
     });
   }, [hotspots, food]);
