@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v218</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v219</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1955,15 +1955,19 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const featuredTouchRef = React.useRef({ x: 0, y: 0 });
   React.useEffect(() => { setFeaturedIdx(calcFeaturedIdx()); }, [trip.days.length]);
   // 슬라이더 상태
-  const [fOffset, setFOffset]       = React.useState(0);
-  const [fAnimate, setFAnimate]     = React.useState(false);
-  const fGesture = React.useRef({ on:false, startX:0, startY:0, drag:false });
-  const fWrapRef = React.useRef(null);
+  const [fOffset, setFOffset] = React.useState(0);
+  const fGesture  = React.useRef({ on:false, startX:0, startY:0, drag:false });
+  const fWrapRef  = React.useRef(null);  // 클립 컨테이너
+  const fTrackRef = React.useRef(null);  // 트랙 div (transition 직접 제어)
   const fW = () => fWrapRef.current?.offsetWidth || 360;
+  const F_EASE = 'transform 0.32s cubic-bezier(0.22,1,0.36,1)';
+
+  const fSetEase = () => { if (fTrackRef.current) fTrackRef.current.style.transition = F_EASE; };
+  const fSetNone = () => { if (fTrackRef.current) fTrackRef.current.style.transition = 'none'; };
 
   const changeFeatured = (newIdx) => {
     if (newIdx < 0 || newIdx >= trip.days.length || newIdx === featuredIdx) return;
-    setFAnimate(true);
+    fSetEase();
     setFeaturedIdx(newIdx);
     setFOffset(0);
   };
@@ -1980,26 +1984,27 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
       if (Math.abs(dx) > 6) g.drag = true;
     }
     if (!g.drag) return;
+    fSetNone();  // 드래그 중 transition 없이 즉각 반응
     const limited = dx < 0
       ? Math.max(dx, featuredIdx >= trip.days.length - 1 ? 0 : -fW() * 1.2)
       : Math.min(dx, featuredIdx <= 0 ? 0 : fW() * 1.2);
-    setFAnimate(false);
     setFOffset(limited);
   };
   const onFEnd = () => {
     const g = fGesture.current;
     fGesture.current = { ...g, on:false, drag:false };
     if (!g.drag) return;
-    const threshold = fW() * 0.22;
-    setFAnimate(true);
+    const w = fW();
+    const threshold = w * 0.22;
+    fSetEase();  // DOM에 먼저 transition 적용 → React 렌더 전에 CSS 확정
     if (fOffset < -threshold && featuredIdx < trip.days.length - 1) {
-      setFOffset(-fW());
-      setTimeout(() => { setFeaturedIdx(i => i + 1); setFOffset(0); setFAnimate(false); }, 300);
+      setFOffset(-w);
+      setTimeout(() => { fSetNone(); setFeaturedIdx(i => i + 1); setFOffset(0); }, 330);
     } else if (fOffset > threshold && featuredIdx > 0) {
-      setFOffset(fW());
-      setTimeout(() => { setFeaturedIdx(i => i - 1); setFOffset(0); setFAnimate(false); }, 300);
+      setFOffset(w);
+      setTimeout(() => { fSetNone(); setFeaturedIdx(i => i - 1); setFOffset(0); }, 330);
     } else {
-      setFOffset(0);
+      setFOffset(0);  // 중앙으로 스냅백 (transition 이미 활성화됨)
     }
   };
   const featured = trip.days[featuredIdx];
@@ -2185,10 +2190,9 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
           onTouchStart={onFStart} onTouchMove={onFMove} onTouchEnd={onFEnd}
           style={{ overflow:'hidden', position:'relative' }}>
           {/* 트랙: 모든 날 + 각 날의 여백이 함께 이동 */}
-          <div style={{
+          <div ref={fTrackRef} style={{
             display:'flex',
             transform: `translateX(calc(${-featuredIdx * 100}% + ${fOffset}px))`,
-            transition: fAnimate ? 'transform 0.3s cubic-bezier(0.22,1,0.36,1)' : 'none',
             willChange: 'transform',
           }}>
             {trip.days.map((d, i) => (
