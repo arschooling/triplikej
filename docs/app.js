@@ -599,16 +599,21 @@ function SwipeableRow({
     return (
       /*#__PURE__*/
       // 높이 접힘용 래퍼 (overflow:hidden은 접힐 때만)
+      // flex:1을 여기에 적용해야 부모 flex row에서 남은 너비를 차지함
       React.createElement("div", {
         ref: outerRef,
-        style: collapseStyle,
+        style: {
+          flex: wrapStyle.flex,
+          ...collapseStyle
+        },
         onTouchStart: onTouchStart,
         onTouchMove: onTouchMove,
         onTouchEnd: onTouchEnd
       }, /*#__PURE__*/React.createElement("div", {
         style: {
           position: 'relative',
-          ...wrapStyle
+          ...wrapStyle,
+          flex: undefined
         }
       }, !flying && /*#__PURE__*/React.createElement("div", {
         style: {
@@ -3875,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v261"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v264"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
