@@ -80,7 +80,9 @@ window.fbGetOrCreateUser = async (fbUser) => {
   if (isOwner && !tripIds.includes(fbUser.uid)) tripIds = [fbUser.uid, ...tripIds];
   const groupSnaps = await Promise.all(tripIds.map(id => _fbDb.collection('groups').doc(id).get()));
   const validTripIds = tripIds.filter((id, i) =>
-    groupSnaps[i].exists && (groupSnaps[i].data().members || []).includes(fbUser.uid)
+    groupSnaps[i].exists &&
+    (groupSnaps[i].data().members || []).includes(fbUser.uid) &&
+    (isOwner || id !== fbUser.uid)  // 비오너는 uid 기반 레거시 trip(뉴욕) 차단
   );
   if (JSON.stringify(validTripIds) !== JSON.stringify(existing.tripIds || [])) {
     await ref.update({ tripIds: validTripIds });
