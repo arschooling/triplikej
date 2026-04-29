@@ -1863,7 +1863,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v252</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v253</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6967,6 +6967,22 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   const [places,     setPlaces]     = React.useState([]);
   const [loading,    setLoading]    = React.useState(false);
   const [selected,   setSelected]   = React.useState(new Set());
+  const [kbOffset,   setKbOffset]   = React.useState(0);
+
+  // 키보드 올라올 때 팝업 위치 조정
+  React.useEffect(() => {
+    if (!open) { setKbOffset(0); return; }
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKbOffset(kb);
+    };
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    update();
+    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update); };
+  }, [open]);
 
   const dayCount = startIso && endIso
     ? Math.round((new Date(endIso+'T12:00:00') - new Date(startIso+'T12:00:00')) / 86400000) + 1
@@ -7044,11 +7060,13 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   });
 
   return ReactDOM.createPortal(
-    <div style={{ position:'fixed', inset:0, zIndex:1100, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.4)', padding:'0 20px' }} onClick={onClose}>
+    <div style={{ position:'fixed', inset:0, zIndex:1100, display:'flex', alignItems:'flex-end', justifyContent:'center', background:'rgba(0,0,0,0.4)', padding:`0 20px ${kbOffset + 16}px` }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
         background:COLORS.bg, borderRadius:22, width:'100%', maxWidth:380,
-        maxHeight:'82vh', display:'flex', flexDirection:'column',
+        maxHeight: kbOffset > 0 ? `calc(100vh - ${kbOffset + 32}px)` : '82vh',
+        display:'flex', flexDirection:'column',
         boxShadow:'0 12px 48px rgba(0,0,0,0.22)',
+        transition:'max-height 0.2s ease',
       }}>
         {/* 헤더 */}
         <div style={{ padding:'18px 20px 0', flexShrink:0 }}>
