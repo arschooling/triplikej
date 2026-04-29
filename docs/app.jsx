@@ -1779,7 +1779,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v190</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v191</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1886,7 +1886,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       userData, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
-  React.useEffect(() => { if (editing) setEditingTitle(true); else setEditingTitle(false); }, [editing]);
+  React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
   const [sampleLoading, setSampleLoading] = React.useState(false);
   const [sampleErr, setSampleErr] = React.useState('');
   const handleLoadSample = async () => {
@@ -2020,15 +2020,23 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         {editing && editingTitle ? (
           <input autoFocus value={trip.title} onChange={e => onEditTrip({ title: e.target.value })}
             onBlur={() => setEditingTitle(false)}
+            onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
             style={{ fontFamily:SERIF, fontSize:56, lineHeight:0.95, color:COLORS.ink,
               letterSpacing:'-0.025em', fontWeight:400, border:'none', outline:'none',
-              background:'transparent', width:'100%', padding:0 }}/>
+              background:'transparent', width:'100%', padding:'8px 14px',
+              borderRadius:12, boxSizing:'border-box' }}/>
         ) : (
           <div onClick={() => editing && setEditingTitle(true)} style={{
             fontFamily:SERIF, fontSize:56, lineHeight:0.95, color:COLORS.ink,
             letterSpacing:'-0.025em', fontWeight:400,
             cursor: editing ? 'text' : 'default',
-          }}>{trip.title}.</div>
+            ...(editing ? {
+              background: COLORS.card,
+              border: `1.5px solid ${COLORS.line}`,
+              borderRadius: 12,
+              padding: '8px 14px',
+            } : {}),
+          }}>{trip.title}{!editing && '.'}</div>
         )}
         <div style={{ marginTop:10, display:'flex', gap:6, alignItems:'center', flexWrap:'wrap' }}>
           {editing ? (

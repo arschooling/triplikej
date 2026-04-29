@@ -4063,7 +4063,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v190"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v191"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -4284,7 +4284,7 @@ function HomeScreen({
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => {
-    if (editing) setEditingTitle(true);else setEditingTitle(false);
+    if (!editing) setEditingTitle(false);
   }, [editing]);
   const [sampleLoading, setSampleLoading] = React.useState(false);
   const [sampleErr, setSampleErr] = React.useState('');
@@ -4493,6 +4493,9 @@ function HomeScreen({
       title: e.target.value
     }),
     onBlur: () => setEditingTitle(false),
+    onKeyDown: e => {
+      if (e.key === 'Enter') e.target.blur();
+    },
     style: {
       fontFamily: SERIF,
       fontSize: 56,
@@ -4504,7 +4507,9 @@ function HomeScreen({
       outline: 'none',
       background: 'transparent',
       width: '100%',
-      padding: 0
+      padding: '8px 14px',
+      borderRadius: 12,
+      boxSizing: 'border-box'
     }
   }) : /*#__PURE__*/React.createElement("div", {
     onClick: () => editing && setEditingTitle(true),
@@ -4515,9 +4520,15 @@ function HomeScreen({
       color: COLORS.ink,
       letterSpacing: '-0.025em',
       fontWeight: 400,
-      cursor: editing ? 'text' : 'default'
+      cursor: editing ? 'text' : 'default',
+      ...(editing ? {
+        background: COLORS.card,
+        border: `1.5px solid ${COLORS.line}`,
+        borderRadius: 12,
+        padding: '8px 14px'
+      } : {})
     }
-  }, trip.title, "."), /*#__PURE__*/React.createElement("div", {
+  }, trip.title, !editing && '.'), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 10,
       display: 'flex',
