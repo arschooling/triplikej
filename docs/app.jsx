@@ -1863,7 +1863,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v250</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v251</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7530,6 +7530,7 @@ function App() {
   const [activeTripId, setActiveTripId] = React.useState(_nav.activeTripId || null);
   const [userTrips, setUserTrips]       = React.useState([]);
   const [tripsLoading, setTripsLoading] = React.useState(false);
+  const [tripsReady,   setTripsReady]   = React.useState(false);
   const [profileSheetOpen,     setProfileSheetOpen]     = React.useState(false);
   const [addCompanionOpen,     setAddCompanionOpen]     = React.useState(null); // null=closed, false=open(no trip), tripId=open(with trip)
   const [companionsScreenOpen, setCompanionsScreenOpen] = React.useState(false);
@@ -7580,12 +7581,12 @@ function App() {
     }
   };
 
-  // ── 앱 준비되면 loginPending 해제 ────────────────────────────
+  // ── 앱 준비되면 loginPending 해제 (trips 로딩 완료 후) ────────
   React.useEffect(() => {
-    if (loginPending && authState === 'in') {
+    if (loginPending && authState === 'in' && tripsReady) {
       setLoginPending(false);
     }
-  }, [loginPending, authState]);
+  }, [loginPending, authState, tripsReady]);
 
   // ── 로컬 캐시 저장 (새로고침 시 즉시 표시용) ──────────────────
   React.useEffect(() => {
@@ -7695,8 +7696,9 @@ function App() {
         });
         setUserTrips(normalized);
         setTripsLoading(false);
+        setTripsReady(true);
       });
-    }).catch(() => setTripsLoading(false));
+    }).catch(() => { setTripsLoading(false); setTripsReady(true); });
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
 
   // ── Firestore: shared group listener ──────────────────────
