@@ -73,11 +73,15 @@ window.fbGetOrCreateUser = async (fbUser) => {
     hotels  : def.hotels || [],
     food    : def.food   || [],
   };
+  const isOwner = fbUser.email === SAMPLE_OWNER_EMAIL;
   if (!groupSnap.exists) {
+    // 오너: TRIP_DEFAULT로 복구 / 일반 유저: 빈 여행으로 생성
+    const initData = isOwner ? tripDefault : { title:'내 여행', dates:'', hotel:'', days:[], hotels:[], food:[] };
     console.warn('[TripLikeJ] groups/' + fbUser.uid + ' 없음 → 새로 생성');
-    await groupRef.set({ ...tripDefault, members: [fbUser.uid], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  } else if (!(groupSnap.data().days || []).length) {
-    console.warn('[TripLikeJ] groups/' + fbUser.uid + ' days 비어있음 → TRIP_DEFAULT로 복구');
+    await groupRef.set({ ...initData, members: [fbUser.uid], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  } else if (!(groupSnap.data().days || []).length && isOwner) {
+    // days 비어있을 때 TRIP_DEFAULT 복구는 오너 전용
+    console.warn('[TripLikeJ] groups/' + fbUser.uid + ' days 비어있음 → TRIP_DEFAULT로 복구 (오너 전용)');
     await groupRef.set(tripDefault, { merge: true });
   }
 

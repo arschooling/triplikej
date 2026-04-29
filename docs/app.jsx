@@ -1863,7 +1863,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v242</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v243</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7307,20 +7307,23 @@ function App() {
       const allIds = [...tripIds, ...newIds];
       return fbLoadTrips(allIds).then(async trips => {
         const normalized = trips.map(t => normalizeTrip(t, t.id));
-        // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 (샘플 제외)
-        for (let i = 0; i < normalized.length; i++) {
-          if ((normalized[i].days || []).length === 0 && !normalized[i].sampleId) {
-            const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
-            const patch = {
-              title : def.title  || 'New York',
-              dates : def.dates  || '',
-              hotel : def.hotel  || '',
-              days  : def.days   || [],
-              hotels: def.hotels || [],
-              food  : def.food   || [],
-            };
-            normalized[i] = normalizeTrip({ ...normalized[i], ...patch }, normalized[i].id);
-            fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
+        // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 — 오너 계정 전용
+        const isOwner = (email) => email === 'arjungtaeng@gmail.com';
+        if (isOwner(userData?.email)) {
+          for (let i = 0; i < normalized.length; i++) {
+            if ((normalized[i].days || []).length === 0 && !normalized[i].sampleId) {
+              const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+              const patch = {
+                title : def.title  || 'New York',
+                dates : def.dates  || '',
+                hotel : def.hotel  || '',
+                days  : def.days   || [],
+                hotels: def.hotels || [],
+                food  : def.food   || [],
+              };
+              normalized[i] = normalizeTrip({ ...normalized[i], ...patch }, normalized[i].id);
+              fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
+            }
           }
         }
         // 업데이트된 샘플 반영
