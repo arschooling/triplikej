@@ -1802,7 +1802,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v214</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v215</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -1941,15 +1941,25 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const { itemProps: hotelDragProps, isTouchDragging: isHotelDragging } = useDragReorder(onReorderHotels, editing);
   const tripYear = extractTripYear(trip);
   const todayIso = new Date().toISOString().slice(0, 10);
-  const featuredIdx = (() => {
+  const calcFeaturedIdx = () => {
     const isos = trip.days.map(d => dayDateToIso(d.date, tripYear) || '');
     const todayIdx = isos.findIndex(iso => iso === todayIso);
-    if (todayIdx >= 0) return todayIdx;               // 여행 중: 오늘
+    if (todayIdx >= 0) return todayIdx;
     const future = isos.findIndex(iso => iso > todayIso);
-    if (future === 0 || isos.every(iso => !iso)) return 0; // 여행 전: 첫째 날
-    if (future < 0) return trip.days.length - 1;      // 여행 후: 마지막 날
-    return future - 1;                                 // 사이 공백: 가장 가까운 지난 날
-  })();
+    if (future === 0 || isos.every(iso => !iso)) return 0;
+    if (future < 0) return trip.days.length - 1;
+    return future - 1;
+  };
+  const [featuredIdx, setFeaturedIdx] = React.useState(calcFeaturedIdx);
+  const [featuredAnim, setFeaturedAnim] = React.useState({ key: 0, dir: 0 });
+  const featuredTouchRef = React.useRef({ x: 0, y: 0 });
+  React.useEffect(() => { setFeaturedIdx(calcFeaturedIdx()); }, [trip.days.length]);
+  const changeFeatured = (newIdx) => {
+    if (newIdx === featuredIdx) return;
+    const dir = newIdx > featuredIdx ? 1 : -1;
+    setFeaturedIdx(newIdx);
+    setFeaturedAnim(a => ({ key: a.key + 1, dir }));
+  };
   const featured = trip.days[featuredIdx];
 
   // trip.dates 파싱: "May 4 — May 13, 2025"
@@ -2128,31 +2138,61 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
 
       {/* Featured */}
       {featured && (
-        <div style={{ padding:'4px 16px 18px' }}>
+        <div style={{ padding:'4px 16px 18px' }}
+          onTouchStart={e => { featuredTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+          onTouchEnd={e => {
+            const dx = e.changedTouches[0].clientX - featuredTouchRef.current.x;
+            const dy = Math.abs(e.changedTouches[0].clientY - featuredTouchRef.current.y);
+            if (Math.abs(dx) < 44 || dy > Math.abs(dx)) return;
+            const next = dx < 0
+              ? Math.min(trip.days.length - 1, featuredIdx + 1)
+              : Math.max(0, featuredIdx - 1);
+            changeFeatured(next);
+          }}
+        >
           <div style={{ background:COLORS.card, borderRadius:22, overflow:'hidden',
             boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)' }}>
-            <Photo hue={(featuredIdx === 0 ? (trip.hue ?? featured.hero?.hue) : featured.hero?.hue) ?? 25} label={featured.hero?.label} height={170}/>
-            <div style={{ padding:'16px 18px 18px' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
-                <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
-                  DAY {String(featured.n).padStart(2,'0')} · {featured.weekday.toUpperCase()}
+            <div key={featuredAnim.key} style={{
+              animation: featuredAnim.key > 0
+                ? `${featuredAnim.dir > 0 ? 'tabSlideFromRight' : 'tabSlideFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)`
+                : 'none',
+            }}>
+              <Photo hue={(featuredIdx === 0 ? (trip.hue ?? featured.hero?.hue) : featured.hero?.hue) ?? 25} label={featured.hero?.label} height={170}/>
+              <div style={{ padding:'16px 18px 18px' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+                  <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
+                    DAY {String(featured.n).padStart(2,'0')} · {featured.weekday.toUpperCase()}
+                  </div>
+                  <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{featured.date}</div>
                 </div>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{featured.date}</div>
+                <div style={{ marginTop:7, fontFamily:SERIF, fontSize:28, lineHeight:1.1, color:COLORS.ink }}>
+                  {featured.title}
+                </div>
+                <button onClick={() => onOpenDay(featuredIdx)} style={{
+                  marginTop:16, width:'100%', border:'none', cursor:'pointer',
+                  background:COLORS.ink, color:COLORS.bg, borderRadius:12,
+                  padding:'13px 16px', fontFamily:SANS, fontSize:14, fontWeight:500,
+                  display:'flex', justifyContent:'space-between', alignItems:'center',
+                }}>
+                  <span>{featuredIdx === 0 ? '첫날 일정 보기' : `Day ${featured.n} 일정 보기`}</span>
+                  <Icon name="chevron" size={16} color={COLORS.bg}/>
+                </button>
               </div>
-              <div style={{ marginTop:7, fontFamily:SERIF, fontSize:28, lineHeight:1.1, color:COLORS.ink }}>
-                {featured.title}
-              </div>
-              <button onClick={() => onOpenDay(featuredIdx)} style={{
-                marginTop:16, width:'100%', border:'none', cursor:'pointer',
-                background:COLORS.ink, color:COLORS.bg, borderRadius:12,
-                padding:'13px 16px', fontFamily:SANS, fontSize:14, fontWeight:500,
-                display:'flex', justifyContent:'space-between', alignItems:'center',
-              }}>
-                <span>{featuredIdx === 0 ? '첫날 일정 보기' : `Day ${featured.n} 일정 보기`}</span>
-                <Icon name="chevron" size={16} color={COLORS.bg}/>
-              </button>
             </div>
           </div>
+          {/* 페이지 도트 */}
+          {trip.days.length > 1 && (
+            <div style={{ display:'flex', justifyContent:'center', gap:5, marginTop:10 }}>
+              {trip.days.map((_, i) => (
+                <div key={i} onClick={() => changeFeatured(i)} style={{
+                  width: i === featuredIdx ? 16 : 5, height:5,
+                  borderRadius:3, cursor:'pointer',
+                  background: i === featuredIdx ? COLORS.ink : COLORS.line,
+                  transition:'all 0.2s ease',
+                }}/>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -2198,7 +2238,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   </div>
                   {editing ? (
                     <>
-                      <DragHandle size={14} color={COLORS.mute}/>
+                      <DragHandle size={14} color={COLORS.mute} {...dp.handleProps}/>
                       {/* 드래그 중엔 삭제 버튼 숨김 */}
                       {!isDayDragging && (
                         <button onClick={(e)=>{e.stopPropagation(); onDeleteDay(i);}} style={{
@@ -2322,7 +2362,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                     </div>
                     {editing ? (
                       <>
-                        <DragHandle size={14} color={COLORS.mute}/>
+                        <DragHandle size={14} color={COLORS.mute} {...hp.handleProps}/>
                         <button onClick={(e)=>{e.stopPropagation(); onDeleteHotel(h._idx);}} style={{
                           width:26, height:26, borderRadius:13, border:'none',
                           background:'rgba(193,79,46,0.12)', cursor:'pointer',
@@ -3137,6 +3177,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
   const [editing, setEditing] = React.useState(!!open.editing);
   const [draft, setDraft] = React.useState(open.stop);
   const [editingTitleInline, setEditingTitleInline] = React.useState(false);
+  const [editingEnInline, setEditingEnInline] = React.useState(false);
   const committed = React.useRef(open.stop);
   const [sheetY, setSheetY] = React.useState(0);
   const [entered, setEntered] = React.useState(false);
@@ -3269,24 +3310,62 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias }) {
             <EditStopForm draft={draft} setDraft={setDraft} cityBias={cityBias}/>
           ) : (
             <>
-              {editingTitleInline ? (
-                <input autoFocus value={draft.title}
-                  onChange={e => setDraft({...draft, title: e.target.value})}
-                  onBlur={() => { setEditingTitleInline(false); onSave(draft); committed.current = draft; }}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur(); }}
-                  style={{ marginTop:8, width:'100%', border:'none',
-                    borderBottom:`1px solid ${COLORS.ink}`, background:'transparent',
+              {/* 타이틀 인라인 편집 */}
+              <div style={{ marginTop:8, position:'relative' }}>
+                {editingTitleInline ? (
+                  <input autoFocus value={draft.title}
+                    onChange={e => setDraft({...draft, title: e.target.value})}
+                    onBlur={() => { setEditingTitleInline(false); onSave(draft); committed.current = draft; }}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur(); }}
+                    style={{ width:'100%', border:'none', borderBottom:`1.5px solid ${COLORS.ink}`,
+                      background:'transparent', fontFamily:SERIF, fontSize:28, lineHeight:1.12,
+                      color:COLORS.ink, outline:'none', boxSizing:'border-box', padding:'0 28px 0 0' }}/>
+                ) : (
+                  <div onClick={() => setEditingTitleInline(true)} style={{
                     fontFamily:SERIF, fontSize:28, lineHeight:1.12, color:COLORS.ink,
-                    outline:'none', boxSizing:'border-box', padding:'0' }}/>
-              ) : (
-                <div onClick={() => setEditingTitleInline(true)}
-                  style={{ marginTop:8, fontFamily:SERIF, fontSize:28, lineHeight:1.12, color:COLORS.ink,
-                    cursor:'text', borderBottom:`1px dashed ${COLORS.line}` }}>
-                  {draft.title}
-                </div>
-              )}
-              <div style={{ marginTop:2, fontFamily:SANS, fontSize:13.5, color:COLORS.mute, fontStyle:'italic' }}>
-                {draft.en}
+                    cursor:'text', paddingRight:28,
+                    borderBottom:`1px dashed ${COLORS.line}`, paddingBottom:2,
+                  }}>
+                    {draft.title}
+                  </div>
+                )}
+                {!editingTitleInline && (
+                  <button onClick={() => setEditingTitleInline(true)} style={{
+                    position:'absolute', top:4, right:0, border:'none', background:'transparent',
+                    padding:3, cursor:'pointer', opacity:0.35,
+                  }}>
+                    <Icon name="edit" size={13} color={COLORS.ink} stroke={2}/>
+                  </button>
+                )}
+              </div>
+              {/* 부제(en) 인라인 편집 */}
+              <div style={{ marginTop:4, position:'relative' }}>
+                {editingEnInline ? (
+                  <input autoFocus value={draft.en || ''}
+                    placeholder="영문명 / 부제"
+                    onChange={e => setDraft({...draft, en: e.target.value})}
+                    onBlur={() => { setEditingEnInline(false); onSave(draft); committed.current = draft; }}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur(); }}
+                    style={{ width:'100%', border:'none', borderBottom:`1px solid ${COLORS.mute}`,
+                      background:'transparent', fontFamily:SANS, fontSize:13.5, fontStyle:'italic',
+                      color:COLORS.mute, outline:'none', boxSizing:'border-box', padding:'0 24px 0 0' }}/>
+                ) : (
+                  <div onClick={() => setEditingEnInline(true)} style={{
+                    fontFamily:SANS, fontSize:13.5, fontStyle:'italic', color:COLORS.mute,
+                    cursor:'text', paddingRight:24, minHeight:20,
+                    borderBottom:`1px dashed transparent`,
+                  }}>
+                    {draft.en || <span style={{ opacity:0.35 }}>영문명 / 부제</span>}
+                  </div>
+                )}
+                {!editingEnInline && (
+                  <button onClick={() => setEditingEnInline(true)} style={{
+                    position:'absolute', top:2, right:0, border:'none', background:'transparent',
+                    padding:3, cursor:'pointer', opacity:0.3,
+                  }}>
+                    <Icon name="edit" size={11} color={COLORS.mute} stroke={2}/>
+                  </button>
+                )}
               </div>
               <div style={{ marginTop:16, display:'flex', flexDirection:'column' }}>
                 {[

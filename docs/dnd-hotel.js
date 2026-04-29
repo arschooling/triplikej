@@ -29,8 +29,10 @@ function useDragReorder(onReorder, enabled = true) {
   }, [!!td]);
   const containerProps = {};
   const itemProps = idx => {
-    // Touch handlers — always active regardless of `enabled`
+    // 수정모드 아닐 때: 카드 롱프레스(430ms)로 드래그
+    // 수정모드일 때: 핸들 터치로만 드래그 (카드 롱프레스 비활성)
     const onTouchStart = e => {
+      if (enabled) return; // 수정모드에서는 핸들만 사용
       const startY = e.touches[0].clientY;
       timerRef.current = setTimeout(() => {
         const el = elRefs.current[idx];
@@ -145,6 +147,16 @@ function useDragReorder(onReorder, enabled = true) {
         setOverIdx(null);
       }
     };
+    // 핸들 터치 시 즉시 드래그 (롱프레스 없이)
+    const handleTouchStart = e => {
+      clearTimeout(timerRef.current);
+      const startY = e.touches[0].clientY;
+      const el = elRefs.current[idx];
+      const itemH = el ? el.getBoundingClientRect().height : 64;
+      if (window.navigator?.vibrate) window.navigator.vibrate(14);
+      setTd({ from: idx, to: idx, dy: 0, startY, itemH });
+      e.stopPropagation();
+    };
     return {
       ref: el => {
         elRefs.current[idx] = el;
@@ -157,6 +169,7 @@ function useDragReorder(onReorder, enabled = true) {
       'data-drag-over': !td && enabled && overIdx === idx && dragIdx !== null && dragIdx !== idx,
       'data-drag-source': isDragSource,
       'data-drop-target': isDropTarget,
+      handleProps: { onTouchStart: handleTouchStart, onTouchMove, onTouchEnd },
     };
   };
   return {
@@ -171,15 +184,23 @@ function useDragReorder(onReorder, enabled = true) {
 // ─── Drag handle component ──────────────────────────────────
 function DragHandle({
   size = 18,
-  color = '#7A756D'
+  color = '#7A756D',
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
 }) {
   return /*#__PURE__*/React.createElement("svg", {
     width: size,
     height: size,
     viewBox: "0 0 24 24",
     fill: color,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
     style: {
-      cursor: 'grab'
+      cursor: 'grab',
+      touchAction: 'none',
+      flexShrink: 0,
     }
   }, /*#__PURE__*/React.createElement("circle", {
     cx: "9",
