@@ -52,38 +52,6 @@ window.fbGetOrCreateUser = async (fbUser) => {
   }
   const existing = snap.data();
 
-  // ── 레거시 trip 마이그레이션 (오너, 1회) ─────────────────────
-  // groups/{uid} → groups/{새 UUID}  +  hue 필드 추가
-  if (isOwner && !existing.legacyMigrated) {
-    const legacyRef  = _fbDb.collection('groups').doc(fbUser.uid);
-    const legacySnap = await legacyRef.get();
-    if (legacySnap.exists) {
-      const legacyData = legacySnap.data();
-      const newId = _fbDb.collection('groups').doc().id;
-      const hue   = legacyData.hue ?? legacyData.days?.[0]?.hero?.hue ?? 25;
-      const existingTripIds = existing.tripIds || [];
-      const newTripIds = existingTripIds.includes(fbUser.uid)
-        ? existingTripIds.map(id => id === fbUser.uid ? newId : id)
-        : [newId, ...existingTripIds];
-      // 배치: 새 doc 생성 + user tripIds 교체 + 구 legacy doc 삭제
-      const batch = _fbDb.batch();
-      batch.set(_fbDb.collection('groups').doc(newId), {
-        ...legacyData, hue,
-        members: legacyData.members || [fbUser.uid],
-      });
-      batch.update(ref, { tripIds: newTripIds, legacyMigrated: true });
-      batch.delete(legacyRef);
-      await batch.commit();
-      existing.tripIds       = newTripIds;
-      existing.legacyMigrated = true;
-      console.log('[TripLikeJ] 레거시 trip 마이그레이션 완료 →', newId);
-    } else {
-      // legacy doc 없음 — 마이그레이션 완료로 표시만
-      await ref.update({ legacyMigrated: true });
-      existing.legacyMigrated = true;
-    }
-  }
-
   // tripIds 정리: 실제 멤버로 남아있는 여행만 유지
   const tripIds = existing.tripIds != null ? existing.tripIds : [];
   const groupSnaps = await Promise.all(tripIds.map(id => _fbDb.collection('groups').doc(id).get()));
@@ -239,6 +207,22 @@ window.fbUpdateUserGroupId = (uid, groupId) =>
   _fbDb.collection('users').doc(uid).update({ groupId });
 
 // ─── Multiple Trips ───────────────────────────────────────────
+// ─── 임시: 마이그레이션된 NYC 여행 삭제 ──────────────────────────
+window.fbDeleteMigratedNYC = async () => {
+  const user = _fbAuth.currentUser;
+  if (!user) return '로그인 필요';
+  const ref = _fbDb.collection('users').doc(user.uid);
+  const snap = await ref.get();
+  const tripIds = snap.data()?.tripIds || [];
+  const trips = await Promise.all(tripIds.map(id => _fbDb.collection('groups').doc(id).get()));
+  const nycTrip = trips.find(s => s.exists && (s.data().title || '').toLowerCase().includes('new york'));
+  if (!nycTrip) return 'NYC 여행을 찾을 수 없음 (tripIds: ' + JSON.stringify(tripIds) + ')';
+  const id = nycTrip.id;
+  await _fbDb.collection('groups').doc(id).delete();
+  await ref.update({ tripIds: firebase.firestore.FieldValue.arrayRemove(id) });
+  return '삭제 완료: ' + id;
+};
+
 window.fbLoadTrips = async (tripIds) => {
   if (!tripIds || !tripIds.length) return [];
   const snaps = await Promise.all(
