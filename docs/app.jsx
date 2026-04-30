@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v327</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v328</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7163,56 +7163,149 @@ function greedyRoute(places) {
 const DAY_HUES = Array.from({ length: 20 }, (_, i) => Math.round((25 + i * 137.508) % 360));
 // [25,163,300,77,215,352,130,267,44,182,319,96,234,11,149,286,63,200,338,115]
 
-function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAirport, selectedPlaces, isKorean, selectedDest }) {
-  const startDate = new Date(startIso + 'T12:00:00');
-  const dayCount  = Math.round((new Date(endIso + 'T12:00:00') - startDate) / 86400000) + 1;
-  const routed    = greedyRoute([...selectedPlaces]);
-  const hasArr    = !isKorean && arrAirport;
-  const hasDep    = !isKorean && depAirport;
-  const cStart    = hasArr ? 2 : 1;
-  const cEnd      = hasDep ? dayCount - 1 : dayCount;
-  const cDays     = Math.max(0, cEnd - cStart + 1);
-  const perDay    = cDays > 0 ? Math.min(4, Math.ceil(routed.length / cDays)) : 4;
-  const chunks    = [];
-  for (let i = 0; i < routed.length; i += Math.max(1, perDay)) chunks.push(routed.slice(i, i + perDay));
-  const getHotel  = n => hotels.find(h => h.name && n >= h.from && n <= h.to) || null;
-  let ci = 0;
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+const DURATION_BY_TYPE = {
+  museum:180, gallery:120, theme_park:480, zoo:150, aquarium:120,
+  ruins:120, castle:120, monument:60, viewpoint:45,
+  cathedral:60, church:60, park:90, beach:180, marketplace:60, attraction:90,
+};
+function getPlaceDuration(type) { return DURATION_BY_TYPE[type] || 90; }
+function minToTime(min) {
+  const h = Math.floor(min / 60) % 24;
+  const m = min % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAirport, selectedPlaces, selectedDest }) {
+  const startDate  = new Date(startIso + 'T12:00:00');
+  const dayCount   = Math.round((new Date(endIso+'T12:00:00') - startDate) / 86400000) + 1;
+  const citiesList = cities.filter(Boolean);
+  const hasArr     = !!(arrAirport && arrAirport.trim());
+  const hasDep     = !!(depAirport && depAirport.trim());
+  const getHotel   = n => hotels.find(h => h.name && n >= h.from && n <= h.to) || null;
+
+  // 도시별 장소 분리 → 각각 최적 경로 → 순차 합치기
+  const routedPlaces = [];
+  const hasCityIdx = selectedPlaces.some(p => p.cityIdx != null);
+  if (hasCityIdx) {
+    citiesList.forEach((_, ci) => {
+      greedyRoute(selectedPlaces.filter(p => (p.cityIdx ?? 0) === ci)).forEach(p => routedPlaces.push(p));
+    });
+  } else {
+    greedyRoute([...selectedPlaces]).forEach(p => routedPlaces.push(p));
+  }
+
+  // 하루 시간 상수
+  const DAY_START  = 9 * 60 + 30;   // 09:30
+  const DAY_END    = 20 * 60;        // 20:00
+  const LUNCH_AT   = 12 * 60 + 30;  // 12:30
+  const DINNER_AT  = 18 * 60 + 30;  // 18:30
+  const LUNCH_DUR  = 90;
+  const DINNER_DUR = 90;
+
+  // 관광 가능 날짜 범위
+  const sStart = hasArr ? 2 : 1;
+  const sEnd   = hasDep ? dayCount - 1 : dayCount;
+  const sCount = Math.max(0, sEnd - sStart + 1);
+
+  // 날짜별 장소 배분
+  const dayItems = Array.from({ length: dayCount }, () => []);
+  let pIdx = 0;
+
+  for (let d = 0; d < sCount && pIdx < routedPlaces.length; d++) {
+    const dayIdx = sStart - 1 + d;
+    let t = DAY_START;
+    let lunchDone = false, dinnerDone = false;
+    let prev = null;
+
+    outer: while (pIdx < routedPlaces.length) {
+      const p = routedPlaces[pIdx];
+      const dur = getPlaceDuration(p.type);
+      const km  = (prev && prev.lat && p.lat) ? haversineKm(prev.lat, prev.lon, p.lat, p.lon) : 0;
+      const transit = km >= 2;
+      const travelMin = km === 0 ? 0 : transit ? 30 : Math.max(5, Math.round(km / 5 * 60));
+
+      // 점심 삽입
+      if (!lunchDone && t + travelMin >= LUNCH_AT) {
+        const lt = Math.max(t, LUNCH_AT);
+        dayItems[dayIdx].push({ time:minToTime(lt), title:'점심', loc:'', done:false });
+        t = lt + LUNCH_DUR;
+        lunchDone = true;
+        continue;
+      }
+
+      // 이 장소가 오늘 안에 들어오는지 확인 (저녁 시간 확보)
+      const reserve = dinnerDone ? 0 : DINNER_DUR;
+      if (t + travelMin + dur > DAY_END - reserve) break outer;
+
+      // 대중교통 이동 항목
+      if (transit && prev) {
+        dayItems[dayIdx].push({ time:minToTime(t), title:'대중교통 이동', loc:'', done:false });
+      }
+      t += travelMin;
+
+      dayItems[dayIdx].push({ time:minToTime(t), title:p.name, loc:p.name, done:false, lat:p.lat, lon:p.lon });
+      t += dur;
+      prev = p;
+      pIdx++;
+
+      // 저녁 삽입
+      if (!dinnerDone && t >= DINNER_AT) {
+        dayItems[dayIdx].push({ time:minToTime(Math.max(t, DINNER_AT)), title:'저녁', loc:'', done:false });
+        t = Math.max(t, DINNER_AT) + DINNER_DUR;
+        dinnerDone = true;
+        break outer;
+      }
+    }
+
+    // 저녁 미삽입 시 추가
+    if (!dinnerDone && dayItems[dayIdx].some(it => it.title !== '점심')) {
+      const dt = Math.max(t, DINNER_AT);
+      if (dt < DAY_END) dayItems[dayIdx].push({ time:minToTime(dt), title:'저녁', loc:'', done:false });
+    }
+  }
+
+  // 날짜 배열 빌드
   const days = Array.from({ length: dayCount }, (_, i) => {
-    const n = i + 1;
-    const d = new Date(startDate);
+    const n     = i + 1;
+    const d     = new Date(startDate);
     d.setDate(d.getDate() + i);
-    const iso    = d.toISOString().slice(0, 10);
-    const hotel  = getHotel(n);
-    const prev   = n > 1 ? getHotel(n - 1) : null;
-    const items  = [];
-    if (n === 1 && hasArr)  items.push({ time:'14:00', title:arrAirport, loc:'', done:false });
+    const iso   = d.toISOString().slice(0, 10);
+    const hotel = getHotel(n);
+    const prev  = n > 1 ? getHotel(n - 1) : null;
+    const items = [...dayItems[i]];
+
+    if (n === 1 && hasArr)
+      items.push({ time:'14:00', title:arrAirport.trim(), loc:'', done:false });
+
     if (hotel && (!prev || prev.name !== hotel.name))
-      items.push({ time: n===1 ? '16:00' : '15:00', title:`체크인 · ${hotel.name}`, loc:hotel.name, done:false });
+      items.push({ time:n===1 ? '16:00' : '15:00', title:`체크인 · ${hotel.name}`, loc:hotel.name, done:false });
+
     if (n === dayCount) {
       if (hotel)  items.push({ time:'10:00', title:`체크아웃 · ${hotel.name}`, loc:hotel.name, done:false });
-      if (hasDep) items.push({ time:'13:00', title:depAirport, loc:'', done:false });
+      if (hasDep) items.push({ time:'13:00', title:depAirport.trim(), loc:'', done:false });
     }
-    if (n >= cStart && n <= cEnd && ci < chunks.length) {
-      chunks[ci++].forEach((p, pi) => {
-        const hr = String(10 + pi * 2).padStart(2, '0');
-        items.push({ time:`${hr}:00`, title:p.name, loc:'', done:false, lat:p.lat, lon:p.lon });
-      });
-    }
+
     items.sort((a, b) => a.time.localeCompare(b.time));
     return {
       n, date:isoToDayDate(iso), weekday:isoToWeekday(iso),
       title:`Day ${n}`, titleEn:`Day ${n}`,
-      hero:{ hue: DAY_HUES[i % DAY_HUES.length], label:`DAY ${String(n).padStart(2,'0')}` },
+      hero:{ hue:DAY_HUES[i % DAY_HUES.length], label:`DAY ${String(n).padStart(2,'0')}` },
       weather:'', items,
     };
   });
+
   return {
-    title:  cities.filter(Boolean).join(' · ') || 'New Trip',
-    dates:  `${isoToDayDate(startIso)} – ${isoToDayDate(endIso)}`,
-    hue:    DAY_HUES[0],
-    days,
-    hotels: [],
-    food:   [],
+    title: citiesList.join(' · ') || 'New Trip',
+    dates: `${isoToDayDate(startIso)} – ${isoToDayDate(endIso)}`,
+    hue:   DAY_HUES[0],
+    days, hotels:[], food:[],
     timezone: selectedDest?.zone || null,
     defaultCurrency: selectedDest?.currency || 'KRW',
   };
@@ -7397,8 +7490,8 @@ const CITIES_BY_KEY = {
 
 function NewTripSheet({ open, onClose, onSubmit }) {
   const isKorean = React.useMemo(() => navigator.language.startsWith('ko'), []);
-  const TOTAL    = isKorean ? 5 : 6;
-  const HP_STEP  = isKorean ? 5 : 6;
+  const TOTAL    = 6;
+  const HP_STEP  = 6;
 
   const [step,         setStep]         = React.useState(1);
   const [selectedDest, setSelectedDest] = React.useState(null); // step 1: 나라
@@ -7448,26 +7541,38 @@ function NewTripSheet({ open, onClose, onSubmit }) {
       setHotels(prev => prev.map((h, i) => i === prev.length - 1 ? { ...h, to: dayCount } : h));
   }, [dayCount]);
 
-  // 핫플 로딩
+  // 장소 로딩 (다중 도시 + 타입 추출 + 자동 전체 선택)
   React.useEffect(() => {
     if (step !== HP_STEP || !open) return;
-    const city = cities.find(c => c.trim());
-    if (!city) return;
-    setLoading(true); setPlaces([]);
+    const validCities = cities.filter(c => c.trim());
+    if (!validCities.length) return;
+    setLoading(true); setPlaces([]); setSelected(new Set());
     (async () => {
       try {
-        const geo = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(city)}&limit=1`).then(r=>r.json());
-        const f   = geo.features?.[0];
-        if (!f) { setLoading(false); return; }
-        const [lon, lat] = f.geometry.coordinates;
-        const q = `[out:json][timeout:20];(node["tourism"~"attraction|museum|viewpoint|gallery|theme_park|zoo"]["wikipedia"](around:20000,${lat},${lon});node["historic"~"monument|castle|ruins|memorial"]["wikipedia"](around:20000,${lat},${lon});node["leisure"~"park|garden"]["wikipedia"](around:15000,${lat},${lon}););out 40;`;
-        const ov  = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`).then(r=>r.json());
-        const list = (ov.elements||[]).filter(e=>e.tags?.name).map(e => ({
-          id: e.id, name: e.tags['name:en'] || e.tags.name,
-          lat: e.lat, lon: e.lon, wikipedia: e.tags.wikipedia, photo: null,
-        }));
-        setPlaces(list); setLoading(false);
-        list.forEach(async (p, idx) => {
+        const allPlaces = [];
+        for (let ci = 0; ci < validCities.length; ci++) {
+          const city = validCities[ci];
+          const geo = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(city)}&limit=1`).then(r=>r.json());
+          const f   = geo.features?.[0];
+          if (!f) continue;
+          const [lon, lat] = f.geometry.coordinates;
+          const q = `[out:json][timeout:25];(node["tourism"~"attraction|museum|viewpoint|gallery|theme_park|zoo|aquarium"](around:20000,${lat},${lon});node["historic"~"monument|castle|ruins|memorial"](around:20000,${lat},${lon});node["leisure"~"park|garden"](around:15000,${lat},${lon}););out 40;`;
+          const ov  = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`).then(r=>r.json());
+          const list = (ov.elements||[]).filter(e => e.tags?.name).map(e => {
+            const tags = e.tags;
+            const type = tags.tourism || tags.historic || tags.leisure || 'attraction';
+            return {
+              id: `${ci}_${e.id}`, name: tags['name:en'] || tags.name,
+              lat: e.lat, lon: e.lon, wikipedia: tags.wikipedia, photo: null,
+              type, cityIdx: ci,
+            };
+          });
+          allPlaces.push(...list);
+        }
+        setPlaces(allPlaces);
+        setSelected(new Set(allPlaces.map(p => p.id)));
+        setLoading(false);
+        allPlaces.forEach(async (p, idx) => {
           if (!p.wikipedia) return;
           try {
             const t = p.wikipedia.replace(/^[a-z-]+:/,'').replace(/ /g,'_');
@@ -7484,7 +7589,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
 
   const canNext = step===1 ? !!selectedDest : step===2 ? cities.some(c=>c.trim()) : step===3 ? !!(startIso&&endIso) : true;
 
-  const TITLES = { 1:'어느 나라로 가요?', 2:'도시를 알려줘요', 3:'언제 가요?', 4:'숙소는요?', 5:'어느 공항으로?', [HP_STEP]:'가고 싶은 곳을 골라요' };
+  const TITLES = { 1:'어느 나라로 가요?', 2:'도시를 알려줘요', 3:'언제 가요?', 4:'어느 공항으로?', 5:'숙소는요?', 6:'가고 싶은 곳을 골라요' };
 
   const handleNext = () => {
     if (step === 1) setCities(['']);
@@ -7493,9 +7598,8 @@ function NewTripSheet({ open, onClose, onSubmit }) {
     const tripData  = generateTripData({
       cities: cities.filter(Boolean), startIso, endIso,
       hotels: skipHotel ? [] : hotels.filter(h => h.name.trim()),
-      arrAirport: isKorean ? '' : arrAirport,
-      depAirport: isKorean ? '' : depAirport,
-      selectedPlaces: selPlaces, isKorean, selectedDest,
+      arrAirport, depAirport,
+      selectedPlaces: selPlaces, selectedDest,
     });
     onSubmit(tripData);
     onClose();
@@ -7680,8 +7784,31 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             </div>
           )}
 
-          {/* Step 4: 숙소 */}
+          {/* Step 4: 공항 */}
           {step === 4 && (
+            <div>
+              <div style={{ marginBottom:18 }}>
+                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>도착 공항</div>
+                <input value={arrAirport} autoFocus onChange={e=>setArrAirport(e.target.value)}
+                  placeholder="예) 나리타 국제공항"
+                  style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
+                />
+              </div>
+              <div style={{ marginBottom:18 }}>
+                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>출발 공항</div>
+                <input value={depAirport} onChange={e=>setDepAirport(e.target.value)}
+                  placeholder="예) 나리타 국제공항"
+                  style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
+                />
+              </div>
+              <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.5 }}>
+                비행기를 이용하지 않는다면 넘어가세요.
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: 숙소 */}
+          {step === 5 && (
             <div>
               {!skipHotel && hotels.map((h, i) => (
                 <div key={i} style={{ background:COLORS.card, borderRadius:14, padding:'12px 14px', marginBottom:10, border:`1px solid ${COLORS.line}` }}>
@@ -7720,27 +7847,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             </div>
           )}
 
-          {/* Step 5: 공항 (비한국인) */}
-          {!isKorean && step === 5 && (
-            <div>
-              <div style={{ marginBottom:18 }}>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>도착 공항</div>
-                <input value={arrAirport} autoFocus onChange={e=>setArrAirport(e.target.value)}
-                  placeholder="e.g. Narita International Airport"
-                  style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
-                />
-              </div>
-              <div>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>출발 공항</div>
-                <input value={depAirport} onChange={e=>setDepAirport(e.target.value)}
-                  placeholder="e.g. Narita International Airport"
-                  style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step HP_STEP: 핫플레이스 */}
+          {/* Step 6: 장소 확인 (자동 전체 선택, 탭으로 제외) */}
           {step === HP_STEP && (
             <div>
               {loading && (
@@ -7753,9 +7860,9 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                   장소를 찾을 수 없어요
                 </div>
               )}
-              {selected.size > 0 && (
-                <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.accent, marginBottom:10, fontWeight:600 }}>
-                  {selected.size}곳 선택됨
+              {!loading && places.length > 0 && (
+                <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, marginBottom:12, lineHeight:1.5 }}>
+                  {selected.size}곳 자동 선택됨 · 빼고 싶은 곳은 탭해서 제외하세요
                 </div>
               )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
@@ -7764,13 +7871,15 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                   return (
                     <button key={p.id} onClick={() => togglePlace(p.id)} style={{
                       border: sel ? `2px solid ${COLORS.ink}` : `1px solid ${COLORS.line}`,
-                      borderRadius:12, padding:0, cursor:'pointer', background:COLORS.card,
-                      overflow:'hidden', textAlign:'left', transition:'border 0.1s',
+                      borderRadius:12, padding:0, cursor:'pointer',
+                      background: sel ? COLORS.card : COLORS.softer,
+                      overflow:'hidden', textAlign:'left', transition:'border 0.1s, opacity 0.1s',
+                      opacity: sel ? 1 : 0.45,
                     }}>
                       <div style={{ height:80, background: p.photo ? `url(${p.photo}) center/cover no-repeat` : COLORS.softer, position:'relative' }}>
-                        {sel && (
-                          <div style={{ position:'absolute', top:6, right:6, width:20, height:20, borderRadius:10, background:COLORS.ink, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                            <Icon name="check" size={11} color="#fff" stroke={2.5}/>
+                        {!sel && (
+                          <div style={{ position:'absolute', inset:0, background:'rgba(255,255,255,0.4)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                            <Icon name="x" size={18} color={COLORS.mute} stroke={2}/>
                           </div>
                         )}
                       </div>
