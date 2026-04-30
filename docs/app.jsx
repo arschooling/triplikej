@@ -1885,7 +1885,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v358</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v359</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9413,25 +9413,7 @@ function App() {
           }).catch(() => {});
         }}
         onAdd={() => setNewTripSheetOpen(true)}
-        onRestore={async () => {
-          const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
-          const patch = {
-            title : def.title  || 'New York',
-            dates : def.dates  || '',
-            hotel : def.hotel  || '',
-            days  : def.days   || [],
-            hotels: def.hotels || [],
-            food  : def.food   || [],
-          };
-          const hue = def.days?.[0]?.hero?.hue ?? 25;
-          const { tripId } = await window.fbCreateNewTrip(userData.uid, patch.title);
-          await window.fbSaveGroup(tripId, patch);
-          const newTrip = normalizeTrip({ ...patch, members:[userData.uid], hue }, tripId);
-          setUserTrips(prev => [...prev, newTrip]);
-          setActiveTripId(tripId);
-          setTrip(newTrip);
-          setTab('home'); setDayIdx(null); setHotelIdx(null); setEditing(false);
-        }}
+        onRestore={null}
         onShare={(t) => setShareTripTarget(t)}
         onDelete={deleteTrip}
       />
