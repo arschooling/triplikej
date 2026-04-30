@@ -552,65 +552,9 @@ function DatePickerSheet({ open, value, onClose, onPick, minDate, title='날짜 
   };
 
   // ── 년/월 스크롤 선택기 ────────────────────────────────────
-  const YEARS = Array.from({ length: 10 }, (_, i) => todayObj.getFullYear() - 2 + i);
-  const MONTHS = Array.from({ length: 12 }, (_, i) => i);
-  const [tmpY, setTmpY] = React.useState(view.y);
-  const [tmpMo, setTmpMo] = React.useState(view.mo);
-
-  const ScrollPicker = ({ items, value, onChange, renderLabel, width=90 }) => {
-    const IH = 44;
-    const VISIBLE = 5;
-    const ref = React.useRef(null);
-    const timer = React.useRef(null);
-    React.useEffect(() => {
-      const el = ref.current; if (!el) return;
-      const idx = items.indexOf(value);
-      if (idx >= 0) el.scrollTop = idx * IH;
-    }, [value]);
-    const onScroll = () => {
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => {
-        const el = ref.current; if (!el) return;
-        const idx = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / IH)));
-        el.scrollTo({ top: idx * IH, behavior: 'smooth' });
-        if (items[idx] !== value) onChange(items[idx]);
-      }, 100);
-    };
-    const PAD = IH * Math.floor(VISIBLE / 2);
-    const stopProp = (e) => e.stopPropagation(); // 스크롤 시 배경 dismiss 방지
-    return (
-      <div style={{ position:'relative', width, height: IH * VISIBLE, overflow:'hidden' }}
-        onClick={stopProp} onTouchStart={stopProp} onTouchMove={stopProp} onTouchEnd={stopProp}>
-        {/* 중앙 선택 하이라이트 — 상하 구분선 */}
-        <div style={{ position:'absolute', left:0, right:0, pointerEvents:'none', zIndex:2,
-          top: IH * Math.floor(VISIBLE / 2),
-          height: IH,
-          borderTop: `1.5px solid ${COLORS.line}`,
-          borderBottom: `1.5px solid ${COLORS.line}`,
-        }}/>
-        <div ref={ref} onScroll={onScroll}
-          style={{ height:'100%', overflowY:'scroll', scrollSnapType:'y mandatory',
-            scrollbarWidth:'none', msOverflowStyle:'none',
-            paddingTop: PAD, paddingBottom: PAD, boxSizing:'content-box' }}
-          className="wheel-col">
-          {items.map((it, i) => {
-            const sel = it === value;
-            return (
-              <div key={i} onClick={() => { onChange(it); const el = ref.current; if(el) el.scrollTo({top: i*IH, behavior:'smooth'}); }}
-                style={{ height:IH, display:'flex', alignItems:'center', justifyContent:'center',
-                  scrollSnapAlign:'center', fontFamily:SANS,
-                  fontSize: sel ? 16 : 14,
-                  color: sel ? COLORS.ink : COLORS.mute,
-                  fontWeight: sel ? 600 : 400,
-                  cursor:'pointer', userSelect:'none' }}>
-                {renderLabel(it)}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
+  const YEAR_STRS = React.useMemo(() => Array.from({ length: 10 }, (_, i) => String(todayObj.getFullYear() - 2 + i)), []);
+  const [tmpY,  setTmpY]  = React.useState(String(view.y));
+  const [tmpMo, setTmpMo] = React.useState(MONTH_KR[view.mo]);
 
   // ── 달력 그리드 ───────────────────────────────────────────
   const Calendar = () => {
@@ -659,7 +603,7 @@ function DatePickerSheet({ open, value, onClose, onPick, minDate, title='날짜 
     <BottomSheet open={open} onClose={onClose} title={title} onConfirm={confirm}>
       {/* 년/월 헤더 — 탭하면 스크롤 선택기로 전환 */}
       <div style={{ padding:'8px 16px 6px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <button onClick={() => { if (!pickingYM){ setTmpY(view.y); setTmpMo(view.mo); } setPickingYM(p=>!p); }} style={{
+        <button onClick={() => { if (!pickingYM){ setTmpY(String(view.y)); setTmpMo(MONTH_KR[view.mo]); } setPickingYM(p=>!p); }} style={{
           border:'none', background:COLORS.softer, borderRadius:10, cursor:'pointer',
           fontFamily:SERIF, fontSize:17, color:COLORS.ink, padding:'5px 12px',
           display:'flex', alignItems:'center', gap:6,
@@ -684,14 +628,12 @@ function DatePickerSheet({ open, value, onClose, onPick, minDate, title='날짜 
       {pickingYM ? (
         /* 년/월 스크롤 선택 */
         <div>
-          <div style={{ display:'flex', justifyContent:'center', gap:12, padding:'4px 16px 8px' }}>
-            <ScrollPicker items={YEARS} value={tmpY} onChange={setTmpY}
-              renderLabel={y => `${y}년`} width={110}/>
-            <ScrollPicker items={MONTHS} value={tmpMo} onChange={setTmpMo}
-              renderLabel={m => MONTH_KR[m]} width={90}/>
+          <div style={{ display:'flex', justifyContent:'center', gap:12, padding:'4px 16px 8px', touchAction:'none' }}>
+            <WheelColumn items={YEAR_STRS} value={tmpY} onChange={setTmpY} width={100} compact={true}/>
+            <WheelColumn items={MONTH_KR} value={tmpMo} onChange={setTmpMo} width={80} compact={true} loop={true}/>
           </div>
           <div style={{ padding:'0 16px 14px' }}>
-            <button onClick={() => { setView({ y:tmpY, mo:tmpMo }); setPickingYM(false); }} style={{
+            <button onClick={() => { setView({ y:+tmpY, mo:MONTH_KR.indexOf(tmpMo) }); setPickingYM(false); }} style={{
               width:'100%', padding:'13px', border:'none', borderRadius:14,
               background:COLORS.ink, color:'#fff',
               fontFamily:SANS, fontSize:14, fontWeight:500, cursor:'pointer',
@@ -705,70 +647,22 @@ function DatePickerSheet({ open, value, onClose, onPick, minDate, title='날짜 
   );
 }
 
-// ─── Compact scroll wheel ────────────────────────────────────
-function CompactWheel({ items, value, onChange, renderLabel=(x=>x), width=100 }) {
-  const IH = 44, VIS = 5;
-  const ref = React.useRef(null);
-  const timer = React.useRef(null);
-  React.useEffect(() => {
-    const el = ref.current; if (!el) return;
-    const idx = items.indexOf(value);
-    if (idx >= 0) el.scrollTop = idx * IH;
-  }, [value, items]);
-  const onScroll = () => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      const el = ref.current; if (!el) return;
-      const idx = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / IH)));
-      el.scrollTo({ top: idx * IH, behavior: 'smooth' });
-      if (items[idx] !== value) onChange(items[idx]);
-    }, 100);
-  };
-  const PAD = IH * Math.floor(VIS / 2);
-  const stopProp = e => e.stopPropagation();
-  return (
-    <div style={{ position:'relative', width, height: IH * VIS, overflow:'hidden' }}
-      onClick={stopProp} onTouchStart={stopProp} onTouchMove={stopProp} onTouchEnd={stopProp}>
-      <div style={{
-        position:'absolute', left:0, right:0, pointerEvents:'none', zIndex:2,
-        top: IH * Math.floor(VIS / 2), height: IH,
-        borderTop:`1.5px solid ${COLORS.line}`, borderBottom:`1.5px solid ${COLORS.line}`,
-      }}/>
-      <div ref={ref} onScroll={onScroll} className="wheel-col" style={{
-        height:'100%', overflowY:'scroll', scrollSnapType:'y mandatory',
-        scrollbarWidth:'none', msOverflowStyle:'none',
-        paddingTop: PAD, paddingBottom: PAD, boxSizing:'content-box',
-      }}>
-        {items.map((it, i) => (
-          <div key={i} style={{
-            height: IH, display:'flex', alignItems:'center', justifyContent:'center',
-            scrollSnapAlign:'center', fontFamily: SANS,
-            fontSize: it === value ? 16 : 14,
-            color: it === value ? COLORS.ink : COLORS.mute,
-            fontWeight: it === value ? 600 : 400, cursor:'pointer',
-          }}>{renderLabel(it)}</div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── Time Picker ────────────────────────────────────────────
 function TimeField({ value, onChange }) {
   const [open, setOpen] = React.useState(false);
-  const HOURS = Array.from({ length:24 }, (_, i) => i);
-  const MINS  = [0,5,10,15,20,25,30,35,40,45,50,55];
+  const MINS_RAW = [0,5,10,15,20,25,30,35,40,45,50,55];
+  const HOUR_STRS = React.useMemo(() => Array.from({length:24}, (_,i) => String(i).padStart(2,'0')), []);
+  const MIN_STRS  = React.useMemo(() => MINS_RAW.map(x => String(x).padStart(2,'0')), []);
   const parse = (v) => {
     const m = (v||'').match(/^(\d{1,2}):(\d{2})$/);
-    if (!m) return { h:9, mn:0 };
-    const h = parseInt(m[1]) % 24;
+    if (!m) return { h:'09', mn:'00' };
+    const h = String(parseInt(m[1]) % 24).padStart(2,'0');
     const raw = parseInt(m[2]);
-    const mn = MINS.reduce((best, x) => Math.abs(x-raw) < Math.abs(best-raw) ? x : best, 0);
+    const mn = String(MINS_RAW.reduce((best, x) => Math.abs(x-raw) < Math.abs(best-raw) ? x : best, 0)).padStart(2,'0');
     return { h, mn };
   };
   const { h, mn } = parse(value);
-  const emit = (newH, newMn) =>
-    onChange(`${String(newH).padStart(2,'0')}:${String(newMn).padStart(2,'0')}`);
+  const emit = (newH, newMn) => onChange(`${newH}:${newMn}`);
   if (!open) return (
     <button type="button" onClick={() => setOpen(true)} style={{
       width:'100%', padding:'8px 10px', borderRadius:8,
@@ -781,17 +675,11 @@ function TimeField({ value, onChange }) {
   );
   return (
     <div>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, padding:'4px 0' }}>
-        <CompactWheel items={HOURS} value={h}
-          onChange={v => emit(v, mn)}
-          renderLabel={x => String(x).padStart(2,'0')}
-          width={80}/>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, padding:'4px 0', touchAction:'none' }}>
+        <WheelColumn items={HOUR_STRS} value={h} onChange={v => emit(v, mn)} width={75} compact={true} loop={true}/>
         <div style={{ fontFamily:MONO, fontSize:24, fontWeight:600, color:COLORS.ink,
           lineHeight:1, userSelect:'none' }}>:</div>
-        <CompactWheel items={MINS} value={mn}
-          onChange={v => emit(h, v)}
-          renderLabel={x => String(x).padStart(2,'0')}
-          width={80}/>
+        <WheelColumn items={MIN_STRS} value={mn} onChange={v => emit(h, v)} width={75} compact={true} loop={true}/>
       </div>
       <button type="button" onClick={() => setOpen(false)} style={{
         width:'100%', marginTop:4, padding:'7px', borderRadius:8, border:'none',
@@ -849,8 +737,7 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
   const inRng = d => { if(!start||!end) return false; const c={y:view.y,mo:view.mo,d}; return cmp(c,start)>0 && cmp(c,end)<0; };
   const fmtDate = o => o ? `${o.y}. ${o.mo+1}. ${o.d}.` : null;
 
-  const YEARS_LIST  = Array.from({length:12}, (_,i) => today.getFullYear()-2+i);
-  const MONTHS_LIST = Array.from({length:12}, (_,i) => i);
+  const YEARS_LIST  = Array.from({length:12}, (_,i) => String(today.getFullYear()-2+i));
 
   return (
     <BottomSheet open={open} onClose={onClose} title="기간 선택"
@@ -902,17 +789,9 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
       </div>
 
       {showYM ? (
-        <div style={{display:'flex', justifyContent:'center', gap:16, padding:'0 16px 16px'}}>
-          <CompactWheel
-            items={YEARS_LIST} value={view.y}
-            onChange={y => setView(v => ({...v, y}))}
-            renderLabel={y => `${y}년`} width={130}
-          />
-          <CompactWheel
-            items={MONTHS_LIST} value={view.mo}
-            onChange={mo => setView(v => ({...v, mo}))}
-            renderLabel={m => MONTH_KR[m]} width={90}
-          />
+        <div style={{display:'flex', justifyContent:'center', gap:16, padding:'0 16px 16px', touchAction:'none'}}>
+          <WheelColumn items={YEARS_LIST} value={String(view.y)} onChange={y => setView(v => ({...v, y:+y}))} width={110} compact={true}/>
+          <WheelColumn items={MONTH_KR} value={MONTH_KR[view.mo]} onChange={m => setView(v => ({...v, mo:MONTH_KR.indexOf(m)}))} width={90} compact={true} loop={true}/>
         </div>
       ) : (
         <>
@@ -1170,12 +1049,12 @@ function TimeWheelSheet({ open, value, onClose, onPick, title='시간 선택' })
 
   return (
     <BottomSheet open={open} onClose={onClose} title={title} onConfirm={confirm}>
-      <div style={{ padding:'20px 20px 28px', display:'flex', justifyContent:'center', alignItems:'center', gap:10 }}>
+      <div style={{ padding:'20px 20px 28px', display:'flex', justifyContent:'center', alignItems:'center', gap:10, touchAction:'none' }}>
         <WheelColumn items={hours} value={String(h).padStart(2,'0')}
-          onChange={(v) => setH(+v)}/>
+          onChange={(v) => setH(+v)} compact={true} loop={true} width={80}/>
         <div style={{ fontFamily:SERIF, fontSize:28, color:COLORS.ink, opacity:0.4 }}>:</div>
         <WheelColumn items={mins} value={displayMin}
-          onChange={(v) => setMi(+v)}/>
+          onChange={(v) => setMi(+v)} compact={true} loop={true} width={80}/>
       </div>
     </BottomSheet>
   );
@@ -1999,7 +1878,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v314</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v315</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6032,6 +5911,7 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
   const [calcOpen,      setCalcOpen]      = React.useState(false);
   const [splitOpen,     setSplitOpen]     = React.useState(false);
   const [sheetEntered,  setSheetEntered]  = React.useState(false);
+  const [datePickOpen,  setDatePickOpen]  = React.useState(false);
 
   const closeSheet = () => {
     setAddOpen(false); setEditIdx(null); setDelConfirm(false);
@@ -6469,10 +6349,16 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
                 border:`1px solid ${COLORS.line}`, borderRadius:12, background:COLORS.card,
                 fontFamily:SANS, fontSize:14, color:COLORS.ink, outline:'none' }}/>
             {/* 날짜 */}
-            <input type="date" value={form.date} onChange={e => setForm(f => ({...f, date:e.target.value}))}
-              style={{ width:'100%', boxSizing:'border-box', padding:'11px 16px', marginBottom:16,
-                border:`1px solid ${COLORS.line}`, borderRadius:12, background:COLORS.card,
-                fontFamily:SANS, fontSize:14, color:COLORS.ink, outline:'none' }}/>
+            <button type="button" onClick={() => setDatePickOpen(true)} style={{
+              width:'100%', boxSizing:'border-box', padding:'11px 16px', marginBottom:16,
+              border:`1px solid ${COLORS.line}`, borderRadius:12, background:COLORS.card,
+              fontFamily:SANS, fontSize:14, color: form.date ? COLORS.ink : COLORS.mute,
+              textAlign:'left', cursor:'pointer',
+            }}>{form.date || '날짜 선택'}</button>
+            <DatePickerSheet open={datePickOpen} value={form.date}
+              onClose={() => setDatePickOpen(false)}
+              onPick={d => setForm(f => ({...f, date:d}))}
+              title="날짜 선택"/>
             {/* 액션 버튼 */}
             <div style={{ display:'flex', gap:8 }}>
               {editIdx !== null && !delConfirm && (
