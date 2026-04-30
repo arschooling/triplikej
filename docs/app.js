@@ -3905,7 +3905,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v332"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v333"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -16969,7 +16969,7 @@ function NewTripSheet({
   }]);
   const [skipHotel, setSkipHotel] = React.useState(false);
   const [arrAirport, setArrAirport] = React.useState('');
-  const [depAirport, setDepAirport] = React.useState('');
+  const [depAirport, setDepAirport] = React.useState('인천국제공항');
   const [places, setPlaces] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [selected, setSelected] = React.useState(new Set());
@@ -17011,7 +17011,7 @@ function NewTripSheet({
     }]);
     setSkipHotel(false);
     setArrAirport('');
-    setDepAirport('');
+    setDepAirport('인천국제공항');
     setPlaces([]);
     setLoading(false);
     setSelected(new Set());

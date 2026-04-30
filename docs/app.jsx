@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v332</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v333</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7645,7 +7645,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   const [hotels,       setHotels]       = React.useState([{ name:'', from:1, to:1 }]);
   const [skipHotel,    setSkipHotel]    = React.useState(false);
   const [arrAirport,   setArrAirport]   = React.useState('');
-  const [depAirport,   setDepAirport]   = React.useState('');
+  const [depAirport,   setDepAirport]   = React.useState('인천국제공항');
   const [places,       setPlaces]       = React.useState([]);
   const [loading,      setLoading]      = React.useState(false);
   const [selected,     setSelected]     = React.useState(new Set());
@@ -7674,7 +7674,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
     if (!open) return;
     setStep(1); setSelectedDest(null); setDestQuery(''); setCities(['']); setStartIso(''); setEndIso('');
     setHotels([{ name:'', from:1, to:1 }]); setSkipHotel(false);
-    setArrAirport(''); setDepAirport('');
+    setArrAirport(''); setDepAirport('인천국제공항');
     setPlaces([]); setLoading(false); setSelected(new Set());
   }, [open]);
 
