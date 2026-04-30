@@ -3880,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v296"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v297"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -11179,7 +11179,7 @@ function BudgetCalcSheet({
     ...extra
   });
   const isOp = o => op === o;
-  return /*#__PURE__*/React.createElement("div", {
+  return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
       inset: 0,
@@ -11337,7 +11337,7 @@ function BudgetCalcSheet({
       color: '#fff',
       cursor: 'pointer'
     }
-  }, "\uC9C0\uCD9C\uB85C \uC785\uB825")))));
+  }, "\uC9C0\uCD9C\uB85C \uC785\uB825"))))), document.body);
 }
 function SplitSheet({
   open,
@@ -11467,7 +11467,7 @@ function SplitSheet({
   if (!open) return null;
   const count = Math.max(1, parseInt(n) || 1);
   const perPerson = Math.round(totalKrw / count);
-  return /*#__PURE__*/React.createElement("div", {
+  return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
       inset: 0,
@@ -11682,7 +11682,7 @@ function SplitSheet({
       color: '#fff',
       cursor: 'pointer'
     }
-  }, "\uC9C0\uCD9C\uB85C \uC785\uB825")))));
+  }, "\uC9C0\uCD9C\uB85C \uC785\uB825"))))), document.body);
 }
 function BudgetScreen({
   trip,

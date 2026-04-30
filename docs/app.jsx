@@ -1869,7 +1869,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v296</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v297</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5588,7 +5588,7 @@ function BudgetCalcSheet({ open, onClose, onEnter, onTabBarToggle }) {
   });
   const isOp = (o) => op===o;
 
-  return (
+  return ReactDOM.createPortal(
     <div style={{ position:'fixed', inset:0, zIndex:309,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
       background:`rgba(0,0,0,${Math.max(0, (entered?0.35:0) - sheetY/400)})`,
@@ -5652,7 +5652,8 @@ function BudgetCalcSheet({ open, onClose, onEnter, onTabBarToggle }) {
         </div>
       </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -5714,7 +5715,7 @@ function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter, onTabBarToggle
   const count = Math.max(1, parseInt(n)||1);
   const perPerson = Math.round(totalKrw / count);
 
-  return (
+  return ReactDOM.createPortal(
     <div style={{ position:'fixed', inset:0, zIndex:310,
       display:'flex', flexDirection:'column', justifyContent:'flex-end',
       background:`rgba(0,0,0,${Math.max(0,(entered?0.4:0)-sheetY/400)})` }} onClick={onClose}>
@@ -5774,7 +5775,8 @@ function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter, onTabBarToggle
         </div>
       </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
