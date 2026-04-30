@@ -3880,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v294"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v295"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -14320,7 +14320,9 @@ function MiniCalendar({
       display: 'flex',
       justifyContent: 'center',
       gap: 8
-    }
+    },
+    onTouchStart: e => e.stopPropagation(),
+    onTouchMove: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement(WheelColumn, {
     items: yearItems,
     value: pickY,
