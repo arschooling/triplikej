@@ -942,29 +942,49 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
 }
 
 // ─── Wheel column (scroll-snap) ──────────────────────────────
-function WheelColumn({ items, value, onChange, width=70 }) {
+function WheelColumn({ items, value, onChange, width=70, loop=false }) {
   const ITEM_H = 40;
   const VISIBLE = 5; // odd so there's a center
   const CENTER_OFFSET = Math.floor(VISIBLE / 2);
   const ref = React.useRef(null);
   const timer = React.useRef(null);
+  const jumping = React.useRef(false);
+
+  // loop 모드: 아이템 3배 반복, 중간 set에서 시작
+  const dispItems = loop ? [...items, ...items, ...items] : items;
+  const loopOff   = loop ? items.length : 0;
 
   // Sync external value → scroll position
   React.useEffect(() => {
     const el = ref.current; if (!el) return;
     const idx = items.indexOf(value);
-    if (idx >= 0) el.scrollTop = idx * ITEM_H;
+    if (idx >= 0) el.scrollTop = (loopOff + idx) * ITEM_H;
   }, [value, items]);
 
   const handleScroll = () => {
+    if (jumping.current) return;
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       const el = ref.current; if (!el) return;
-      const idx = Math.round(el.scrollTop / ITEM_H);
-      const clamped = Math.max(0, Math.min(items.length - 1, idx));
-      // Snap
-      el.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
-      if (items[clamped] !== value) onChange(items[clamped]);
+      const raw = Math.round(el.scrollTop / ITEM_H);
+      if (loop) {
+        // snap
+        el.scrollTo({ top: raw * ITEM_H, behavior: 'smooth' });
+        const realIdx = ((raw % items.length) + items.length) % items.length;
+        if (items[realIdx] !== value) onChange(items[realIdx]);
+        // 첫/마지막 세트로 넘어갔으면 중간 세트로 점프 (무음)
+        if (raw < items.length || raw >= 2 * items.length) {
+          jumping.current = true;
+          setTimeout(() => {
+            if (el) el.scrollTop = (items.length + realIdx) * ITEM_H;
+            jumping.current = false;
+          }, 180);
+        }
+      } else {
+        const clamped = Math.max(0, Math.min(items.length - 1, raw));
+        el.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
+        if (items[clamped] !== value) onChange(items[clamped]);
+      }
     }, 120);
   };
 
@@ -978,7 +998,7 @@ function WheelColumn({ items, value, onChange, width=70 }) {
         padding: `${ITEM_H * CENTER_OFFSET}px 0`,
         boxSizing:'content-box',
       }}>
-        {items.map((it, i) => {
+        {dispItems.map((it, i) => {
           const isSel = it === value;
           return (
             <div key={i} style={{
@@ -1869,7 +1889,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v299</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v300</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7218,7 +7238,7 @@ function MiniCalendar({ startIso, endIso, onRange }) {
       {picking ? (
         <div ref={wheelContainerRef} style={{ display:'flex', justifyContent:'center', gap:8 }}>
           <WheelColumn items={yearItems} value={pickY} onChange={setPickY} width={80}/>
-          <WheelColumn items={monthItems} value={monthItems[+pickM]} onChange={v => setPickM(String(monthItems.indexOf(v)))} width={80}/>
+          <WheelColumn items={monthItems} value={monthItems[+pickM]} onChange={v => setPickM(String(monthItems.indexOf(v)))} width={80} loop={true}/>
         </div>
       ) : (
         <>
