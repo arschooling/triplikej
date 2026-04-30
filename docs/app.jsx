@@ -1219,11 +1219,11 @@ function FxCard({ curCode, onSetCurCode }) {
           <Icon name="refresh" size={12} color={COLORS.mute} stroke={1.8}/>
         </button>
       </div>
-      <div style={{ marginTop:5, display:'flex', alignItems:'flex-end', gap:5 }}>
-        <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, lineHeight:1 }}>
+      <div style={{ marginTop:5, display:'flex', alignItems:'flex-end', gap:6 }}>
+        <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink, lineHeight:1 }}>
           {loading ? '…' : rate ? `₩${Math.round(rate).toLocaleString()}` : '—'}
         </div>
-        <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, paddingBottom:2 }}>
+        <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, paddingBottom:4 }}>
           = {cur.sym}1
         </div>
       </div>
@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v340</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v341</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
