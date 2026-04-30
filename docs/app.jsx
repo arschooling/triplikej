@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v328</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v329</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7685,8 +7685,18 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                     ref={destInputRef}
                     autoFocus
                     value={destQuery}
-                    onChange={e => { setDestQuery(e.target.value); setSelectedDest(null); }}
-                    onInput={e => { setDestQuery(e.target.value); setSelectedDest(null); }}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setDestQuery(val);
+                      const exact = CITY_DB.find(c => c.kor === val.trim() || c.eng.toLowerCase() === val.trim().toLowerCase());
+                      setSelectedDest(exact || null);
+                    }}
+                    onInput={e => {
+                      const val = e.target.value;
+                      setDestQuery(val);
+                      const exact = CITY_DB.find(c => c.kor === val.trim() || c.eng.toLowerCase() === val.trim().toLowerCase());
+                      setSelectedDest(exact || null);
+                    }}
                     placeholder={ghostSuffix ? '' : '나라 이름 (한글 또는 영어)'}
                     style={{
                       width:'100%', boxSizing:'border-box',

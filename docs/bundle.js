@@ -4569,7 +4569,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v328"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v329"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -16557,12 +16557,16 @@ function NewTripSheet({
       autoFocus: true,
       value: destQuery,
       onChange: e => {
-        setDestQuery(e.target.value);
-        setSelectedDest(null);
+        const val = e.target.value;
+        setDestQuery(val);
+        const exact = CITY_DB.find(c => c.kor === val.trim() || c.eng.toLowerCase() === val.trim().toLowerCase());
+        setSelectedDest(exact || null);
       },
       onInput: e => {
-        setDestQuery(e.target.value);
-        setSelectedDest(null);
+        const val = e.target.value;
+        setDestQuery(val);
+        const exact = CITY_DB.find(c => c.kor === val.trim() || c.eng.toLowerCase() === val.trim().toLowerCase());
+        setSelectedDest(exact || null);
       },
       placeholder: ghostSuffix ? '' : '나라 이름 (한글 또는 영어)',
       style: {
