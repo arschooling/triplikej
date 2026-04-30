@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v347</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v348</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7322,7 +7322,7 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
   };
 }
 
-function MiniCalendar({ startIso, endIso, onRange, actionRef }) {
+function MiniCalendar({ startIso, endIso, onRange, actionRef, onPickingChange }) {
   const today = new Date();
   const [vy, setVy] = React.useState(today.getFullYear());
   const [vm, setVm] = React.useState(today.getMonth());
@@ -7361,6 +7361,7 @@ function MiniCalendar({ startIso, endIso, onRange, actionRef }) {
 
   // 부모에서 "다음" 누를 때 picker 닫기용 ref
   if (actionRef) actionRef.current = { isPicking: () => picking, confirm: confirmPicker };
+  React.useEffect(() => { onPickingChange?.(picking); }, [picking]);
 
   return (
     <div>
@@ -7370,13 +7371,17 @@ function MiniCalendar({ startIso, endIso, onRange, actionRef }) {
         ) : (
           <button onClick={prevMo} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, padding:'0 10px', color:COLORS.ink }}>‹</button>
         )}
-        <button onClick={picking ? confirmPicker : openPicker} style={{
-          background:'none', border:'none', cursor:'pointer',
-          fontFamily:SANS, fontSize:14, fontWeight:600, color:COLORS.ink,
-          display:'flex', alignItems:'center', gap:4,
-        }}>
-          {picking ? `${MONTH_NAMES_SHORT[+pickM]} ${pickY}` : `${MONTH_NAMES_SHORT[vm]} ${vy}`}
-        </button>
+        {picking ? (
+          <div style={{ flex:1 }}/>
+        ) : (
+          <button onClick={openPicker} style={{
+            background:'none', border:'none', cursor:'pointer',
+            fontFamily:SANS, fontSize:14, fontWeight:600, color:COLORS.ink,
+            display:'flex', alignItems:'center', gap:4,
+          }}>
+            {`${MONTH_NAMES_SHORT[vm]} ${vy}`}
+          </button>
+        )}
         {picking ? (
           <div style={{ width:32 }}/>
         ) : (
@@ -7652,6 +7657,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   const [destQuery,    setDestQuery]    = React.useState('');
   const destInputRef  = React.useRef(null);
   const miniCalRef    = React.useRef(null);
+  const [calPicking,   setCalPicking]   = React.useState(false);
   const [cities,       setCities]       = React.useState(['']);
   const [cityDrag,     setCityDrag]     = React.useState(null);
   const cityCardRefs = React.useRef({});
@@ -8136,7 +8142,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                   {dayCount-1}박 {dayCount}일
                 </div>
               )}
-              <MiniCalendar startIso={startIso} endIso={endIso} onRange={(s,e) => { setStartIso(s); setEndIso(e); }} actionRef={miniCalRef}/>
+              <MiniCalendar startIso={startIso} endIso={endIso} onRange={(s,e) => { setStartIso(s); setEndIso(e); }} actionRef={miniCalRef} onPickingChange={setCalPicking}/>
             </div>
           )}
 
@@ -8274,11 +8280,11 @@ function NewTripSheet({ open, onClose, onSubmit }) {
           }
           <button onMouseDown={e=>e.preventDefault()} onClick={handleNext} disabled={!canNext} style={{
             flex:1, padding:'11px 0', borderRadius:12, border:'none',
-            background: canNext ? COLORS.ink : COLORS.softer,
-            color:       canNext ? COLORS.bg  : COLORS.mute,
+            background: !canNext ? COLORS.softer : (step===3 && calPicking) ? COLORS.accent : COLORS.ink,
+            color:       canNext ? COLORS.bg : COLORS.mute,
             fontFamily:SANS, fontSize:14, fontWeight:600,
             cursor: canNext ? 'pointer' : 'default',
-            transition:'background 0.15s, color 0.15s',
+            transition:'background 0.2s, color 0.15s',
           }}>{step === TOTAL ? (isLastCity ? '완료' : '다음 도시') : '다음'}</button>
         </div>
       </div>
