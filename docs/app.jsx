@@ -7287,7 +7287,7 @@ function MiniCalendar({ startIso, endIso, onRange }) {
   React.useEffect(() => {
     if (!picking) return;
     const el = wheelContainerRef.current; if (!el) return;
-    const block = e => e.preventDefault();
+    const block = e => { if (!e.target?.closest('.wheel-col')) e.preventDefault(); };
     el.addEventListener('touchmove', block, { passive: false });
     return () => el.removeEventListener('touchmove', block);
   }, [picking]);
