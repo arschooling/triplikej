@@ -1,9 +1,10 @@
-const V = 'tlj-v341';
+const V = 'tlj-v342';
 const CACHE = [
   './', './index.html',
   './react.min.js', './react-dom.min.js',
   './firebase-sdk.min.js', './firebase.js',
   './dnd-hotel.js', './bundle.min.js',
+  './adam.otf',
 ];
 
 self.addEventListener('install', e => {
