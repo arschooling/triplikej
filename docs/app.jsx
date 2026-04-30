@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v323</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v324</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7581,12 +7581,6 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                     <span style={{ fontFamily:SANS, fontSize:14, fontWeight:600 }}>{selectedDest.kor}</span>
                     <span style={{ fontFamily:SANS, fontSize:12, opacity:0.6 }}>{selectedDest.eng}</span>
                     <span style={{ marginLeft:'auto' }}>✓</span>
-                  </div>
-                )}
-                {/* 매칭 없음 */}
-                {!selectedDest && !ghostSuffix && qRaw.length > 0 && (
-                  <div style={{ marginTop:8, padding:'10px 4px', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
-                    검색 결과가 없어요
                   </div>
                 )}
               </div>
