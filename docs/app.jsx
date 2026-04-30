@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v333</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v334</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5274,6 +5274,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   const prepDragRef = React.useRef(null);
   const prepTimer = React.useRef(null);
   const prepItemEls = React.useRef({});
+  const prepItemRects = React.useRef({}); // 드래그 시작 시 스냅샷
 
   React.useEffect(() => { prepDragRef.current = prepDrag; }, [prepDrag]);
 
@@ -5286,31 +5287,28 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   }, [!!prepDrag]);
 
   const findPrepTarget = (y) => {
-    // Find which (ci, ii) the finger is over
+    // 드래그 시작 시 저장한 스냅샷 사용 (시각적 이동 무시)
+    const rects = prepItemRects.current;
     for (let ci = 0; ci < cats.length; ci++) {
       const items = cats[ci].items || [];
       for (let ii = 0; ii < items.length; ii++) {
-        const el = prepItemEls.current[`${ci}_${ii}`]; if (!el) continue;
-        const rect = el.getBoundingClientRect();
+        const rect = rects[`${ci}_${ii}`]; if (!rect) continue;
         if (y >= rect.top && y < rect.bottom) {
-          // Top half → insert before, bottom half → insert after
           return { ci, ii: y < rect.top + rect.height / 2 ? ii : ii + 1 };
         }
       }
-      // Below last item of this category → insert at end of this category
+      // 카테고리 마지막 항목 아래 빈 공간
       if (items.length > 0) {
-        const lastEl = prepItemEls.current[`${ci}_${items.length - 1}`];
-        if (lastEl) {
-          const lastRect = lastEl.getBoundingClientRect();
-          const nextFirstEl = prepItemEls.current[`${ci + 1}_0`];
-          const nextTop = nextFirstEl ? nextFirstEl.getBoundingClientRect().top : Infinity;
+        const lastRect = rects[`${ci}_${items.length - 1}`];
+        if (lastRect) {
+          const nextFirstRect = rects[`${ci + 1}_0`];
+          const nextTop = nextFirstRect ? nextFirstRect.top : Infinity;
           if (y > lastRect.bottom && y < nextTop) return { ci, ii: items.length };
         }
       }
-      // Empty category check
+      // 빈 카테고리
       if (items.length === 0) {
-        const el = prepItemEls.current[`${ci}_empty`]; if (!el) continue;
-        const rect = el.getBoundingClientRect();
+        const rect = rects[`${ci}_empty`]; if (!rect) continue;
         if (y >= rect.top && y <= rect.bottom) return { ci, ii: 0 };
       }
     }
@@ -5345,6 +5343,13 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
       prepTimer.current = setTimeout(() => {
         const el = prepItemEls.current[`${ci}_${ii}`];
         const itemH = el ? el.getBoundingClientRect().height : 48;
+        // 모든 항목 위치 스냅샷 저장
+        const rects = {};
+        Object.keys(prepItemEls.current).forEach(key => {
+          const el = prepItemEls.current[key];
+          if (el) rects[key] = el.getBoundingClientRect();
+        });
+        prepItemRects.current = rects;
         if (window.navigator?.vibrate) window.navigator.vibrate(14);
         setPrepDrag({ fromCi: ci, fromIi: ii, toCi: ci, toIi: ii, fingerY: startY, startY, itemH });
       }, 430);
