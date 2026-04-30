@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v320</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v321</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7492,84 +7492,81 @@ function NewTripSheet({ open, onClose, onSubmit }) {
           {/* Step 1: 나라 검색 */}
           {step === 1 && (() => {
             const q = destQuery.trim().toLowerCase();
-            const suggestions = q.length === 0
-              ? CITY_DB
-              : CITY_DB.filter(c =>
-                  c.kor.includes(destQuery.trim()) ||
-                  c.eng.toLowerCase().startsWith(q) ||
-                  c.eng.toLowerCase().includes(q)
-                ).sort((a, b) => {
-                  // 시작 글자 우선
-                  const aKorStart = a.kor.startsWith(destQuery.trim());
-                  const bKorStart = b.kor.startsWith(destQuery.trim());
-                  const aEngStart = a.eng.toLowerCase().startsWith(q);
-                  const bEngStart = b.eng.toLowerCase().startsWith(q);
-                  return (bKorStart || bEngStart ? 1 : 0) - (aKorStart || aEngStart ? 1 : 0);
-                });
+            const suggestions = q.length === 0 ? [] : CITY_DB.filter(c =>
+                c.kor.includes(destQuery.trim()) ||
+                c.eng.toLowerCase().startsWith(q) ||
+                c.eng.toLowerCase().includes(q)
+              ).sort((a, b) => {
+                const aStart = a.kor.startsWith(destQuery.trim()) || a.eng.toLowerCase().startsWith(q);
+                const bStart = b.kor.startsWith(destQuery.trim()) || b.eng.toLowerCase().startsWith(q);
+                return (bStart ? 1 : 0) - (aStart ? 1 : 0);
+              }).slice(0, 6);
             return (
-              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              <div style={{ position:'relative' }}>
                 {/* 검색 입력 */}
-                <div style={{ position:'relative' }}>
-                  <input
-                    autoFocus
-                    value={destQuery}
-                    onChange={e => { setDestQuery(e.target.value); setSelectedDest(null); }}
-                    placeholder="나라 이름 (한글 또는 영어)"
-                    style={{
-                      width:'100%', boxSizing:'border-box',
-                      padding:'12px 40px 12px 16px',
-                      border:`1.5px solid ${selectedDest ? COLORS.ink : COLORS.line}`,
-                      borderRadius:14, outline:'none',
-                      background: COLORS.card,
-                      fontFamily:SANS, fontSize:15, color:COLORS.ink,
-                      transition:'border-color 0.2s',
-                    }}
-                  />
-                  {destQuery.length > 0 && (
-                    <button onClick={() => { setDestQuery(''); setSelectedDest(null); }} style={{
-                      position:'absolute', right:12, top:'50%', transform:'translateY(-50%)',
-                      background:'none', border:'none', cursor:'pointer',
-                      color:COLORS.mute, fontSize:18, lineHeight:1, padding:4,
-                    }}>×</button>
-                  )}
-                </div>
-                {/* 선택된 나라 표시 */}
+                <input
+                  autoFocus
+                  value={destQuery}
+                  onChange={e => { setDestQuery(e.target.value); setSelectedDest(null); }}
+                  placeholder="나라 이름 (한글 또는 영어)"
+                  style={{
+                    width:'100%', boxSizing:'border-box',
+                    padding:'12px 40px 12px 16px',
+                    border:`1.5px solid ${selectedDest ? COLORS.ink : COLORS.line}`,
+                    borderRadius:14, outline:'none',
+                    background: COLORS.card,
+                    fontFamily:SANS, fontSize:15, color:COLORS.ink,
+                    transition:'border-color 0.2s',
+                  }}
+                />
+                {destQuery.length > 0 && (
+                  <button onClick={() => { setDestQuery(''); setSelectedDest(null); }} style={{
+                    position:'absolute', right:12, top:14,
+                    background:'none', border:'none', cursor:'pointer',
+                    color:COLORS.mute, fontSize:18, lineHeight:1, padding:4,
+                  }}>×</button>
+                )}
+                {/* 선택 완료 표시 */}
                 {selectedDest && (
                   <div style={{
-                    display:'flex', alignItems:'center', gap:10,
+                    marginTop:8, display:'flex', alignItems:'center', gap:10,
                     padding:'10px 14px', borderRadius:12,
                     background: COLORS.ink, color:'#fff',
                   }}>
-                    <span style={{ fontSize:22 }}>{selectedDest.flag}</span>
+                    <span style={{ fontSize:20 }}>{selectedDest.flag}</span>
                     <span style={{ fontFamily:SANS, fontSize:14, fontWeight:600 }}>{selectedDest.kor}</span>
-                    <span style={{ fontFamily:SANS, fontSize:12, opacity:0.6, marginLeft:2 }}>{selectedDest.eng}</span>
-                    <span style={{ marginLeft:'auto', fontSize:16 }}>✓</span>
+                    <span style={{ fontFamily:SANS, fontSize:12, opacity:0.6 }}>{selectedDest.eng}</span>
+                    <span style={{ marginLeft:'auto' }}>✓</span>
                   </div>
                 )}
-                {/* 제안 목록 */}
-                {!selectedDest && (
+                {/* 드롭다운 팝업 */}
+                {!selectedDest && suggestions.length > 0 && (
                   <div style={{
-                    maxHeight:260, overflowY:'auto',
-                    borderRadius:14, border:`1px solid ${COLORS.line}`,
-                    background:COLORS.card,
+                    position:'absolute', top:'calc(100% + 6px)', left:0, right:0, zIndex:50,
+                    background:COLORS.bg, borderRadius:14,
+                    border:`1px solid ${COLORS.line}`,
+                    boxShadow:'0 8px 24px rgba(0,0,0,0.12)',
+                    overflow:'hidden',
                   }}>
-                    {suggestions.length === 0 ? (
-                      <div style={{ padding:'20px 16px', textAlign:'center', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
-                        검색 결과가 없어요
-                      </div>
-                    ) : suggestions.map((city, idx) => (
+                    {suggestions.map((city, idx) => (
                       <button key={city.key} onClick={() => { setSelectedDest(city); setDestQuery(city.kor); }} style={{
                         width:'100%', display:'flex', alignItems:'center', gap:12,
-                        padding:'12px 16px',
+                        padding:'11px 16px',
                         background:'none', border:'none', cursor:'pointer',
                         borderBottom: idx < suggestions.length - 1 ? `1px solid ${COLORS.line}` : 'none',
                         textAlign:'left',
                       }}>
-                        <span style={{ fontSize:22, flexShrink:0 }}>{city.flag}</span>
-                        <span style={{ fontFamily:SANS, fontSize:15, color:COLORS.ink, fontWeight:500 }}>{city.kor}</span>
+                        <span style={{ fontSize:20, flexShrink:0 }}>{city.flag}</span>
+                        <span style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, fontWeight:500 }}>{city.kor}</span>
                         <span style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, marginLeft:2 }}>{city.eng}</span>
                       </button>
                     ))}
+                  </div>
+                )}
+                {/* 검색 결과 없음 */}
+                {!selectedDest && q.length > 0 && suggestions.length === 0 && (
+                  <div style={{ marginTop:8, padding:'12px 16px', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+                    검색 결과가 없어요
                   </div>
                 )}
               </div>
