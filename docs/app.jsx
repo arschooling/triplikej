@@ -4,6 +4,18 @@
 // - Hotel detail page + multi-hotel schedule
 // - Fully editable prep page
 
+// iOS PWA 햅틱 (checkbox trick)
+function haptic(style = 'light') {
+  try {
+    const el = document.createElement('input');
+    el.type = 'checkbox';
+    el.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
+    document.body.appendChild(el);
+    el.focus(); el.click();
+    document.body.removeChild(el);
+  } catch(e) {}
+}
+
 const COLORS = {
   bg:'#F5F2EC', card:'#FFFFFF', ink:'#1A1816', mute:'#7A756D',
   line:'rgba(26,24,22,0.08)', accent:'#C14F2E', soft:'#E9E3D7', softer:'#EFEAE0',
@@ -984,7 +996,7 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
       const clamped  = Math.max(0, Math.min(total - 1, raw));
       // Fire onChange immediately so highlight follows scroll animation
       const earlyIdx = ((clamped % its.length) + its.length) % its.length;
-      if (its[earlyIdx] !== valueRef.current) { internalChange.current = true; onChangeRef.current(its[earlyIdx]); }
+      if (its[earlyIdx] !== valueRef.current) { internalChange.current = true; haptic(); onChangeRef.current(its[earlyIdx]); }
       el.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
@@ -1000,7 +1012,7 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
     } else {
       const clamped = Math.max(0, Math.min(its.length - 1, raw));
       // Fire onChange immediately so highlight follows scroll animation
-      if (its[clamped] !== valueRef.current) { internalChange.current = true; onChangeRef.current(its[clamped]); }
+      if (its[clamped] !== valueRef.current) { internalChange.current = true; haptic(); onChangeRef.current(its[clamped]); }
       el.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
       clearTimeout(timer.current);
       timer.current = setTimeout(() => { scrolling.current = false; }, 350);
@@ -1064,7 +1076,7 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
       if (loop) {
         el.scrollTo({ top: raw * ITEM_H, behavior: 'smooth' });
         const realIdx = ((raw % items.length) + items.length) % items.length;
-        if (items[realIdx] !== value) onChange(items[realIdx]);
+        if (items[realIdx] !== value) { haptic(); onChange(items[realIdx]); }
         if (raw < items.length || raw >= 2 * items.length) {
           jumping.current = true;
           setTimeout(() => {
@@ -1075,7 +1087,7 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
       } else {
         const clamped = Math.max(0, Math.min(items.length - 1, raw));
         el.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
-        if (items[clamped] !== value) onChange(items[clamped]);
+        if (items[clamped] !== value) { haptic(); onChange(items[clamped]); }
       }
     }, 120);
   };
@@ -1085,7 +1097,6 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
       <style>{`.wheel-col::-webkit-scrollbar{display:none;}`}</style>
       <div ref={ref} onScroll={handleScroll} className="wheel-col" style={{
         width:'100%', height:'100%', overflowY:'scroll',
-        scrollSnapType:'y mandatory',
         scrollbarWidth:'none', msOverflowStyle:'none',
         padding: `${ITEM_H * CENTER_OFFSET}px 0`,
         boxSizing:'content-box',
@@ -1095,7 +1106,6 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
           return (
             <div key={i} style={{
               height: ITEM_H, display:'flex', alignItems:'center', justifyContent:'center',
-              scrollSnapAlign:'center',
               fontFamily: SERIF, fontSize: isSel ? 26 : 20,
               color: isSel ? COLORS.ink : COLORS.mute,
               opacity: isSel ? 1 : 0.45,
@@ -1989,7 +1999,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v312</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v313</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
