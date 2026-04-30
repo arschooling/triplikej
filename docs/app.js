@@ -2020,13 +2020,17 @@ function WheelColumn({
   const dispItems = loop ? [...items, ...items, ...items] : items;
   const loopOff = loop ? items.length : 0;
 
-  // Sync external value → scroll position
+  // Always have fresh items reference without triggering unnecessary scroll resets
+  const itemsRef = React.useRef(items);
+  itemsRef.current = items;
+
+  // Sync external value → scroll position (only when value actually changes)
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const idx = items.indexOf(value);
+    const idx = itemsRef.current.indexOf(value);
     if (idx >= 0) el.scrollTop = (loopOff + idx) * ITEM_H;
-  }, [value, items]);
+  }, [value, loopOff]);
   const handleScroll = () => {
     if (jumping.current) return;
     clearTimeout(timer.current);
@@ -14443,10 +14447,10 @@ function MiniCalendar({
     length: dim
   }, (_, i) => i + 1)];
   const thisYear = today.getFullYear();
-  const yearItems = Array.from({
+  const yearItems = React.useMemo(() => Array.from({
     length: 6
-  }, (_, i) => String(thisYear + i));
-  const monthItems = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  }, (_, i) => String(thisYear + i)), [thisYear]);
+  const monthItems = React.useMemo(() => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], []);
   const openPicker = () => {
     setPickY(String(vy));
     setPickM(String(vm));
