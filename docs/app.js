@@ -2017,16 +2017,110 @@ function WheelColumn({
   const jumping = React.useRef(false);
 
   // loop 모드: 아이템 3배 반복, 중간 set에서 시작
-  const dispItems = loop ? [...items, ...items, ...items] : items;
+  const dispItems = React.useMemo(() => loop ? [...items, ...items, ...items] : items, [items, loop]);
   const loopOff = loop ? items.length : 0;
 
-  // Sync external value → scroll position
+  // Refs for stable access inside touch/timer closures
+  const itemsRef = React.useRef(items);
+  itemsRef.current = items;
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+  const onChangeRef = React.useRef(onChange);
+  onChangeRef.current = onChange;
+  const loopRef = React.useRef(loop);
+  loopRef.current = loop;
+
+  // Sync external value → scroll position (only when value actually changes)
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const idx = items.indexOf(value);
+    const idx = itemsRef.current.indexOf(value);
     if (idx >= 0) el.scrollTop = (loopOff + idx) * ITEM_H;
-  }, [value, items]);
+  }, [value, loopOff]);
+
+  // Snap helper – snaps to nearest item and fires onChange
+  const snapAndFire = React.useCallback((el, targetTop) => {
+    const its = itemsRef.current;
+    const raw = Math.round(targetTop / ITEM_H);
+    if (loopRef.current) {
+      const total = its.length * 3;
+      const clamped = Math.max(0, Math.min(total - 1, raw));
+      el.scrollTo({
+        top: clamped * ITEM_H,
+        behavior: 'smooth'
+      });
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        const finalRaw = Math.round(el.scrollTop / ITEM_H);
+        const realIdx = (finalRaw % its.length + its.length) % its.length;
+        if (its[realIdx] !== valueRef.current) onChangeRef.current(its[realIdx]);
+        if (finalRaw < its.length || finalRaw >= 2 * its.length) {
+          jumping.current = true;
+          setTimeout(() => {
+            el.scrollTop = (its.length + realIdx) * ITEM_H;
+            jumping.current = false;
+          }, 180);
+        }
+      }, 320);
+    } else {
+      const clamped = Math.max(0, Math.min(its.length - 1, raw));
+      el.scrollTo({
+        top: clamped * ITEM_H,
+        behavior: 'smooth'
+      });
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        const idx = Math.max(0, Math.min(its.length - 1, Math.round(el.scrollTop / ITEM_H)));
+        if (its[idx] !== valueRef.current) onChangeRef.current(its[idx]);
+      }, 320);
+    }
+  }, []);
+
+  // Manual touch scroll (parent has touch-action:none, so native scroll is disabled)
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let startY = null,
+      startTop = 0,
+      lastY = 0,
+      lastT = 0,
+      vel = 0;
+    const onStart = e => {
+      startY = lastY = e.touches[0].clientY;
+      startTop = el.scrollTop;
+      lastT = Date.now();
+      vel = 0;
+      clearTimeout(timer.current);
+    };
+    const onMove = e => {
+      if (startY === null) return;
+      const y = e.touches[0].clientY;
+      const dt = Math.max(1, Date.now() - lastT);
+      vel = (lastY - y) / dt;
+      lastY = y;
+      lastT = Date.now();
+      el.scrollTop = startTop + (startY - y);
+    };
+    const onEnd = () => {
+      if (startY === null) return;
+      startY = null;
+      snapAndFire(el, el.scrollTop + vel * 80);
+    };
+    el.addEventListener('touchstart', onStart, {
+      passive: true
+    });
+    el.addEventListener('touchmove', onMove, {
+      passive: true
+    });
+    el.addEventListener('touchend', onEnd, {
+      passive: true
+    });
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchmove', onMove);
+      el.removeEventListener('touchend', onEnd);
+    };
+  }, [snapAndFire]);
   const handleScroll = () => {
     if (jumping.current) return;
     clearTimeout(timer.current);
@@ -2035,14 +2129,12 @@ function WheelColumn({
       if (!el) return;
       const raw = Math.round(el.scrollTop / ITEM_H);
       if (loop) {
-        // snap
         el.scrollTo({
           top: raw * ITEM_H,
           behavior: 'smooth'
         });
         const realIdx = (raw % items.length + items.length) % items.length;
         if (items[realIdx] !== value) onChange(items[realIdx]);
-        // 첫/마지막 세트로 넘어갔으면 중간 세트로 점프 (무음)
         if (raw < items.length || raw >= 2 * items.length) {
           jumping.current = true;
           setTimeout(() => {
@@ -2064,7 +2156,8 @@ function WheelColumn({
     style: {
       position: 'relative',
       width,
-      height: ITEM_H * VISIBLE
+      height: ITEM_H * VISIBLE,
+      overflow: 'hidden'
     }
   }, /*#__PURE__*/React.createElement("style", null, `.wheel-col::-webkit-scrollbar{display:none;}`), /*#__PURE__*/React.createElement("div", {
     ref: ref,
@@ -3904,7 +3997,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v302"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v305"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -14353,16 +14446,6 @@ function MiniCalendar({
   const [pickY, setPickY] = React.useState(String(today.getFullYear()));
   const [pickM, setPickM] = React.useState(String(today.getMonth()));
   const wheelContainerRef = React.useRef(null);
-  React.useEffect(() => {
-    if (!picking) return;
-    const el = wheelContainerRef.current;
-    if (!el) return;
-    const block = e => e.preventDefault();
-    el.addEventListener('touchmove', block, {
-      passive: false
-    });
-    return () => el.removeEventListener('touchmove', block);
-  }, [picking]);
   const todayIso = today.toISOString().slice(0, 10);
   const toIso = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   const dim = new Date(vy, vm + 1, 0).getDate();
@@ -14378,10 +14461,10 @@ function MiniCalendar({
     length: dim
   }, (_, i) => i + 1)];
   const thisYear = today.getFullYear();
-  const yearItems = Array.from({
+  const yearItems = React.useMemo(() => Array.from({
     length: 6
-  }, (_, i) => String(thisYear + i));
-  const monthItems = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  }, (_, i) => String(thisYear + i)), [thisYear]);
+  const monthItems = React.useMemo(() => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], []);
   const openPicker = () => {
     setPickY(String(vy));
     setPickM(String(vm));
@@ -14446,7 +14529,8 @@ function MiniCalendar({
     style: {
       display: 'flex',
       justifyContent: 'center',
-      gap: 8
+      gap: 8,
+      touchAction: 'none'
     }
   }, /*#__PURE__*/React.createElement(WheelColumn, {
     items: yearItems,
