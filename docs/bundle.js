@@ -4544,7 +4544,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v292"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v293"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -14898,6 +14898,7 @@ function MiniCalendar({
   const today = new Date();
   const [vy, setVy] = React.useState(today.getFullYear());
   const [vm, setVm] = React.useState(today.getMonth());
+  const [picking, setPicking] = React.useState(false); // 년/월 피커 표시
   const todayIso = today.toISOString().slice(0, 10);
   const toIso = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   const dim = new Date(vy, vm + 1, 0).getDate();
@@ -14912,6 +14913,11 @@ function MiniCalendar({
   const cells = [...Array(firstDow).fill(null), ...Array.from({
     length: dim
   }, (_, i) => i + 1)];
+  const thisYear = today.getFullYear();
+  const years = Array.from({
+    length: 4
+  }, (_, i) => thisYear + i);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
@@ -14929,14 +14935,26 @@ function MiniCalendar({
       padding: '0 10px',
       color: COLORS.ink
     }
-  }, "\u2039"), /*#__PURE__*/React.createElement("span", {
+  }, "\u2039"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPicking(p => !p),
     style: {
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
       fontFamily: SANS,
       fontSize: 14,
       fontWeight: 600,
-      color: COLORS.ink
+      color: COLORS.ink,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 4
     }
-  }, MONTH_NAMES_SHORT[vm], " ", vy), /*#__PURE__*/React.createElement("button", {
+  }, MONTH_NAMES_SHORT[vm], " ", vy, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      color: COLORS.mute
+    }
+  }, picking ? '▲' : '▼')), /*#__PURE__*/React.createElement("button", {
     onClick: nextMo,
     style: {
       background: 'none',
@@ -14946,7 +14964,51 @@ function MiniCalendar({
       padding: '0 10px',
       color: COLORS.ink
     }
-  }, "\u203A")), /*#__PURE__*/React.createElement("div", {
+  }, "\u203A")), picking ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4,1fr)',
+      gap: 6,
+      marginBottom: 10
+    }
+  }, years.map(y => /*#__PURE__*/React.createElement("button", {
+    key: y,
+    onClick: () => setVy(y),
+    style: {
+      padding: '8px 0',
+      border: 'none',
+      borderRadius: 8,
+      cursor: 'pointer',
+      background: y === vy ? COLORS.ink : COLORS.softer,
+      color: y === vy ? COLORS.bg : COLORS.ink,
+      fontFamily: SANS,
+      fontSize: 13,
+      fontWeight: y === vy ? 600 : 400
+    }
+  }, y))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4,1fr)',
+      gap: 6
+    }
+  }, months.map((m, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => {
+      setVm(i);
+      setPicking(false);
+    },
+    style: {
+      padding: '8px 0',
+      border: 'none',
+      borderRadius: 8,
+      cursor: 'pointer',
+      background: i === vm ? COLORS.ink : COLORS.softer,
+      color: i === vm ? COLORS.bg : COLORS.ink,
+      fontFamily: SANS,
+      fontSize: 13,
+      fontWeight: i === vm ? 600 : 400
+    }
+  }, m)))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'grid',
       gridTemplateColumns: 'repeat(7,1fr)',
@@ -14992,7 +15054,7 @@ function MiniCalendar({
         fontWeight: isStart || isEnd ? 600 : 400
       }
     }, d);
-  })));
+  }))));
 }
 function NewTripSheet({
   open,
