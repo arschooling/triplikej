@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v356</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v357</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6775,7 +6775,7 @@ function NotificationsScreen({ open, onClose, authUser, notifications, onGoToCom
 }
 
 // ─── Companions ───────────────────────────────────────────────
-function CompanionsScreen({ open, onClose, authUser, userData, trips }) {
+function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserDataUpdate }) {
   const [contacts, setContacts]         = React.useState([]);
   const [sentInvites, setSentInvites]   = React.useState([]);
   const [receivedInvites, setReceivedInvites] = React.useState([]);
@@ -6823,7 +6823,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips }) {
     let unsubReceived = () => {};
     if (typeof fbListenInvites === 'function') {
       unsubReceived = fbListenInvites(authUser.uid, (invites) => {
-        setReceivedInvites(invites.filter(inv => inv.type === 'contact'));
+        setReceivedInvites(invites);
       });
     }
 
@@ -6967,13 +6967,20 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips }) {
                       <Avatar u={{ displayName: inv.fromName, photoURL: inv.fromPhoto }}/>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>{inv.fromName || '?'}</div>
-                        <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.mute, marginTop:1 }}>동행인 요청</div>
+                        <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.mute, marginTop:1 }}>
+                          {inv.tripId ? `여행 초대: ${inv.tripTitle || ''}` : '동행인 요청'}
+                        </div>
                       </div>
                       <div style={{ display:'flex', gap:6 }}>
                         <button onClick={async () => {
-                          await fbAcceptContactInvite(inv, authUser.uid);
+                          if (inv.tripId) {
+                            const tripId = await fbAcceptTripInvite(inv, authUser.uid);
+                            onUserDataUpdate?.({ ...userData, tripIds: [...(userData.tripIds||[]), tripId] });
+                          } else {
+                            await fbAcceptContactInvite(inv, authUser.uid);
+                            fbGetContacts(authUser.uid).then(setContacts).catch(() => {});
+                          }
                           setReceivedInvites(p => p.filter(i => i.id !== inv.id));
-                          fbGetContacts(authUser.uid).then(setContacts).catch(() => {});
                         }} style={{
                           border:'none', borderRadius:9, padding:'6px 12px', cursor:'pointer',
                           background:COLORS.ink, color:COLORS.bg, fontFamily:SANS, fontSize:12, fontWeight:500,
@@ -9442,7 +9449,7 @@ function App() {
         defaultTripId={addCompanionOpen || null}
         onUserDataUpdate={ud => setUserData(ud)}/>
       <CompanionsScreen open={companionsScreenOpen} onClose={() => setCompanionsScreenOpen(false)}
-        authUser={authUser} userData={userData} trips={userTrips}/>
+        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}/>
       <NotificationsScreen open={notifOpen} onClose={() => setNotifOpen(false)}
         authUser={authUser} notifications={notifs}
         onGoToCompanions={() => { setNotifOpen(false); setCompanionsScreenOpen(true); }}
@@ -9572,7 +9579,7 @@ function App() {
           setTab('home'); setDayIdx(null); setHotelIdx(null);
         }}/>
       <CompanionsScreen open={companionsScreenOpen} onClose={() => setCompanionsScreenOpen(false)}
-        authUser={authUser} userData={userData} trips={userTrips}/>
+        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}/>
       <NotificationsScreen open={notifOpen} onClose={() => setNotifOpen(false)}
         authUser={authUser} notifications={notifs}
         onGoToCompanions={() => { setNotifOpen(false); setCompanionsScreenOpen(true); }}
