@@ -1971,7 +1971,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v307</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v308</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6070,18 +6070,6 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
     setEditIdx(idx); setDelConfirm(false); setAddingCat(false); setNewCatVal('');
     setAddOpen(true);
     onSheetChange?.(true);
-    // 시트가 열릴 때 해당 항목이 시트 위에 보이도록 스크롤
-    requestAnimationFrame(() => {
-      const el = document.querySelector(`[data-entry-idx="${idx}"]`);
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const sheetHeight = window.innerHeight * 0.8;
-      const visibleHeight = window.innerHeight - sheetHeight;
-      const targetBottom = visibleHeight - 12;
-      if (rect.bottom > targetBottom) {
-        window.scrollBy({ top: rect.bottom - targetBottom, behavior: 'smooth' });
-      }
-    });
   };
 
   const addCustomCat = () => {
