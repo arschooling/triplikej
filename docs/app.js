@@ -3905,7 +3905,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v331"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v332"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -17494,11 +17494,11 @@ function NewTripSheet({
       textTransform: 'uppercase',
       letterSpacing: '0.05em'
     }
-  }, "\uB3C4\uCC29 \uACF5\uD56D"), /*#__PURE__*/React.createElement("input", {
-    value: arrAirport,
+  }, "\uCD9C\uBC1C \uACF5\uD56D"), /*#__PURE__*/React.createElement("input", {
+    value: depAirport,
     autoFocus: true,
-    onChange: e => setArrAirport(e.target.value),
-    placeholder: "\uC608) \uB098\uB9AC\uD0C0 \uAD6D\uC81C\uACF5\uD56D",
+    onChange: e => setDepAirport(e.target.value),
+    placeholder: "\uC608) \uC778\uCC9C\uAD6D\uC81C\uACF5\uD56D",
     style: {
       width: '100%',
       boxSizing: 'border-box',
@@ -17524,9 +17524,9 @@ function NewTripSheet({
       textTransform: 'uppercase',
       letterSpacing: '0.05em'
     }
-  }, "\uCD9C\uBC1C \uACF5\uD56D"), /*#__PURE__*/React.createElement("input", {
-    value: depAirport,
-    onChange: e => setDepAirport(e.target.value),
+  }, "\uB3C4\uCC29 \uACF5\uD56D"), /*#__PURE__*/React.createElement("input", {
+    value: arrAirport,
+    onChange: e => setArrAirport(e.target.value),
     placeholder: "\uC608) \uB098\uB9AC\uD0C0 \uAD6D\uC81C\uACF5\uD56D",
     style: {
       width: '100%',

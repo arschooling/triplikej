@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v331</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v332</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7947,15 +7947,15 @@ function NewTripSheet({ open, onClose, onSubmit }) {
           {step === 4 && (
             <div>
               <div style={{ marginBottom:18 }}>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>도착 공항</div>
-                <input value={arrAirport} autoFocus onChange={e=>setArrAirport(e.target.value)}
-                  placeholder="예) 나리타 국제공항"
+                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>출발 공항</div>
+                <input value={depAirport} autoFocus onChange={e=>setDepAirport(e.target.value)}
+                  placeholder="예) 인천국제공항"
                   style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
                 />
               </div>
               <div style={{ marginBottom:18 }}>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>출발 공항</div>
-                <input value={depAirport} onChange={e=>setDepAirport(e.target.value)}
+                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>도착 공항</div>
+                <input value={arrAirport} onChange={e=>setArrAirport(e.target.value)}
                   placeholder="예) 나리타 국제공항"
                   style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
                 />
