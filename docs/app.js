@@ -3880,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v288"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v289"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -7019,7 +7019,8 @@ function StopSheet({
       background: COLORS.bg,
       borderRadius: '22px 22px 0 0',
       paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 60px)',
-      maxHeight: expanded ? 'calc(100dvh - var(--sat, 44px) - 8px)' : `calc(80dvh + ${sheetUp}px)`,
+      height: expanded ? 'auto' : `calc(80dvh + ${sheetUp}px)`,
+      maxHeight: expanded ? 'calc(100dvh - var(--sat, 44px) - 8px)' : undefined,
       overflowY: 'hidden',
       overflowX: 'hidden',
       transition: sheetUp > 0 ? 'none' : 'max-height 0.36s cubic-bezier(0.32,0.72,0,1)'
@@ -11874,6 +11875,21 @@ function BudgetScreen({
     setNewCatVal('');
     setAddOpen(true);
     onSheetChange?.(true);
+    // 시트가 열릴 때 해당 항목이 시트 위에 보이도록 스크롤
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-entry-idx="${idx}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const sheetHeight = window.innerHeight * 0.8;
+      const visibleHeight = window.innerHeight - sheetHeight;
+      const targetBottom = visibleHeight - 12;
+      if (rect.bottom > targetBottom) {
+        window.scrollBy({
+          top: rect.bottom - targetBottom,
+          behavior: 'smooth'
+        });
+      }
+    });
   };
   const addCustomCat = () => {
     const name = newCatVal.trim();
@@ -12288,6 +12304,7 @@ function BudgetScreen({
       return /*#__PURE__*/React.createElement("div", {
         key: e.id || e._i,
         ref: dp.ref,
+        "data-entry-idx": e._i,
         onTouchStart: dp.onTouchStart,
         onTouchMove: dp.onTouchMove,
         onTouchEnd: dp.onTouchEnd,
