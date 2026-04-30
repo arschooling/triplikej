@@ -2732,7 +2732,8 @@ function WheelColumn({
     style: {
       position: 'relative',
       width,
-      height: ITEM_H * VISIBLE
+      height: ITEM_H * VISIBLE,
+      overflow: 'hidden'
     }
   }, /*#__PURE__*/React.createElement("style", null, `.wheel-col::-webkit-scrollbar{display:none;}`), /*#__PURE__*/React.createElement("div", {
     ref: ref,
@@ -4572,7 +4573,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v302"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v303"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
