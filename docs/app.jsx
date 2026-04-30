@@ -1889,7 +1889,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v300</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v301</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5204,17 +5204,7 @@ function normalizePrepCats(raw) {
   return { cats: result };
 }
 
-function PrepCatItems({ ci, cat, cats, save, editing, editingItem, setEditingItem }) {
-  const reorder = (from, to) => {
-    const next = cats.map((c, i) => {
-      if (i !== ci) return c;
-      const items = [...c.items];
-      items.splice(to, 0, items.splice(from, 1)[0]);
-      return { ...c, items };
-    });
-    save(next);
-  };
-  const { itemProps, isTouchDragging } = useDragReorder(reorder, false);
+function PrepCatItems({ ci, cat, cats, save, editing, editingItem, setEditingItem, getItemDragProps, prepDrag, emptyDropRef }) {
   const deleteItem = (ii) => {
     const next = cats.map((c, i) => i !== ci ? c : { ...c, items: c.items.filter((_, j) => j !== ii) });
     save(next);
@@ -5238,7 +5228,7 @@ function PrepCatItems({ ci, cat, cats, save, editing, editingItem, setEditingIte
     <>
       {(cat.items || []).map((item, ii) => {
         const isEditingThis = editingItem?.ci === ci && editingItem?.ii === ii;
-        const dp = itemProps(ii);
+        const dp = getItemDragProps(ii);
         const isDone = checked.has(ii);
         return (
           <div key={ii} ref={dp.ref} onTouchStart={dp.onTouchStart} onTouchMove={dp.onTouchMove} onTouchEnd={dp.onTouchEnd}
@@ -5247,7 +5237,7 @@ function PrepCatItems({ ci, cat, cats, save, editing, editingItem, setEditingIte
               cardSwipe
               onEdit={() => setEditingItem({ ci, ii })}
               onDelete={() => deleteItem(ii)}
-              isDragging={isTouchDragging}
+              isDragging={!!prepDrag}
               wrapStyle={{ borderRadius:14 }}
             >
               <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px',
@@ -5303,6 +5293,119 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   const [editingItem,  setEditingItem]  = React.useState(null); // { ci, ii }
 
   const save = (newCats) => onEditPrep({ ...prep, cats: newCats });
+
+  // ── Cross-category drag ───────────────────────────────────────
+  const [prepDrag, setPrepDrag] = React.useState(null);
+  // prepDrag = { fromCi, fromIi, toCi, toIi, fingerY, startY, itemH } | null
+  const prepDragRef = React.useRef(null);
+  const prepTimer = React.useRef(null);
+  const prepItemEls = React.useRef({});
+
+  React.useEffect(() => { prepDragRef.current = prepDrag; }, [prepDrag]);
+
+  // Block page scroll while dragging
+  React.useEffect(() => {
+    if (!prepDrag) return;
+    const stop = e => e.preventDefault();
+    document.addEventListener('touchmove', stop, { passive: false });
+    return () => document.removeEventListener('touchmove', stop);
+  }, [!!prepDrag]);
+
+  const findPrepTarget = (y) => {
+    // Find which (ci, ii) the finger is over
+    for (let ci = 0; ci < cats.length; ci++) {
+      const items = cats[ci].items || [];
+      for (let ii = 0; ii < items.length; ii++) {
+        const el = prepItemEls.current[`${ci}_${ii}`]; if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (y >= rect.top && y < rect.bottom) {
+          // Top half → insert before, bottom half → insert after
+          return { ci, ii: y < rect.top + rect.height / 2 ? ii : ii + 1 };
+        }
+      }
+      // Below last item of this category → insert at end of this category
+      if (items.length > 0) {
+        const lastEl = prepItemEls.current[`${ci}_${items.length - 1}`];
+        if (lastEl) {
+          const lastRect = lastEl.getBoundingClientRect();
+          const nextFirstEl = prepItemEls.current[`${ci + 1}_0`];
+          const nextTop = nextFirstEl ? nextFirstEl.getBoundingClientRect().top : Infinity;
+          if (y > lastRect.bottom && y < nextTop) return { ci, ii: items.length };
+        }
+      }
+      // Empty category check
+      if (items.length === 0) {
+        const el = prepItemEls.current[`${ci}_empty`]; if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (y >= rect.top && y <= rect.bottom) return { ci, ii: 0 };
+      }
+    }
+    return null;
+  };
+
+  const makePrepItemProps = (ci, ii) => ({
+    ref: el => { prepItemEls.current[`${ci}_${ii}`] = el; },
+    style: (() => {
+      if (!prepDrag) return {};
+      const { fromCi, fromIi, toCi, toIi, fingerY, startY, itemH } = prepDrag;
+      if (ci === fromCi && ii === fromIi) {
+        return {
+          transform: `translateY(${fingerY - startY}px) scale(1.035)`,
+          zIndex: 50, opacity: 0.88, position: 'relative',
+          boxShadow: '0 16px 40px rgba(0,0,0,0.24)', transition: 'none',
+        };
+      }
+      let shift = 0;
+      if (fromCi === toCi && fromCi === ci) {
+        if (fromIi < toIi && ii > fromIi && ii <= toIi) shift = -itemH;
+        else if (fromIi > toIi && ii >= toIi && ii < fromIi) shift = itemH;
+      } else {
+        if (ci === fromCi && ii > fromIi) shift = -itemH;
+        if (ci === toCi && ii >= toIi) shift = itemH;
+      }
+      return { transform: `translateY(${shift}px)`, transition: 'transform 0.28s cubic-bezier(0.34,1.56,0.64,1)', position: 'relative' };
+    })(),
+    onTouchStart: e => {
+      if (prepDragRef.current) return;
+      const startY = e.touches[0].clientY;
+      prepTimer.current = setTimeout(() => {
+        const el = prepItemEls.current[`${ci}_${ii}`];
+        const itemH = el ? el.getBoundingClientRect().height : 48;
+        if (window.navigator?.vibrate) window.navigator.vibrate(14);
+        setPrepDrag({ fromCi: ci, fromIi: ii, toCi: ci, toIi: ii, fingerY: startY, startY, itemH });
+      }, 430);
+    },
+    onTouchMove: e => {
+      clearTimeout(prepTimer.current);
+      const d = prepDragRef.current; if (!d) return;
+      const y = e.touches[0].clientY;
+      const target = findPrepTarget(y);
+      setPrepDrag(prev => prev ? {
+        ...prev, fingerY: y,
+        toCi: target ? target.ci : prev.toCi,
+        toIi: target ? target.ii : prev.toIi,
+      } : null);
+    },
+    onTouchEnd: () => {
+      clearTimeout(prepTimer.current);
+      const d = prepDragRef.current;
+      if (d) {
+        const { fromCi, fromIi, toCi, toIi } = d;
+        if (fromCi !== toCi || fromIi !== toIi) {
+          const newCats = cats.map(c => ({ ...c, items: [...(c.items || [])] }));
+          const [item] = newCats[fromCi].items.splice(fromIi, 1);
+          let adjIi = (fromCi === toCi && fromIi < toIi) ? Math.max(0, toIi - 1) : toIi;
+          newCats[toCi].items.splice(Math.min(adjIi, newCats[toCi].items.length), 0, item);
+          save(newCats);
+        }
+        setPrepDrag(null);
+      }
+    },
+    'data-drag-over': !!(prepDrag && prepDrag.toCi === ci && prepDrag.toIi === ii && !(prepDrag.fromCi === ci && prepDrag.fromIi === ii)),
+  });
+
+  // This is passed to PrepCatItems as getItemDragProps
+  const getItemDragProps = (ci) => (ii) => makePrepItemProps(ci, ii);
 
   const addCat = () => {
     const id = 'cat_' + Date.now();
@@ -5421,12 +5524,16 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
           {/* 아이템 목록 */}
           <div style={{ background:COLORS.card, borderRadius:14 }}>
             {(cat.items || []).length === 0 && addInputCat !== ci && (
-              <div style={{ padding:'14px 16px', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
+              <div ref={el => { prepItemEls.current[`${ci}_empty`] = el; }}
+                style={{ padding:'14px 16px', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
                 항목이 없어요
               </div>
             )}
             <PrepCatItems ci={ci} cat={cat} cats={cats} save={save} editing={editing}
-              editingItem={editingItem} setEditingItem={setEditingItem}/>
+              editingItem={editingItem} setEditingItem={setEditingItem}
+              getItemDragProps={getItemDragProps(ci)}
+              prepDrag={prepDrag}
+              emptyDropRef={el => { prepItemEls.current[`${ci}_empty`] = el; }}/>
             {/* 항목 추가 */}
             {addInputCat === ci ? (
               <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px',
