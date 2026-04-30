@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v334</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v335</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -8059,10 +8059,10 @@ function NewTripSheet({ open, onClose, onSubmit }) {
         {/* 푸터 */}
         <div style={{ padding:'10px 20px 20px', display:'flex', gap:8, flexShrink:0, borderTop:`1px solid ${COLORS.line}` }}>
           {step > 1
-            ? <button onClick={() => setStep(s=>s-1)} style={{ padding:'11px 18px', borderRadius:12, border:`1px solid ${COLORS.line}`, background:'transparent', fontFamily:SANS, fontSize:14, color:COLORS.ink, cursor:'pointer' }}>이전</button>
+            ? <button onMouseDown={e=>e.preventDefault()} onClick={() => setStep(s=>s-1)} style={{ padding:'11px 18px', borderRadius:12, border:`1px solid ${COLORS.line}`, background:'transparent', fontFamily:SANS, fontSize:14, color:COLORS.ink, cursor:'pointer' }}>이전</button>
             : <button onClick={onClose} style={{ padding:'11px 18px', borderRadius:12, border:`1px solid ${COLORS.line}`, background:'transparent', fontFamily:SANS, fontSize:14, color:COLORS.mute, cursor:'pointer' }}>취소</button>
           }
-          <button onClick={handleNext} disabled={!canNext} style={{
+          <button onMouseDown={e=>e.preventDefault()} onClick={handleNext} disabled={!canNext} style={{
             flex:1, padding:'11px 0', borderRadius:12, border:'none',
             background: canNext ? COLORS.ink : COLORS.softer,
             color:       canNext ? COLORS.bg  : COLORS.mute,
