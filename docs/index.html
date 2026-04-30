@@ -29,7 +29,14 @@
   @font-face {
     font-family: 'Adam';
     src: url('./adam-light.otf') format('opentype');
-    font-weight: normal;
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Adam';
+    src: url('./adam-medium.otf') format('opentype');
+    font-weight: 500;
     font-style: normal;
     font-display: swap;
   }
@@ -78,7 +85,8 @@
     100% { transform:scaleX(1);    }
   }
   .arshooling-text {
-    color: #1A1816;
+    color: #000;
+    font-weight: 500;
   }
 </style>
 <!-- 서비스 워커 등록 + 새 버전 감지 시 자동 새로고침 -->

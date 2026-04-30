@@ -3905,7 +3905,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v353"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v354"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
