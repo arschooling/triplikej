@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v337</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v338</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7547,92 +7547,90 @@ const CITY_DB = [
 ];
 
 const CITIES_BY_KEY = {
-  japan:       [{kor:'도쿄',eng:'Tokyo'},{kor:'오사카',eng:'Osaka'},{kor:'교토',eng:'Kyoto'},{kor:'삿포로',eng:'Sapporo'},{kor:'후쿠오카',eng:'Fukuoka'},{kor:'나고야',eng:'Nagoya'},{kor:'나라',eng:'Nara'},{kor:'고베',eng:'Kobe'},{kor:'히로시마',eng:'Hiroshima'},{kor:'오키나와',eng:'Okinawa'},{kor:'하코다테',eng:'Hakodate'}],
-  france:      [{kor:'파리',eng:'Paris'},{kor:'니스',eng:'Nice'},{kor:'마르세유',eng:'Marseille'},{kor:'리옹',eng:'Lyon'},{kor:'보르도',eng:'Bordeaux'},{kor:'스트라스부르',eng:'Strasbourg'},{kor:'몽생미셸',eng:'Mont Saint-Michel'},{kor:'칸',eng:'Cannes'}],
-  usa:         [{kor:'뉴욕',eng:'New York'},{kor:'로스앤젤레스',eng:'Los Angeles'},{kor:'샌프란시스코',eng:'San Francisco'},{kor:'시카고',eng:'Chicago'},{kor:'라스베가스',eng:'Las Vegas'},{kor:'마이애미',eng:'Miami'},{kor:'보스턴',eng:'Boston'},{kor:'워싱턴',eng:'Washington'},{kor:'시애틀',eng:'Seattle'},{kor:'샌디에이고',eng:'San Diego'}],
-  uk:          [{kor:'런던',eng:'London'},{kor:'에든버러',eng:'Edinburgh'},{kor:'맨체스터',eng:'Manchester'},{kor:'옥스퍼드',eng:'Oxford'},{kor:'캠브리지',eng:'Cambridge'},{kor:'바스',eng:'Bath'},{kor:'요크',eng:'York'},{kor:'리버풀',eng:'Liverpool'}],
-  thailand:    [{kor:'방콕',eng:'Bangkok'},{kor:'치앙마이',eng:'Chiang Mai'},{kor:'푸켓',eng:'Phuket'},{kor:'파타야',eng:'Pattaya'},{kor:'코사무이',eng:'Koh Samui'},{kor:'아유타야',eng:'Ayutthaya'},{kor:'크라비',eng:'Krabi'}],
-  indonesia:   [{kor:'발리',eng:'Bali'},{kor:'자카르타',eng:'Jakarta'},{kor:'롬복',eng:'Lombok'},{kor:'코모도',eng:'Komodo'},{kor:'요그야카르타',eng:'Yogyakarta'},{kor:'수라바야',eng:'Surabaya'}],
-  singapore:   [{kor:'싱가포르',eng:'Singapore'}],
-  spain:       [{kor:'바르셀로나',eng:'Barcelona'},{kor:'마드리드',eng:'Madrid'},{kor:'세비야',eng:'Seville'},{kor:'그라나다',eng:'Granada'},{kor:'발렌시아',eng:'Valencia'},{kor:'빌바오',eng:'Bilbao'},{kor:'말라가',eng:'Malaga'},{kor:'산세바스티안',eng:'San Sebastian'}],
-  italy:       [{kor:'로마',eng:'Rome'},{kor:'밀라노',eng:'Milan'},{kor:'베네치아',eng:'Venice'},{kor:'피렌체',eng:'Florence'},{kor:'나폴리',eng:'Naples'},{kor:'아말피',eng:'Amalfi'},{kor:'시칠리아',eng:'Sicily'},{kor:'볼로냐',eng:'Bologna'},{kor:'토리노',eng:'Turin'},{kor:'친퀘테레',eng:'Cinque Terre'},{kor:'소렌토',eng:'Sorrento'},{kor:'시에나',eng:'Siena'},{kor:'아시시',eng:'Assisi'},{kor:'베로나',eng:'Verona'}],
-  czechia:     [{kor:'프라하',eng:'Prague'},{kor:'체스키크룸로프',eng:'Cesky Krumlov'},{kor:'브르노',eng:'Brno'}],
-  australia:   [{kor:'시드니',eng:'Sydney'},{kor:'멜버른',eng:'Melbourne'},{kor:'브리즈번',eng:'Brisbane'},{kor:'골드코스트',eng:'Gold Coast'},{kor:'케언즈',eng:'Cairns'},{kor:'퍼스',eng:'Perth'},{kor:'애들레이드',eng:'Adelaide'}],
-  uae:         [{kor:'두바이',eng:'Dubai'},{kor:'아부다비',eng:'Abu Dhabi'}],
-  turkey:      [{kor:'이스탄불',eng:'Istanbul'},{kor:'카파도키아',eng:'Cappadocia'},{kor:'안탈리아',eng:'Antalya'},{kor:'이즈미르',eng:'Izmir'},{kor:'보드룸',eng:'Bodrum'},{kor:'에페소',eng:'Ephesus'}],
-  vietnam:     [{kor:'하노이',eng:'Hanoi'},{kor:'호치민',eng:'Ho Chi Minh'},{kor:'다낭',eng:'Da Nang'},{kor:'호이안',eng:'Hoi An'},{kor:'나트랑',eng:'Nha Trang'},{kor:'하롱베이',eng:'Ha Long Bay'},{kor:'후에',eng:'Hue'},{kor:'달랏',eng:'Da Lat'}],
-  taiwan:      [{kor:'타이베이',eng:'Taipei'},{kor:'타이중',eng:'Taichung'},{kor:'타이난',eng:'Tainan'},{kor:'가오슝',eng:'Kaohsiung'},{kor:'화롄',eng:'Hualien'},{kor:'지우펀',eng:'Jiufen'}],
-  hongkong:    [{kor:'홍콩',eng:'Hong Kong'}],
-  maldives:    [{kor:'말레',eng:'Male'},{kor:'마푸시',eng:'Maafushi'}],
-  netherlands: [{kor:'암스테르담',eng:'Amsterdam'},{kor:'로테르담',eng:'Rotterdam'},{kor:'헤이그',eng:'The Hague'},{kor:'위트레흐트',eng:'Utrecht'},{kor:'잔세스칸스',eng:'Zaanse Schans'}],
-  greece:      [{kor:'아테네',eng:'Athens'},{kor:'산토리니',eng:'Santorini'},{kor:'미코노스',eng:'Mykonos'},{kor:'테살로니키',eng:'Thessaloniki'},{kor:'크레타',eng:'Crete'},{kor:'로도스',eng:'Rhodes'}],
-  malaysia:    [{kor:'쿠알라룸푸르',eng:'Kuala Lumpur'},{kor:'페낭',eng:'Penang'},{kor:'코타키나발루',eng:'Kota Kinabalu'},{kor:'말라카',eng:'Malacca'},{kor:'랑카위',eng:'Langkawi'}],
-  mexico:      [{kor:'멕시코시티',eng:'Mexico City'},{kor:'칸쿤',eng:'Cancun'},{kor:'과달라하라',eng:'Guadalajara'},{kor:'오아하카',eng:'Oaxaca'},{kor:'툴룸',eng:'Tulum'}],
-  canada:      [{kor:'밴쿠버',eng:'Vancouver'},{kor:'토론토',eng:'Toronto'},{kor:'몬트리올',eng:'Montreal'},{kor:'퀘벡',eng:'Quebec'},{kor:'밴프',eng:'Banff'},{kor:'캘거리',eng:'Calgary'},{kor:'오타와',eng:'Ottawa'}],
-  germany:     [{kor:'베를린',eng:'Berlin'},{kor:'뮌헨',eng:'Munich'},{kor:'함부르크',eng:'Hamburg'},{kor:'프랑크푸르트',eng:'Frankfurt'},{kor:'쾰른',eng:'Cologne'},{kor:'드레스덴',eng:'Dresden'},{kor:'하이델베르크',eng:'Heidelberg'},{kor:'로텐부르크',eng:'Rothenburg'}],
-  portugal:    [{kor:'리스본',eng:'Lisbon'},{kor:'포르투',eng:'Porto'},{kor:'알가르브',eng:'Algarve'},{kor:'신트라',eng:'Sintra'},{kor:'코임브라',eng:'Coimbra'}],
-  switzerland: [{kor:'취리히',eng:'Zurich'},{kor:'루체른',eng:'Lucerne'},{kor:'제네바',eng:'Geneva'},{kor:'인터라켄',eng:'Interlaken'},{kor:'베른',eng:'Bern'},{kor:'체르마트',eng:'Zermatt'}],
-  austria:     [{kor:'빈',eng:'Vienna'},{kor:'잘츠부르크',eng:'Salzburg'},{kor:'인스브루크',eng:'Innsbruck'},{kor:'그라츠',eng:'Graz'},{kor:'할슈타트',eng:'Hallstatt'}],
-  croatia:     [{kor:'두브로브니크',eng:'Dubrovnik'},{kor:'스플리트',eng:'Split'},{kor:'자그레브',eng:'Zagreb'},{kor:'흐바르',eng:'Hvar'},{kor:'플리트비체',eng:'Plitvice'}],
-  cambodia:    [{kor:'씨엠립',eng:'Siem Reap'},{kor:'프놈펜',eng:'Phnom Penh'},{kor:'시하누크빌',eng:'Sihanoukville'}],
-  philippines: [{kor:'마닐라',eng:'Manila'},{kor:'세부',eng:'Cebu'},{kor:'보라카이',eng:'Boracay'},{kor:'팔라완',eng:'Palawan'},{kor:'다바오',eng:'Davao'},{kor:'바기오',eng:'Baguio'}],
-  newzealand:  [{kor:'오클랜드',eng:'Auckland'},{kor:'퀸스타운',eng:'Queenstown'},{kor:'크라이스트처치',eng:'Christchurch'},{kor:'웰링턴',eng:'Wellington'},{kor:'로토루아',eng:'Rotorua'}],
-  morocco:     [{kor:'마라케시',eng:'Marrakech'},{kor:'페스',eng:'Fes'},{kor:'카사블랑카',eng:'Casablanca'},{kor:'쉐프샤우엔',eng:'Chefchaouen'},{kor:'에사우이라',eng:'Essaouira'}],
-  peru:        [{kor:'리마',eng:'Lima'},{kor:'쿠스코',eng:'Cusco'},{kor:'마추픽추',eng:'Machu Picchu'},{kor:'아레키파',eng:'Arequipa'}],
-  hawaii:      [{kor:'호놀룰루',eng:'Honolulu'},{kor:'마우이',eng:'Maui'},{kor:'카우아이',eng:'Kauai'},{kor:'빅아일랜드',eng:'Big Island'}],
-  korea:       [{kor:'서울',eng:'Seoul'},{kor:'부산',eng:'Busan'},{kor:'제주',eng:'Jeju'},{kor:'경주',eng:'Gyeongju'},{kor:'인천',eng:'Incheon'},{kor:'전주',eng:'Jeonju'},{kor:'강릉',eng:'Gangneung'},{kor:'춘천',eng:'Chuncheon'}],
-  china:       [{kor:'베이징',eng:'Beijing'},{kor:'상하이',eng:'Shanghai'},{kor:'청두',eng:'Chengdu'},{kor:'시안',eng:"Xi'an"},{kor:'구이린',eng:'Guilin'},{kor:'항저우',eng:'Hangzhou'},{kor:'쑤저우',eng:'Suzhou'},{kor:'장자제',eng:'Zhangjiajie'},{kor:'샤먼',eng:'Xiamen'}],
-  india:       [{kor:'뭄바이',eng:'Mumbai'},{kor:'델리',eng:'Delhi'},{kor:'아그라',eng:'Agra'},{kor:'자이푸르',eng:'Jaipur'},{kor:'고아',eng:'Goa'},{kor:'바라나시',eng:'Varanasi'},{kor:'첸나이',eng:'Chennai'}],
-  brazil:      [{kor:'상파울루',eng:'São Paulo'},{kor:'리우데자네이루',eng:'Rio de Janeiro'},{kor:'살바도르',eng:'Salvador'},{kor:'이과수',eng:'Iguazu'}],
-  // 신규 추가 나라 도시
-  norway:      [{kor:'오슬로',eng:'Oslo'},{kor:'베르겐',eng:'Bergen'},{kor:'트롬소',eng:'Tromsø'},{kor:'플롬',eng:'Flam'},{kor:'오레순',eng:'Ålesund'}],
-  sweden:      [{kor:'스톡홀름',eng:'Stockholm'},{kor:'예테보리',eng:'Gothenburg'},{kor:'말뫼',eng:'Malmö'},{kor:'우살라',eng:'Uppsala'}],
-  denmark:     [{kor:'코펜하겐',eng:'Copenhagen'},{kor:'오르후스',eng:'Aarhus'},{kor:'오덴세',eng:'Odense'}],
-  finland:     [{kor:'헬싱키',eng:'Helsinki'},{kor:'로바니에미',eng:'Rovaniemi'},{kor:'탐페레',eng:'Tampere'},{kor:'투르쿠',eng:'Turku'}],
-  iceland:     [{kor:'레이캬비크',eng:'Reykjavik'},{kor:'아쿠레이리',eng:'Akureyri'},{kor:'블루라군',eng:'Blue Lagoon'},{kor:'비크',eng:'Vik'}],
-  ireland:     [{kor:'더블린',eng:'Dublin'},{kor:'코크',eng:'Cork'},{kor:'갤웨이',eng:'Galway'},{kor:'킬라니',eng:'Killarney'}],
-  belgium:     [{kor:'브뤼셀',eng:'Brussels'},{kor:'브뤼헤',eng:'Bruges'},{kor:'겐트',eng:'Ghent'},{kor:'안트베르펜',eng:'Antwerp'}],
-  poland:      [{kor:'바르샤바',eng:'Warsaw'},{kor:'크라쿠프',eng:'Krakow'},{kor:'그단스크',eng:'Gdansk'},{kor:'브로츠와프',eng:'Wroclaw'}],
-  hungary:     [{kor:'부다페스트',eng:'Budapest'},{kor:'에게르',eng:'Eger'},{kor:'페치',eng:'Pécs'}],
-  czechia:     [{kor:'프라하',eng:'Prague'},{kor:'체스키크룸로프',eng:'Cesky Krumlov'},{kor:'브르노',eng:'Brno'}],
-  romania:     [{kor:'부쿠레슈티',eng:'Bucharest'},{kor:'브라쇼프',eng:'Brasov'},{kor:'시기쇼아라',eng:'Sighisoara'},{kor:'시나이아',eng:'Sinaia'}],
-  bulgaria:    [{kor:'소피아',eng:'Sofia'},{kor:'플로브디프',eng:'Plovdiv'},{kor:'바르나',eng:'Varna'},{kor:'벨리코투르노보',eng:'Veliko Tarnovo'}],
-  serbia:      [{kor:'베오그라드',eng:'Belgrade'},{kor:'노비사드',eng:'Novi Sad'}],
-  montenegro:  [{kor:'코토르',eng:'Kotor'},{kor:'부드바',eng:'Budva'},{kor:'포드고리차',eng:'Podgorica'}],
-  albania:     [{kor:'티라나',eng:'Tirana'},{kor:'베라트',eng:'Berat'},{kor:'지로카스터',eng:'Gjirokastër'}],
-  georgia:     [{kor:'트빌리시',eng:'Tbilisi'},{kor:'바투미',eng:'Batumi'},{kor:'카즈베기',eng:'Kazbegi'},{kor:'쿠타이시',eng:'Kutaisi'}],
-  armenia:     [{kor:'예레반',eng:'Yerevan'},{kor:'가르니',eng:'Garni'},{kor:'딜리잔',eng:'Dilijan'}],
-  azerbaijan:  [{kor:'바쿠',eng:'Baku'},{kor:'셰키',eng:'Sheki'},{kor:'가바라',eng:'Gabala'}],
-  israel:      [{kor:'텔아비브',eng:'Tel Aviv'},{kor:'예루살렘',eng:'Jerusalem'},{kor:'하이파',eng:'Haifa'},{kor:'에일라트',eng:'Eilat'}],
-  jordan:      [{kor:'암만',eng:'Amman'},{kor:'페트라',eng:'Petra'},{kor:'아카바',eng:'Aqaba'},{kor:'와디럼',eng:'Wadi Rum'}],
-  saudi:       [{kor:'리야드',eng:'Riyadh'},{kor:'제다',eng:'Jeddah'},{kor:'알울라',eng:'AlUla'}],
-  qatar:       [{kor:'도하',eng:'Doha'}],
-  oman:        [{kor:'무스카트',eng:'Muscat'},{kor:'니즈와',eng:'Nizwa'},{kor:'살랄라',eng:'Salalah'}],
-  egypt:       [{kor:'카이로',eng:'Cairo'},{kor:'룩소르',eng:'Luxor'},{kor:'아스완',eng:'Aswan'},{kor:'알렉산드리아',eng:'Alexandria'},{kor:'샤름엘셰이크',eng:'Sharm el-Sheikh'},{kor:'후르가다',eng:'Hurghada'}],
-  southafrica: [{kor:'케이프타운',eng:'Cape Town'},{kor:'요하네스버그',eng:'Johannesburg'},{kor:'더반',eng:'Durban'},{kor:'가든루트',eng:'Garden Route'}],
-  kenya:       [{kor:'나이로비',eng:'Nairobi'},{kor:'몸바사',eng:'Mombasa'},{kor:'마사이마라',eng:'Maasai Mara'},{kor:'암보셀리',eng:'Amboseli'}],
-  tanzania:    [{kor:'다르에스살람',eng:'Dar es Salaam'},{kor:'잔지바르',eng:'Zanzibar'},{kor:'세렝게티',eng:'Serengeti'},{kor:'킬리만자로',eng:'Kilimanjaro'}],
-  mauritius:   [{kor:'포르루이',eng:'Port Louis'},{kor:'그랑바이',eng:'Grand Baie'},{kor:'플리크앙플락',eng:'Flic en Flac'}],
-  seychelles:  [{kor:'마헤',eng:'Mahe'},{kor:'프라슬랑',eng:'Praslin'},{kor:'라디그',eng:'La Digue'}],
-  myanmar:     [{kor:'양곤',eng:'Yangon'},{kor:'바간',eng:'Bagan'},{kor:'만달레이',eng:'Mandalay'},{kor:'인레호수',eng:'Inle Lake'}],
-  laos:        [{kor:'루앙프라방',eng:'Luang Prabang'},{kor:'비엔티안',eng:'Vientiane'},{kor:'방비엥',eng:'Vang Vieng'}],
-  mongolia:    [{kor:'울란바토르',eng:'Ulaanbaatar'},{kor:'고비사막',eng:'Gobi Desert'},{kor:'테렐지',eng:'Terelj'}],
-  nepal:       [{kor:'카트만두',eng:'Kathmandu'},{kor:'포카라',eng:'Pokhara'},{kor:'치트완',eng:'Chitwan'}],
-  srilanka:    [{kor:'콜롬보',eng:'Colombo'},{kor:'캔디',eng:'Kandy'},{kor:'시기리야',eng:'Sigiriya'},{kor:'갈레',eng:'Galle'},{kor:'엘라',eng:'Ella'}],
-  bhutan:      [{kor:'팀부',eng:'Thimphu'},{kor:'파로',eng:'Paro'},{kor:'푸나카',eng:'Punakha'}],
-  macau:       [{kor:'마카오',eng:'Macau'}],
-  argentina:   [{kor:'부에노스아이레스',eng:'Buenos Aires'},{kor:'바릴로체',eng:'Bariloche'},{kor:'이과수',eng:'Iguazu'},{kor:'파타고니아',eng:'Patagonia'},{kor:'멘도사',eng:'Mendoza'}],
-  chile:       [{kor:'산티아고',eng:'Santiago'},{kor:'발파라이소',eng:'Valparaiso'},{kor:'아타카마',eng:'Atacama'},{kor:'파타고니아',eng:'Patagonia'},{kor:'부활절섬',eng:'Easter Island'}],
-  colombia:    [{kor:'보고타',eng:'Bogota'},{kor:'메데진',eng:'Medellin'},{kor:'카르타헤나',eng:'Cartagena'},{kor:'칼리',eng:'Cali'}],
-  ecuador:     [{kor:'키토',eng:'Quito'},{kor:'과야킬',eng:'Guayaquil'},{kor:'갈라파고스',eng:'Galapagos'}],
-  cuba:        [{kor:'아바나',eng:'Havana'},{kor:'트리니다드',eng:'Trinidad'},{kor:'바라데로',eng:'Varadero'}],
-  costarica:   [{kor:'산호세',eng:'San Jose'},{kor:'마누엘안토니오',eng:'Manuel Antonio'},{kor:'아레날',eng:'Arenal'},{kor:'몬테베르데',eng:'Monteverde'}],
-  panama:      [{kor:'파나마시티',eng:'Panama City'},{kor:'보카스델토로',eng:'Bocas del Toro'}],
-  dominican:   [{kor:'산토도밍고',eng:'Santo Domingo'},{kor:'푼타카나',eng:'Punta Cana'},{kor:'라스테레나스',eng:'Las Terrenas'}],
-  fiji:        [{kor:'나디',eng:'Nadi'},{kor:'수바',eng:'Suva'},{kor:'마나섬',eng:'Mana Island'}],
-  guam:        [{kor:'투몬',eng:'Tumon'},{kor:'아가냐',eng:'Hagåtña'}],
-  saipan:      [{kor:'가라판',eng:'Garapan'},{kor:'마나가하섬',eng:'Managaha Island'}],
-  palau:       [{kor:'코로르',eng:'Koror'},{kor:'록아일랜드',eng:'Rock Islands'}],
+  japan:       [{kor:'도쿄',eng:'Tokyo'},{kor:'오사카',eng:'Osaka'},{kor:'교토',eng:'Kyoto'},{kor:'삿포로',eng:'Sapporo'},{kor:'후쿠오카',eng:'Fukuoka'},{kor:'나고야',eng:'Nagoya'},{kor:'나라',eng:'Nara'},{kor:'고베',eng:'Kobe'},{kor:'히로시마',eng:'Hiroshima'},{kor:'오키나와',eng:'Okinawa'},{kor:'하코다테',eng:'Hakodate'},{kor:'아사히카와',eng:'Asahikawa'},{kor:'가나자와',eng:'Kanazawa'},{kor:'마쓰야마',eng:'Matsuyama'},{kor:'나가사키',eng:'Nagasaki'},{kor:'구마모토',eng:'Kumamoto'},{kor:'센다이',eng:'Sendai'},{kor:'닛코',eng:'Nikko'},{kor:'하코네',eng:'Hakone'},{kor:'시즈오카',eng:'Shizuoka'},{kor:'오이타',eng:'Oita'},{kor:'미야자키',eng:'Miyazaki'},{kor:'아오모리',eng:'Aomori'}],
+  france:      [{kor:'파리',eng:'Paris'},{kor:'니스',eng:'Nice'},{kor:'마르세유',eng:'Marseille'},{kor:'리옹',eng:'Lyon'},{kor:'보르도',eng:'Bordeaux'},{kor:'스트라스부르',eng:'Strasbourg'},{kor:'몽생미셸',eng:'Mont Saint-Michel'},{kor:'칸',eng:'Cannes'},{kor:'모나코',eng:'Monaco'},{kor:'낭트',eng:'Nantes'},{kor:'툴루즈',eng:'Toulouse'},{kor:'릴',eng:'Lille'},{kor:'렌',eng:'Rennes'},{kor:'엑상프로방스',eng:'Aix-en-Provence'},{kor:'아비뇽',eng:'Avignon'},{kor:'앙티브',eng:'Antibes'},{kor:'몽펠리에',eng:'Montpellier'},{kor:'샤모니',eng:'Chamonix'}],
+  usa:         [{kor:'뉴욕',eng:'New York'},{kor:'로스앤젤레스',eng:'Los Angeles'},{kor:'샌프란시스코',eng:'San Francisco'},{kor:'시카고',eng:'Chicago'},{kor:'라스베가스',eng:'Las Vegas'},{kor:'마이애미',eng:'Miami'},{kor:'보스턴',eng:'Boston'},{kor:'워싱턴',eng:'Washington DC'},{kor:'시애틀',eng:'Seattle'},{kor:'샌디에이고',eng:'San Diego'},{kor:'뉴올리언스',eng:'New Orleans'},{kor:'내슈빌',eng:'Nashville'},{kor:'포틀랜드',eng:'Portland'},{kor:'덴버',eng:'Denver'},{kor:'피닉스',eng:'Phoenix'},{kor:'샬럿',eng:'Charlotte'},{kor:'애틀랜타',eng:'Atlanta'},{kor:'필라델피아',eng:'Philadelphia'},{kor:'오스틴',eng:'Austin'},{kor:'미니애폴리스',eng:'Minneapolis'},{kor:'그랜드캐니언',eng:'Grand Canyon'},{kor:'옐로스톤',eng:'Yellowstone'},{kor:'요세미티',eng:'Yosemite'}],
+  uk:          [{kor:'런던',eng:'London'},{kor:'에든버러',eng:'Edinburgh'},{kor:'맨체스터',eng:'Manchester'},{kor:'옥스퍼드',eng:'Oxford'},{kor:'캠브리지',eng:'Cambridge'},{kor:'바스',eng:'Bath'},{kor:'요크',eng:'York'},{kor:'리버풀',eng:'Liverpool'},{kor:'버밍엄',eng:'Birmingham'},{kor:'글래스고',eng:'Glasgow'},{kor:'브리스톨',eng:'Bristol'},{kor:'카디프',eng:'Cardiff'},{kor:'코츠월즈',eng:'Cotswolds'},{kor:'스코틀랜드 하이랜드',eng:'Scottish Highlands'},{kor:'브라이턴',eng:'Brighton'},{kor:'윈저',eng:'Windsor'}],
+  thailand:    [{kor:'방콕',eng:'Bangkok'},{kor:'치앙마이',eng:'Chiang Mai'},{kor:'푸켓',eng:'Phuket'},{kor:'파타야',eng:'Pattaya'},{kor:'코사무이',eng:'Koh Samui'},{kor:'아유타야',eng:'Ayutthaya'},{kor:'크라비',eng:'Krabi'},{kor:'코창',eng:'Koh Chang'},{kor:'코피피',eng:'Koh Phi Phi'},{kor:'파이',eng:'Pai'},{kor:'수코타이',eng:'Sukhothai'},{kor:'치앙라이',eng:'Chiang Rai'},{kor:'후아힌',eng:'Hua Hin'},{kor:'코리페',eng:'Koh Lipe'}],
+  indonesia:   [{kor:'발리',eng:'Bali'},{kor:'자카르타',eng:'Jakarta'},{kor:'롬복',eng:'Lombok'},{kor:'코모도',eng:'Komodo'},{kor:'요그야카르타',eng:'Yogyakarta'},{kor:'수라바야',eng:'Surabaya'},{kor:'메단',eng:'Medan'},{kor:'마나도',eng:'Manado'},{kor:'라부안바조',eng:'Labuan Bajo'},{kor:'길리섬',eng:'Gili Islands'},{kor:'발리쿠파팡',eng:'Balikpapan'},{kor:'플로레스',eng:'Flores'}],
+  singapore:   [{kor:'싱가포르',eng:'Singapore'},{kor:'센토사',eng:'Sentosa'},{kor:'마리나베이',eng:'Marina Bay'},{kor:'차이나타운',eng:'Chinatown'},{kor:'리틀인디아',eng:'Little India'}],
+  spain:       [{kor:'바르셀로나',eng:'Barcelona'},{kor:'마드리드',eng:'Madrid'},{kor:'세비야',eng:'Seville'},{kor:'그라나다',eng:'Granada'},{kor:'발렌시아',eng:'Valencia'},{kor:'빌바오',eng:'Bilbao'},{kor:'말라가',eng:'Malaga'},{kor:'산세바스티안',eng:'San Sebastian'},{kor:'코르도바',eng:'Córdoba'},{kor:'팜플로나',eng:'Pamplona'},{kor:'톨레도',eng:'Toledo'},{kor:'살라망카',eng:'Salamanca'},{kor:'이비사',eng:'Ibiza'},{kor:'마요르카',eng:'Mallorca'},{kor:'테네리페',eng:'Tenerife'},{kor:'알리칸테',eng:'Alicante'},{kor:'산티아고데콤포스텔라',eng:'Santiago de Compostela'},{kor:'세고비아',eng:'Segovia'}],
+  italy:       [{kor:'로마',eng:'Rome'},{kor:'밀라노',eng:'Milan'},{kor:'베네치아',eng:'Venice'},{kor:'피렌체',eng:'Florence'},{kor:'나폴리',eng:'Naples'},{kor:'아말피',eng:'Amalfi'},{kor:'시칠리아',eng:'Sicily'},{kor:'볼로냐',eng:'Bologna'},{kor:'토리노',eng:'Turin'},{kor:'친퀘테레',eng:'Cinque Terre'},{kor:'소렌토',eng:'Sorrento'},{kor:'시에나',eng:'Siena'},{kor:'아시시',eng:'Assisi'},{kor:'베로나',eng:'Verona'},{kor:'트리에스테',eng:'Trieste'},{kor:'페루자',eng:'Perugia'},{kor:'팔레르모',eng:'Palermo'},{kor:'카타니아',eng:'Catania'},{kor:'바리',eng:'Bari'},{kor:'레체',eng:'Lecce'},{kor:'제노바',eng:'Genoa'},{kor:'파르마',eng:'Parma'},{kor:'코모호수',eng:'Lake Como'},{kor:'포지타노',eng:'Positano'}],
+  australia:   [{kor:'시드니',eng:'Sydney'},{kor:'멜버른',eng:'Melbourne'},{kor:'브리즈번',eng:'Brisbane'},{kor:'골드코스트',eng:'Gold Coast'},{kor:'케언즈',eng:'Cairns'},{kor:'퍼스',eng:'Perth'},{kor:'애들레이드',eng:'Adelaide'},{kor:'다윈',eng:'Darwin'},{kor:'호바트',eng:'Hobart'},{kor:'울루루',eng:'Uluru'},{kor:'그레이트배리어리프',eng:'Great Barrier Reef'},{kor:'포트더글라스',eng:'Port Douglas'},{kor:'블루마운틴',eng:'Blue Mountains'},{kor:'바이런베이',eng:'Byron Bay'}],
+  uae:         [{kor:'두바이',eng:'Dubai'},{kor:'아부다비',eng:'Abu Dhabi'},{kor:'샤르자',eng:'Sharjah'},{kor:'라스알카이마',eng:'Ras Al Khaimah'},{kor:'후자이라',eng:'Fujairah'}],
+  turkey:      [{kor:'이스탄불',eng:'Istanbul'},{kor:'카파도키아',eng:'Cappadocia'},{kor:'안탈리아',eng:'Antalya'},{kor:'이즈미르',eng:'Izmir'},{kor:'보드룸',eng:'Bodrum'},{kor:'에페소',eng:'Ephesus'},{kor:'파묵칼레',eng:'Pamukkale'},{kor:'트로이',eng:'Troy'},{kor:'앙카라',eng:'Ankara'},{kor:'알라냐',eng:'Alanya'},{kor:'페티예',eng:'Fethiye'},{kor:'마르마리스',eng:'Marmaris'},{kor:'트라브존',eng:'Trabzon'}],
+  vietnam:     [{kor:'하노이',eng:'Hanoi'},{kor:'호치민',eng:'Ho Chi Minh'},{kor:'다낭',eng:'Da Nang'},{kor:'호이안',eng:'Hoi An'},{kor:'나트랑',eng:'Nha Trang'},{kor:'하롱베이',eng:'Ha Long Bay'},{kor:'후에',eng:'Hue'},{kor:'달랏',eng:'Da Lat'},{kor:'푸꾸옥',eng:'Phu Quoc'},{kor:'사파',eng:'Sapa'},{kor:'무이네',eng:'Mui Ne'},{kor:'꼰다오',eng:'Con Dao'},{kor:'하지앙',eng:'Ha Giang'}],
+  taiwan:      [{kor:'타이베이',eng:'Taipei'},{kor:'타이중',eng:'Taichung'},{kor:'타이난',eng:'Tainan'},{kor:'가오슝',eng:'Kaohsiung'},{kor:'화롄',eng:'Hualien'},{kor:'지우펀',eng:'Jiufen'},{kor:'예류',eng:'Yehliu'},{kor:'선저우',eng:'Alishan'},{kor:'타이둥',eng:'Taitung'},{kor:'루강',eng:'Lukang'},{kor:'핑시',eng:'Pingxi'}],
+  hongkong:    [{kor:'홍콩',eng:'Hong Kong'},{kor:'란타우섬',eng:'Lantau Island'},{kor:'빅토리아피크',eng:'Victoria Peak'},{kor:'마카오',eng:'Macau'}],
+  maldives:    [{kor:'말레',eng:'Male'},{kor:'마푸시',eng:'Maafushi'},{kor:'바아환초',eng:'Baa Atoll'},{kor:'아리환초',eng:'Ari Atoll'},{kor:'라무환초',eng:'Lamu Atoll'},{kor:'북말레환초',eng:'North Malé Atoll'}],
+  netherlands: [{kor:'암스테르담',eng:'Amsterdam'},{kor:'로테르담',eng:'Rotterdam'},{kor:'헤이그',eng:'The Hague'},{kor:'위트레흐트',eng:'Utrecht'},{kor:'잔세스칸스',eng:'Zaanse Schans'},{kor:'하를럼',eng:'Haarlem'},{kor:'마스트리흐트',eng:'Maastricht'},{kor:'에인트호번',eng:'Eindhoven'},{kor:'레이던',eng:'Leiden'},{kor:'호른',eng:'Hoorn'},{kor:'델프트',eng:'Delft'}],
+  greece:      [{kor:'아테네',eng:'Athens'},{kor:'산토리니',eng:'Santorini'},{kor:'미코노스',eng:'Mykonos'},{kor:'테살로니키',eng:'Thessaloniki'},{kor:'크레타',eng:'Crete'},{kor:'로도스',eng:'Rhodes'},{kor:'코르푸',eng:'Corfu'},{kor:'파트라',eng:'Patras'},{kor:'낙소스',eng:'Naxos'},{kor:'파로스',eng:'Paros'},{kor:'자킨토스',eng:'Zakynthos'},{kor:'케팔로니아',eng:'Kefalonia'},{kor:'델포이',eng:'Delphi'},{kor:'올림피아',eng:'Olympia'}],
+  malaysia:    [{kor:'쿠알라룸푸르',eng:'Kuala Lumpur'},{kor:'페낭',eng:'Penang'},{kor:'코타키나발루',eng:'Kota Kinabalu'},{kor:'말라카',eng:'Malacca'},{kor:'랑카위',eng:'Langkawi'},{kor:'쿠칭',eng:'Kuching'},{kor:'조호르바루',eng:'Johor Bahru'},{kor:'이포',eng:'Ipoh'},{kor:'캐머런하이랜드',eng:'Cameron Highlands'},{kor:'티오만섬',eng:'Tioman Island'}],
+  mexico:      [{kor:'멕시코시티',eng:'Mexico City'},{kor:'칸쿤',eng:'Cancun'},{kor:'과달라하라',eng:'Guadalajara'},{kor:'오아하카',eng:'Oaxaca'},{kor:'툴룸',eng:'Tulum'},{kor:'플라야델카르멘',eng:'Playa del Carmen'},{kor:'메리다',eng:'Mérida'},{kor:'산크리스토발',eng:'San Cristóbal'},{kor:'케레타로',eng:'Querétaro'},{kor:'과나후아토',eng:'Guanajuato'},{kor:'푸에블라',eng:'Puebla'},{kor:'바하칼리포르니아',eng:'Baja California'},{kor:'이슬라무헤레스',eng:'Isla Mujeres'}],
+  canada:      [{kor:'밴쿠버',eng:'Vancouver'},{kor:'토론토',eng:'Toronto'},{kor:'몬트리올',eng:'Montreal'},{kor:'퀘벡시티',eng:'Quebec City'},{kor:'밴프',eng:'Banff'},{kor:'캘거리',eng:'Calgary'},{kor:'오타와',eng:'Ottawa'},{kor:'빅토리아',eng:'Victoria'},{kor:'할리팩스',eng:'Halifax'},{kor:'나이아가라폭포',eng:'Niagara Falls'},{kor:'휘슬러',eng:'Whistler'},{kor:'재스퍼',eng:'Jasper'},{kor:'에드먼턴',eng:'Edmonton'},{kor:'위니펙',eng:'Winnipeg'}],
+  germany:     [{kor:'베를린',eng:'Berlin'},{kor:'뮌헨',eng:'Munich'},{kor:'함부르크',eng:'Hamburg'},{kor:'프랑크푸르트',eng:'Frankfurt'},{kor:'쾰른',eng:'Cologne'},{kor:'드레스덴',eng:'Dresden'},{kor:'하이델베르크',eng:'Heidelberg'},{kor:'로텐부르크',eng:'Rothenburg'},{kor:'뉘른베르크',eng:'Nuremberg'},{kor:'슈투트가르트',eng:'Stuttgart'},{kor:'뒤셀도르프',eng:'Düsseldorf'},{kor:'라이프치히',eng:'Leipzig'},{kor:'브레멘',eng:'Bremen'},{kor:'퓌센',eng:'Füssen'},{kor:'뤼데스하임',eng:'Rüdesheim'},{kor:'바이마르',eng:'Weimar'},{kor:'뤼베크',eng:'Lübeck'}],
+  portugal:    [{kor:'리스본',eng:'Lisbon'},{kor:'포르투',eng:'Porto'},{kor:'알가르브',eng:'Algarve'},{kor:'신트라',eng:'Sintra'},{kor:'코임브라',eng:'Coimbra'},{kor:'오비도스',eng:'Óbidos'},{kor:'에보라',eng:'Évora'},{kor:'라고스',eng:'Lagos'},{kor:'알부페이라',eng:'Albufeira'},{kor:'아소레스',eng:'Azores'},{kor:'마데이라',eng:'Madeira'},{kor:'카스카이스',eng:'Cascais'}],
+  switzerland: [{kor:'취리히',eng:'Zurich'},{kor:'루체른',eng:'Lucerne'},{kor:'제네바',eng:'Geneva'},{kor:'인터라켄',eng:'Interlaken'},{kor:'베른',eng:'Bern'},{kor:'체르마트',eng:'Zermatt'},{kor:'그린델발트',eng:'Grindelwald'},{kor:'로잔',eng:'Lausanne'},{kor:'바젤',eng:'Basel'},{kor:'장크트갈렌',eng:'St. Gallen'},{kor:'루가노',eng:'Lugano'},{kor:'다보스',eng:'Davos'},{kor:'몽트뢰',eng:'Montreux'}],
+  austria:     [{kor:'빈',eng:'Vienna'},{kor:'잘츠부르크',eng:'Salzburg'},{kor:'인스브루크',eng:'Innsbruck'},{kor:'그라츠',eng:'Graz'},{kor:'할슈타트',eng:'Hallstatt'},{kor:'린츠',eng:'Linz'},{kor:'클라겐푸르트',eng:'Klagenfurt'},{kor:'장크트볼프강',eng:'St. Wolfgang'},{kor:'마이어호펜',eng:'Mayrhofen'},{kor:'바트이슐',eng:'Bad Ischl'}],
+  croatia:     [{kor:'두브로브니크',eng:'Dubrovnik'},{kor:'스플리트',eng:'Split'},{kor:'자그레브',eng:'Zagreb'},{kor:'흐바르',eng:'Hvar'},{kor:'플리트비체',eng:'Plitvice'},{kor:'로빈',eng:'Rovinj'},{kor:'코르쿨라',eng:'Korčula'},{kor:'자다르',eng:'Zadar'},{kor:'풀라',eng:'Pula'},{kor:'브라치섬',eng:'Brač'}],
+  cambodia:    [{kor:'씨엠립',eng:'Siem Reap'},{kor:'프놈펜',eng:'Phnom Penh'},{kor:'시하누크빌',eng:'Sihanoukville'},{kor:'캄폿',eng:'Kampot'},{kor:'케프',eng:'Kep'},{kor:'바탐방',eng:'Battambang'}],
+  philippines: [{kor:'마닐라',eng:'Manila'},{kor:'세부',eng:'Cebu'},{kor:'보라카이',eng:'Boracay'},{kor:'팔라완',eng:'Palawan'},{kor:'다바오',eng:'Davao'},{kor:'바기오',eng:'Baguio'},{kor:'시아르가오',eng:'Siargao'},{kor:'엘니도',eng:'El Nido'},{kor:'코론',eng:'Coron'},{kor:'딜리만',eng:'Dumaguete'},{kor:'일로일로',eng:'Iloilo'},{kor:'바타네스',eng:'Batanes'}],
+  newzealand:  [{kor:'오클랜드',eng:'Auckland'},{kor:'퀸스타운',eng:'Queenstown'},{kor:'크라이스트처치',eng:'Christchurch'},{kor:'웰링턴',eng:'Wellington'},{kor:'로토루아',eng:'Rotorua'},{kor:'더니든',eng:'Dunedin'},{kor:'와나카',eng:'Wanaka'},{kor:'해밀턴',eng:'Hamilton'},{kor:'피오르드랜드',eng:'Fiordland'},{kor:'아벨태즈먼',eng:'Abel Tasman'},{kor:'밀퍼드사운드',eng:'Milford Sound'}],
+  morocco:     [{kor:'마라케시',eng:'Marrakech'},{kor:'페스',eng:'Fes'},{kor:'카사블랑카',eng:'Casablanca'},{kor:'쉐프샤우엔',eng:'Chefchaouen'},{kor:'에사우이라',eng:'Essaouira'},{kor:'라바트',eng:'Rabat'},{kor:'메크네스',eng:'Meknes'},{kor:'탕헤르',eng:'Tangier'},{kor:'와르자자트',eng:'Ouarzazate'},{kor:'사하라사막',eng:'Sahara Desert'},{kor:'아이트벤하두',eng:'Aït Benhaddou'}],
+  peru:        [{kor:'리마',eng:'Lima'},{kor:'쿠스코',eng:'Cusco'},{kor:'마추픽추',eng:'Machu Picchu'},{kor:'아레키파',eng:'Arequipa'},{kor:'티티카카호수',eng:'Lake Titicaca'},{kor:'이카',eng:'Ica'},{kor:'트루히요',eng:'Trujillo'},{kor:'와라즈',eng:'Huaraz'},{kor:'이키토스',eng:'Iquitos'}],
+  hawaii:      [{kor:'호놀룰루',eng:'Honolulu'},{kor:'마우이',eng:'Maui'},{kor:'카우아이',eng:'Kauai'},{kor:'빅아일랜드',eng:'Big Island'},{kor:'몰로카이',eng:'Molokai'},{kor:'라나이',eng:'Lanai'},{kor:'와이키키',eng:'Waikiki'},{kor:'노스쇼어',eng:'North Shore'}],
+  korea:       [{kor:'서울',eng:'Seoul'},{kor:'부산',eng:'Busan'},{kor:'제주',eng:'Jeju'},{kor:'경주',eng:'Gyeongju'},{kor:'인천',eng:'Incheon'},{kor:'전주',eng:'Jeonju'},{kor:'강릉',eng:'Gangneung'},{kor:'춘천',eng:'Chuncheon'},{kor:'속초',eng:'Sokcho'},{kor:'여수',eng:'Yeosu'},{kor:'광주',eng:'Gwangju'},{kor:'대구',eng:'Daegu'},{kor:'대전',eng:'Daejeon'},{kor:'안동',eng:'Andong'},{kor:'평창',eng:'Pyeongchang'},{kor:'통영',eng:'Tongyeong'}],
+  china:       [{kor:'베이징',eng:'Beijing'},{kor:'상하이',eng:'Shanghai'},{kor:'청두',eng:'Chengdu'},{kor:'시안',eng:"Xi'an"},{kor:'구이린',eng:'Guilin'},{kor:'항저우',eng:'Hangzhou'},{kor:'쑤저우',eng:'Suzhou'},{kor:'장자제',eng:'Zhangjiajie'},{kor:'샤먼',eng:'Xiamen'},{kor:'리장',eng:'Lijiang'},{kor:'충칭',eng:'Chongqing'},{kor:'광저우',eng:'Guangzhou'},{kor:'하얼빈',eng:'Harbin'},{kor:'황산',eng:'Huangshan'},{kor:'쿤밍',eng:'Kunming'},{kor:'시솽반나',eng:'Xishuangbanna'},{kor:'둔황',eng:'Dunhuang'},{kor:'우전',eng:'Wuzhen'}],
+  india:       [{kor:'뭄바이',eng:'Mumbai'},{kor:'델리',eng:'Delhi'},{kor:'아그라',eng:'Agra'},{kor:'자이푸르',eng:'Jaipur'},{kor:'고아',eng:'Goa'},{kor:'바라나시',eng:'Varanasi'},{kor:'첸나이',eng:'Chennai'},{kor:'콜카타',eng:'Kolkata'},{kor:'케랄라',eng:'Kerala'},{kor:'우다이푸르',eng:'Udaipur'},{kor:'조드푸르',eng:'Jodhpur'},{kor:'다르질링',eng:'Darjeeling'},{kor:'아우랑가바드',eng:'Aurangabad'},{kor:'하이데라바드',eng:'Hyderabad'},{kor:'암리차르',eng:'Amritsar'},{kor:'심라',eng:'Shimla'},{kor:'마날리',eng:'Manali'}],
+  brazil:      [{kor:'상파울루',eng:'São Paulo'},{kor:'리우데자네이루',eng:'Rio de Janeiro'},{kor:'살바도르',eng:'Salvador'},{kor:'이과수',eng:'Iguazu'},{kor:'포르탈레자',eng:'Fortaleza'},{kor:'마나우스',eng:'Manaus'},{kor:'플로리아노폴리스',eng:'Florianópolis'},{kor:'벨루오리존치',eng:'Belo Horizonte'},{kor:'레시페',eng:'Recife'},{kor:'나탈',eng:'Natal'},{kor:'봉보니토',eng:'Bonito'},{kor:'파라티',eng:'Paraty'}],
+  norway:      [{kor:'오슬로',eng:'Oslo'},{kor:'베르겐',eng:'Bergen'},{kor:'트롬소',eng:'Tromsø'},{kor:'플롬',eng:'Flam'},{kor:'오레순',eng:'Ålesund'},{kor:'스타방에르',eng:'Stavanger'},{kor:'트론헤임',eng:'Trondheim'},{kor:'게이랑에르',eng:'Geiranger'},{kor:'로포텐',eng:'Lofoten'},{kor:'송네피오르',eng:'Sognefjord'},{kor:'보도',eng:'Bodø'}],
+  sweden:      [{kor:'스톡홀름',eng:'Stockholm'},{kor:'예테보리',eng:'Gothenburg'},{kor:'말뫼',eng:'Malmö'},{kor:'웁살라',eng:'Uppsala'},{kor:'비스비',eng:'Visby'},{kor:'키루나',eng:'Kiruna'},{kor:'예블레',eng:'Gävle'},{kor:'린셰핑',eng:'Linköping'},{kor:'칼마르',eng:'Kalmar'}],
+  denmark:     [{kor:'코펜하겐',eng:'Copenhagen'},{kor:'오르후스',eng:'Aarhus'},{kor:'오덴세',eng:'Odense'},{kor:'알보르',eng:'Aalborg'},{kor:'에스비에르',eng:'Esbjerg'},{kor:'론네',eng:'Rønne'},{kor:'스케겐',eng:'Skagen'}],
+  finland:     [{kor:'헬싱키',eng:'Helsinki'},{kor:'로바니에미',eng:'Rovaniemi'},{kor:'탐페레',eng:'Tampere'},{kor:'투르쿠',eng:'Turku'},{kor:'오울루',eng:'Oulu'},{kor:'사리셀카',eng:'Saariselkä'},{kor:'레비',eng:'Levi'},{kor:'포르보',eng:'Porvoo'}],
+  iceland:     [{kor:'레이캬비크',eng:'Reykjavik'},{kor:'아쿠레이리',eng:'Akureyri'},{kor:'블루라군',eng:'Blue Lagoon'},{kor:'비크',eng:'Vik'},{kor:'호픈',eng:'Höfn'},{kor:'스나이페들스네스',eng:'Snæfellsnes'},{kor:'아이야피야틀라이외쿠들',eng:'Eyjafjallajökull'},{kor:'스카프타펠',eng:'Skaftafell'},{kor:'미바튼호수',eng:'Lake Mývatn'}],
+  ireland:     [{kor:'더블린',eng:'Dublin'},{kor:'코크',eng:'Cork'},{kor:'갤웨이',eng:'Galway'},{kor:'킬라니',eng:'Killarney'},{kor:'리머릭',eng:'Limerick'},{kor:'워터퍼드',eng:'Waterford'},{kor:'도니골',eng:'Donegal'},{kor:'클리프스오브모허',eng:'Cliffs of Moher'},{kor:'아란섬',eng:'Aran Islands'}],
+  belgium:     [{kor:'브뤼셀',eng:'Brussels'},{kor:'브뤼헤',eng:'Bruges'},{kor:'겐트',eng:'Ghent'},{kor:'안트베르펜',eng:'Antwerp'},{kor:'리에주',eng:'Liège'},{kor:'나뮈르',eng:'Namur'},{kor:'딘낭',eng:'Dinant'},{kor:'이프르',eng:'Ypres'},{kor:'메헬렌',eng:'Mechelen'}],
+  poland:      [{kor:'바르샤바',eng:'Warsaw'},{kor:'크라쿠프',eng:'Krakow'},{kor:'그단스크',eng:'Gdansk'},{kor:'브로츠와프',eng:'Wroclaw'},{kor:'포즈난',eng:'Poznań'},{kor:'아우슈비츠',eng:'Auschwitz'},{kor:'자코파네',eng:'Zakopane'},{kor:'루블린',eng:'Lublin'},{kor:'비아워비에자',eng:'Białowieża'},{kor:'토룬',eng:'Toruń'}],
+  hungary:     [{kor:'부다페스트',eng:'Budapest'},{kor:'에게르',eng:'Eger'},{kor:'페치',eng:'Pécs'},{kor:'죄르',eng:'Győr'},{kor:'발라톤호수',eng:'Lake Balaton'},{kor:'케스테이',eng:'Keszthely'},{kor:'디요르',eng:'Debrecen'},{kor:'솜보르',eng:'Sopron'}],
+  czechia:     [{kor:'프라하',eng:'Prague'},{kor:'체스키크룸로프',eng:'Cesky Krumlov'},{kor:'브르노',eng:'Brno'},{kor:'올로모우츠',eng:'Olomouc'},{kor:'카를로비바리',eng:'Karlovy Vary'},{kor:'플젠',eng:'Plzeň'},{kor:'쿠트나호라',eng:'Kutná Hora'},{kor:'리베레츠',eng:'Liberec'}],
+  romania:     [{kor:'부쿠레슈티',eng:'Bucharest'},{kor:'브라쇼프',eng:'Brasov'},{kor:'시기쇼아라',eng:'Sighisoara'},{kor:'시나이아',eng:'Sinaia'},{kor:'클루지나포카',eng:'Cluj-Napoca'},{kor:'시비우',eng:'Sibiu'},{kor:'마라무레슈',eng:'Maramureș'},{kor:'콘스탄차',eng:'Constanța'}],
+  bulgaria:    [{kor:'소피아',eng:'Sofia'},{kor:'플로브디프',eng:'Plovdiv'},{kor:'바르나',eng:'Varna'},{kor:'벨리코투르노보',eng:'Veliko Tarnovo'},{kor:'부르가스',eng:'Burgas'},{kor:'릴라수도원',eng:'Rila Monastery'},{kor:'소조폴',eng:'Sozopol'}],
+  serbia:      [{kor:'베오그라드',eng:'Belgrade'},{kor:'노비사드',eng:'Novi Sad'},{kor:'니시',eng:'Niš'},{kor:'수보티차',eng:'Subotica'}],
+  montenegro:  [{kor:'코토르',eng:'Kotor'},{kor:'부드바',eng:'Budva'},{kor:'포드고리차',eng:'Podgorica'},{kor:'울치니',eng:'Ulcinj'},{kor:'두르미토르',eng:'Durmitor'},{kor:'헤르체그노비',eng:'Herceg Novi'}],
+  albania:     [{kor:'티라나',eng:'Tirana'},{kor:'베라트',eng:'Berat'},{kor:'지로카스터',eng:'Gjirokastër'},{kor:'사란다',eng:'Sarandë'},{kor:'쉬코더르',eng:'Shkodër'},{kor:'코르차',eng:'Korçë'}],
+  georgia:     [{kor:'트빌리시',eng:'Tbilisi'},{kor:'바투미',eng:'Batumi'},{kor:'카즈베기',eng:'Kazbegi'},{kor:'쿠타이시',eng:'Kutaisi'},{kor:'시그나기',eng:'Sighnaghi'},{kor:'메스티아',eng:'Mestia'},{kor:'보르조미',eng:'Borjomi'}],
+  armenia:     [{kor:'예레반',eng:'Yerevan'},{kor:'가르니',eng:'Garni'},{kor:'딜리잔',eng:'Dilijan'},{kor:'게가르트',eng:'Geghard'},{kor:'세반호수',eng:'Lake Sevan'},{kor:'짐부르',eng:'Gyumri'}],
+  azerbaijan:  [{kor:'바쿠',eng:'Baku'},{kor:'셰키',eng:'Sheki'},{kor:'가바라',eng:'Gabala'},{kor:'간자',eng:'Ganja'},{kor:'랑카란',eng:'Lankaran'},{kor:'구사르',eng:'Qusar'}],
+  israel:      [{kor:'텔아비브',eng:'Tel Aviv'},{kor:'예루살렘',eng:'Jerusalem'},{kor:'하이파',eng:'Haifa'},{kor:'에일라트',eng:'Eilat'},{kor:'사해',eng:'Dead Sea'},{kor:'나사렛',eng:'Nazareth'},{kor:'마사다',eng:'Masada'},{kor:'아크레',eng:'Acre'}],
+  jordan:      [{kor:'암만',eng:'Amman'},{kor:'페트라',eng:'Petra'},{kor:'아카바',eng:'Aqaba'},{kor:'와디럼',eng:'Wadi Rum'},{kor:'제라시',eng:'Jerash'},{kor:'마다바',eng:'Madaba'},{kor:'사해',eng:'Dead Sea Jordan'}],
+  saudi:       [{kor:'리야드',eng:'Riyadh'},{kor:'제다',eng:'Jeddah'},{kor:'알울라',eng:'AlUla'},{kor:'메디나',eng:'Medina'},{kor:'아브하',eng:'Abha'},{kor:'타부크',eng:'Tabuk'}],
+  qatar:       [{kor:'도하',eng:'Doha'},{kor:'알와크라',eng:'Al Wakrah'},{kor:'알호르',eng:'Al Khor'}],
+  oman:        [{kor:'무스카트',eng:'Muscat'},{kor:'니즈와',eng:'Nizwa'},{kor:'살랄라',eng:'Salalah'},{kor:'수르',eng:'Sur'},{kor:'무산담',eng:'Musandam'},{kor:'와히바사막',eng:'Wahiba Sands'}],
+  egypt:       [{kor:'카이로',eng:'Cairo'},{kor:'룩소르',eng:'Luxor'},{kor:'아스완',eng:'Aswan'},{kor:'알렉산드리아',eng:'Alexandria'},{kor:'샤름엘셰이크',eng:'Sharm el-Sheikh'},{kor:'후르가다',eng:'Hurghada'},{kor:'아부심벨',eng:'Abu Simbel'},{kor:'시나이',eng:'Sinai'},{kor:'다합',eng:'Dahab'},{kor:'마르사알람',eng:'Marsa Alam'}],
+  southafrica: [{kor:'케이프타운',eng:'Cape Town'},{kor:'요하네스버그',eng:'Johannesburg'},{kor:'더반',eng:'Durban'},{kor:'가든루트',eng:'Garden Route'},{kor:'스텔렌보스',eng:'Stellenbosch'},{kor:'크루거국립공원',eng:'Kruger National Park'},{kor:'포트엘리자베스',eng:'Port Elizabeth'},{kor:'블룸폰테인',eng:'Bloemfontein'},{kor:'더반',eng:'Durban'}],
+  kenya:       [{kor:'나이로비',eng:'Nairobi'},{kor:'몸바사',eng:'Mombasa'},{kor:'마사이마라',eng:'Maasai Mara'},{kor:'암보셀리',eng:'Amboseli'},{kor:'삼부루',eng:'Samburu'},{kor:'라무',eng:'Lamu'},{kor:'츠보국립공원',eng:'Tsavo National Park'},{kor:'나쿠루호수',eng:'Lake Nakuru'}],
+  tanzania:    [{kor:'다르에스살람',eng:'Dar es Salaam'},{kor:'잔지바르',eng:'Zanzibar'},{kor:'세렝게티',eng:'Serengeti'},{kor:'킬리만자로',eng:'Kilimanjaro'},{kor:'응고롱고로',eng:'Ngorongoro'},{kor:'아루샤',eng:'Arusha'},{kor:'빅토리아호수',eng:'Lake Victoria'}],
+  mauritius:   [{kor:'포르루이',eng:'Port Louis'},{kor:'그랑바이',eng:'Grand Baie'},{kor:'플리크앙플락',eng:'Flic en Flac'},{kor:'블루베이',eng:'Blue Bay'},{kor:'마헤부르',eng:'Mahébourg'},{kor:'퀴르피프',eng:'Curepipe'}],
+  seychelles:  [{kor:'마헤',eng:'Mahe'},{kor:'프라슬랑',eng:'Praslin'},{kor:'라디그',eng:'La Digue'},{kor:'실루에트',eng:'Silhouette'},{kor:'알다브라',eng:'Aldabra'},{kor:'드니섬',eng:'Denis Island'}],
+  myanmar:     [{kor:'양곤',eng:'Yangon'},{kor:'바간',eng:'Bagan'},{kor:'만달레이',eng:'Mandalay'},{kor:'인레호수',eng:'Inle Lake'},{kor:'응웨사웅',eng:'Ngwe Saung'},{kor:'차욱피유',eng:'Chauk Phyu'},{kor:'케마핀',eng:'Kalaw'}],
+  laos:        [{kor:'루앙프라방',eng:'Luang Prabang'},{kor:'비엔티안',eng:'Vientiane'},{kor:'방비엥',eng:'Vang Vieng'},{kor:'팍세',eng:'Pakse'},{kor:'시판돈',eng:'Si Phan Don'},{kor:'퐁살리',eng:'Phongsali'}],
+  mongolia:    [{kor:'울란바토르',eng:'Ulaanbaatar'},{kor:'고비사막',eng:'Gobi Desert'},{kor:'테렐지',eng:'Terelj'},{kor:'홉스굴호수',eng:'Khövsgöl Lake'},{kor:'카라코룸',eng:'Karakorum'},{kor:'에르덴조',eng:'Erdene Zuu'}],
+  nepal:       [{kor:'카트만두',eng:'Kathmandu'},{kor:'포카라',eng:'Pokhara'},{kor:'치트완',eng:'Chitwan'},{kor:'룸비니',eng:'Lumbini'},{kor:'나가르코트',eng:'Nagarkot'},{kor:'반디푸르',eng:'Bandipur'},{kor:'에베레스트베이스캠프',eng:'Everest Base Camp'}],
+  srilanka:    [{kor:'콜롬보',eng:'Colombo'},{kor:'캔디',eng:'Kandy'},{kor:'시기리야',eng:'Sigiriya'},{kor:'갈레',eng:'Galle'},{kor:'엘라',eng:'Ella'},{kor:'누와라엘리야',eng:'Nuwara Eliya'},{kor:'아누라다푸라',eng:'Anuradhapura'},{kor:'폴론나루와',eng:'Polonnaruwa'},{kor:'트링코말리',eng:'Trincomalee'}],
+  bhutan:      [{kor:'팀부',eng:'Thimphu'},{kor:'파로',eng:'Paro'},{kor:'푸나카',eng:'Punakha'},{kor:'범탕',eng:'Bumthang'},{kor:'완두에포당',eng:'Wangdue Phodrang'}],
+  macau:       [{kor:'마카오반도',eng:'Macau Peninsula'},{kor:'타이파',eng:'Taipa'},{kor:'코타이',eng:'Cotai'},{kor:'콜로안',eng:'Coloane'}],
+  argentina:   [{kor:'부에노스아이레스',eng:'Buenos Aires'},{kor:'바릴로체',eng:'Bariloche'},{kor:'이과수',eng:'Iguazu'},{kor:'파타고니아',eng:'Patagonia'},{kor:'멘도사',eng:'Mendoza'},{kor:'살타',eng:'Salta'},{kor:'코르도바',eng:'Córdoba'},{kor:'엘칼라파테',eng:'El Calafate'},{kor:'우수아이아',eng:'Ushuaia'},{kor:'투쿠만',eng:'Tucumán'},{kor:'마르델플라타',eng:'Mar del Plata'}],
+  chile:       [{kor:'산티아고',eng:'Santiago'},{kor:'발파라이소',eng:'Valparaiso'},{kor:'아타카마',eng:'Atacama'},{kor:'파타고니아',eng:'Patagonia'},{kor:'부활절섬',eng:'Easter Island'},{kor:'푸에르토나탈레스',eng:'Puerto Natales'},{kor:'토레스델파이네',eng:'Torres del Paine'},{kor:'비냐델마르',eng:'Viña del Mar'},{kor:'칠로에',eng:'Chiloé'}],
+  colombia:    [{kor:'보고타',eng:'Bogota'},{kor:'메데진',eng:'Medellin'},{kor:'카르타헤나',eng:'Cartagena'},{kor:'칼리',eng:'Cali'},{kor:'바란키야',eng:'Barranquilla'},{kor:'산안드레스',eng:'San Andrés'},{kor:'레티시아',eng:'Leticia'},{kor:'커피의길',eng:'Coffee Region'}],
+  ecuador:     [{kor:'키토',eng:'Quito'},{kor:'과야킬',eng:'Guayaquil'},{kor:'갈라파고스',eng:'Galapagos'},{kor:'쿠엥카',eng:'Cuenca'},{kor:'아마존',eng:'Amazon Ecuador'},{kor:'바뇨스',eng:'Baños'}],
+  cuba:        [{kor:'아바나',eng:'Havana'},{kor:'트리니다드',eng:'Trinidad'},{kor:'바라데로',eng:'Varadero'},{kor:'시엔푸에고스',eng:'Cienfuegos'},{kor:'산티아고데쿠바',eng:'Santiago de Cuba'},{kor:'비냘레스',eng:'Viñales'}],
+  costarica:   [{kor:'산호세',eng:'San Jose'},{kor:'마누엘안토니오',eng:'Manuel Antonio'},{kor:'아레날',eng:'Arenal'},{kor:'몬테베르데',eng:'Monteverde'},{kor:'토르투게로',eng:'Tortuguero'},{kor:'코코스섬',eng:'Cocos Island'},{kor:'오사반도',eng:'Osa Peninsula'}],
+  panama:      [{kor:'파나마시티',eng:'Panama City'},{kor:'보카스델토로',eng:'Bocas del Toro'},{kor:'파나마운하',eng:'Panama Canal'},{kor:'엘바예',eng:'El Valle'},{kor:'산블라스',eng:'San Blas'}],
+  dominican:   [{kor:'산토도밍고',eng:'Santo Domingo'},{kor:'푼타카나',eng:'Punta Cana'},{kor:'라스테레나스',eng:'Las Terrenas'},{kor:'사마나',eng:'Samaná'},{kor:'카바레테',eng:'Cabarete'},{kor:'바라호나',eng:'Barahona'}],
+  fiji:        [{kor:'나디',eng:'Nadi'},{kor:'수바',eng:'Suva'},{kor:'마나섬',eng:'Mana Island'},{kor:'마로마나섬',eng:'Mamanuca Islands'},{kor:'야사와섬',eng:'Yasawa Islands'},{kor:'비티레부',eng:'Viti Levu'}],
+  guam:        [{kor:'투몬',eng:'Tumon'},{kor:'아가냐',eng:'Hagåtña'},{kor:'탈로포포',eng:'Talofofo'},{kor:'리티디안비치',eng:'Ritidian Beach'}],
+  saipan:      [{kor:'가라판',eng:'Garapan'},{kor:'마나가하섬',eng:'Managaha Island'},{kor:'라우라우비치',eng:'Lau Lau Beach'},{kor:'타포차우산',eng:'Mt. Tapochau'}],
+  palau:       [{kor:'코로르',eng:'Koror'},{kor:'록아일랜드',eng:'Rock Islands'},{kor:'펠렐리우',eng:'Peleliu'},{kor:'응게룰무드',eng:'Ngermid'},{kor:'젤리피시레이크',eng:'Jellyfish Lake'}],
 };
 
 function NewTripSheet({ open, onClose, onSubmit }) {
@@ -7645,6 +7643,10 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   const [destQuery,    setDestQuery]    = React.useState('');
   const destInputRef = React.useRef(null);
   const [cities,       setCities]       = React.useState(['']);
+  const [cityDrag,     setCityDrag]     = React.useState(null);
+  const cityCardRefs = React.useRef({});
+  const cityDragRef  = React.useRef(null);
+  cityDragRef.current = cityDrag;
   const [startIso,     setStartIso]     = React.useState('');
   const [endIso,       setEndIso]       = React.useState('');
   const [hotels,       setHotels]       = React.useState([{ name:'', from:1, to:1 }]);
@@ -7670,6 +7672,47 @@ function NewTripSheet({ open, onClose, onSubmit }) {
     update();
     return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update); };
   }, [open]);
+
+  // 도시 카드 드래그 리오더
+  React.useEffect(() => {
+    if (!cityDrag) return;
+    const onMove = (e) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      e.preventDefault();
+      setCityDrag(prev => prev ? { ...prev, currentY: touch.clientY } : null);
+    };
+    const onEnd = () => {
+      const drag = cityDragRef.current;
+      if (!drag) return;
+      const delta = drag.currentY - drag.startY;
+      const ds = drag.snapshots[drag.idx];
+      const dcY = ds ? ds.top + ds.height / 2 + delta : drag.startY + delta;
+      let hIdx = 0;
+      for (let j = 0; j < drag.len; j++) {
+        if (j === drag.idx) continue;
+        const sn = drag.snapshots[j];
+        if (sn && dcY > sn.top + sn.height / 2) hIdx++;
+      }
+      if (hIdx !== drag.idx) {
+        setCities(prev => {
+          const arr = [...prev];
+          const [rm] = arr.splice(drag.idx, 1);
+          arr.splice(hIdx, 0, rm);
+          return arr;
+        });
+      }
+      setCityDrag(null);
+    };
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onEnd);
+    window.addEventListener('touchcancel', onEnd);
+    return () => {
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
+      window.removeEventListener('touchcancel', onEnd);
+    };
+  }, [!!cityDrag]);
 
   const dayCount = startIso && endIso
     ? Math.round((new Date(endIso+'T12:00:00') - new Date(startIso+'T12:00:00')) / 86400000) + 1
@@ -7885,58 +7928,123 @@ function NewTripSheet({ open, onClose, onSubmit }) {
           })()}
 
           {/* Step 2: 도시 이름 */}
-          {step === 2 && (
-            <div>
-              {cities.map((city, i) => {
-                const cityList = selectedDest ? (CITIES_BY_KEY[selectedDest.key] || []) : [];
-                const qRaw = city;
-                const q = qRaw.toLowerCase();
-                const cityGhostMatch = qRaw.length === 0 ? null :
-                  cityList.find(c => c.kor.startsWith(qRaw) && c.kor !== qRaw) ||
-                  cityList.find(c => c.eng.toLowerCase().startsWith(q) && c.eng.toLowerCase() !== q) ||
-                  null;
-                const cityGhostIsKor = cityGhostMatch && cityGhostMatch.kor.startsWith(qRaw);
-                const cityGhostFull  = cityGhostMatch ? (cityGhostIsKor ? cityGhostMatch.kor : cityGhostMatch.eng) : '';
-                const cityGhostSuffix = cityGhostFull ? cityGhostFull.slice(qRaw.length) : '';
-                let cityTypedPx = 16 + qRaw.length * 14;
-                try { const cv=document.createElement('canvas'); const cx=cv.getContext('2d'); cx.font=`15px ${SANS},sans-serif`; cityTypedPx=16+cx.measureText(qRaw).width; } catch(_){}
-                const acceptCityGhost = () => {
-                  if (!cityGhostMatch) return;
-                  setCities(prev => prev.map((c,j) => j===i ? (cityGhostIsKor ? cityGhostMatch.kor : cityGhostMatch.eng) : c));
-                };
-                return (
-                  <div key={i} style={{ display:'flex', gap:8, marginBottom:10, alignItems:'center' }}>
-                    <div style={{ flex:1, position:'relative', borderRadius:14, background:COLORS.card, border:`1.5px solid ${COLORS.line}` }}>
-                      {cityGhostSuffix && (
-                        <div aria-hidden="true" style={{ position:'absolute', inset:0, padding:'12px 40px 12px 16px', display:'flex', alignItems:'center', pointerEvents:'none', overflow:'hidden', fontFamily:SANS, fontSize:15, lineHeight:'normal', borderRadius:14 }}>
-                          <span style={{ color:'transparent', whiteSpace:'pre' }}>{qRaw}</span>
-                          <span style={{ color:COLORS.mute, opacity:0.55, whiteSpace:'pre' }}>{cityGhostSuffix}</span>
+          {step === 2 && (() => {
+            // 드래그 hoverIdx 계산
+            const dragDelta = cityDrag ? cityDrag.currentY - cityDrag.startY : 0;
+            const draggedSnap = cityDrag ? cityDrag.snapshots[cityDrag.idx] : null;
+            const draggedCenterY = draggedSnap ? draggedSnap.top + draggedSnap.height / 2 + dragDelta : 0;
+            let hoverIdx = cityDrag ? cityDrag.idx : null;
+            if (cityDrag) {
+              hoverIdx = 0;
+              for (let j = 0; j < cities.length; j++) {
+                if (j === cityDrag.idx) continue;
+                const sn = cityDrag.snapshots[j];
+                if (sn && draggedCenterY > sn.top + sn.height / 2) hoverIdx++;
+              }
+            }
+            const draggedCardH = cityDrag ? ((draggedSnap?.height || 54) + 10) : 0;
+            return (
+              <div>
+                <div style={{ position:'relative' }}>
+                  {cities.map((city, i) => {
+                    const cityList = selectedDest ? (CITIES_BY_KEY[selectedDest.key] || []) : [];
+                    const qRaw = city;
+                    const q = qRaw.toLowerCase();
+                    const cityGhostMatch = qRaw.length === 0 ? null :
+                      cityList.find(c => c.kor.startsWith(qRaw) && c.kor !== qRaw) ||
+                      cityList.find(c => c.eng.toLowerCase().startsWith(q) && c.eng.toLowerCase() !== q) ||
+                      null;
+                    const cityGhostIsKor = cityGhostMatch && cityGhostMatch.kor.startsWith(qRaw);
+                    const cityGhostFull  = cityGhostMatch ? (cityGhostIsKor ? cityGhostMatch.kor : cityGhostMatch.eng) : '';
+                    const cityGhostSuffix = cityGhostFull ? cityGhostFull.slice(qRaw.length) : '';
+                    let cityTypedPx = 16 + qRaw.length * 14;
+                    try { const cv=document.createElement('canvas'); const cx=cv.getContext('2d'); cx.font=`15px ${SANS},sans-serif`; cityTypedPx=16+cx.measureText(qRaw).width; } catch(_){}
+                    const acceptCityGhost = () => {
+                      if (!cityGhostMatch) return;
+                      setCities(prev => prev.map((c,j) => j===i ? (cityGhostIsKor ? cityGhostMatch.kor : cityGhostMatch.eng) : c));
+                    };
+                    const isDragging = cityDrag && cityDrag.idx === i;
+                    let translateY = 0;
+                    if (cityDrag) {
+                      if (isDragging) {
+                        translateY = dragDelta;
+                      } else if (hoverIdx < cityDrag.idx) {
+                        if (i >= hoverIdx && i < cityDrag.idx) translateY = draggedCardH;
+                      } else if (hoverIdx > cityDrag.idx) {
+                        if (i > cityDrag.idx && i <= hoverIdx) translateY = -draggedCardH;
+                      }
+                    }
+                    return (
+                      <div
+                        key={i}
+                        ref={el => { cityCardRefs.current[i] = el; }}
+                        style={{
+                          display:'flex', gap:8, marginBottom:10, alignItems:'center',
+                          transform:`translateY(${translateY}px)`,
+                          transition: isDragging ? 'none' : 'transform 0.22s cubic-bezier(0.22,1,0.36,1)',
+                          zIndex: isDragging ? 50 : 1,
+                          position:'relative',
+                        }}
+                      >
+                        {cities.length > 1 && (
+                          <div
+                            onTouchStart={e => {
+                              e.preventDefault();
+                              const touch = e.touches[0];
+                              const snapshots = {};
+                              cities.forEach((_, j) => {
+                                const el = cityCardRefs.current[j];
+                                if (el) snapshots[j] = el.getBoundingClientRect();
+                              });
+                              setCityDrag({ idx:i, startY:touch.clientY, currentY:touch.clientY, snapshots, len:cities.length });
+                            }}
+                            style={{
+                              flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center',
+                              width:28, height:44, cursor:'grab', touchAction:'none',
+                            }}
+                          >
+                            <svg width="12" height="18" viewBox="0 0 12 18" fill="none">
+                              {[[2,2],[8,2],[2,7],[8,7],[2,12],[8,12]].map(([cx,cy]) =>
+                                <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2" fill={COLORS.mute} opacity="0.55"/>
+                              )}
+                            </svg>
+                          </div>
+                        )}
+                        <div style={{
+                          flex:1, position:'relative', borderRadius:14,
+                          background:COLORS.card, border:`1.5px solid ${COLORS.line}`,
+                          boxShadow: isDragging ? '0 10px 32px rgba(0,0,0,0.18)' : 'none',
+                          transition: isDragging ? 'none' : 'box-shadow 0.22s ease',
+                        }}>
+                          {cityGhostSuffix && (
+                            <div aria-hidden="true" style={{ position:'absolute', inset:0, padding:'12px 40px 12px 16px', display:'flex', alignItems:'center', pointerEvents:'none', overflow:'hidden', fontFamily:SANS, fontSize:15, lineHeight:'normal', borderRadius:14 }}>
+                              <span style={{ color:'transparent', whiteSpace:'pre' }}>{qRaw}</span>
+                              <span style={{ color:COLORS.mute, opacity:0.55, whiteSpace:'pre' }}>{cityGhostSuffix}</span>
+                            </div>
+                          )}
+                          <input value={city} autoFocus={i===0 && !cityDrag}
+                            onChange={e => setCities(prev => prev.map((c,j) => j===i ? e.target.value : c))}
+                            onKeyDown={e => { if (e.key==='Enter' && city.trim()) setStep(3); }}
+                            placeholder={cityGhostSuffix ? '' : (i===0 ? '도시 이름 (한글 또는 영어)' : `도시 ${i+1}`)}
+                            style={{ width:'100%', boxSizing:'border-box', padding:'12px 40px 12px 16px', border:'none', borderRadius:14, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, position:'relative', zIndex:1 }}
+                          />
+                          {cityGhostSuffix && (
+                            <div onMouseDown={e => { e.preventDefault(); acceptCityGhost(); }} style={{ position:'absolute', top:0, bottom:0, left:cityTypedPx, right:8, zIndex:2, cursor:'pointer' }}/>
+                          )}
+                          {city.length > 0 && (
+                            <button onClick={() => setCities(prev => prev.map((c,j) => j===i ? '' : c))} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontSize:18, lineHeight:1, padding:4, zIndex:3 }}>×</button>
+                          )}
                         </div>
-                      )}
-                      <input value={city} autoFocus={i===0}
-                        onChange={e => setCities(prev => prev.map((c,j) => j===i ? e.target.value : c))}
-                        onKeyDown={e => { if (e.key==='Enter' && city.trim()) setStep(3); }}
-                        placeholder={cityGhostSuffix ? '' : (i===0 ? '도시 이름 (한글 또는 영어)' : `도시 ${i+1}`)}
-                        style={{ width:'100%', boxSizing:'border-box', padding:'12px 40px 12px 16px', border:'none', borderRadius:14, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, position:'relative', zIndex:1 }}
-                      />
-                      {cityGhostSuffix && (
-                        <div onMouseDown={e => { e.preventDefault(); acceptCityGhost(); }} style={{ position:'absolute', top:0, bottom:0, left:cityTypedPx, right:cities.length>1?36:8, zIndex:2, cursor:'pointer' }}/>
-                      )}
-                      {city.length > 0 && (
-                        <button onClick={() => setCities(prev => prev.map((c,j) => j===i ? '' : c))} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontSize:18, lineHeight:1, padding:4, zIndex:3 }}>×</button>
-                      )}
-                    </div>
-                    {cities.length > 1 && (
-                      <button onClick={() => setCities(prev => prev.filter((_,j)=>j!==i))} style={{ background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontSize:20, lineHeight:1, flexShrink:0 }}>×</button>
-                    )}
-                  </div>
-                );
-              })}
-              <button onClick={() => setCities(prev=>[...prev,''])} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontFamily:SANS, fontSize:13, padding:'6px 0', marginTop:4 }}>
-                <span style={{ fontSize:18, lineHeight:1 }}>+</span> 도시 추가
-              </button>
-            </div>
-          )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <button onMouseDown={e => e.preventDefault()} onClick={() => setCities(prev=>[...prev,''])} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontFamily:SANS, fontSize:13, padding:'6px 0', marginTop:4 }}>
+                  <span style={{ fontSize:18, lineHeight:1 }}>+</span> 도시 추가
+                </button>
+              </div>
+            );
+          })()}
 
           {/* Step 3: 기간 */}
           {step === 3 && (
