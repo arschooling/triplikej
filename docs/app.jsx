@@ -143,7 +143,7 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
   const startRef  = React.useRef(null);
   const dragging  = React.useRef(false);
   const xRef      = React.useRef(0);
-  const REVEAL     = onEdit ? 104 : 58;
+  const REVEAL     = editLabel ? 130 : onEdit ? 104 : deleteLabel ? 65 : 58;
   const DELETE_EXTRA = 72;
 
   const close = () => { setX(0); xRef.current = 0; setOpen(false); };
@@ -230,19 +230,25 @@ function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapSt
             }}>
               {onEdit && (
                 <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
-                  width:38, height:38, borderRadius:19, border:'none', cursor:'pointer',
-                  background: editBg || '#ffa500', flexShrink:0,
+                  minWidth: editLabel ? 56 : 38, height: editLabel ? 36 : 38,
+                  borderRadius: editLabel ? 10 : 19, border:'none', cursor:'pointer',
+                  background: editBg || '#ffa500', flexShrink:0, padding: editLabel ? '0 12px' : 0,
                   display:'flex', alignItems:'center', justifyContent:'center',
                 }}>
-                  <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>
+                  {editLabel
+                    ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{editLabel}</span>
+                    : <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>}
                 </button>
               )}
               <button onClick={(e)=>{e.stopPropagation(); flyOff();}} style={{
-                width:38, height:38, borderRadius:19, border:'none', cursor:'pointer',
-                background:'#B5451B', flexShrink:0,
+                minWidth: deleteLabel ? 48 : 38, height: deleteLabel ? 36 : 38,
+                borderRadius: deleteLabel ? 10 : 19, border:'none', cursor:'pointer',
+                background:'#B5451B', flexShrink:0, padding: deleteLabel ? '0 12px' : 0,
                 display:'flex', alignItems:'center', justifyContent:'center',
               }}>
-                <Icon name="trash" size={14} color="#fff" stroke={2}/>
+                {deleteLabel
+                  ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{deleteLabel}</span>
+                  : <Icon name="trash" size={14} color="#fff" stroke={2}/>}
               </button>
             </div>
           )}
@@ -1839,7 +1845,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
   };
 
   return (
-    <div style={{ minHeight:'100vh', background:COLORS.bg, paddingBottom:76, position:'relative' }}>
+    <div style={{ minHeight:'100vh', background:COLORS.bg, paddingBottom:85, position:'relative' }}>
       {/* 프로필 버튼 */}
       <button onClick={onOpenCompanion} style={{
         position:'absolute', top:'calc(16px + env(safe-area-inset-top,0px))', right:20, zIndex:10,
@@ -1879,7 +1885,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v357</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v358</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2185,7 +2191,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const { startIso, endIso } = parseTripDates();
 
   return (
-    <div style={{ background:COLORS.bg, minHeight:'100vh', paddingBottom:76, position:'relative' }}>
+    <div style={{ background:COLORS.bg, minHeight:'100vh', paddingBottom:85, position:'relative' }}>
       {/* My Trips 뒤로 버튼 */}
       {onBack && (
         <button onClick={onBack} style={{
@@ -7022,18 +7028,20 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
                         const pendingInv = pendingInvMap[c.uid];
                         return (
                           <SwipeableRow key={c.uid}
+                            cardSwipe
                             onEdit={pendingInv ? async () => {
                               try {
                                 await fbCancelInvite(pendingInv.id);
-                                await fbAddContact(authUser.uid, pendingInv.toEmail);
+                                const res = await fbAddContact(authUser.uid, pendingInv.toEmail);
+                                if (res?.error) alert(res.error);
                               } catch(e) { alert('재신청 실패.'); }
                             } : undefined}
-                            editLabel={pendingInv ? '재신청' : undefined} editBg="#ffa500"
+                            editLabel={pendingInv ? '재신청' : undefined} editBg="#4F6BED"
                             onDelete={async () => {
-                              if (!confirm(`${c.displayName}님을 동행인에서 삭제할까요?\n모든 여행에서도 제거됩니다.`)) return;
                               if (pendingInv) await fbCancelInvite(pendingInv.id).catch(() => {});
                               await removeContact(c, true);
                             }}
+                            deleteLabel="삭제"
                             wrapStyle={{ borderRadius:14 }}>
                             <div style={{ background:COLORS.card, borderRadius:14, padding:'12px 14px',
                               display:'flex', alignItems:'center', gap:12 }}>
