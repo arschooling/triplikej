@@ -4010,7 +4010,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v308"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v309"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -12587,7 +12587,7 @@ function BudgetScreen({
         }
       }, e.type === 'in' ? '+' : '-', fmtAmt(e.amount, e.currency || 'KRW')))));
     })))));
-  })(), (sheetOpen || sheetEntered) && /*#__PURE__*/React.createElement("div", {
+  })(), (sheetOpen || sheetEntered) && ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
       inset: 0,
@@ -12960,7 +12960,7 @@ function BudgetScreen({
       color: '#fff',
       cursor: 'pointer'
     }
-  }, editIdx !== null ? '수정' : '저장')))))), /*#__PURE__*/React.createElement(BudgetCalcSheet, {
+  }, editIdx !== null ? '수정' : '저장')))))), document.body), /*#__PURE__*/React.createElement(BudgetCalcSheet, {
     open: calcOpen,
     onClose: () => {
       setCalcOpen(false);
