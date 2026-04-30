@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v324</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v326</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7521,7 +7521,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             return (
               <div>
                 {/* 입력창 + ghost 레이어 */}
-                <div style={{ position:'relative', borderRadius:14, background:COLORS.card, border:`1.5px solid ${selectedDest ? COLORS.ink : COLORS.line}`, transition:'border-color 0.2s' }}>
+                <div style={{ position:'relative', borderRadius:14, background:COLORS.card, border:`1.5px solid ${COLORS.line}` }}>
                   {/* ghost 레이어 (입력창 뒤) */}
                   {ghostSuffix && (
                     <div aria-hidden="true" style={{
@@ -7570,19 +7570,6 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                     }}>×</button>
                   )}
                 </div>
-                {/* 선택 완료 배지 */}
-                {selectedDest && (
-                  <div style={{
-                    marginTop:8, display:'flex', alignItems:'center', gap:10,
-                    padding:'10px 14px', borderRadius:12,
-                    background:COLORS.ink, color:'#fff',
-                  }}>
-                    <span style={{ fontSize:20 }}>{selectedDest.flag}</span>
-                    <span style={{ fontFamily:SANS, fontSize:14, fontWeight:600 }}>{selectedDest.kor}</span>
-                    <span style={{ fontFamily:SANS, fontSize:12, opacity:0.6 }}>{selectedDest.eng}</span>
-                    <span style={{ marginLeft:'auto' }}>✓</span>
-                  </div>
-                )}
               </div>
             );
           })()}

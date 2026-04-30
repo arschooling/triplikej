@@ -669,6 +669,18 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
 // - Hotel detail page + multi-hotel schedule
 // - Fully editable prep page
 
+// iOS PWA 햅틱 (checkbox trick)
+function haptic(style = 'light') {
+  try {
+    const el = document.createElement('input');
+    el.type = 'checkbox';
+    el.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
+    document.body.appendChild(el);
+    el.focus();
+    el.click();
+    document.body.removeChild(el);
+  } catch (e) {}
+}
 const COLORS = {
   bg: '#F5F2EC',
   card: '#FFFFFF',
@@ -1584,7 +1596,8 @@ function BottomSheet({
   children,
   title,
   onConfirm,
-  confirmLabel = '완료'
+  confirmLabel = '완료',
+  noDragClose = false
 }) {
   const [mounted, setMounted] = React.useState(open);
   const [visible, setVisible] = React.useState(false);
@@ -1615,14 +1628,16 @@ function BottomSheet({
 
   // Touch handlers on the whole popup; drag only engages on gesture.
   const onTouchStart = e => {
+    if (noDragClose) return;
     startY.current = e.touches[0].clientY;
   };
   const onTouchMove = e => {
-    if (startY.current == null) return;
+    if (noDragClose || startY.current == null) return;
     const dy = e.touches[0].clientY - startY.current;
     if (dy > 0) setDrag(dy);
   };
   const onTouchEnd = () => {
+    if (noDragClose) return;
     if (drag > 80) onClose();else setDrag(0);
     startY.current = null;
   };
@@ -1789,111 +1804,11 @@ function DatePickerSheet({
   };
 
   // ── 년/월 스크롤 선택기 ────────────────────────────────────
-  const YEARS = Array.from({
+  const YEAR_STRS = React.useMemo(() => Array.from({
     length: 10
-  }, (_, i) => todayObj.getFullYear() - 2 + i);
-  const MONTHS = Array.from({
-    length: 12
-  }, (_, i) => i);
-  const [tmpY, setTmpY] = React.useState(view.y);
-  const [tmpMo, setTmpMo] = React.useState(view.mo);
-  const ScrollPicker = ({
-    items,
-    value,
-    onChange,
-    renderLabel,
-    width = 90
-  }) => {
-    const IH = 44;
-    const VISIBLE = 5;
-    const ref = React.useRef(null);
-    const timer = React.useRef(null);
-    React.useEffect(() => {
-      const el = ref.current;
-      if (!el) return;
-      const idx = items.indexOf(value);
-      if (idx >= 0) el.scrollTop = idx * IH;
-    }, [value]);
-    const onScroll = () => {
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => {
-        const el = ref.current;
-        if (!el) return;
-        const idx = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / IH)));
-        el.scrollTo({
-          top: idx * IH,
-          behavior: 'smooth'
-        });
-        if (items[idx] !== value) onChange(items[idx]);
-      }, 100);
-    };
-    const PAD = IH * Math.floor(VISIBLE / 2);
-    const stopProp = e => e.stopPropagation(); // 스크롤 시 배경 dismiss 방지
-    return /*#__PURE__*/React.createElement("div", {
-      style: {
-        position: 'relative',
-        width,
-        height: IH * VISIBLE,
-        overflow: 'hidden'
-      },
-      onClick: stopProp,
-      onTouchStart: stopProp,
-      onTouchMove: stopProp,
-      onTouchEnd: stopProp
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        pointerEvents: 'none',
-        zIndex: 2,
-        top: IH * Math.floor(VISIBLE / 2),
-        height: IH,
-        borderTop: `1.5px solid ${COLORS.line}`,
-        borderBottom: `1.5px solid ${COLORS.line}`
-      }
-    }), /*#__PURE__*/React.createElement("div", {
-      ref: ref,
-      onScroll: onScroll,
-      style: {
-        height: '100%',
-        overflowY: 'scroll',
-        scrollSnapType: 'y mandatory',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
-        paddingTop: PAD,
-        paddingBottom: PAD,
-        boxSizing: 'content-box'
-      },
-      className: "wheel-col"
-    }, items.map((it, i) => {
-      const sel = it === value;
-      return /*#__PURE__*/React.createElement("div", {
-        key: i,
-        onClick: () => {
-          onChange(it);
-          const el = ref.current;
-          if (el) el.scrollTo({
-            top: i * IH,
-            behavior: 'smooth'
-          });
-        },
-        style: {
-          height: IH,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          scrollSnapAlign: 'center',
-          fontFamily: SANS,
-          fontSize: sel ? 16 : 14,
-          color: sel ? COLORS.ink : COLORS.mute,
-          fontWeight: sel ? 600 : 400,
-          cursor: 'pointer',
-          userSelect: 'none'
-        }
-      }, renderLabel(it));
-    })));
-  };
+  }, (_, i) => String(todayObj.getFullYear() - 2 + i)), []);
+  const [tmpY, setTmpY] = React.useState(String(view.y));
+  const [tmpMo, setTmpMo] = React.useState(MONTH_KR[view.mo]);
 
   // ── 달력 그리드 ───────────────────────────────────────────
   const Calendar = () => {
@@ -1974,7 +1889,8 @@ function DatePickerSheet({
     open: open,
     onClose: onClose,
     title: title,
-    onConfirm: confirm
+    onConfirm: confirm,
+    noDragClose: pickingYM
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '8px 16px 6px',
@@ -1985,8 +1901,8 @@ function DatePickerSheet({
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       if (!pickingYM) {
-        setTmpY(view.y);
-        setTmpMo(view.mo);
+        setTmpY(String(view.y));
+        setTmpMo(MONTH_KR[view.mo]);
       }
       setPickingYM(p => !p);
     },
@@ -2085,20 +2001,22 @@ function DatePickerSheet({
       display: 'flex',
       justifyContent: 'center',
       gap: 12,
-      padding: '4px 16px 8px'
+      padding: '4px 16px 8px',
+      touchAction: 'none'
     }
-  }, /*#__PURE__*/React.createElement(ScrollPicker, {
-    items: YEARS,
+  }, /*#__PURE__*/React.createElement(WheelColumn, {
+    items: YEAR_STRS,
     value: tmpY,
     onChange: setTmpY,
-    renderLabel: y => `${y}년`,
-    width: 110
-  }), /*#__PURE__*/React.createElement(ScrollPicker, {
-    items: MONTHS,
+    width: 100,
+    compact: true
+  }), /*#__PURE__*/React.createElement(WheelColumn, {
+    items: MONTH_KR,
     value: tmpMo,
     onChange: setTmpMo,
-    renderLabel: m => MONTH_KR[m],
-    width: 90
+    width: 80,
+    compact: true,
+    loop: true
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '0 16px 14px'
@@ -2106,8 +2024,8 @@ function DatePickerSheet({
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setView({
-        y: tmpY,
-        mo: tmpMo
+        y: +tmpY,
+        mo: MONTH_KR.indexOf(tmpMo)
       });
       setPickingYM(false);
     },
@@ -2126,112 +2044,26 @@ function DatePickerSheet({
   }, "\uC774 \uB2EC \uB2EC\uB825 \uBCF4\uAE30"))) : /*#__PURE__*/React.createElement(Calendar, null));
 }
 
-// ─── Compact scroll wheel ────────────────────────────────────
-function CompactWheel({
-  items,
-  value,
-  onChange,
-  renderLabel = x => x,
-  width = 100
-}) {
-  const IH = 44,
-    VIS = 5;
-  const ref = React.useRef(null);
-  const timer = React.useRef(null);
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const idx = items.indexOf(value);
-    if (idx >= 0) el.scrollTop = idx * IH;
-  }, [value, items]);
-  const onScroll = () => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      const el = ref.current;
-      if (!el) return;
-      const idx = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / IH)));
-      el.scrollTo({
-        top: idx * IH,
-        behavior: 'smooth'
-      });
-      if (items[idx] !== value) onChange(items[idx]);
-    }, 100);
-  };
-  const PAD = IH * Math.floor(VIS / 2);
-  const stopProp = e => e.stopPropagation();
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'relative',
-      width,
-      height: IH * VIS,
-      overflow: 'hidden'
-    },
-    onClick: stopProp,
-    onTouchStart: stopProp,
-    onTouchMove: stopProp,
-    onTouchEnd: stopProp
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      pointerEvents: 'none',
-      zIndex: 2,
-      top: IH * Math.floor(VIS / 2),
-      height: IH,
-      borderTop: `1.5px solid ${COLORS.line}`,
-      borderBottom: `1.5px solid ${COLORS.line}`
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    ref: ref,
-    onScroll: onScroll,
-    className: "wheel-col",
-    style: {
-      height: '100%',
-      overflowY: 'scroll',
-      scrollSnapType: 'y mandatory',
-      scrollbarWidth: 'none',
-      msOverflowStyle: 'none',
-      paddingTop: PAD,
-      paddingBottom: PAD,
-      boxSizing: 'content-box'
-    }
-  }, items.map((it, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      height: IH,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      scrollSnapAlign: 'center',
-      fontFamily: SANS,
-      fontSize: it === value ? 16 : 14,
-      color: it === value ? COLORS.ink : COLORS.mute,
-      fontWeight: it === value ? 600 : 400,
-      cursor: 'pointer'
-    }
-  }, renderLabel(it)))));
-}
-
 // ─── Time Picker ────────────────────────────────────────────
 function TimeField({
   value,
   onChange
 }) {
   const [open, setOpen] = React.useState(false);
-  const HOURS = Array.from({
+  const MINS_RAW = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  const HOUR_STRS = React.useMemo(() => Array.from({
     length: 24
-  }, (_, i) => i);
-  const MINS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  }, (_, i) => String(i).padStart(2, '0')), []);
+  const MIN_STRS = React.useMemo(() => MINS_RAW.map(x => String(x).padStart(2, '0')), []);
   const parse = v => {
     const m = (v || '').match(/^(\d{1,2}):(\d{2})$/);
     if (!m) return {
-      h: 9,
-      mn: 0
+      h: '09',
+      mn: '00'
     };
-    const h = parseInt(m[1]) % 24;
+    const h = String(parseInt(m[1]) % 24).padStart(2, '0');
     const raw = parseInt(m[2]);
-    const mn = MINS.reduce((best, x) => Math.abs(x - raw) < Math.abs(best - raw) ? x : best, 0);
+    const mn = String(MINS_RAW.reduce((best, x) => Math.abs(x - raw) < Math.abs(best - raw) ? x : best, 0)).padStart(2, '0');
     return {
       h,
       mn
@@ -2241,7 +2073,7 @@ function TimeField({
     h,
     mn
   } = parse(value);
-  const emit = (newH, newMn) => onChange(`${String(newH).padStart(2, '0')}:${String(newMn).padStart(2, '0')}`);
+  const emit = (newH, newMn) => onChange(`${newH}:${newMn}`);
   if (!open) return /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setOpen(true),
@@ -2266,14 +2098,16 @@ function TimeField({
       alignItems: 'center',
       justifyContent: 'center',
       gap: 4,
-      padding: '4px 0'
+      padding: '4px 0',
+      touchAction: 'none'
     }
-  }, /*#__PURE__*/React.createElement(CompactWheel, {
-    items: HOURS,
+  }, /*#__PURE__*/React.createElement(WheelColumn, {
+    items: HOUR_STRS,
     value: h,
     onChange: v => emit(v, mn),
-    renderLabel: x => String(x).padStart(2, '0'),
-    width: 80
+    width: 75,
+    compact: true,
+    loop: true
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: MONO,
@@ -2283,12 +2117,13 @@ function TimeField({
       lineHeight: 1,
       userSelect: 'none'
     }
-  }, ":"), /*#__PURE__*/React.createElement(CompactWheel, {
-    items: MINS,
+  }, ":"), /*#__PURE__*/React.createElement(WheelColumn, {
+    items: MIN_STRS,
     value: mn,
     onChange: v => emit(h, v),
-    renderLabel: x => String(x).padStart(2, '0'),
-    width: 80
+    width: 75,
+    compact: true,
+    loop: true
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setOpen(false),
@@ -2420,14 +2255,12 @@ function DateRangeSheet({
   const fmtDate = o => o ? `${o.y}. ${o.mo + 1}. ${o.d}.` : null;
   const YEARS_LIST = Array.from({
     length: 12
-  }, (_, i) => today.getFullYear() - 2 + i);
-  const MONTHS_LIST = Array.from({
-    length: 12
-  }, (_, i) => i);
+  }, (_, i) => String(today.getFullYear() - 2 + i));
   return /*#__PURE__*/React.createElement(BottomSheet, {
     open: open,
     onClose: onClose,
     title: "\uAE30\uAC04 \uC120\uD0DD",
+    noDragClose: showYM,
     onConfirm: () => {
       if (!start) {
         onClose();
@@ -2560,26 +2393,28 @@ function DateRangeSheet({
       display: 'flex',
       justifyContent: 'center',
       gap: 16,
-      padding: '0 16px 16px'
+      padding: '0 16px 16px',
+      touchAction: 'none'
     }
-  }, /*#__PURE__*/React.createElement(CompactWheel, {
+  }, /*#__PURE__*/React.createElement(WheelColumn, {
     items: YEARS_LIST,
-    value: view.y,
+    value: String(view.y),
     onChange: y => setView(v => ({
       ...v,
-      y
+      y: +y
     })),
-    renderLabel: y => `${y}년`,
-    width: 130
-  }), /*#__PURE__*/React.createElement(CompactWheel, {
-    items: MONTHS_LIST,
-    value: view.mo,
-    onChange: mo => setView(v => ({
+    width: 110,
+    compact: true
+  }), /*#__PURE__*/React.createElement(WheelColumn, {
+    items: MONTH_KR,
+    value: MONTH_KR[view.mo],
+    onChange: m => setView(v => ({
       ...v,
-      mo
+      mo: MONTH_KR.indexOf(m)
     })),
-    renderLabel: m => MONTH_KR[m],
-    width: 90
+    width: 90,
+    compact: true,
+    loop: true
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'grid',
@@ -2675,11 +2510,14 @@ function WheelColumn({
   compact = false
 }) {
   const ITEM_H = 40;
-  const VISIBLE = compact ? 3 : 5; // compact: center + 1 peek above/below
+  const VISIBLE = compact ? 5 : 5; // compact: center + 2 peek above/below
   const CENTER_OFFSET = Math.floor(VISIBLE / 2);
   const ref = React.useRef(null);
   const timer = React.useRef(null);
   const jumping = React.useRef(false);
+  const scrolling = React.useRef(false);
+  const rafCancel = React.useRef(false);
+  const internalChange = React.useRef(false);
 
   // loop 모드: 아이템 3배 반복, 중간 set에서 시작
   const dispItems = React.useMemo(() => loop ? [...items, ...items, ...items] : items, [items, loop]);
@@ -2695,8 +2533,12 @@ function WheelColumn({
   const loopRef = React.useRef(loop);
   loopRef.current = loop;
 
-  // Sync external value → scroll position (only when value actually changes)
+  // Sync external value → scroll position (skip when changed internally by snap)
   React.useEffect(() => {
+    if (internalChange.current) {
+      internalChange.current = false;
+      return;
+    }
     const el = ref.current;
     if (!el) return;
     const idx = itemsRef.current.indexOf(value);
@@ -2705,11 +2547,19 @@ function WheelColumn({
 
   // Snap helper – snaps to nearest item and fires onChange
   const snapAndFire = React.useCallback((el, targetTop) => {
+    scrolling.current = true;
     const its = itemsRef.current;
     const raw = Math.round(targetTop / ITEM_H);
     if (loopRef.current) {
       const total = its.length * 3;
       const clamped = Math.max(0, Math.min(total - 1, raw));
+      // Fire onChange immediately so highlight follows scroll animation
+      const earlyIdx = (clamped % its.length + its.length) % its.length;
+      if (its[earlyIdx] !== valueRef.current) {
+        internalChange.current = true;
+        haptic();
+        onChangeRef.current(its[earlyIdx]);
+      }
       el.scrollTo({
         top: clamped * ITEM_H,
         behavior: 'smooth'
@@ -2718,26 +2568,33 @@ function WheelColumn({
       timer.current = setTimeout(() => {
         const finalRaw = Math.round(el.scrollTop / ITEM_H);
         const realIdx = (finalRaw % its.length + its.length) % its.length;
-        if (its[realIdx] !== valueRef.current) onChangeRef.current(its[realIdx]);
         if (finalRaw < its.length || finalRaw >= 2 * its.length) {
           jumping.current = true;
           setTimeout(() => {
             el.scrollTop = (its.length + realIdx) * ITEM_H;
             jumping.current = false;
+            scrolling.current = false;
           }, 180);
+        } else {
+          scrolling.current = false;
         }
-      }, 320);
+      }, 350);
     } else {
       const clamped = Math.max(0, Math.min(its.length - 1, raw));
+      // Fire onChange immediately so highlight follows scroll animation
+      if (its[clamped] !== valueRef.current) {
+        internalChange.current = true;
+        haptic();
+        onChangeRef.current(its[clamped]);
+      }
       el.scrollTo({
         top: clamped * ITEM_H,
         behavior: 'smooth'
       });
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
-        const idx = Math.max(0, Math.min(its.length - 1, Math.round(el.scrollTop / ITEM_H)));
-        if (its[idx] !== valueRef.current) onChangeRef.current(its[idx]);
-      }, 320);
+        scrolling.current = false;
+      }, 350);
     }
   }, []);
 
@@ -2751,11 +2608,14 @@ function WheelColumn({
       lastT = 0,
       vel = 0;
     const onStart = e => {
+      rafCancel.current = true; // stop any running RAF decel
+      el.scrollTop = el.scrollTop; // cancel any running smooth scroll
+      clearTimeout(timer.current);
+      scrolling.current = false;
       startY = lastY = e.touches[0].clientY;
       startTop = el.scrollTop;
       lastT = Date.now();
       vel = 0;
-      clearTimeout(timer.current);
     };
     const onMove = e => {
       e.preventDefault(); // 페이지 스크롤 차단
@@ -2770,7 +2630,22 @@ function WheelColumn({
     const onEnd = () => {
       if (startY === null) return;
       startY = null;
-      snapAndFire(el, el.scrollTop + vel * 80);
+      let v = vel * 120;
+      if (Math.abs(v) < 1) {
+        snapAndFire(el, el.scrollTop);
+        return;
+      }
+      scrolling.current = true;
+      rafCancel.current = false;
+      const decel = () => {
+        if (rafCancel.current) return; // new touch started, abandon
+        v *= 0.88;
+        el.scrollTop += v;
+        if (Math.abs(v) > 0.5) requestAnimationFrame(decel);else {
+          snapAndFire(el, el.scrollTop);
+        }
+      };
+      requestAnimationFrame(decel);
     };
     el.addEventListener('touchstart', onStart, {
       passive: false
@@ -2788,7 +2663,7 @@ function WheelColumn({
     };
   }, [snapAndFire]);
   const handleScroll = () => {
-    if (jumping.current) return;
+    if (jumping.current || scrolling.current) return;
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       const el = ref.current;
@@ -2800,7 +2675,10 @@ function WheelColumn({
           behavior: 'smooth'
         });
         const realIdx = (raw % items.length + items.length) % items.length;
-        if (items[realIdx] !== value) onChange(items[realIdx]);
+        if (items[realIdx] !== value) {
+          haptic();
+          onChange(items[realIdx]);
+        }
         if (raw < items.length || raw >= 2 * items.length) {
           jumping.current = true;
           setTimeout(() => {
@@ -2814,7 +2692,10 @@ function WheelColumn({
           top: clamped * ITEM_H,
           behavior: 'smooth'
         });
-        if (items[clamped] !== value) onChange(items[clamped]);
+        if (items[clamped] !== value) {
+          haptic();
+          onChange(items[clamped]);
+        }
       }
     }, 120);
   };
@@ -2833,13 +2714,15 @@ function WheelColumn({
       width: '100%',
       height: '100%',
       overflowY: 'scroll',
-      scrollSnapType: 'y mandatory',
       scrollbarWidth: 'none',
-      msOverflowStyle: 'none',
-      padding: `${ITEM_H * CENTER_OFFSET}px 0`,
-      boxSizing: 'content-box'
+      msOverflowStyle: 'none'
     }
-  }, dispItems.map((it, i) => {
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: ITEM_H * CENTER_OFFSET,
+      flexShrink: 0
+    }
+  }), dispItems.map((it, i) => {
     const isSel = it === value;
     return /*#__PURE__*/React.createElement("div", {
       key: i,
@@ -2848,7 +2731,6 @@ function WheelColumn({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        scrollSnapAlign: 'center',
         fontFamily: SERIF,
         fontSize: isSel ? 26 : 20,
         color: isSel ? COLORS.ink : COLORS.mute,
@@ -2857,6 +2739,11 @@ function WheelColumn({
         fontFeatureSettings: '"tnum"'
       }
     }, it);
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: ITEM_H * CENTER_OFFSET,
+      flexShrink: 0
+    }
   })), compact ? /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -2864,7 +2751,7 @@ function WheelColumn({
       right: 0,
       top: ITEM_H * CENTER_OFFSET,
       height: ITEM_H,
-      border: `1.5px solid ${COLORS.line}`,
+      background: 'rgba(0,0,0,0.06)',
       borderRadius: 10,
       pointerEvents: 'none'
     }
@@ -2886,7 +2773,7 @@ function WheelColumn({
       left: 0,
       right: 0,
       height: ITEM_H * CENTER_OFFSET,
-      background: compact ? COLORS.bg : `linear-gradient(180deg, ${COLORS.bg} 0%, ${COLORS.bg}00 100%)`,
+      background: `linear-gradient(180deg, ${COLORS.bg} 0%, ${COLORS.bg}88 55%, ${COLORS.bg}00 100%)`,
       pointerEvents: 'none'
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -2896,7 +2783,7 @@ function WheelColumn({
       left: 0,
       right: 0,
       height: ITEM_H * CENTER_OFFSET,
-      background: compact ? COLORS.bg : `linear-gradient(0deg, ${COLORS.bg} 0%, ${COLORS.bg}00 100%)`,
+      background: `linear-gradient(0deg, ${COLORS.bg} 0%, ${COLORS.bg}88 55%, ${COLORS.bg}00 100%)`,
       pointerEvents: 'none'
     }
   }));
@@ -2949,19 +2836,24 @@ function TimeWheelSheet({
     open: open,
     onClose: onClose,
     title: title,
-    onConfirm: confirm
+    onConfirm: confirm,
+    noDragClose: true
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '20px 20px 28px',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      gap: 10
+      gap: 10,
+      touchAction: 'none'
     }
   }, /*#__PURE__*/React.createElement(WheelColumn, {
     items: hours,
     value: String(h).padStart(2, '0'),
-    onChange: v => setH(+v)
+    onChange: v => setH(+v),
+    compact: true,
+    loop: true,
+    width: 80
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SERIF,
@@ -2972,7 +2864,10 @@ function TimeWheelSheet({
   }, ":"), /*#__PURE__*/React.createElement(WheelColumn, {
     items: mins,
     value: displayMin,
-    onChange: v => setMi(+v)
+    onChange: v => setMi(+v),
+    compact: true,
+    loop: true,
+    width: 80
   })));
 }
 
@@ -4674,7 +4569,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v309"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v326"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -5647,52 +5542,6 @@ function HomeScreen({
       stroke: 1.8
     })))));
   }), (() => {
-    const hasItems = trip.days.some(d => d.items?.length > 0);
-    if ((trip.days.length === 0 || !hasItems) && onLoadSample) return /*#__PURE__*/React.createElement("div", {
-      style: {
-        margin: '8px 0 4px',
-        padding: '24px 20px',
-        background: COLORS.card,
-        borderRadius: 16,
-        textAlign: 'center'
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontFamily: SERIF,
-        fontSize: 20,
-        color: COLORS.ink,
-        marginBottom: 6
-      }
-    }, "New York"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontFamily: SANS,
-        fontSize: 13,
-        color: COLORS.mute,
-        marginBottom: 12
-      }
-    }, "\uC77C\uC815 \uB370\uC774\uD130\uB97C \uBD88\uB7EC\uC635\uB2C8\uB2E4"), sampleErr && /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontFamily: SANS,
-        fontSize: 12,
-        color: COLORS.accent,
-        marginBottom: 10
-      }
-    }, sampleErr), /*#__PURE__*/React.createElement("button", {
-      onClick: handleLoadSample,
-      disabled: sampleLoading,
-      style: {
-        padding: '11px 24px',
-        background: sampleLoading ? COLORS.mute : COLORS.ink,
-        border: 'none',
-        borderRadius: 12,
-        color: COLORS.bg,
-        fontFamily: SANS,
-        fontSize: 13,
-        fontWeight: 500,
-        cursor: sampleLoading ? 'default' : 'pointer',
-        opacity: sampleLoading ? 0.7 : 1
-      }
-    }, sampleLoading ? '불러오는 중...' : '뉴욕 일정 불러오기'));
     return null;
   })(), !editing && /*#__PURE__*/React.createElement("button", {
     onClick: onAddDay,
@@ -8238,7 +8087,10 @@ function HotelSheet({
     }
     searchTimer.current = setTimeout(async () => {
       try {
-        const j = await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(searchQ)}&limit=8&lang=en&osm_tag=tourism:hotel`)).json();
+        const engQ = typeof korToEngHotel === 'function' ? korToEngHotel(searchQ.trim()) : searchQ.trim();
+        const destEntry = typeof CITY_DB !== 'undefined' ? CITY_DB.find(c => c.zone === trip?.timezone) : null;
+        const bias = destEntry ? `&lat=${destEntry.lat}&lon=${destEntry.lon}` : '';
+        const j = await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(engQ)}&limit=8${bias}&osm_tag=tourism:hotel`)).json();
         const feats = j?.features || [];
         setSearchRes(feats);
         if (feats.length && searchFocused.current) setShowSearch(true);
@@ -9300,6 +9152,7 @@ function EditStopForm({
     SANS: SANS,
     MONO: MONO,
     Icon: Icon,
+    cityBias: cityBias,
     onPick: result => {
       if (typeof result === 'string') {
         const m = result.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
@@ -9310,7 +9163,6 @@ function EditStopForm({
           loc: m ? m[2] : ''
         });
       } else {
-        // Gmail 스캔 결과 객체
         setDraft({
           ...draft,
           title: result.name,
@@ -12657,6 +12509,7 @@ function BudgetScreen({
   const [calcOpen, setCalcOpen] = React.useState(false);
   const [splitOpen, setSplitOpen] = React.useState(false);
   const [sheetEntered, setSheetEntered] = React.useState(false);
+  const [datePickOpen, setDatePickOpen] = React.useState(false);
   const closeSheet = () => {
     setAddOpen(false);
     setEditIdx(null);
@@ -13560,13 +13413,9 @@ function BudgetScreen({
       color: COLORS.ink,
       outline: 'none'
     }
-  }), /*#__PURE__*/React.createElement("input", {
-    type: "date",
-    value: form.date,
-    onChange: e => setForm(f => ({
-      ...f,
-      date: e.target.value
-    })),
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setDatePickOpen(true),
     style: {
       width: '100%',
       boxSizing: 'border-box',
@@ -13577,9 +13426,19 @@ function BudgetScreen({
       background: COLORS.card,
       fontFamily: SANS,
       fontSize: 14,
-      color: COLORS.ink,
-      outline: 'none'
+      color: form.date ? COLORS.ink : COLORS.mute,
+      textAlign: 'left',
+      cursor: 'pointer'
     }
+  }, form.date || '날짜 선택'), /*#__PURE__*/React.createElement(DatePickerSheet, {
+    open: datePickOpen,
+    value: form.date,
+    onClose: () => setDatePickOpen(false),
+    onPick: d => setForm(f => ({
+      ...f,
+      date: d
+    })),
+    title: "\uB0A0\uC9DC \uC120\uD0DD"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
@@ -15000,6 +14859,13 @@ function greedyRoute(places) {
   }
   return result;
 }
+
+// 황금각(137.5°) 기반으로 겹치지 않는 hue 배열 생성
+const DAY_HUES = Array.from({
+  length: 20
+}, (_, i) => Math.round((25 + i * 137.508) % 360));
+// [25,163,300,77,215,352,130,267,44,182,319,96,234,11,149,286,63,200,338,115]
+
 function generateTripData({
   cities,
   startIso,
@@ -15008,7 +14874,8 @@ function generateTripData({
   arrAirport,
   depAirport,
   selectedPlaces,
-  isKorean
+  isKorean,
+  selectedDest
 }) {
   const startDate = new Date(startIso + 'T12:00:00');
   const dayCount = Math.round((new Date(endIso + 'T12:00:00') - startDate) / 86400000) + 1;
@@ -15080,7 +14947,7 @@ function generateTripData({
       title: `Day ${n}`,
       titleEn: `Day ${n}`,
       hero: {
-        hue: 200,
+        hue: DAY_HUES[i % DAY_HUES.length],
         label: `DAY ${String(n).padStart(2, '0')}`
       },
       weather: '',
@@ -15090,10 +14957,12 @@ function generateTripData({
   return {
     title: cities.filter(Boolean).join(' · ') || 'New Trip',
     dates: `${isoToDayDate(startIso)} – ${isoToDayDate(endIso)}`,
-    hue: 200,
+    hue: DAY_HUES[0],
     days,
     hotels: [],
-    food: []
+    food: [],
+    timezone: selectedDest?.zone || null,
+    defaultCurrency: selectedDest?.currency || 'KRW'
   };
 }
 function MiniCalendar({
@@ -15124,8 +14993,8 @@ function MiniCalendar({
   }, (_, i) => i + 1)];
   const thisYear = today.getFullYear();
   const yearItems = React.useMemo(() => Array.from({
-    length: 6
-  }, (_, i) => String(thisYear + i)), [thisYear]);
+    length: 8
+  }, (_, i) => String(thisYear - 1 + i)), [thisYear]);
   const monthItems = React.useMemo(() => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], []);
   const openPicker = () => {
     setPickY(String(vy));
@@ -15255,15 +15124,352 @@ function MiniCalendar({
     }, d);
   }))));
 }
+const CITY_DB = [{
+  key: 'japan',
+  kor: '일본',
+  eng: 'Japan',
+  flag: '🇯🇵',
+  zone: 'Asia/Tokyo',
+  currency: 'JPY',
+  lat: 35.6762,
+  lon: 139.6503
+}, {
+  key: 'france',
+  kor: '프랑스',
+  eng: 'France',
+  flag: '🇫🇷',
+  zone: 'Europe/Paris',
+  currency: 'EUR',
+  lat: 48.8566,
+  lon: 2.3522
+}, {
+  key: 'usa',
+  kor: '미국',
+  eng: 'USA',
+  flag: '🇺🇸',
+  zone: 'America/New_York',
+  currency: 'USD',
+  lat: 40.7128,
+  lon: -74.0060
+}, {
+  key: 'uk',
+  kor: '영국',
+  eng: 'United Kingdom',
+  flag: '🇬🇧',
+  zone: 'Europe/London',
+  currency: 'GBP',
+  lat: 51.5074,
+  lon: -0.1278
+}, {
+  key: 'thailand',
+  kor: '태국',
+  eng: 'Thailand',
+  flag: '🇹🇭',
+  zone: 'Asia/Bangkok',
+  currency: 'THB',
+  lat: 13.7563,
+  lon: 100.5018
+}, {
+  key: 'indonesia',
+  kor: '인도네시아',
+  eng: 'Indonesia',
+  flag: '🇮🇩',
+  zone: 'Asia/Makassar',
+  currency: 'IDR',
+  lat: -8.3405,
+  lon: 115.0920
+}, {
+  key: 'singapore',
+  kor: '싱가포르',
+  eng: 'Singapore',
+  flag: '🇸🇬',
+  zone: 'Asia/Singapore',
+  currency: 'SGD',
+  lat: 1.3521,
+  lon: 103.8198
+}, {
+  key: 'spain',
+  kor: '스페인',
+  eng: 'Spain',
+  flag: '🇪🇸',
+  zone: 'Europe/Madrid',
+  currency: 'EUR',
+  lat: 40.4168,
+  lon: -3.7038
+}, {
+  key: 'italy',
+  kor: '이탈리아',
+  eng: 'Italy',
+  flag: '🇮🇹',
+  zone: 'Europe/Rome',
+  currency: 'EUR',
+  lat: 41.9028,
+  lon: 12.4964
+}, {
+  key: 'czechia',
+  kor: '체코',
+  eng: 'Czech Republic',
+  flag: '🇨🇿',
+  zone: 'Europe/Prague',
+  currency: 'CZK',
+  lat: 50.0755,
+  lon: 14.4378
+}, {
+  key: 'australia',
+  kor: '호주',
+  eng: 'Australia',
+  flag: '🇦🇺',
+  zone: 'Australia/Sydney',
+  currency: 'AUD',
+  lat: -33.8688,
+  lon: 151.2093
+}, {
+  key: 'uae',
+  kor: '아랍에미리트',
+  eng: 'UAE',
+  flag: '🇦🇪',
+  zone: 'Asia/Dubai',
+  currency: 'AED',
+  lat: 25.2048,
+  lon: 55.2708
+}, {
+  key: 'turkey',
+  kor: '터키',
+  eng: 'Turkey',
+  flag: '🇹🇷',
+  zone: 'Europe/Istanbul',
+  currency: 'TRY',
+  lat: 41.0082,
+  lon: 28.9784
+}, {
+  key: 'vietnam',
+  kor: '베트남',
+  eng: 'Vietnam',
+  flag: '🇻🇳',
+  zone: 'Asia/Ho_Chi_Minh',
+  currency: 'VND',
+  lat: 21.0285,
+  lon: 105.8542
+}, {
+  key: 'taiwan',
+  kor: '대만',
+  eng: 'Taiwan',
+  flag: '🇹🇼',
+  zone: 'Asia/Taipei',
+  currency: 'TWD',
+  lat: 25.0330,
+  lon: 121.5654
+}, {
+  key: 'hongkong',
+  kor: '홍콩',
+  eng: 'Hong Kong',
+  flag: '🇭🇰',
+  zone: 'Asia/Hong_Kong',
+  currency: 'HKD',
+  lat: 22.3193,
+  lon: 114.1694
+}, {
+  key: 'maldives',
+  kor: '몰디브',
+  eng: 'Maldives',
+  flag: '🇲🇻',
+  zone: 'Indian/Maldives',
+  currency: 'USD',
+  lat: 3.2028,
+  lon: 73.2207
+}, {
+  key: 'netherlands',
+  kor: '네덜란드',
+  eng: 'Netherlands',
+  flag: '🇳🇱',
+  zone: 'Europe/Amsterdam',
+  currency: 'EUR',
+  lat: 52.3676,
+  lon: 4.9041
+}, {
+  key: 'greece',
+  kor: '그리스',
+  eng: 'Greece',
+  flag: '🇬🇷',
+  zone: 'Europe/Athens',
+  currency: 'EUR',
+  lat: 37.9838,
+  lon: 23.7275
+}, {
+  key: 'malaysia',
+  kor: '말레이시아',
+  eng: 'Malaysia',
+  flag: '🇲🇾',
+  zone: 'Asia/Kuala_Lumpur',
+  currency: 'MYR',
+  lat: 3.1390,
+  lon: 101.6869
+}, {
+  key: 'mexico',
+  kor: '멕시코',
+  eng: 'Mexico',
+  flag: '🇲🇽',
+  zone: 'America/Mexico_City',
+  currency: 'MXN',
+  lat: 19.4326,
+  lon: -99.1332
+}, {
+  key: 'canada',
+  kor: '캐나다',
+  eng: 'Canada',
+  flag: '🇨🇦',
+  zone: 'America/Toronto',
+  currency: 'CAD',
+  lat: 43.6532,
+  lon: -79.3832
+}, {
+  key: 'germany',
+  kor: '독일',
+  eng: 'Germany',
+  flag: '🇩🇪',
+  zone: 'Europe/Berlin',
+  currency: 'EUR',
+  lat: 52.5200,
+  lon: 13.4050
+}, {
+  key: 'portugal',
+  kor: '포르투갈',
+  eng: 'Portugal',
+  flag: '🇵🇹',
+  zone: 'Europe/Lisbon',
+  currency: 'EUR',
+  lat: 38.7169,
+  lon: -9.1395
+}, {
+  key: 'switzerland',
+  kor: '스위스',
+  eng: 'Switzerland',
+  flag: '🇨🇭',
+  zone: 'Europe/Zurich',
+  currency: 'CHF',
+  lat: 47.3769,
+  lon: 8.5417
+}, {
+  key: 'austria',
+  kor: '오스트리아',
+  eng: 'Austria',
+  flag: '🇦🇹',
+  zone: 'Europe/Vienna',
+  currency: 'EUR',
+  lat: 48.2082,
+  lon: 16.3738
+}, {
+  key: 'croatia',
+  kor: '크로아티아',
+  eng: 'Croatia',
+  flag: '🇭🇷',
+  zone: 'Europe/Zagreb',
+  currency: 'EUR',
+  lat: 45.8150,
+  lon: 15.9819
+}, {
+  key: 'cambodia',
+  kor: '캄보디아',
+  eng: 'Cambodia',
+  flag: '🇰🇭',
+  zone: 'Asia/Phnom_Penh',
+  currency: 'KHR',
+  lat: 11.5564,
+  lon: 104.9282
+}, {
+  key: 'philippines',
+  kor: '필리핀',
+  eng: 'Philippines',
+  flag: '🇵🇭',
+  zone: 'Asia/Manila',
+  currency: 'PHP',
+  lat: 14.5995,
+  lon: 120.9842
+}, {
+  key: 'newzealand',
+  kor: '뉴질랜드',
+  eng: 'New Zealand',
+  flag: '🇳🇿',
+  zone: 'Pacific/Auckland',
+  currency: 'NZD',
+  lat: -36.8485,
+  lon: 174.7633
+}, {
+  key: 'morocco',
+  kor: '모로코',
+  eng: 'Morocco',
+  flag: '🇲🇦',
+  zone: 'Africa/Casablanca',
+  currency: 'MAD',
+  lat: 33.5731,
+  lon: -7.5898
+}, {
+  key: 'peru',
+  kor: '페루',
+  eng: 'Peru',
+  flag: '🇵🇪',
+  zone: 'America/Lima',
+  currency: 'PEN',
+  lat: -12.0464,
+  lon: -77.0428
+}, {
+  key: 'hawaii',
+  kor: '하와이',
+  eng: 'Hawaii',
+  flag: '🇺🇸',
+  zone: 'Pacific/Honolulu',
+  currency: 'USD',
+  lat: 21.3069,
+  lon: -157.8583
+}, {
+  key: 'korea',
+  kor: '한국',
+  eng: 'Korea',
+  flag: '🇰🇷',
+  zone: 'Asia/Seoul',
+  currency: 'KRW',
+  lat: 37.5665,
+  lon: 126.9780
+}, {
+  key: 'china',
+  kor: '중국',
+  eng: 'China',
+  flag: '🇨🇳',
+  zone: 'Asia/Shanghai',
+  currency: 'CNY',
+  lat: 39.9042,
+  lon: 116.4074
+}, {
+  key: 'india',
+  kor: '인도',
+  eng: 'India',
+  flag: '🇮🇳',
+  zone: 'Asia/Kolkata',
+  currency: 'INR',
+  lat: 28.6139,
+  lon: 77.2090
+}, {
+  key: 'brazil',
+  kor: '브라질',
+  eng: 'Brazil',
+  flag: '🇧🇷',
+  zone: 'America/Sao_Paulo',
+  currency: 'BRL',
+  lat: -23.5505,
+  lon: -46.6333
+}];
 function NewTripSheet({
   open,
   onClose,
   onSubmit
 }) {
   const isKorean = React.useMemo(() => navigator.language.startsWith('ko'), []);
-  const TOTAL = isKorean ? 4 : 5;
-  const HP_STEP = isKorean ? 4 : 5;
+  const TOTAL = isKorean ? 5 : 6;
+  const HP_STEP = isKorean ? 5 : 6;
   const [step, setStep] = React.useState(1);
+  const [selectedDest, setSelectedDest] = React.useState(null); // step 1: 나라
+  const [destQuery, setDestQuery] = React.useState('');
+  const destInputRef = React.useRef(null);
   const [cities, setCities] = React.useState(['']);
   const [startIso, setStartIso] = React.useState('');
   const [endIso, setEndIso] = React.useState('');
@@ -15304,6 +15510,8 @@ function NewTripSheet({
   React.useEffect(() => {
     if (!open) return;
     setStep(1);
+    setSelectedDest(null);
+    setDestQuery('');
     setCities(['']);
     setStartIso('');
     setEndIso('');
@@ -15372,15 +15580,17 @@ function NewTripSheet({
     })();
   }, [step]);
   if (!open) return null;
-  const canNext = step === 1 ? cities.some(c => c.trim()) : step === 2 ? !!(startIso && endIso) : true;
+  const canNext = step === 1 ? !!selectedDest : step === 2 ? cities.some(c => c.trim()) : step === 3 ? !!(startIso && endIso) : true;
   const TITLES = {
-    1: '어디로 가요?',
-    2: '언제 가요?',
-    3: '숙소는요?',
-    [isKorean ? 4 : 4]: '어느 공항으로?',
+    1: '어느 나라로 가요?',
+    2: '도시를 알려줘요',
+    3: '언제 가요?',
+    4: '숙소는요?',
+    5: '어느 공항으로?',
     [HP_STEP]: '가고 싶은 곳을 골라요'
   };
   const handleNext = () => {
+    if (step === 1 && selectedDest && cities[0] === '') setCities([selectedDest.kor || selectedDest.key]);
     if (step < TOTAL) {
       setStep(s => s + 1);
       return;
@@ -15394,7 +15604,8 @@ function NewTripSheet({
       arrAirport: isKorean ? '' : arrAirport,
       depAirport: isKorean ? '' : depAirport,
       selectedPlaces: selPlaces,
-      isKorean
+      isKorean,
+      selectedDest
     });
     onSubmit(tripData);
     onClose();
@@ -15460,13 +15671,126 @@ function NewTripSheet({
       fontSize: 20,
       color: COLORS.ink
     }
-  }, step === 1 ? '어디로 가요?' : step === 2 ? '언제 가요?' : step === 3 ? '숙소는요?' : !isKorean && step === 4 ? '어느 공항으로?' : '가고 싶은 곳을 골라요')), /*#__PURE__*/React.createElement("div", {
+  }, TITLES[step] || '가고 싶은 곳을 골라요')), /*#__PURE__*/React.createElement("div", {
     style: {
       overflowY: 'auto',
       flex: 1,
       padding: '14px 20px'
     }
-  }, step === 1 && /*#__PURE__*/React.createElement("div", null, cities.map((city, i) => /*#__PURE__*/React.createElement("div", {
+  }, step === 1 && (() => {
+    const qRaw = destQuery.trim();
+    const q = qRaw.toLowerCase();
+    // 단일 최우선 매치 (ghost text용)
+    const ghostMatch = qRaw.length === 0 ? null : CITY_DB.find(c => c.kor.startsWith(qRaw) && c.kor !== qRaw) || CITY_DB.find(c => c.eng.toLowerCase().startsWith(q) && c.eng.toLowerCase() !== q) || null;
+    const ghostIsKor = ghostMatch && ghostMatch.kor.startsWith(qRaw);
+    const ghostFull = ghostMatch ? ghostIsKor ? ghostMatch.kor : ghostMatch.eng : '';
+    const ghostSuffix = ghostFull ? ghostFull.slice(qRaw.length) : '';
+
+    // 타이핑된 글자 폭 측정 (ghost tap 영역 위치 계산용)
+    let typedPx = 16 + qRaw.length * 14; // 기본 추정
+    try {
+      const cv = document.createElement('canvas');
+      const cx = cv.getContext('2d');
+      cx.font = `15px ${SANS}, sans-serif`;
+      typedPx = 16 + cx.measureText(qRaw).width;
+    } catch (_) {}
+    const acceptGhost = () => {
+      if (!ghostMatch) return;
+      setDestQuery(ghostIsKor ? ghostMatch.kor : ghostMatch.eng);
+      setSelectedDest(ghostMatch);
+    };
+    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'relative',
+        borderRadius: 14,
+        background: COLORS.card,
+        border: `1.5px solid ${COLORS.line}`
+      }
+    }, ghostSuffix && /*#__PURE__*/React.createElement("div", {
+      "aria-hidden": "true",
+      style: {
+        position: 'absolute',
+        inset: 0,
+        padding: '12px 40px 12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        pointerEvents: 'none',
+        overflow: 'hidden',
+        fontFamily: SANS,
+        fontSize: 15,
+        lineHeight: 'normal',
+        borderRadius: 14
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: 'transparent',
+        whiteSpace: 'pre'
+      }
+    }, qRaw), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: COLORS.mute,
+        opacity: 0.55,
+        whiteSpace: 'pre'
+      }
+    }, ghostSuffix)), /*#__PURE__*/React.createElement("input", {
+      ref: destInputRef,
+      autoFocus: true,
+      value: destQuery,
+      onChange: e => {
+        setDestQuery(e.target.value);
+        setSelectedDest(null);
+      },
+      onInput: e => {
+        setDestQuery(e.target.value);
+        setSelectedDest(null);
+      },
+      placeholder: ghostSuffix ? '' : '나라 이름 (한글 또는 영어)',
+      style: {
+        width: '100%',
+        boxSizing: 'border-box',
+        padding: '12px 40px 12px 16px',
+        border: 'none',
+        borderRadius: 14,
+        outline: 'none',
+        background: 'transparent',
+        fontFamily: SANS,
+        fontSize: 15,
+        color: COLORS.ink,
+        position: 'relative',
+        zIndex: 1
+      }
+    }), ghostSuffix && /*#__PURE__*/React.createElement("div", {
+      onClick: acceptGhost,
+      style: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: typedPx,
+        right: 36,
+        zIndex: 2,
+        cursor: 'pointer'
+      }
+    }), destQuery.length > 0 && /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setDestQuery('');
+        setSelectedDest(null);
+      },
+      style: {
+        position: 'absolute',
+        right: 10,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        color: COLORS.mute,
+        fontSize: 18,
+        lineHeight: 1,
+        padding: 4,
+        zIndex: 3
+      }
+    }, "\xD7")));
+  })(), step === 2 && /*#__PURE__*/React.createElement("div", null, cities.map((city, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
       display: 'flex',
@@ -15479,7 +15803,7 @@ function NewTripSheet({
     autoFocus: i === 0,
     onChange: e => setCities(prev => prev.map((c, j) => j === i ? e.target.value : c)),
     onKeyDown: e => {
-      if (e.key === 'Enter' && city.trim()) setStep(2);
+      if (e.key === 'Enter' && city.trim()) setStep(3);
     },
     placeholder: i === 0 ? '도시 이름' : `도시 ${i + 1}`,
     style: {
@@ -15523,7 +15847,7 @@ function NewTripSheet({
       fontSize: 18,
       lineHeight: 1
     }
-  }, "+"), " \uB3C4\uC2DC \uCD94\uAC00")), step === 2 && /*#__PURE__*/React.createElement("div", null, startIso && endIso && dayCount > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "+"), " \uB3C4\uC2DC \uCD94\uAC00")), step === 3 && /*#__PURE__*/React.createElement("div", null, startIso && endIso && dayCount > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SANS,
       fontSize: 13,
@@ -15539,7 +15863,7 @@ function NewTripSheet({
       setStartIso(s);
       setEndIso(e);
     }
-  })), step === 3 && /*#__PURE__*/React.createElement("div", null, !skipHotel && hotels.map((h, i) => /*#__PURE__*/React.createElement("div", {
+  })), step === 4 && /*#__PURE__*/React.createElement("div", null, !skipHotel && hotels.map((h, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
       background: COLORS.card,
@@ -15662,7 +15986,7 @@ function NewTripSheet({
       color: skipHotel ? COLORS.accent : COLORS.mute,
       cursor: 'pointer'
     }
-  }, skipHotel ? '✓ 아직 못 정했어요' : '아직 못 정했어요')), !isKorean && step === 4 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, skipHotel ? '✓ 아직 못 정했어요' : '아직 못 정했어요')), !isKorean && step === 5 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 18
     }
@@ -17877,6 +18201,10 @@ function App() {
     SANS: SANS,
     MONO: MONO,
     Icon: Icon,
+    cityBias: (() => {
+      const c = CITY_DB.find(d => d.zone === trip?.timezone);
+      return c ? [c.lat, c.lon] : null;
+    })(),
     onPick: pickHotelFromSearch,
     onClose: () => setHotelSheet(null)
   }), /*#__PURE__*/React.createElement(ProfileSheet, {
