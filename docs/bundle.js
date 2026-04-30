@@ -4569,7 +4569,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v335"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v336"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -17825,6 +17825,9 @@ function NewTripSheet({
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     onClick: e => e.stopPropagation(),
+    onMouseDown: e => {
+      if (!e.target.closest('button,input,textarea,select,a,label')) e.preventDefault();
+    },
     style: {
       background: COLORS.bg,
       borderRadius: 22,
