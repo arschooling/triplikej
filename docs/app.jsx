@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v338</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v339</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7731,7 +7731,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
       setHotels(prev => prev.map((h, i) => i === prev.length - 1 ? { ...h, to: dayCount } : h));
   }, [dayCount]);
 
-  // 장소 로딩 (다중 도시 + 타입 추출 + 자동 전체 선택)
+  // 장소 로딩 (다중 도시 + 행정경계 bbox + 타입 추출 + 자동 전체 선택)
   React.useEffect(() => {
     if (step !== HP_STEP || !open) return;
     const validCities = cities.filter(c => c.trim());
@@ -7742,36 +7742,68 @@ function NewTripSheet({ open, onClose, onSubmit }) {
         const allPlaces = [];
         for (let ci = 0; ci < validCities.length; ci++) {
           const city = validCities[ci];
-          const geo = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(city)}&limit=1`).then(r=>r.json());
-          const f   = geo.features?.[0];
+          // Nominatim으로 도시 행정 경계(bounding box) 가져오기
+          const geo = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=3&addressdetails=0`,
+            { headers: { 'User-Agent': 'TripLikeJ/1.0' } }
+          ).then(r => r.json());
+          // 도시·지역 유형 우선 선택
+          const PRIO = ['city','town','village','borough','suburb','quarter','neighbourhood','island','region','state'];
+          const f = geo.find(g => PRIO.includes(g.type) || PRIO.includes(g.class)) || geo[0];
           if (!f) continue;
-          const [lon, lat] = f.geometry.coordinates;
-          const q = `[out:json][timeout:25];(node["tourism"~"attraction|museum|viewpoint|gallery|theme_park|zoo|aquarium"](around:20000,${lat},${lon});node["historic"~"monument|castle|ruins|memorial"](around:20000,${lat},${lon});node["leisure"~"park|garden"](around:15000,${lat},${lon}););out 40;`;
-          const ov  = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`).then(r=>r.json());
-          const list = (ov.elements||[]).filter(e => e.tags?.name).map(e => {
+          const lat = parseFloat(f.lat), lon = parseFloat(f.lon);
+          // bounding box 사용 (Nominatim: [south, north, west, east])
+          let areaQ;
+          if (f.boundingbox) {
+            const [s, n, w, e] = f.boundingbox.map(Number);
+            // 너무 좁은 bbox(관광지 단일 노드 등)면 반경으로 대체
+            const broad = (n - s) > 0.04 && (e - w) > 0.04;
+            areaQ = broad ? `(${s},${w},${n},${e})` : `(around:10000,${lat},${lon})`;
+          } else {
+            areaQ = `(around:10000,${lat},${lon})`;
+          }
+          const q = `[out:json][timeout:30];(node["tourism"~"attraction|museum|viewpoint|gallery|theme_park|zoo|aquarium"]${areaQ};node["historic"~"monument|castle|ruins|memorial"]${areaQ};node["leisure"~"park|garden"]${areaQ};way["tourism"~"attraction|museum|theme_park|zoo|aquarium"]${areaQ};way["historic"~"monument|castle|ruins"]${areaQ};);out center 50;`;
+          const ov = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`).then(r => r.json());
+          const list = (ov.elements || []).filter(e => e.tags?.name).map(e => {
             const tags = e.tags;
             const type = tags.tourism || tags.historic || tags.leisure || 'attraction';
+            const elat = e.lat ?? e.center?.lat;
+            const elon = e.lon ?? e.center?.lon;
             return {
               id: `${ci}_${e.id}`, name: tags['name:en'] || tags.name,
-              lat: e.lat, lon: e.lon, wikipedia: tags.wikipedia, photo: null,
+              lat: elat, lon: elon, wikipedia: tags.wikipedia, photo: null,
               type, cityIdx: ci,
             };
-          });
+          }).filter(p => p.lat && p.lon);
           allPlaces.push(...list);
         }
         setPlaces(allPlaces);
         setSelected(new Set(allPlaces.map(p => p.id)));
         setLoading(false);
+        // 사진 비동기 로드: wikipedia 태그 → Wikipedia API → 이름 검색 순 시도
         allPlaces.forEach(async (p, idx) => {
-          if (!p.wikipedia) return;
           try {
-            const t = p.wikipedia.replace(/^[a-z-]+:/,'').replace(/ /g,'_');
-            const d = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`).then(r=>r.json());
-            const photo = d.thumbnail?.source;
-            if (photo) setPlaces(prev => prev.map((pl,i) => i===idx ? {...pl,photo} : pl));
-          } catch(_) {}
+            let photo = null;
+            if (p.wikipedia) {
+              const t = p.wikipedia.replace(/^[a-z-]+:/, '').replace(/ /g, '_');
+              const d = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`).then(r => r.json());
+              photo = d.thumbnail?.source || null;
+            }
+            if (!photo) {
+              // 이름으로 Wikipedia 검색 fallback
+              const sr = await fetch(
+                `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(p.name)}&gsrlimit=1&prop=pageimages&format=json&pithumbsize=400&origin=*`
+              ).then(r => r.json());
+              const pages = sr.query?.pages;
+              if (pages) {
+                const pg = Object.values(pages)[0];
+                photo = pg?.thumbnail?.source || null;
+              }
+            }
+            if (photo) setPlaces(prev => prev.map((pl, i) => i === idx ? { ...pl, photo } : pl));
+          } catch (_) {}
         });
-      } catch(_) { setLoading(false); }
+      } catch (_) { setLoading(false); }
     })();
   }, [step]);
 
