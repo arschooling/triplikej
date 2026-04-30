@@ -950,6 +950,8 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
   const timer = React.useRef(null);
   const jumping = React.useRef(false);
   const scrolling = React.useRef(false);
+  const rafCancel = React.useRef(false);
+  const internalChange = React.useRef(false);
 
   // loop 모드: 아이템 3배 반복, 중간 set에서 시작
   const dispItems = React.useMemo(
@@ -964,8 +966,9 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
   const onChangeRef = React.useRef(onChange); onChangeRef.current = onChange;
   const loopRef     = React.useRef(loop);    loopRef.current     = loop;
 
-  // Sync external value → scroll position (only when value actually changes)
+  // Sync external value → scroll position (skip when changed internally by snap)
   React.useEffect(() => {
+    if (internalChange.current) { internalChange.current = false; return; }
     const el = ref.current; if (!el) return;
     const idx = itemsRef.current.indexOf(value);
     if (idx >= 0) el.scrollTop = (loopOff + idx) * ITEM_H;
@@ -981,7 +984,7 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
       const clamped  = Math.max(0, Math.min(total - 1, raw));
       // Fire onChange immediately so highlight follows scroll animation
       const earlyIdx = ((clamped % its.length) + its.length) % its.length;
-      if (its[earlyIdx] !== valueRef.current) onChangeRef.current(its[earlyIdx]);
+      if (its[earlyIdx] !== valueRef.current) { internalChange.current = true; onChangeRef.current(its[earlyIdx]); }
       el.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
@@ -997,7 +1000,7 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
     } else {
       const clamped = Math.max(0, Math.min(its.length - 1, raw));
       // Fire onChange immediately so highlight follows scroll animation
-      if (its[clamped] !== valueRef.current) onChangeRef.current(its[clamped]);
+      if (its[clamped] !== valueRef.current) { internalChange.current = true; onChangeRef.current(its[clamped]); }
       el.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
       clearTimeout(timer.current);
       timer.current = setTimeout(() => { scrolling.current = false; }, 350);
@@ -1009,13 +1012,13 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
     const el = ref.current; if (!el) return;
     let startY = null, startTop = 0, lastY = 0, lastT = 0, vel = 0;
     const onStart = e => {
-      el.scrollTop = el.scrollTop; // cancel any running smooth scroll
+      rafCancel.current = true;      // stop any running RAF decel
+      el.scrollTop = el.scrollTop;   // cancel any running smooth scroll
       clearTimeout(timer.current);
       scrolling.current = false;
       startY = lastY = e.touches[0].clientY;
       startTop = el.scrollTop;
       lastT = Date.now(); vel = 0;
-      clearTimeout(timer.current);
     };
     const onMove = e => {
       e.preventDefault(); // 페이지 스크롤 차단
@@ -1032,7 +1035,9 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
       let v = vel * 120;
       if (Math.abs(v) < 1) { snapAndFire(el, el.scrollTop); return; }
       scrolling.current = true;
+      rafCancel.current = false;
       const decel = () => {
+        if (rafCancel.current) return; // new touch started, abandon
         v *= 0.88;
         el.scrollTop += v;
         if (Math.abs(v) > 0.5) requestAnimationFrame(decel);
@@ -1984,7 +1989,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v311</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v312</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
