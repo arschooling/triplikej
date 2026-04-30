@@ -974,7 +974,6 @@ function WheelColumn({ items, value, onChange, width=70 }) {
       <div ref={ref} onScroll={handleScroll} className="wheel-col" style={{
         width:'100%', height:'100%', overflowY:'scroll',
         scrollSnapType:'y mandatory',
-        overscrollBehavior:'contain',
         scrollbarWidth:'none', msOverflowStyle:'none',
         padding: `${ITEM_H * CENTER_OFFSET}px 0`,
         boxSizing:'content-box',
@@ -1870,7 +1869,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v298</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v299</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7157,6 +7156,14 @@ function MiniCalendar({ startIso, endIso, onRange }) {
   const [picking, setPicking] = React.useState(false);
   const [pickY, setPickY] = React.useState(String(today.getFullYear()));
   const [pickM, setPickM] = React.useState(String(today.getMonth()));
+  const wheelContainerRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!picking) return;
+    const el = wheelContainerRef.current; if (!el) return;
+    const block = e => e.preventDefault();
+    el.addEventListener('touchmove', block, { passive: false });
+    return () => el.removeEventListener('touchmove', block);
+  }, [picking]);
   const todayIso = today.toISOString().slice(0, 10);
   const toIso    = (y, m, d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
   const dim      = new Date(vy, vm + 1, 0).getDate();
@@ -7209,9 +7216,7 @@ function MiniCalendar({ startIso, endIso, onRange }) {
       </div>
 
       {picking ? (
-        <div style={{ display:'flex', justifyContent:'center', gap:8 }}
-          onTouchStart={e => e.stopPropagation()}
-          onTouchMove={e => e.stopPropagation()}>
+        <div ref={wheelContainerRef} style={{ display:'flex', justifyContent:'center', gap:8 }}>
           <WheelColumn items={yearItems} value={pickY} onChange={setPickY} width={80}/>
           <WheelColumn items={monthItems} value={monthItems[+pickM]} onChange={v => setPickM(String(monthItems.indexOf(v)))} width={80}/>
         </div>

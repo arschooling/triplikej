@@ -2051,7 +2051,6 @@ function WheelColumn({
       height: '100%',
       overflowY: 'scroll',
       scrollSnapType: 'y mandatory',
-      overscrollBehavior: 'contain',
       scrollbarWidth: 'none',
       msOverflowStyle: 'none',
       padding: `${ITEM_H * CENTER_OFFSET}px 0`,
@@ -3881,7 +3880,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v298"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v299"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -14238,6 +14237,17 @@ function MiniCalendar({
   const [picking, setPicking] = React.useState(false);
   const [pickY, setPickY] = React.useState(String(today.getFullYear()));
   const [pickM, setPickM] = React.useState(String(today.getMonth()));
+  const wheelContainerRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!picking) return;
+    const el = wheelContainerRef.current;
+    if (!el) return;
+    const block = e => e.preventDefault();
+    el.addEventListener('touchmove', block, {
+      passive: false
+    });
+    return () => el.removeEventListener('touchmove', block);
+  }, [picking]);
   const todayIso = today.toISOString().slice(0, 10);
   const toIso = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   const dim = new Date(vy, vm + 1, 0).getDate();
@@ -14317,13 +14327,12 @@ function MiniCalendar({
       color: COLORS.ink
     }
   }, "\u203A")), picking ? /*#__PURE__*/React.createElement("div", {
+    ref: wheelContainerRef,
     style: {
       display: 'flex',
       justifyContent: 'center',
       gap: 8
-    },
-    onTouchStart: e => e.stopPropagation(),
-    onTouchMove: e => e.stopPropagation()
+    }
   }, /*#__PURE__*/React.createElement(WheelColumn, {
     items: yearItems,
     value: pickY,
