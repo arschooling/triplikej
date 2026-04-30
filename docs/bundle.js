@@ -4569,7 +4569,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v355"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v356"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -19117,7 +19117,7 @@ function NewTripSheet({
   if (!open) return null;
   const validCities = cities.filter(c => c.trim());
   const isLastCity = cityStep >= validCities.length - 1;
-  const canNext = step === 1 ? !!(selectedDest || destQuery.trim()) : step === 2 ? cities.some(c => c.trim()) : step === 3 ? !!(startIso && endIso) : true;
+  const canNext = step === 1 ? !!(selectedDest || destQuery.trim()) : step === 2 ? cities.some(c => c.trim()) : step === 3 ? !!(startIso && endIso) || calPicking : true;
 
   // 장소 우선순위 정렬 (wikipedia 유무 + 유형 중요도)
   const PLACE_TYPE_SCORE = {
