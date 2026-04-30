@@ -3905,7 +3905,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v329"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v330"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -14914,6 +14914,801 @@ const CITY_DB = [{
   currency: 'BRL',
   lat: -23.5505,
   lon: -46.6333
+},
+// 유럽
+{
+  key: 'norway',
+  kor: '노르웨이',
+  eng: 'Norway',
+  flag: '🇳🇴',
+  zone: 'Europe/Oslo',
+  currency: 'NOK',
+  lat: 59.9139,
+  lon: 10.7522
+}, {
+  key: 'sweden',
+  kor: '스웨덴',
+  eng: 'Sweden',
+  flag: '🇸🇪',
+  zone: 'Europe/Stockholm',
+  currency: 'SEK',
+  lat: 59.3293,
+  lon: 18.0686
+}, {
+  key: 'denmark',
+  kor: '덴마크',
+  eng: 'Denmark',
+  flag: '🇩🇰',
+  zone: 'Europe/Copenhagen',
+  currency: 'DKK',
+  lat: 55.6761,
+  lon: 12.5683
+}, {
+  key: 'finland',
+  kor: '핀란드',
+  eng: 'Finland',
+  flag: '🇫🇮',
+  zone: 'Europe/Helsinki',
+  currency: 'EUR',
+  lat: 60.1699,
+  lon: 24.9384
+}, {
+  key: 'iceland',
+  kor: '아이슬란드',
+  eng: 'Iceland',
+  flag: '🇮🇸',
+  zone: 'Atlantic/Reykjavik',
+  currency: 'ISK',
+  lat: 64.1265,
+  lon: -21.8174
+}, {
+  key: 'ireland',
+  kor: '아일랜드',
+  eng: 'Ireland',
+  flag: '🇮🇪',
+  zone: 'Europe/Dublin',
+  currency: 'EUR',
+  lat: 53.3498,
+  lon: -6.2603
+}, {
+  key: 'belgium',
+  kor: '벨기에',
+  eng: 'Belgium',
+  flag: '🇧🇪',
+  zone: 'Europe/Brussels',
+  currency: 'EUR',
+  lat: 50.8503,
+  lon: 4.3517
+}, {
+  key: 'luxembourg',
+  kor: '룩셈부르크',
+  eng: 'Luxembourg',
+  flag: '🇱🇺',
+  zone: 'Europe/Luxembourg',
+  currency: 'EUR',
+  lat: 49.6116,
+  lon: 6.1319
+}, {
+  key: 'poland',
+  kor: '폴란드',
+  eng: 'Poland',
+  flag: '🇵🇱',
+  zone: 'Europe/Warsaw',
+  currency: 'PLN',
+  lat: 52.2297,
+  lon: 21.0122
+}, {
+  key: 'hungary',
+  kor: '헝가리',
+  eng: 'Hungary',
+  flag: '🇭🇺',
+  zone: 'Europe/Budapest',
+  currency: 'HUF',
+  lat: 47.4979,
+  lon: 19.0402
+}, {
+  key: 'slovakia',
+  kor: '슬로바키아',
+  eng: 'Slovakia',
+  flag: '🇸🇰',
+  zone: 'Europe/Bratislava',
+  currency: 'EUR',
+  lat: 48.1486,
+  lon: 17.1077
+}, {
+  key: 'slovenia',
+  kor: '슬로베니아',
+  eng: 'Slovenia',
+  flag: '🇸🇮',
+  zone: 'Europe/Ljubljana',
+  currency: 'EUR',
+  lat: 46.0569,
+  lon: 14.5058
+}, {
+  key: 'romania',
+  kor: '루마니아',
+  eng: 'Romania',
+  flag: '🇷🇴',
+  zone: 'Europe/Bucharest',
+  currency: 'RON',
+  lat: 44.4268,
+  lon: 26.1025
+}, {
+  key: 'bulgaria',
+  kor: '불가리아',
+  eng: 'Bulgaria',
+  flag: '🇧🇬',
+  zone: 'Europe/Sofia',
+  currency: 'BGN',
+  lat: 42.6977,
+  lon: 23.3219
+}, {
+  key: 'serbia',
+  kor: '세르비아',
+  eng: 'Serbia',
+  flag: '🇷🇸',
+  zone: 'Europe/Belgrade',
+  currency: 'RSD',
+  lat: 44.8176,
+  lon: 20.4633
+}, {
+  key: 'bosnia',
+  kor: '보스니아',
+  eng: 'Bosnia',
+  flag: '🇧🇦',
+  zone: 'Europe/Sarajevo',
+  currency: 'BAM',
+  lat: 43.8563,
+  lon: 18.4131
+}, {
+  key: 'montenegro',
+  kor: '몬테네그로',
+  eng: 'Montenegro',
+  flag: '🇲🇪',
+  zone: 'Europe/Podgorica',
+  currency: 'EUR',
+  lat: 42.4304,
+  lon: 19.2594
+}, {
+  key: 'albania',
+  kor: '알바니아',
+  eng: 'Albania',
+  flag: '🇦🇱',
+  zone: 'Europe/Tirane',
+  currency: 'ALL',
+  lat: 41.3275,
+  lon: 19.8187
+}, {
+  key: 'northmacedonia',
+  kor: '북마케도니아',
+  eng: 'North Macedonia',
+  flag: '🇲🇰',
+  zone: 'Europe/Skopje',
+  currency: 'MKD',
+  lat: 41.9981,
+  lon: 21.4254
+}, {
+  key: 'estonia',
+  kor: '에스토니아',
+  eng: 'Estonia',
+  flag: '🇪🇪',
+  zone: 'Europe/Tallinn',
+  currency: 'EUR',
+  lat: 59.4370,
+  lon: 24.7536
+}, {
+  key: 'latvia',
+  kor: '라트비아',
+  eng: 'Latvia',
+  flag: '🇱🇻',
+  zone: 'Europe/Riga',
+  currency: 'EUR',
+  lat: 56.9496,
+  lon: 24.1052
+}, {
+  key: 'lithuania',
+  kor: '리투아니아',
+  eng: 'Lithuania',
+  flag: '🇱🇹',
+  zone: 'Europe/Vilnius',
+  currency: 'EUR',
+  lat: 54.6872,
+  lon: 25.2797
+}, {
+  key: 'russia',
+  kor: '러시아',
+  eng: 'Russia',
+  flag: '🇷🇺',
+  zone: 'Europe/Moscow',
+  currency: 'RUB',
+  lat: 55.7558,
+  lon: 37.6173
+}, {
+  key: 'ukraine',
+  kor: '우크라이나',
+  eng: 'Ukraine',
+  flag: '🇺🇦',
+  zone: 'Europe/Kiev',
+  currency: 'UAH',
+  lat: 50.4501,
+  lon: 30.5234
+}, {
+  key: 'malta',
+  kor: '몰타',
+  eng: 'Malta',
+  flag: '🇲🇹',
+  zone: 'Europe/Malta',
+  currency: 'EUR',
+  lat: 35.8997,
+  lon: 14.5147
+}, {
+  key: 'cyprus',
+  kor: '키프로스',
+  eng: 'Cyprus',
+  flag: '🇨🇾',
+  zone: 'Asia/Nicosia',
+  currency: 'EUR',
+  lat: 35.1856,
+  lon: 33.3823
+}, {
+  key: 'monaco',
+  kor: '모나코',
+  eng: 'Monaco',
+  flag: '🇲🇨',
+  zone: 'Europe/Monaco',
+  currency: 'EUR',
+  lat: 43.7384,
+  lon: 7.4246
+}, {
+  key: 'andorra',
+  kor: '안도라',
+  eng: 'Andorra',
+  flag: '🇦🇩',
+  zone: 'Europe/Andorra',
+  currency: 'EUR',
+  lat: 42.5063,
+  lon: 1.5218
+}, {
+  key: 'georgia',
+  kor: '조지아',
+  eng: 'Georgia',
+  flag: '🇬🇪',
+  zone: 'Asia/Tbilisi',
+  currency: 'GEL',
+  lat: 41.6938,
+  lon: 44.8015
+}, {
+  key: 'armenia',
+  kor: '아르메니아',
+  eng: 'Armenia',
+  flag: '🇦🇲',
+  zone: 'Asia/Yerevan',
+  currency: 'AMD',
+  lat: 40.1872,
+  lon: 44.5152
+}, {
+  key: 'azerbaijan',
+  kor: '아제르바이잔',
+  eng: 'Azerbaijan',
+  flag: '🇦🇿',
+  zone: 'Asia/Baku',
+  currency: 'AZN',
+  lat: 40.4093,
+  lon: 49.8671
+},
+// 중동
+{
+  key: 'israel',
+  kor: '이스라엘',
+  eng: 'Israel',
+  flag: '🇮🇱',
+  zone: 'Asia/Jerusalem',
+  currency: 'ILS',
+  lat: 31.7683,
+  lon: 35.2137
+}, {
+  key: 'jordan',
+  kor: '요르단',
+  eng: 'Jordan',
+  flag: '🇯🇴',
+  zone: 'Asia/Amman',
+  currency: 'JOD',
+  lat: 31.9539,
+  lon: 35.9106
+}, {
+  key: 'lebanon',
+  kor: '레바논',
+  eng: 'Lebanon',
+  flag: '🇱🇧',
+  zone: 'Asia/Beirut',
+  currency: 'LBP',
+  lat: 33.8886,
+  lon: 35.4955
+}, {
+  key: 'saudi',
+  kor: '사우디아라비아',
+  eng: 'Saudi Arabia',
+  flag: '🇸🇦',
+  zone: 'Asia/Riyadh',
+  currency: 'SAR',
+  lat: 24.7136,
+  lon: 46.6753
+}, {
+  key: 'qatar',
+  kor: '카타르',
+  eng: 'Qatar',
+  flag: '🇶🇦',
+  zone: 'Asia/Qatar',
+  currency: 'QAR',
+  lat: 25.2854,
+  lon: 51.5310
+}, {
+  key: 'kuwait',
+  kor: '쿠웨이트',
+  eng: 'Kuwait',
+  flag: '🇰🇼',
+  zone: 'Asia/Kuwait',
+  currency: 'KWD',
+  lat: 29.3759,
+  lon: 47.9774
+}, {
+  key: 'bahrain',
+  kor: '바레인',
+  eng: 'Bahrain',
+  flag: '🇧🇭',
+  zone: 'Asia/Bahrain',
+  currency: 'BHD',
+  lat: 26.0667,
+  lon: 50.5577
+}, {
+  key: 'oman',
+  kor: '오만',
+  eng: 'Oman',
+  flag: '🇴🇲',
+  zone: 'Asia/Muscat',
+  currency: 'OMR',
+  lat: 23.5880,
+  lon: 58.3829
+}, {
+  key: 'iran',
+  kor: '이란',
+  eng: 'Iran',
+  flag: '🇮🇷',
+  zone: 'Asia/Tehran',
+  currency: 'IRR',
+  lat: 35.6892,
+  lon: 51.3890
+},
+// 아시아
+{
+  key: 'myanmar',
+  kor: '미얀마',
+  eng: 'Myanmar',
+  flag: '🇲🇲',
+  zone: 'Asia/Rangoon',
+  currency: 'MMK',
+  lat: 16.8661,
+  lon: 96.1951
+}, {
+  key: 'laos',
+  kor: '라오스',
+  eng: 'Laos',
+  flag: '🇱🇦',
+  zone: 'Asia/Vientiane',
+  currency: 'LAK',
+  lat: 17.9757,
+  lon: 102.6331
+}, {
+  key: 'mongolia',
+  kor: '몽골',
+  eng: 'Mongolia',
+  flag: '🇲🇳',
+  zone: 'Asia/Ulaanbaatar',
+  currency: 'MNT',
+  lat: 47.8864,
+  lon: 106.9057
+}, {
+  key: 'nepal',
+  kor: '네팔',
+  eng: 'Nepal',
+  flag: '🇳🇵',
+  zone: 'Asia/Kathmandu',
+  currency: 'NPR',
+  lat: 27.7172,
+  lon: 85.3240
+}, {
+  key: 'srilanka',
+  kor: '스리랑카',
+  eng: 'Sri Lanka',
+  flag: '🇱🇰',
+  zone: 'Asia/Colombo',
+  currency: 'LKR',
+  lat: 6.9271,
+  lon: 79.8612
+}, {
+  key: 'bangladesh',
+  kor: '방글라데시',
+  eng: 'Bangladesh',
+  flag: '🇧🇩',
+  zone: 'Asia/Dhaka',
+  currency: 'BDT',
+  lat: 23.8103,
+  lon: 90.4125
+}, {
+  key: 'pakistan',
+  kor: '파키스탄',
+  eng: 'Pakistan',
+  flag: '🇵🇰',
+  zone: 'Asia/Karachi',
+  currency: 'PKR',
+  lat: 33.6844,
+  lon: 73.0479
+}, {
+  key: 'bhutan',
+  kor: '부탄',
+  eng: 'Bhutan',
+  flag: '🇧🇹',
+  zone: 'Asia/Thimphu',
+  currency: 'BTN',
+  lat: 27.4712,
+  lon: 89.6339
+}, {
+  key: 'macau',
+  kor: '마카오',
+  eng: 'Macau',
+  flag: '🇲🇴',
+  zone: 'Asia/Macau',
+  currency: 'MOP',
+  lat: 22.1987,
+  lon: 113.5439
+}, {
+  key: 'kazakhstan',
+  kor: '카자흐스탄',
+  eng: 'Kazakhstan',
+  flag: '🇰🇿',
+  zone: 'Asia/Almaty',
+  currency: 'KZT',
+  lat: 51.1801,
+  lon: 71.4460
+}, {
+  key: 'uzbekistan',
+  kor: '우즈베키스탄',
+  eng: 'Uzbekistan',
+  flag: '🇺🇿',
+  zone: 'Asia/Tashkent',
+  currency: 'UZS',
+  lat: 41.2995,
+  lon: 69.2401
+}, {
+  key: 'kyrgyzstan',
+  kor: '키르기스스탄',
+  eng: 'Kyrgyzstan',
+  flag: '🇰🇬',
+  zone: 'Asia/Bishkek',
+  currency: 'KGS',
+  lat: 42.8746,
+  lon: 74.5698
+},
+// 아프리카
+{
+  key: 'egypt',
+  kor: '이집트',
+  eng: 'Egypt',
+  flag: '🇪🇬',
+  zone: 'Africa/Cairo',
+  currency: 'EGP',
+  lat: 30.0444,
+  lon: 31.2357
+}, {
+  key: 'southafrica',
+  kor: '남아프리카공화국',
+  eng: 'South Africa',
+  flag: '🇿🇦',
+  zone: 'Africa/Johannesburg',
+  currency: 'ZAR',
+  lat: -25.7479,
+  lon: 28.2293
+}, {
+  key: 'kenya',
+  kor: '케냐',
+  eng: 'Kenya',
+  flag: '🇰🇪',
+  zone: 'Africa/Nairobi',
+  currency: 'KES',
+  lat: -1.2921,
+  lon: 36.8219
+}, {
+  key: 'tanzania',
+  kor: '탄자니아',
+  eng: 'Tanzania',
+  flag: '🇹🇿',
+  zone: 'Africa/Dar_es_Salaam',
+  currency: 'TZS',
+  lat: -6.7924,
+  lon: 39.2083
+}, {
+  key: 'ethiopia',
+  kor: '에티오피아',
+  eng: 'Ethiopia',
+  flag: '🇪🇹',
+  zone: 'Africa/Addis_Ababa',
+  currency: 'ETB',
+  lat: 9.0320,
+  lon: 38.7469
+}, {
+  key: 'tunisia',
+  kor: '튀니지',
+  eng: 'Tunisia',
+  flag: '🇹🇳',
+  zone: 'Africa/Tunis',
+  currency: 'TND',
+  lat: 36.8065,
+  lon: 10.1815
+}, {
+  key: 'ghana',
+  kor: '가나',
+  eng: 'Ghana',
+  flag: '🇬🇭',
+  zone: 'Africa/Accra',
+  currency: 'GHS',
+  lat: 5.6037,
+  lon: -0.1870
+}, {
+  key: 'nigeria',
+  kor: '나이지리아',
+  eng: 'Nigeria',
+  flag: '🇳🇬',
+  zone: 'Africa/Lagos',
+  currency: 'NGN',
+  lat: 6.5244,
+  lon: 3.3792
+}, {
+  key: 'senegal',
+  kor: '세네갈',
+  eng: 'Senegal',
+  flag: '🇸🇳',
+  zone: 'Africa/Dakar',
+  currency: 'XOF',
+  lat: 14.7167,
+  lon: -17.4677
+}, {
+  key: 'mauritius',
+  kor: '모리셔스',
+  eng: 'Mauritius',
+  flag: '🇲🇺',
+  zone: 'Indian/Mauritius',
+  currency: 'MUR',
+  lat: -20.1609,
+  lon: 57.4977
+}, {
+  key: 'seychelles',
+  kor: '세이셸',
+  eng: 'Seychelles',
+  flag: '🇸🇨',
+  zone: 'Indian/Mahe',
+  currency: 'SCR',
+  lat: -4.6796,
+  lon: 55.4920
+}, {
+  key: 'madagascar',
+  kor: '마다가스카르',
+  eng: 'Madagascar',
+  flag: '🇲🇬',
+  zone: 'Indian/Antananarivo',
+  currency: 'MGA',
+  lat: -18.9137,
+  lon: 47.5361
+}, {
+  key: 'zimbabwe',
+  kor: '짐바브웨',
+  eng: 'Zimbabwe',
+  flag: '🇿🇼',
+  zone: 'Africa/Harare',
+  currency: 'USD',
+  lat: -17.8252,
+  lon: 31.0335
+}, {
+  key: 'zambia',
+  kor: '잠비아',
+  eng: 'Zambia',
+  flag: '🇿🇲',
+  zone: 'Africa/Lusaka',
+  currency: 'ZMW',
+  lat: -15.4167,
+  lon: 28.2833
+}, {
+  key: 'algeria',
+  kor: '알제리',
+  eng: 'Algeria',
+  flag: '🇩🇿',
+  zone: 'Africa/Algiers',
+  currency: 'DZD',
+  lat: 36.7372,
+  lon: 3.0865
+}, {
+  key: 'uganda',
+  kor: '우간다',
+  eng: 'Uganda',
+  flag: '🇺🇬',
+  zone: 'Africa/Kampala',
+  currency: 'UGX',
+  lat: 0.3476,
+  lon: 32.5825
+},
+// 아메리카
+{
+  key: 'argentina',
+  kor: '아르헨티나',
+  eng: 'Argentina',
+  flag: '🇦🇷',
+  zone: 'America/Argentina/Buenos_Aires',
+  currency: 'ARS',
+  lat: -34.6037,
+  lon: -58.3816
+}, {
+  key: 'chile',
+  kor: '칠레',
+  eng: 'Chile',
+  flag: '🇨🇱',
+  zone: 'America/Santiago',
+  currency: 'CLP',
+  lat: -33.4489,
+  lon: -70.6693
+}, {
+  key: 'colombia',
+  kor: '콜롬비아',
+  eng: 'Colombia',
+  flag: '🇨🇴',
+  zone: 'America/Bogota',
+  currency: 'COP',
+  lat: 4.7110,
+  lon: -74.0721
+}, {
+  key: 'ecuador',
+  kor: '에콰도르',
+  eng: 'Ecuador',
+  flag: '🇪🇨',
+  zone: 'America/Guayaquil',
+  currency: 'USD',
+  lat: -0.1807,
+  lon: -78.4678
+}, {
+  key: 'bolivia',
+  kor: '볼리비아',
+  eng: 'Bolivia',
+  flag: '🇧🇴',
+  zone: 'America/La_Paz',
+  currency: 'BOB',
+  lat: -16.5000,
+  lon: -68.1500
+}, {
+  key: 'uruguay',
+  kor: '우루과이',
+  eng: 'Uruguay',
+  flag: '🇺🇾',
+  zone: 'America/Montevideo',
+  currency: 'UYU',
+  lat: -34.9011,
+  lon: -56.1645
+}, {
+  key: 'paraguay',
+  kor: '파라과이',
+  eng: 'Paraguay',
+  flag: '🇵🇾',
+  zone: 'America/Asuncion',
+  currency: 'PYG',
+  lat: -25.2637,
+  lon: -57.5759
+}, {
+  key: 'venezuela',
+  kor: '베네수엘라',
+  eng: 'Venezuela',
+  flag: '🇻🇪',
+  zone: 'America/Caracas',
+  currency: 'VES',
+  lat: 10.4806,
+  lon: -66.9036
+}, {
+  key: 'cuba',
+  kor: '쿠바',
+  eng: 'Cuba',
+  flag: '🇨🇺',
+  zone: 'America/Havana',
+  currency: 'CUP',
+  lat: 23.1136,
+  lon: -82.3666
+}, {
+  key: 'dominican',
+  kor: '도미니카공화국',
+  eng: 'Dominican Republic',
+  flag: '🇩🇴',
+  zone: 'America/Santo_Domingo',
+  currency: 'DOP',
+  lat: 18.4861,
+  lon: -69.9312
+}, {
+  key: 'jamaica',
+  kor: '자메이카',
+  eng: 'Jamaica',
+  flag: '🇯🇲',
+  zone: 'America/Jamaica',
+  currency: 'JMD',
+  lat: 17.9988,
+  lon: -76.7932
+}, {
+  key: 'costarica',
+  kor: '코스타리카',
+  eng: 'Costa Rica',
+  flag: '🇨🇷',
+  zone: 'America/Costa_Rica',
+  currency: 'CRC',
+  lat: 9.9281,
+  lon: -84.0907
+}, {
+  key: 'panama',
+  kor: '파나마',
+  eng: 'Panama',
+  flag: '🇵🇦',
+  zone: 'America/Panama',
+  currency: 'USD',
+  lat: 8.9943,
+  lon: -79.5188
+}, {
+  key: 'guatemala',
+  kor: '과테말라',
+  eng: 'Guatemala',
+  flag: '🇬🇹',
+  zone: 'America/Guatemala',
+  currency: 'GTQ',
+  lat: 14.6349,
+  lon: -90.5069
+},
+// 오세아니아
+{
+  key: 'fiji',
+  kor: '피지',
+  eng: 'Fiji',
+  flag: '🇫🇯',
+  zone: 'Pacific/Fiji',
+  currency: 'FJD',
+  lat: -18.1248,
+  lon: 178.4501
+}, {
+  key: 'samoa',
+  kor: '사모아',
+  eng: 'Samoa',
+  flag: '🇼🇸',
+  zone: 'Pacific/Apia',
+  currency: 'WST',
+  lat: -13.8506,
+  lon: -171.7513
+}, {
+  key: 'palau',
+  kor: '팔라우',
+  eng: 'Palau',
+  flag: '🇵🇼',
+  zone: 'Pacific/Palau',
+  currency: 'USD',
+  lat: 7.5149,
+  lon: 134.5825
+}, {
+  key: 'guam',
+  kor: '괌',
+  eng: 'Guam',
+  flag: '🇬🇺',
+  zone: 'Pacific/Guam',
+  currency: 'USD',
+  lat: 13.4443,
+  lon: 144.7937
+}, {
+  key: 'saipan',
+  kor: '사이판',
+  eng: 'Saipan',
+  flag: '🇲🇵',
+  zone: 'Pacific/Saipan',
+  currency: 'USD',
+  lat: 15.1778,
+  lon: 145.7553
 }];
 const CITIES_BY_KEY = {
   japan: [{
@@ -15603,6 +16398,544 @@ const CITIES_BY_KEY = {
   }, {
     kor: '이과수',
     eng: 'Iguazu'
+  }],
+  // 신규 추가 나라 도시
+  norway: [{
+    kor: '오슬로',
+    eng: 'Oslo'
+  }, {
+    kor: '베르겐',
+    eng: 'Bergen'
+  }, {
+    kor: '트롬소',
+    eng: 'Tromsø'
+  }, {
+    kor: '플롬',
+    eng: 'Flam'
+  }, {
+    kor: '오레순',
+    eng: 'Ålesund'
+  }],
+  sweden: [{
+    kor: '스톡홀름',
+    eng: 'Stockholm'
+  }, {
+    kor: '예테보리',
+    eng: 'Gothenburg'
+  }, {
+    kor: '말뫼',
+    eng: 'Malmö'
+  }, {
+    kor: '우살라',
+    eng: 'Uppsala'
+  }],
+  denmark: [{
+    kor: '코펜하겐',
+    eng: 'Copenhagen'
+  }, {
+    kor: '오르후스',
+    eng: 'Aarhus'
+  }, {
+    kor: '오덴세',
+    eng: 'Odense'
+  }],
+  finland: [{
+    kor: '헬싱키',
+    eng: 'Helsinki'
+  }, {
+    kor: '로바니에미',
+    eng: 'Rovaniemi'
+  }, {
+    kor: '탐페레',
+    eng: 'Tampere'
+  }, {
+    kor: '투르쿠',
+    eng: 'Turku'
+  }],
+  iceland: [{
+    kor: '레이캬비크',
+    eng: 'Reykjavik'
+  }, {
+    kor: '아쿠레이리',
+    eng: 'Akureyri'
+  }, {
+    kor: '블루라군',
+    eng: 'Blue Lagoon'
+  }, {
+    kor: '비크',
+    eng: 'Vik'
+  }],
+  ireland: [{
+    kor: '더블린',
+    eng: 'Dublin'
+  }, {
+    kor: '코크',
+    eng: 'Cork'
+  }, {
+    kor: '갤웨이',
+    eng: 'Galway'
+  }, {
+    kor: '킬라니',
+    eng: 'Killarney'
+  }],
+  belgium: [{
+    kor: '브뤼셀',
+    eng: 'Brussels'
+  }, {
+    kor: '브뤼헤',
+    eng: 'Bruges'
+  }, {
+    kor: '겐트',
+    eng: 'Ghent'
+  }, {
+    kor: '안트베르펜',
+    eng: 'Antwerp'
+  }],
+  poland: [{
+    kor: '바르샤바',
+    eng: 'Warsaw'
+  }, {
+    kor: '크라쿠프',
+    eng: 'Krakow'
+  }, {
+    kor: '그단스크',
+    eng: 'Gdansk'
+  }, {
+    kor: '브로츠와프',
+    eng: 'Wroclaw'
+  }],
+  hungary: [{
+    kor: '부다페스트',
+    eng: 'Budapest'
+  }, {
+    kor: '에게르',
+    eng: 'Eger'
+  }, {
+    kor: '페치',
+    eng: 'Pécs'
+  }],
+  czechia: [{
+    kor: '프라하',
+    eng: 'Prague'
+  }, {
+    kor: '체스키크룸로프',
+    eng: 'Cesky Krumlov'
+  }, {
+    kor: '브르노',
+    eng: 'Brno'
+  }],
+  romania: [{
+    kor: '부쿠레슈티',
+    eng: 'Bucharest'
+  }, {
+    kor: '브라쇼프',
+    eng: 'Brasov'
+  }, {
+    kor: '시기쇼아라',
+    eng: 'Sighisoara'
+  }, {
+    kor: '시나이아',
+    eng: 'Sinaia'
+  }],
+  bulgaria: [{
+    kor: '소피아',
+    eng: 'Sofia'
+  }, {
+    kor: '플로브디프',
+    eng: 'Plovdiv'
+  }, {
+    kor: '바르나',
+    eng: 'Varna'
+  }, {
+    kor: '벨리코투르노보',
+    eng: 'Veliko Tarnovo'
+  }],
+  serbia: [{
+    kor: '베오그라드',
+    eng: 'Belgrade'
+  }, {
+    kor: '노비사드',
+    eng: 'Novi Sad'
+  }],
+  montenegro: [{
+    kor: '코토르',
+    eng: 'Kotor'
+  }, {
+    kor: '부드바',
+    eng: 'Budva'
+  }, {
+    kor: '포드고리차',
+    eng: 'Podgorica'
+  }],
+  albania: [{
+    kor: '티라나',
+    eng: 'Tirana'
+  }, {
+    kor: '베라트',
+    eng: 'Berat'
+  }, {
+    kor: '지로카스터',
+    eng: 'Gjirokastër'
+  }],
+  georgia: [{
+    kor: '트빌리시',
+    eng: 'Tbilisi'
+  }, {
+    kor: '바투미',
+    eng: 'Batumi'
+  }, {
+    kor: '카즈베기',
+    eng: 'Kazbegi'
+  }, {
+    kor: '쿠타이시',
+    eng: 'Kutaisi'
+  }],
+  armenia: [{
+    kor: '예레반',
+    eng: 'Yerevan'
+  }, {
+    kor: '가르니',
+    eng: 'Garni'
+  }, {
+    kor: '딜리잔',
+    eng: 'Dilijan'
+  }],
+  azerbaijan: [{
+    kor: '바쿠',
+    eng: 'Baku'
+  }, {
+    kor: '셰키',
+    eng: 'Sheki'
+  }, {
+    kor: '가바라',
+    eng: 'Gabala'
+  }],
+  israel: [{
+    kor: '텔아비브',
+    eng: 'Tel Aviv'
+  }, {
+    kor: '예루살렘',
+    eng: 'Jerusalem'
+  }, {
+    kor: '하이파',
+    eng: 'Haifa'
+  }, {
+    kor: '에일라트',
+    eng: 'Eilat'
+  }],
+  jordan: [{
+    kor: '암만',
+    eng: 'Amman'
+  }, {
+    kor: '페트라',
+    eng: 'Petra'
+  }, {
+    kor: '아카바',
+    eng: 'Aqaba'
+  }, {
+    kor: '와디럼',
+    eng: 'Wadi Rum'
+  }],
+  saudi: [{
+    kor: '리야드',
+    eng: 'Riyadh'
+  }, {
+    kor: '제다',
+    eng: 'Jeddah'
+  }, {
+    kor: '알울라',
+    eng: 'AlUla'
+  }],
+  qatar: [{
+    kor: '도하',
+    eng: 'Doha'
+  }],
+  oman: [{
+    kor: '무스카트',
+    eng: 'Muscat'
+  }, {
+    kor: '니즈와',
+    eng: 'Nizwa'
+  }, {
+    kor: '살랄라',
+    eng: 'Salalah'
+  }],
+  egypt: [{
+    kor: '카이로',
+    eng: 'Cairo'
+  }, {
+    kor: '룩소르',
+    eng: 'Luxor'
+  }, {
+    kor: '아스완',
+    eng: 'Aswan'
+  }, {
+    kor: '알렉산드리아',
+    eng: 'Alexandria'
+  }, {
+    kor: '샤름엘셰이크',
+    eng: 'Sharm el-Sheikh'
+  }, {
+    kor: '후르가다',
+    eng: 'Hurghada'
+  }],
+  southafrica: [{
+    kor: '케이프타운',
+    eng: 'Cape Town'
+  }, {
+    kor: '요하네스버그',
+    eng: 'Johannesburg'
+  }, {
+    kor: '더반',
+    eng: 'Durban'
+  }, {
+    kor: '가든루트',
+    eng: 'Garden Route'
+  }],
+  kenya: [{
+    kor: '나이로비',
+    eng: 'Nairobi'
+  }, {
+    kor: '몸바사',
+    eng: 'Mombasa'
+  }, {
+    kor: '마사이마라',
+    eng: 'Maasai Mara'
+  }, {
+    kor: '암보셀리',
+    eng: 'Amboseli'
+  }],
+  tanzania: [{
+    kor: '다르에스살람',
+    eng: 'Dar es Salaam'
+  }, {
+    kor: '잔지바르',
+    eng: 'Zanzibar'
+  }, {
+    kor: '세렝게티',
+    eng: 'Serengeti'
+  }, {
+    kor: '킬리만자로',
+    eng: 'Kilimanjaro'
+  }],
+  mauritius: [{
+    kor: '포르루이',
+    eng: 'Port Louis'
+  }, {
+    kor: '그랑바이',
+    eng: 'Grand Baie'
+  }, {
+    kor: '플리크앙플락',
+    eng: 'Flic en Flac'
+  }],
+  seychelles: [{
+    kor: '마헤',
+    eng: 'Mahe'
+  }, {
+    kor: '프라슬랑',
+    eng: 'Praslin'
+  }, {
+    kor: '라디그',
+    eng: 'La Digue'
+  }],
+  myanmar: [{
+    kor: '양곤',
+    eng: 'Yangon'
+  }, {
+    kor: '바간',
+    eng: 'Bagan'
+  }, {
+    kor: '만달레이',
+    eng: 'Mandalay'
+  }, {
+    kor: '인레호수',
+    eng: 'Inle Lake'
+  }],
+  laos: [{
+    kor: '루앙프라방',
+    eng: 'Luang Prabang'
+  }, {
+    kor: '비엔티안',
+    eng: 'Vientiane'
+  }, {
+    kor: '방비엥',
+    eng: 'Vang Vieng'
+  }],
+  mongolia: [{
+    kor: '울란바토르',
+    eng: 'Ulaanbaatar'
+  }, {
+    kor: '고비사막',
+    eng: 'Gobi Desert'
+  }, {
+    kor: '테렐지',
+    eng: 'Terelj'
+  }],
+  nepal: [{
+    kor: '카트만두',
+    eng: 'Kathmandu'
+  }, {
+    kor: '포카라',
+    eng: 'Pokhara'
+  }, {
+    kor: '치트완',
+    eng: 'Chitwan'
+  }],
+  srilanka: [{
+    kor: '콜롬보',
+    eng: 'Colombo'
+  }, {
+    kor: '캔디',
+    eng: 'Kandy'
+  }, {
+    kor: '시기리야',
+    eng: 'Sigiriya'
+  }, {
+    kor: '갈레',
+    eng: 'Galle'
+  }, {
+    kor: '엘라',
+    eng: 'Ella'
+  }],
+  bhutan: [{
+    kor: '팀부',
+    eng: 'Thimphu'
+  }, {
+    kor: '파로',
+    eng: 'Paro'
+  }, {
+    kor: '푸나카',
+    eng: 'Punakha'
+  }],
+  macau: [{
+    kor: '마카오',
+    eng: 'Macau'
+  }],
+  argentina: [{
+    kor: '부에노스아이레스',
+    eng: 'Buenos Aires'
+  }, {
+    kor: '바릴로체',
+    eng: 'Bariloche'
+  }, {
+    kor: '이과수',
+    eng: 'Iguazu'
+  }, {
+    kor: '파타고니아',
+    eng: 'Patagonia'
+  }, {
+    kor: '멘도사',
+    eng: 'Mendoza'
+  }],
+  chile: [{
+    kor: '산티아고',
+    eng: 'Santiago'
+  }, {
+    kor: '발파라이소',
+    eng: 'Valparaiso'
+  }, {
+    kor: '아타카마',
+    eng: 'Atacama'
+  }, {
+    kor: '파타고니아',
+    eng: 'Patagonia'
+  }, {
+    kor: '부활절섬',
+    eng: 'Easter Island'
+  }],
+  colombia: [{
+    kor: '보고타',
+    eng: 'Bogota'
+  }, {
+    kor: '메데진',
+    eng: 'Medellin'
+  }, {
+    kor: '카르타헤나',
+    eng: 'Cartagena'
+  }, {
+    kor: '칼리',
+    eng: 'Cali'
+  }],
+  ecuador: [{
+    kor: '키토',
+    eng: 'Quito'
+  }, {
+    kor: '과야킬',
+    eng: 'Guayaquil'
+  }, {
+    kor: '갈라파고스',
+    eng: 'Galapagos'
+  }],
+  cuba: [{
+    kor: '아바나',
+    eng: 'Havana'
+  }, {
+    kor: '트리니다드',
+    eng: 'Trinidad'
+  }, {
+    kor: '바라데로',
+    eng: 'Varadero'
+  }],
+  costarica: [{
+    kor: '산호세',
+    eng: 'San Jose'
+  }, {
+    kor: '마누엘안토니오',
+    eng: 'Manuel Antonio'
+  }, {
+    kor: '아레날',
+    eng: 'Arenal'
+  }, {
+    kor: '몬테베르데',
+    eng: 'Monteverde'
+  }],
+  panama: [{
+    kor: '파나마시티',
+    eng: 'Panama City'
+  }, {
+    kor: '보카스델토로',
+    eng: 'Bocas del Toro'
+  }],
+  dominican: [{
+    kor: '산토도밍고',
+    eng: 'Santo Domingo'
+  }, {
+    kor: '푼타카나',
+    eng: 'Punta Cana'
+  }, {
+    kor: '라스테레나스',
+    eng: 'Las Terrenas'
+  }],
+  fiji: [{
+    kor: '나디',
+    eng: 'Nadi'
+  }, {
+    kor: '수바',
+    eng: 'Suva'
+  }, {
+    kor: '마나섬',
+    eng: 'Mana Island'
+  }],
+  guam: [{
+    kor: '투몬',
+    eng: 'Tumon'
+  }, {
+    kor: '아가냐',
+    eng: 'Hagåtña'
+  }],
+  saipan: [{
+    kor: '가라판',
+    eng: 'Garapan'
+  }, {
+    kor: '마나가하섬',
+    eng: 'Managaha Island'
+  }],
+  palau: [{
+    kor: '코로르',
+    eng: 'Koror'
+  }, {
+    kor: '록아일랜드',
+    eng: 'Rock Islands'
   }]
 };
 function NewTripSheet({
@@ -15737,7 +17070,7 @@ function NewTripSheet({
     })();
   }, [step]);
   if (!open) return null;
-  const canNext = step === 1 ? !!selectedDest : step === 2 ? cities.some(c => c.trim()) : step === 3 ? !!(startIso && endIso) : true;
+  const canNext = step === 1 ? !!(selectedDest || destQuery.trim()) : step === 2 ? cities.some(c => c.trim()) : step === 3 ? !!(startIso && endIso) : true;
   const TITLES = {
     1: '어느 나라로 가요?',
     2: '도시를 알려줘요',
@@ -15747,12 +17080,37 @@ function NewTripSheet({
     6: '가고 싶은 곳을 골라요'
   };
   const handleNext = () => {
-    if (step === 1) setCities(['']);
+    if (step === 1) {
+      // DB에 없는 나라도 허용 — destQuery로 최소 selectedDest 생성
+      if (!selectedDest && destQuery.trim()) {
+        setSelectedDest({
+          key: 'custom',
+          kor: destQuery.trim(),
+          eng: destQuery.trim(),
+          flag: '🌍',
+          zone: null,
+          currency: 'USD',
+          lat: 0,
+          lon: 0
+        });
+      }
+      setCities(['']);
+    }
     if (step < TOTAL) {
       setStep(s => s + 1);
       return;
     }
     const selPlaces = places.filter(p => selected.has(p.id));
+    const resolvedDest = selectedDest || (destQuery.trim() ? {
+      key: 'custom',
+      kor: destQuery.trim(),
+      eng: destQuery.trim(),
+      flag: '🌍',
+      zone: null,
+      currency: 'USD',
+      lat: 0,
+      lon: 0
+    } : null);
     const tripData = generateTripData({
       cities: cities.filter(Boolean),
       startIso,
@@ -15761,7 +17119,7 @@ function NewTripSheet({
       arrAirport,
       depAirport,
       selectedPlaces: selPlaces,
-      selectedDest
+      selectedDest: resolvedDest
     });
     onSubmit(tripData);
     onClose();
