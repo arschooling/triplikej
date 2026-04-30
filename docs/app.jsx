@@ -974,6 +974,7 @@ function WheelColumn({ items, value, onChange, width=70 }) {
       <div ref={ref} onScroll={handleScroll} className="wheel-col" style={{
         width:'100%', height:'100%', overflowY:'scroll',
         scrollSnapType:'y mandatory',
+        overscrollBehavior:'contain',
         scrollbarWidth:'none', msOverflowStyle:'none',
         padding: `${ITEM_H * CENTER_OFFSET}px 0`,
         boxSizing:'content-box',
@@ -1869,7 +1870,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v297</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v298</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>

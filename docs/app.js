@@ -2051,6 +2051,7 @@ function WheelColumn({
       height: '100%',
       overflowY: 'scroll',
       scrollSnapType: 'y mandatory',
+      overscrollBehavior: 'contain',
       scrollbarWidth: 'none',
       msOverflowStyle: 'none',
       padding: `${ITEM_H * CENTER_OFFSET}px 0`,
@@ -3880,7 +3881,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v297"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v298"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
