@@ -4544,7 +4544,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v291"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v292"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -15152,7 +15152,7 @@ function NewTripSheet({
       bottom: kbOffset,
       zIndex: 1100,
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-end',
       justifyContent: 'center',
       background: 'rgba(0,0,0,0.4)',
       padding: '20px'
