@@ -3807,7 +3807,7 @@ function TripsScreen({
     style: {
       minHeight: '100vh',
       background: COLORS.bg,
-      paddingBottom: 100,
+      paddingBottom: 76,
       position: 'relative'
     }
   }, /*#__PURE__*/React.createElement("button", {
@@ -3905,7 +3905,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v354"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v355"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -4404,7 +4404,7 @@ function HomeScreen({
     style: {
       background: COLORS.bg,
       minHeight: '100vh',
-      paddingBottom: 110,
+      paddingBottom: 76,
       position: 'relative'
     }
   }, onBack && /*#__PURE__*/React.createElement("button", {
