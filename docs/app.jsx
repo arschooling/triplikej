@@ -1879,7 +1879,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v330</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v331</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7550,7 +7550,7 @@ const CITIES_BY_KEY = {
   indonesia:   [{kor:'발리',eng:'Bali'},{kor:'자카르타',eng:'Jakarta'},{kor:'롬복',eng:'Lombok'},{kor:'코모도',eng:'Komodo'},{kor:'요그야카르타',eng:'Yogyakarta'},{kor:'수라바야',eng:'Surabaya'}],
   singapore:   [{kor:'싱가포르',eng:'Singapore'}],
   spain:       [{kor:'바르셀로나',eng:'Barcelona'},{kor:'마드리드',eng:'Madrid'},{kor:'세비야',eng:'Seville'},{kor:'그라나다',eng:'Granada'},{kor:'발렌시아',eng:'Valencia'},{kor:'빌바오',eng:'Bilbao'},{kor:'말라가',eng:'Malaga'},{kor:'산세바스티안',eng:'San Sebastian'}],
-  italy:       [{kor:'로마',eng:'Rome'},{kor:'밀라노',eng:'Milan'},{kor:'베네치아',eng:'Venice'},{kor:'피렌체',eng:'Florence'},{kor:'나폴리',eng:'Naples'},{kor:'아말피',eng:'Amalfi'},{kor:'시칠리아',eng:'Sicily'},{kor:'볼로냐',eng:'Bologna'},{kor:'토리노',eng:'Turin'},{kor:'친퀘테레',eng:'Cinque Terre'},{kor:'소렌토',eng:'Sorrento'}],
+  italy:       [{kor:'로마',eng:'Rome'},{kor:'밀라노',eng:'Milan'},{kor:'베네치아',eng:'Venice'},{kor:'피렌체',eng:'Florence'},{kor:'나폴리',eng:'Naples'},{kor:'아말피',eng:'Amalfi'},{kor:'시칠리아',eng:'Sicily'},{kor:'볼로냐',eng:'Bologna'},{kor:'토리노',eng:'Turin'},{kor:'친퀘테레',eng:'Cinque Terre'},{kor:'소렌토',eng:'Sorrento'},{kor:'시에나',eng:'Siena'},{kor:'아시시',eng:'Assisi'},{kor:'베로나',eng:'Verona'}],
   czechia:     [{kor:'프라하',eng:'Prague'},{kor:'체스키크룸로프',eng:'Cesky Krumlov'},{kor:'브르노',eng:'Brno'}],
   australia:   [{kor:'시드니',eng:'Sydney'},{kor:'멜버른',eng:'Melbourne'},{kor:'브리즈번',eng:'Brisbane'},{kor:'골드코스트',eng:'Gold Coast'},{kor:'케언즈',eng:'Cairns'},{kor:'퍼스',eng:'Perth'},{kor:'애들레이드',eng:'Adelaide'}],
   uae:         [{kor:'두바이',eng:'Dubai'},{kor:'아부다비',eng:'Abu Dhabi'}],

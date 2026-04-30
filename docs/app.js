@@ -3905,7 +3905,7 @@ function TripsScreen({
       color: COLORS.mute,
       marginLeft: 8
     }
-  }, "v330"))), loading ? /*#__PURE__*/React.createElement("div", {
+  }, "v331"))), loading ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       padding: 60,
@@ -15929,6 +15929,15 @@ const CITIES_BY_KEY = {
   }, {
     kor: '소렌토',
     eng: 'Sorrento'
+  }, {
+    kor: '시에나',
+    eng: 'Siena'
+  }, {
+    kor: '아시시',
+    eng: 'Assisi'
+  }, {
+    kor: '베로나',
+    eng: 'Verona'
   }],
   czechia: [{
     kor: '프라하',
