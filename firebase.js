@@ -296,7 +296,7 @@ window.fbAcceptTripInvite = async (invite, myUid) => {
   });
   await _fbDb.collection('users').doc(invite.fromUid).update({
     contacts: firebase.firestore.FieldValue.arrayUnion(myUid),
-  }).catch(() => {});
+  });
   const mySnap = await _fbDb.collection('users').doc(myUid).get();
   const myData = mySnap.exists ? mySnap.data() : {};
   _fbAddNotification(invite.fromUid, {
