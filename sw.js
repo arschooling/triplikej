@@ -1,4 +1,4 @@
-const V = 'tlj-v405';
+const V = 'tlj-v406';
 const CACHE = [
   './', './index.html',
   './react.min.js', './react-dom.min.js',
@@ -39,23 +39,25 @@ self.addEventListener('push', e => {
   let data = {};
   try { data = e.data.json(); } catch (_) { data = { notification: { title: 'TripLikeJ', body: e.data.text() } }; }
   const n = data.notification || {};
-  const badgeCount = parseInt(data.data?.badge, 10);
+  const unread = parseInt(data.data?.unread, 10);
 
   const tasks = [
     self.registration.showNotification(n.title || 'TripLikeJ', {
       body: n.body || '',
       icon: n.icon || './icon-192.png',
       badge: './icon-192.png',
-      data: { url: data.fcmOptions?.link || './' },
+      data: { url: data.fcmOptions?.link || './', unread },
     }),
   ];
 
-  // 홈화면 아이콘 뱃지: Cloud Function이 전달한 미읽음 수로 설정
-  if ('setAppBadge' in navigator) {
-    tasks.push(
-      badgeCount > 0 ? navigator.setAppBadge(badgeCount) : navigator.setAppBadge()
-    );
-  }
+  // 홈화면 아이콘 뱃지: feature detection 없이 try-catch로 (iOS SW 호환)
+  const badgeTask = (async () => {
+    try {
+      if (unread > 0) await navigator.setAppBadge(unread);
+      else            await navigator.setAppBadge();
+    } catch (_) {}
+  })();
+  tasks.push(badgeTask);
 
   e.waitUntil(Promise.all(tasks));
 });
