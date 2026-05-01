@@ -1958,12 +1958,13 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         }
       </button>
       {/* 알림 벨 버튼 */}
-      <button onClick={onOpenNotifs} style={{
+      <button type="button" onClick={onOpenNotifs} style={{
         position:'absolute', top:'calc(18px + env(safe-area-inset-top,0px))', right:68, zIndex:10,
         width:34, height:34, borderRadius:0,
         background:'transparent', border:'none',
         padding:0, cursor:'pointer',
         display:'flex', alignItems:'center', justifyContent:'center',
+        WebkitTapHighlightColor:'transparent',
       }}>
         <Icon name="bell" size={20} color={COLORS.ink} stroke={1.8}/>
         {unreadCount > 0 && (
@@ -1981,7 +1982,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v407</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v409</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2316,12 +2317,13 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         </button>
       )}
       {onOpenNotifs && (
-        <button onClick={onOpenNotifs} style={{
+        <button type="button" onClick={onOpenNotifs} style={{
           position:'absolute', top:'calc(18px + env(safe-area-inset-top,0px))', right:68, zIndex:10,
           width:34, height:34,
           background:'transparent', border:'none',
           padding:0, cursor:'pointer',
           display:'flex', alignItems:'center', justifyContent:'center',
+          WebkitTapHighlightColor:'transparent',
         }}>
           <Icon name="bell" size={20} color={COLORS.ink} stroke={1.8}/>
           {unreadCount > 0 && (
@@ -6727,7 +6729,8 @@ function NotificationsScreen({ open, onClose, authUser, notifications, onGoToCom
   React.useEffect(() => {
     if (open) {
       setVisible(true);
-      requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+      const t = setTimeout(() => setEntered(true), 16);
+      return () => clearTimeout(t);
     } else {
       setEntered(false);
       // 슬라이드 아웃 애니메이션(300ms) 후 언마운트
@@ -8858,11 +8861,13 @@ function App() {
   const [companionsScreenOpen, setCompanionsScreenOpen] = React.useState(false);
   const [notifOpen, setNotifOpen]               = React.useState(false);
   const openNotifs = () => {
+    setNotifOpen(true);  // 먼저 열기 (iOS 이슈 방지)
     // 알림 벨 탭 = 사용자 제스처 → iOS에서도 권한 요청 가능
-    if (window.fbInitPush && authUser && Notification?.permission !== 'granted') {
-      window.fbInitPush(authUser.uid).catch(() => {});
-    }
-    setNotifOpen(true);
+    try {
+      if (window.fbInitPush && authUser && Notification?.permission !== 'granted') {
+        window.fbInitPush(authUser.uid).catch(() => {});
+      }
+    } catch (_) {}
   };
   const [notifs, setNotifs]                     = React.useState([]);
   const [notifsReady, setNotifsReady]           = React.useState(false);
