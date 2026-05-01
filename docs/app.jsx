@@ -1981,7 +1981,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v391</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v392</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7022,17 +7022,23 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
     setRemoving(`contact:${c.uid}`);
     try {
       await fbRemoveContact(authUser.uid, c.uid);
-      await Promise.all((trips||[]).map(t =>
-        (tripCompanions[t.id]||[]).some(m => m.uid === c.uid)
-          ? fbRemoveTripMember(t.id, c.uid) : Promise.resolve()
-      ));
-      setContacts(prev => prev.filter(x => x.uid !== c.uid));
-      setTripCompanions(prev => {
-        const next = {...prev};
-        Object.keys(next).forEach(tid => { next[tid] = next[tid].filter(m => m.uid !== c.uid); });
-        return next;
-      });
-    } catch(e) { alert('삭제 실패. 다시 시도해 주세요.'); }
+    } catch(e) {
+      alert('삭제 실패. 다시 시도해 주세요.');
+      setRemoving(null);
+      return;
+    }
+    // 연락처 삭제 성공 → UI 즉시 반영
+    setContacts(prev => prev.filter(x => x.uid !== c.uid));
+    setTripCompanions(prev => {
+      const next = {...prev};
+      Object.keys(next).forEach(tid => { next[tid] = next[tid].filter(m => m.uid !== c.uid); });
+      return next;
+    });
+    // 여행 멤버 제거는 별도 처리 (실패해도 UI에 영향 없음)
+    Promise.all((trips||[]).map(t =>
+      (tripCompanions[t.id]||[]).some(m => m.uid === c.uid)
+        ? fbRemoveTripMember(t.id, c.uid) : Promise.resolve()
+    )).catch(e => console.warn('trip member removal:', e));
     setRemoving(null);
   };
 
