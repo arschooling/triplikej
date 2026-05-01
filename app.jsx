@@ -23,6 +23,7 @@ const COLORS = {
 const SERIF = '"Instrument Serif", Georgia, serif';
 const SANS  = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const MONO  = '"JetBrains Mono", ui-monospace, monospace';
+const GPLACES_KEY = 'AIzaSyC14zK_MjoFmgx_7z7nHLdkFiH1i4DWDRc';
 // 기존 여행 hue와 겹치지 않는 hue 선택
 function pickUniqueHue(existingHues) {
   if (!existingHues || !existingHues.length) return Math.floor(Math.random() * 360);
@@ -3304,27 +3305,40 @@ function NearbySheet({ stop, initialTab, onClose }) {
           if (!f) { setHotspots([]); setFood([]); return; }
           [lon, lat] = f.geometry.coordinates;
         }
-        // Overpass API (OpenStreetMap) — 무료, 키 불필요
-        const overpass = async (query) => fetch(
-          `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`,
-          { signal: ctrl.signal }
-        ).then(r => r.json());
-        const parseOSM = (data, isFood) => (data.elements || []).map(el => ({
-          name: el.tags?.['name:ko'] || el.tags?.['name:en'] || el.tags?.name,
-          type: el.tags?.tourism || el.tags?.amenity || (isFood ? 'Restaurant' : 'Attraction'),
-          cuisine: isFood ? (el.tags?.cuisine || el.tags?.amenity || '') : '',
-          isFood, fsq_id: null,
-          dist: 0,
-          lat: el.lat ?? el.center?.lat,
-          lon: el.lon ?? el.center?.lon,
-          wikipedia: '', image: '',
+        // Google Places API (Nearby Search) — 한국어 지원, 사진 포함
+        const gNearby = async (types, radius) => {
+          const res = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+            method: 'POST',
+            signal: ctrl.signal,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': GPLACES_KEY,
+              'X-Goog-FieldMask': 'places.displayName,places.location,places.types,places.photos,places.rating',
+            },
+            body: JSON.stringify({
+              locationRestriction: { circle: { center: { latitude: lat, longitude: lon }, radius } },
+              includedTypes: types,
+              maxResultCount: 20,
+              languageCode: 'ko',
+            }),
+          }).then(r => r.json());
+          return res.places || [];
+        };
+        const parseGP = (places, isFood) => places.map(p => ({
+          name: p.displayName?.text || '',
+          type: p.types?.[0] || (isFood ? 'restaurant' : 'tourist_attraction'),
+          cuisine: isFood ? (p.types?.find(t => t !== 'restaurant' && t !== 'food' && t !== 'point_of_interest' && t !== 'establishment') || '') : '',
+          isFood, fsq_id: null, dist: 0,
+          lat: p.location?.latitude,
+          lon: p.location?.longitude,
+          photoName: p.photos?.[0]?.name || null,
         })).filter(p => p.name && p.lat && p.lon);
         const [hR, fR] = await Promise.all([
-          overpass(`[out:json][timeout:12];(node(around:1500,${lat},${lon})["tourism"~"^(attraction|museum|viewpoint|gallery|monument|theme_park|zoo|aquarium)$"];way(around:1500,${lat},${lon})["tourism"~"^(attraction|museum|viewpoint|gallery|monument|theme_park|zoo|aquarium)$"];);out center 20;`),
-          overpass(`[out:json][timeout:12];node(around:800,${lat},${lon})["amenity"~"^(restaurant|cafe|bar|pub|food_court)$"]["name"];out 20;`),
+          gNearby(['tourist_attraction', 'museum', 'art_gallery', 'zoo', 'amusement_park', 'aquarium'], 1500),
+          gNearby(['restaurant', 'cafe', 'bar'], 800),
         ]);
-        const hotspotsParsed = parseOSM(hR, false);
-        const foodParsed = parseOSM(fR, true);
+        const hotspotsParsed = parseGP(hR, false);
+        const foodParsed = parseGP(fR, true);
         ncSet(cacheKey, { hotspots: hotspotsParsed, food: foodParsed });  // 캐시 저장
         setHotspots(hotspotsParsed);
         setFood(foodParsed);
@@ -3333,7 +3347,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
     return () => ctrl.abort();
   }, [stop]);
 
-  // 사진 fetch: ① Foursquare 실제 사진 → ② Wikipedia 검색
+  // 사진 fetch: ① Google Places 사진 → ② Wikipedia 검색 (fallback)
   React.useEffect(() => {
     [...(hotspots||[]), ...(food||[])].forEach(async (item) => {
       if (item.name in photos) return;
@@ -3347,14 +3361,21 @@ function NearbySheet({ stop, initialTab, onClose }) {
 
       let url = '';
 
-      // Wikipedia 사진 검색
-      try {
-        const res = await fetch(
-          `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(item.name)}&gsrlimit=1&prop=pageimages&format=json&pithumbsize=600&origin=*`
-        ).then(r=>r.json());
-        const page = Object.values(res.query?.pages || {})[0];
-        if (page?.thumbnail?.source) url = page.thumbnail.source;
-      } catch(_) {}
+      // ① Google Places 사진 (photoName이 있으면 바로 URL 구성)
+      if (item.photoName) {
+        url = `https://places.googleapis.com/v1/${item.photoName}/media?maxWidthPx=600&key=${GPLACES_KEY}`;
+      }
+
+      // ② Wikipedia 검색 (fallback)
+      if (!url) {
+        try {
+          const res = await fetch(
+            `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(item.name)}&gsrlimit=1&prop=pageimages&format=json&pithumbsize=600&origin=*`
+          ).then(r=>r.json());
+          const page = Object.values(res.query?.pages || {})[0];
+          if (page?.thumbnail?.source) url = page.thumbnail.source;
+        } catch(_) {}
+      }
 
       ncSet(photoKey, url);
       if (url) setPhotos(p => ({...p, [item.name]: url}));
@@ -4457,23 +4478,31 @@ async function prefetchRoutes(trip) {
 
     // ③ NearbySheet 장소 목록 프리패치 (coords 있는 스탑만, 사진 제외)
     const allStops = trip.days.flatMap(d => (d.items||[]).filter(it => it.coords));
-    const overpassBase = 'https://overpass-api.de/api/interpreter?data=';
-    const parseOverpass = (d, lat, lon) => {
-      const seen = new Set();
-      return (d.elements||[]).reduce((acc, e) => {
-        const nm = e.tags?.name || e.tags?.['name:en'] || '';
-        if (!nm || seen.has(nm) || !e.lat) return acc;
-        seen.add(nm);
-        acc.push({
-          name: nm,
-          type: e.tags?.amenity || e.tags?.tourism || e.tags?.historic || e.tags?.leisure || '',
-          wikipedia: e.tags?.wikipedia || '',
-          image: e.tags?.image || '',
-          dist: haversineM(lat, lon, e.lat, e.lon),
-          lat: e.lat, lon: e.lon,
-        });
-        return acc;
-      }, []).sort((a,b) => a.dist - b.dist);
+    const gNearbyPrefetch = async (lat, lon, types, radius) => {
+      const res = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GPLACES_KEY,
+          'X-Goog-FieldMask': 'places.displayName,places.location,places.types,places.photos,places.rating',
+        },
+        body: JSON.stringify({
+          locationRestriction: { circle: { center: { latitude: lat, longitude: lon }, radius } },
+          includedTypes: types,
+          maxResultCount: 20,
+          languageCode: 'ko',
+        }),
+      }).then(r => r.json());
+      return (res.places || []).map(p => ({
+        name: p.displayName?.text || '',
+        type: p.types?.[0] || '',
+        cuisine: '',
+        isFood: types.includes('restaurant'),
+        fsq_id: null, dist: 0,
+        lat: p.location?.latitude,
+        lon: p.location?.longitude,
+        photoName: p.photos?.[0]?.name || null,
+      })).filter(p => p.name && p.lat && p.lon);
     };
     for (const s of allStops) {
       try {
@@ -4481,14 +4510,12 @@ async function prefetchRoutes(trip) {
         const stopKey = `${lat.toFixed(3)}_${lon.toFixed(3)}`;
         const cacheKey = `nearby_places_${stopKey}`;
         if (ncGet(cacheKey, NC_PLACES_TTL) !== undefined) continue; // 이미 캐시됨
-        const hQ = `[out:json][timeout:10];(node["tourism"~"attraction|museum|viewpoint|gallery|theme_park|zoo"](around:900,${lat},${lon});node["historic"~"monument|castle|ruins|memorial"](around:900,${lat},${lon});node["leisure"~"park|garden"](around:900,${lat},${lon}););out 30;`;
-        const fQ = `[out:json][timeout:10];(node["amenity"~"restaurant|cafe|bar|fast_food|pub|biergarten|food_court"](around:600,${lat},${lon}););out 30;`;
-        const [hR, fR] = await Promise.all([
-          fetch(overpassBase + encodeURIComponent(hQ)).then(r=>r.json()),
-          fetch(overpassBase + encodeURIComponent(fQ)).then(r=>r.json()),
+        const [hotspots, food] = await Promise.all([
+          gNearbyPrefetch(lat, lon, ['tourist_attraction', 'museum', 'art_gallery', 'zoo', 'amusement_park', 'aquarium'], 1500),
+          gNearbyPrefetch(lat, lon, ['restaurant', 'cafe', 'bar'], 800),
         ]);
-        ncSet(cacheKey, { hotspots: parseOverpass(hR, lat, lon), food: parseOverpass(fR, lat, lon) });
-        await delay(2000); // Overpass 부담 최소화
+        ncSet(cacheKey, { hotspots, food });
+        await delay(500); // API 부담 최소화
       } catch(_) {}
     }
   } catch(_) {}
@@ -8006,7 +8033,25 @@ function NewTripSheet({ open, onClose, onSubmit }) {
     const countryEng = selectedDest?.eng || '';
     (async () => {
       try {
-        // Overpass API (OpenStreetMap) — 무료, 키 불필요
+        // Google Places API (Nearby Search) — 한국어 이름 + 사진 직접 제공
+        const GPLACES_TYPES = ['tourist_attraction', 'museum', 'art_gallery', 'zoo', 'amusement_park', 'aquarium', 'national_park', 'historical_landmark'];
+        const gplacesNearby = async (lat, lon, lang) => {
+          const res = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': GPLACES_KEY,
+              'X-Goog-FieldMask': 'places.id,places.displayName,places.location,places.types,places.photos,places.rating,places.userRatingCount',
+            },
+            body: JSON.stringify({
+              locationRestriction: { circle: { center: { latitude: lat, longitude: lon }, radius: 10000 } },
+              includedTypes: GPLACES_TYPES,
+              maxResultCount: 20,
+              languageCode: lang,
+            }),
+          }).then(r => r.json());
+          return res.places || [];
+        };
         const allPlaces = [];
         for (let ci = 0; ci < validCities.length; ci++) {
           const city = validCities[ci];
@@ -8017,68 +8062,42 @@ function NewTripSheet({ open, onClose, onSubmit }) {
           const f = geo.features?.[0];
           if (!f) continue;
           const [gLon, gLat] = f.geometry.coordinates;
-          // Overpass로 관광명소 검색 (wikidata 있는 항목 = 유명 장소)
-          const overpassQ = `[out:json][timeout:15];(node(around:8000,${gLat},${gLon})["tourism"~"^(attraction|museum|viewpoint|gallery|monument|theme_park|zoo|aquarium)$"];way(around:8000,${gLat},${gLon})["tourism"~"^(attraction|museum|viewpoint|gallery|monument|theme_park|zoo|aquarium)$"];);out center 50;`;
-          const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQ)}`).then(r => r.json());
-          const list = (res.elements || [])
-            .map((el, idx) => {
-              const rawName = el.tags?.name || '';
-              const koName  = el.tags?.['name:ko'] || '';
-              const enName  = el.tags?.['name:en'] || el.tags?.['name:ja'] || rawName;
-              const wikiTag = el.tags?.wikipedia || ''; // e.g. "en:Kinkaku-ji" or "ja:金閣寺"
-              return {
-                id: `${ci}_${el.id || idx}`,
-                name: koName || enName,
-                nameOrig: koName ? enName : '',
-                type: el.tags?.tourism || 'Attraction',
-                lat: el.lat ?? el.center?.lat,
-                lon: el.lon ?? el.center?.lon,
-                photo: null, cityIdx: ci,
-                wikiTag,  // 직접 Wikipedia 문서 링크
-                _notable: !!(el.tags?.wikidata || wikiTag),
-              };
-            })
-            .filter(p => p.name && p.lat && p.lon)
-            // 중복 제거 (같은 이름 = 같은 장소의 node/way 중복)
-            .filter((p, i, arr) => arr.findIndex(x => x.name === p.name) === i)
-            .sort((a, b) => (b._notable ? 1 : 0) - (a._notable ? 1 : 0));
+          // 한국어 + 영어 병렬 요청
+          const [koPlaces, enPlaces] = await Promise.all([
+            gplacesNearby(gLat, gLon, 'ko'),
+            gplacesNearby(gLat, gLon, 'en'),
+          ]);
+          // place ID로 매핑 (한국어 이름 ↔ 영어 이름)
+          const enMap = Object.fromEntries(enPlaces.map(p => [p.id, p.displayName?.text || '']));
+          // 평점*리뷰수 기준 정렬 (인기순)
+          const sorted = [...koPlaces].sort((a, b) =>
+            ((b.rating || 0) * Math.log1p(b.userRatingCount || 0)) -
+            ((a.rating || 0) * Math.log1p(a.userRatingCount || 0))
+          );
+          const list = sorted.map((p, idx) => {
+            const koName = p.displayName?.text || '';
+            const enName = enMap[p.id] || '';
+            // 한국어 이름과 영어 이름이 같으면 orig 표시 안 함
+            const isSame = koName === enName || !enName;
+            return {
+              id: `${ci}_${p.id || idx}`,
+              name: koName || enName,
+              nameOrig: isSame ? '' : enName,
+              type: p.types?.[0] || 'tourist_attraction',
+              lat: p.location?.latitude,
+              lon: p.location?.longitude,
+              photo: p.photos?.[0]?.name
+                ? `https://places.googleapis.com/v1/${p.photos[0].name}/media?maxWidthPx=400&key=${GPLACES_KEY}`
+                : null,
+              cityIdx: ci,
+              _popRank: idx,  // 인기순 순위 (generateTripData에서 day 타이틀 선택에 사용)
+            };
+          }).filter(p => p.name && p.lat && p.lon);
           allPlaces.push(...list);
         }
         setPlaces(allPlaces);
         setSelected(new Set());
         setLoading(false);
-        // 사진 + 한글 이름 비동기 로드
-        allPlaces.forEach(async (p) => {
-          try {
-            let page = null;
-            if (p.wikiTag) {
-              // OSM wikipedia 태그로 정확한 문서 직접 조회 (e.g. "en:Kinkaku-ji")
-              const [lang, ...titleParts] = p.wikiTag.includes(':') ? p.wikiTag.split(':') : ['en', p.wikiTag];
-              const title = titleParts.join(':');
-              const sr = await fetch(
-                `https://${lang}.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=pageimages|langlinks&lllang=ko&format=json&pithumbsize=400&origin=*`
-              ).then(r => r.json());
-              page = Object.values(sr.query?.pages || {})[0];
-            } else {
-              // wikipedia 태그 없으면 이름으로 검색
-              const sr = await fetch(
-                `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(p.nameOrig || p.name)}&gsrlimit=1&prop=pageimages|langlinks&lllang=ko&format=json&pithumbsize=400&origin=*`
-              ).then(r => r.json());
-              page = Object.values(sr.query?.pages || {})[0];
-            }
-            const photo = page?.thumbnail?.source || null;
-            const koTitle = page?.langlinks?.[0]?.['*'] || null;
-            setPlaces(prev => prev.map(pl => {
-              if (pl.id !== p.id) return pl;
-              return {
-                ...pl,
-                photo: photo || pl.photo,
-                name: pl.nameOrig ? pl.name : (koTitle || pl.name),
-                nameOrig: pl.nameOrig || (koTitle && koTitle !== pl.name ? pl.name : ''),
-              };
-            }));
-          } catch (_) {}
-        });
       } catch (e) { setPlaceErr(`네트워크 오류: ${e.message}`); setLoading(false); }
     })();
   }, [step]);
