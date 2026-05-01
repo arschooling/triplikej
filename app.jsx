@@ -1983,7 +1983,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v424</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v425</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3273,7 +3273,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
   React.useEffect(() => {
     if (!stop) { setEntered(false); return; }
     setTab(initialTab || 'hotspot');
-    setHotspots(null); setFood(null); setPhotos({});
+    setHotspots(null); setFood(null);
     setSheetY(0); sheetYRef.current = 0;
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
   }, [stop, initialTab]);
