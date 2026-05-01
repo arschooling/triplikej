@@ -56,8 +56,8 @@ exports.sendPushNotification = onDocumentCreated(
             badge: 'https://arschooling.github.io/TripLikeJ/icon-192.png',
           },
           fcmOptions: { link: 'https://arschooling.github.io/TripLikeJ/' },
-          // 미읽음 수를 data 필드로 전달 → 서비스 워커에서 뱃지 설정
-          data: { badge: String(unreadCount) },
+          // 미읽음 수를 별도 필드로 전달 (notification.badge 이미지 URL과 충돌 방지)
+          data: { unread: String(unreadCount) },
         },
       });
     } catch (e) {
