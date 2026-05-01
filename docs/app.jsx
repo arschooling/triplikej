@@ -1981,7 +1981,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v372</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v373</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2001,7 +2001,20 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                     padding:0, margin:0, textAlign:'left', cursor:'pointer',
                     WebkitTapHighlightColor:'transparent',
                   }}>
-                    <Photo hue={hue} label={label} height={130}/>
+                    <div style={{ position:'relative' }}>
+                      <Photo hue={hue} label={label} height={130}/>
+                      {companionCount > 0 && (
+                        <div style={{
+                          position:'absolute', top:10, right:12,
+                          display:'flex', alignItems:'center', gap:4,
+                          background:`oklch(0.88 0.06 ${hue})`,
+                          borderRadius:20, padding:'4px 10px',
+                        }}>
+                          <Icon name="users" size={11} color={`oklch(0.38 0.09 ${hue})`} stroke={2}/>
+                          <span style={{ fontFamily:SANS, fontSize:10, color:`oklch(0.38 0.09 ${hue})`, fontWeight:500 }}>{companionCount}명</span>
+                        </div>
+                      )}
+                    </div>
                     <div style={{ padding:'14px 18px 16px', position:'relative' }}>
                       <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
                         {(t.days||[]).length} DAYS{t.dates ? ' · ' + t.dates : ''}
@@ -2009,31 +2022,16 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                       <div style={{ marginTop:4, fontFamily:SERIF, fontSize:28, lineHeight:1.1, color:COLORS.ink, letterSpacing:'-0.015em' }}>
                         {t.title || '새 여행'}
                       </div>
-                      {(isSample || companionCount > 0) && (
-                        <div style={{
-                          position:'absolute', top:14, right:16,
-                          display:'flex', alignItems:'center', gap:6,
-                        }}>
-                          {isSample && (
-                            <div style={{
-                              display:'flex', alignItems:'center', gap:3,
-                              background:'#FFF5EB', borderRadius:20, padding:'4px 10px',
-                              border:'1px solid rgba(193,79,46,0.15)',
-                            }}>
-                              <Icon name="sparkle" size={10} color={COLORS.accent} stroke={1.8}/>
-                              <span style={{ fontFamily:SANS, fontSize:10, color:COLORS.accent, fontWeight:500 }}>샘플</span>
-                            </div>
-                          )}
-                          {companionCount > 0 && (
-                            <div style={{
-                              display:'flex', alignItems:'center', gap:4,
-                              background:`oklch(0.88 0.06 ${hue})`,
-                              borderRadius:20, padding:'4px 10px',
-                            }}>
-                              <Icon name="users" size={11} color={`oklch(0.38 0.09 ${hue})`} stroke={2}/>
-                              <span style={{ fontFamily:SANS, fontSize:10, color:`oklch(0.38 0.09 ${hue})`, fontWeight:500 }}>{companionCount}명</span>
-                            </div>
-                          )}
+                      {isSample && (
+                        <div style={{ position:'absolute', top:14, right:16 }}>
+                          <div style={{
+                            display:'flex', alignItems:'center', gap:3,
+                            background:'#FFF5EB', borderRadius:20, padding:'4px 10px',
+                            border:'1px solid rgba(193,79,46,0.15)',
+                          }}>
+                            <Icon name="sparkle" size={10} color={COLORS.accent} stroke={1.8}/>
+                            <span style={{ fontFamily:SANS, fontSize:10, color:COLORS.accent, fontWeight:500 }}>샘플</span>
+                          </div>
                         </div>
                       )}
                     </div>
