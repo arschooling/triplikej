@@ -598,6 +598,59 @@ window.fbDeleteAccount = async (uid, tripIds) => {
   await user.delete();
 };
 
+// ─── Trip copy (일정 복사 보내기) ────────────────────────────────
+window.fbSendTripCopy = async (fromUser, toEmail, trip) => {
+  const toUser = await fbSearchUser(toEmail);
+  if (!toUser)                     return { error: '가입된 사용자가 없습니다.' };
+  if (toUser.uid === fromUser.uid) return { error: '자기 자신에게는 보낼 수 없습니다.' };
+  const tripSnapshot = {
+    title   : trip.title   || '',
+    dates   : trip.dates   || '',
+    days    : trip.days    || [],
+    hotels  : trip.hotels  || [],
+    food    : trip.food    || [],
+    hue     : trip.hue     ?? 25,
+  };
+  await _fbDb.collection('invites').add({
+    fromUid  : fromUser.uid, fromName : fromUser.displayName || '',
+    fromEmail: fromUser.email,       fromPhoto: fromUser.photoURL || '',
+    toUid    : toUser.uid,  toEmail  : toUser.email,
+    type     : 'trip_copy',
+    tripTitle: trip.title || '', tripSnapshot,
+    status   : 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+  _fbAddNotification(toUser.uid, {
+    type    : 'trip_copy_received',
+    fromUid : fromUser.uid, fromName : fromUser.displayName || '', fromPhoto: fromUser.photoURL || '',
+    tripTitle: trip.title || '',
+  }).catch(() => {});
+  return { success: true, toName: toUser.displayName };
+};
+
+window.fbAcceptTripCopy = async (invite, myUid) => {
+  await _fbDb.collection('invites').doc(invite.id).update({ status: 'accepted' });
+  const snap = invite.tripSnapshot || {};
+  const ref  = _fbDb.collection('groups').doc();
+  const tripId = ref.id;
+  await ref.set({
+    title      : snap.title  || '',
+    dates      : snap.dates  || '',
+    hotel      : '',
+    days       : snap.days   || [],
+    hotels     : snap.hotels || [],
+    food       : snap.food   || [],
+    members    : [myUid],
+    hue        : snap.hue ?? Math.floor(Math.random() * 360),
+    permissions: { [myUid]: 'owner' },
+    createdAt  : firebase.firestore.FieldValue.serverTimestamp(),
+  });
+  await _fbDb.collection('users').doc(myUid).update({
+    tripIds: firebase.firestore.FieldValue.arrayUnion(tripId),
+  });
+  return tripId;
+};
+
 window.fbNotifyTripEdit = async (tripId, editorUid, editorName, editorPhoto, tripTitle) => {
   const snap = await _fbDb.collection('groups').doc(tripId).get();
   if (!snap.exists) return;

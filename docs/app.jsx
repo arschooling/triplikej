@@ -1647,6 +1647,7 @@ function TripSwipeCard({ children, onShare, onDelete, wrapStyle = {} }) {
 
 // ─── Share Trip Sheet ─────────────────────────────────────────
 function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
+  const [mode, setMode]           = React.useState('edit'); // 'edit' | 'copy'
   const [memberProfiles, setMemberProfiles] = React.useState([]);
   const [contacts, setContacts]   = React.useState([]);
   const [selected, setSelected]   = React.useState(new Set());
@@ -1665,7 +1666,7 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
 
   React.useEffect(() => {
     if (!open || !trip) return;
-    setSelected(new Set()); setEmail(''); setMsg('');
+    setMode('edit'); setSelected(new Set()); setEmail(''); setMsg('');
     setMemberProfiles([]); setContacts([]);
 
     const currentMembers = new Set(trip.members || []);
@@ -1689,6 +1690,10 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
     }).catch(() => setLoading(false));
   }, [open, trip && trip.id]);
 
+  React.useEffect(() => {
+    setEmail(''); setMsg(''); setSelected(new Set());
+  }, [mode]);
+
   const handleRemove = async (c) => {
     if (!confirm(`"${c.displayName}"님을 이 여행에서 제외할까요?`)) return;
     setRemoving(c.uid);
@@ -1708,6 +1713,22 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
   const handleSend = async () => {
     if (!trip) return;
     const hasEmail = email.trim().length > 0;
+
+    if (mode === 'copy') {
+      if (!hasEmail) return;
+      setSending(true); setMsg('');
+      const result = await fbSendTripCopy(userData, email.trim(), trip);
+      setSending(false);
+      if (result.success) {
+        setMsg(`${result.toName}님께 일정을 보냈습니다!`);
+        setEmail('');
+      } else {
+        setMsg(result.error || '오류가 발생했습니다.');
+      }
+      return;
+    }
+
+    // edit mode
     if (!selected.size && !hasEmail) return;
     setSending(true); setMsg('');
 
@@ -1730,7 +1751,27 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
   };
 
   if (!open || !trip) return null;
-  const canSend = selected.size > 0 || email.trim().length > 0;
+  const canSend = mode === 'copy'
+    ? email.trim().length > 0
+    : selected.size > 0 || email.trim().length > 0;
+
+  const ModeTab = ({ id, emoji, label, desc }) => {
+    const active = mode === id;
+    return (
+      <div onClick={() => setMode(id)} style={{
+        flex:1, padding:'10px 8px', borderRadius:12, cursor:'pointer',
+        background: active ? COLORS.ink : COLORS.softer,
+        border:`1.5px solid ${active ? COLORS.ink : 'transparent'}`,
+        textAlign:'center', transition:'all 0.18s',
+      }}>
+        <div style={{ fontSize:18, marginBottom:2 }}>{emoji}</div>
+        <div style={{ fontFamily:SANS, fontSize:12, fontWeight:600,
+          color: active ? COLORS.bg : COLORS.ink, marginBottom:2 }}>{label}</div>
+        <div style={{ fontFamily:SANS, fontSize:10.5, color: active ? 'rgba(255,255,255,0.65)' : COLORS.mute,
+          lineHeight:1.3 }}>{desc}</div>
+      </div>
+    );
+  };
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:400, background:'rgba(0,0,0,0.4)',
@@ -1738,20 +1779,28 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
       <div onClick={e => e.stopPropagation()} style={{
         background:COLORS.bg, borderRadius:'22px 22px 0 0',
         padding:'0 20px calc(28px + env(safe-area-inset-bottom,0px))',
-        maxHeight:'80vh', display:'flex', flexDirection:'column',
+        maxHeight:'85vh', display:'flex', flexDirection:'column',
       }}>
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px', flexShrink:0 }}>
           <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
         </div>
         <div style={{ flexShrink:0 }}>
           <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em', marginBottom:4 }}>SHARE TRIP</div>
-          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginBottom:16 }}>{trip.title}</div>
+          <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginBottom:14 }}>{trip.title}</div>
+
+          {/* Mode selector */}
+          <div style={{ display:'flex', gap:8, marginBottom:16 }}>
+            <ModeTab id="edit" emoji="👥" label="함께 편집"
+              desc="같은 일정을 실시간으로 함께 수정해요"/>
+            <ModeTab id="copy" emoji="📋" label="일정 복사 보내기"
+              desc="내 일정을 그대로 복사해서 상대방에게 보내요"/>
+          </div>
         </div>
 
         <div style={{ flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch' }}>
           {loading ? (
             <div style={{ textAlign:'center', padding:'20px 0', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>불러오는 중...</div>
-          ) : (
+          ) : mode === 'edit' ? (
             <>
               {memberProfiles.length > 0 && (
                 <>
@@ -1789,62 +1838,83 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
                   <div style={{ height:16 }}/>
                 </>
               )}
-              {contacts.length > 0 ? (
-            <>
-              <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, letterSpacing:'0.08em',
-                textTransform:'uppercase', marginBottom:8 }}>이전 동행인</div>
-              {contacts.map(c => {
-                const isSel = selected.has(c.uid);
-                return (
-                  <div key={c.uid} onClick={() => toggleSelect(c.uid)} style={{
-                    display:'flex', alignItems:'center', gap:12,
-                    padding:'10px 12px', borderRadius:14, marginBottom:6,
-                    background: isSel ? '#EEF2FF' : COLORS.card,
-                    border:`1.5px solid ${isSel ? '#4F6BED' : 'transparent'}`,
-                    cursor:'pointer',
-                  }}>
-                    {c.photoURL
-                      ? <img src={c.photoURL} alt="" style={{ width:38, height:38, borderRadius:'50%', objectFit:'cover', flexShrink:0 }}/>
-                      : <div style={{ width:38, height:38, borderRadius:'50%', background:'#C8C3B8', flexShrink:0,
-                          display:'flex', alignItems:'center', justifyContent:'center',
-                          fontFamily:SANS, fontSize:15, color:'#fff', fontWeight:600 }}>
-                          {(c.displayName||'?')[0].toUpperCase()}
+              {contacts.length > 0 && (
+                <>
+                  <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, letterSpacing:'0.08em',
+                    textTransform:'uppercase', marginBottom:8 }}>이전 동행인</div>
+                  {contacts.map(c => {
+                    const isSel = selected.has(c.uid);
+                    return (
+                      <div key={c.uid} onClick={() => toggleSelect(c.uid)} style={{
+                        display:'flex', alignItems:'center', gap:12,
+                        padding:'10px 12px', borderRadius:14, marginBottom:6,
+                        background: isSel ? '#EEF2FF' : COLORS.card,
+                        border:`1.5px solid ${isSel ? '#4F6BED' : 'transparent'}`,
+                        cursor:'pointer',
+                      }}>
+                        {c.photoURL
+                          ? <img src={c.photoURL} alt="" style={{ width:38, height:38, borderRadius:'50%', objectFit:'cover', flexShrink:0 }}/>
+                          : <div style={{ width:38, height:38, borderRadius:'50%', background:'#C8C3B8', flexShrink:0,
+                              display:'flex', alignItems:'center', justifyContent:'center',
+                              fontFamily:SANS, fontSize:15, color:'#fff', fontWeight:600 }}>
+                              {(c.displayName||'?')[0].toUpperCase()}
+                            </div>
+                        }
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, fontWeight:500,
+                            overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.displayName}</div>
+                          <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute,
+                            overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.email}</div>
                         </div>
-                    }
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, fontWeight:500,
-                        overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.displayName}</div>
-                      <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute,
-                        overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.email}</div>
-                    </div>
-                    <div style={{ width:22, height:22, borderRadius:'50%', flexShrink:0,
-                      border:`2px solid ${isSel ? '#4F6BED' : COLORS.line}`,
-                      background: isSel ? '#4F6BED' : 'transparent',
-                      display:'flex', alignItems:'center', justifyContent:'center' }}>
-                      {isSel && <Icon name="check" size={12} color="#fff" stroke={3}/>}
-                    </div>
-                  </div>
-                );
-              })}
-              <div style={{ height:16 }}/>
+                        <div style={{ width:22, height:22, borderRadius:'50%', flexShrink:0,
+                          border:`2px solid ${isSel ? '#4F6BED' : COLORS.line}`,
+                          background: isSel ? '#4F6BED' : 'transparent',
+                          display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          {isSel && <Icon name="check" size={12} color="#fff" stroke={3}/>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div style={{ height:16 }}/>
+                </>
+              )}
+              <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, letterSpacing:'0.08em',
+                textTransform:'uppercase', marginBottom:8 }}>
+                {contacts.length > 0 ? '새로운 동행인' : '동행인 초대'}
+              </div>
+              <input
+                value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="구글 이메일 입력"
+                onKeyDown={e => e.key === 'Enter' && handleSend()}
+                style={{ width:'100%', padding:'13px 14px', borderRadius:14,
+                  border:`1.5px solid ${COLORS.line}`, background:COLORS.card,
+                  fontFamily:SANS, fontSize:14, color:COLORS.ink, boxSizing:'border-box', outline:'none' }}/>
+              {msg && (
+                <div style={{ marginTop:8, fontFamily:SANS, fontSize:13,
+                  color: msg.includes('보냈') ? COLORS.accent : '#C0392B' }}>{msg}</div>
+              )}
             </>
-          ) : null}
-
-          <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, letterSpacing:'0.08em',
-            textTransform:'uppercase', marginBottom:8 }}>
-            {contacts.length > 0 ? '새로운 동행인' : '동행인 초대'}
-          </div>
-          <input
-            value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="구글 이메일 입력"
-            onKeyDown={e => e.key === 'Enter' && handleSend()}
-            style={{ width:'100%', padding:'13px 14px', borderRadius:14,
-              border:`1.5px solid ${COLORS.line}`, background:COLORS.card,
-              fontFamily:SANS, fontSize:14, color:COLORS.ink, boxSizing:'border-box', outline:'none' }}/>
-          {msg && (
-            <div style={{ marginTop:8, fontFamily:SANS, fontSize:13,
-              color: msg.includes('보냈') ? COLORS.accent : '#C0392B' }}>{msg}</div>
-          )}
+          ) : (
+            /* copy mode */
+            <>
+              <div style={{ background:COLORS.softer, borderRadius:14, padding:'12px 14px', marginBottom:16 }}>
+                <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, lineHeight:1.5 }}>
+                  이메일 주소를 입력하면 상대방 앱에 알림이 전송됩니다. 상대방이 수락하면 이 일정의 복사본이 상대방의 <strong>My Trips</strong>에 추가됩니다.
+                </div>
+              </div>
+              <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, letterSpacing:'0.08em',
+                textTransform:'uppercase', marginBottom:8 }}>받는 사람 이메일</div>
+              <input
+                value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="구글 이메일 입력"
+                onKeyDown={e => e.key === 'Enter' && handleSend()}
+                style={{ width:'100%', padding:'13px 14px', borderRadius:14,
+                  border:`1.5px solid ${COLORS.line}`, background:COLORS.card,
+                  fontFamily:SANS, fontSize:14, color:COLORS.ink, boxSizing:'border-box', outline:'none' }}/>
+              {msg && (
+                <div style={{ marginTop:8, fontFamily:SANS, fontSize:13,
+                  color: msg.includes('보냈') ? COLORS.accent : '#C0392B' }}>{msg}</div>
+              )}
             </>
           )}
         </div>
@@ -1854,7 +1924,7 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
           background: canSend ? COLORS.ink : COLORS.softer,
           color: canSend ? COLORS.bg : COLORS.mute,
           fontFamily:SANS, fontSize:14, fontWeight:500, cursor: canSend ? 'pointer' : 'default',
-        }}>{sending ? '보내는 중...' : '초대 보내기'}</button>
+        }}>{sending ? '보내는 중...' : mode === 'copy' ? '일정 보내기' : '초대 보내기'}</button>
       </div>
     </div>
   );
@@ -1911,7 +1981,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v365</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v366</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6684,11 +6754,12 @@ function NotificationsScreen({ open, onClose, authUser, notifications, onGoToCom
   const fmtMsg = (n) => {
     const name = n.fromName || '누군가';
     const trip = n.tripTitle ? `"${n.tripTitle}"` : '여행';
-    if (n.type === 'invite_received')  return `${name}님이 ${trip}에 초대했습니다.`;
-    if (n.type === 'invite_accepted')  return `${name}님이 ${trip} 초대를 수락했습니다.`;
-    if (n.type === 'trip_edited')      return `${name}님이 ${trip} 일정을 수정했습니다.`;
-    if (n.type === 'contact_added')    return `${name}님이 동행인으로 추가했습니다.`;
-    if (n.type === 'contact_accepted') return `${name}님이 동행인 요청을 수락했습니다.`;
+    if (n.type === 'invite_received')    return `${name}님이 ${trip}에 초대했습니다.`;
+    if (n.type === 'invite_accepted')    return `${name}님이 ${trip} 초대를 수락했습니다.`;
+    if (n.type === 'trip_edited')        return `${name}님이 ${trip} 일정을 수정했습니다.`;
+    if (n.type === 'contact_added')      return `${name}님이 동행인으로 추가했습니다.`;
+    if (n.type === 'contact_accepted')   return `${name}님이 동행인 요청을 수락했습니다.`;
+    if (n.type === 'trip_copy_received') return `${name}님이 ${trip} 일정을 보냈습니다.`;
     return '새 알림';
   };
 
@@ -6703,19 +6774,21 @@ function NotificationsScreen({ open, onClose, authUser, notifications, onGoToCom
   };
 
   const typeColor = (type) => ({
-    invite_received:  '#4F6BED',
-    invite_accepted:  '#2E9E5B',
-    trip_edited:      '#E07B39',
-    contact_added:    '#9B59B6',
-    contact_accepted: '#2E9E5B',
+    invite_received:    '#4F6BED',
+    invite_accepted:    '#2E9E5B',
+    trip_edited:        '#E07B39',
+    contact_added:      '#9B59B6',
+    contact_accepted:   '#2E9E5B',
+    trip_copy_received: '#E07B39',
   }[type] || COLORS.mute);
 
   const typeIcon = (type) => ({
-    invite_received:  'users',
-    invite_accepted:  'check',
-    trip_edited:      'edit',
-    contact_added:    'user',
-    contact_accepted: 'check',
+    invite_received:    'users',
+    invite_accepted:    'check',
+    trip_edited:        'edit',
+    contact_added:      'user',
+    contact_accepted:   'check',
+    trip_copy_received: 'copy',
   }[type] || 'bell');
 
   const deleteNotif = (id) => {
@@ -6723,7 +6796,7 @@ function NotificationsScreen({ open, onClose, authUser, notifications, onGoToCom
       fbDeleteNotification(authUser.uid, id).catch(() => {});
   };
 
-  const COMPANION_TYPES = new Set(['contact_added', 'contact_accepted', 'invite_received']);
+  const COMPANION_TYPES = new Set(['contact_added', 'contact_accepted', 'invite_received', 'trip_copy_received']);
   const TRIP_TYPES      = new Set(['invite_accepted', 'trip_edited']);
 
   const handleNotifTap = (n) => {
@@ -7069,12 +7142,15 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink }}>{inv.fromName || '?'}</div>
                         <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.mute, marginTop:1 }}>
-                          {inv.tripId ? `여행 초대: ${inv.tripTitle || ''}` : '동행인 요청'}
+                          {inv.type === 'trip_copy' ? `일정 복사: ${inv.tripTitle || ''}` : inv.tripId ? `여행 초대: ${inv.tripTitle || ''}` : '동행인 요청'}
                         </div>
                       </div>
                       <div style={{ display:'flex', gap:6 }}>
                         <button onClick={async () => {
-                          if (inv.tripId) {
+                          if (inv.type === 'trip_copy') {
+                            const tripId = await fbAcceptTripCopy(inv, authUser.uid);
+                            onUserDataUpdate?.({ ...userData, tripIds: [...(userData.tripIds||[]), tripId] });
+                          } else if (inv.tripId) {
                             const tripId = await fbAcceptTripInvite(inv, authUser.uid);
                             onUserDataUpdate?.({ ...userData, tripIds: [...(userData.tripIds||[]), tripId] });
                           } else {
@@ -8492,6 +8568,12 @@ function AddCompanionSheet({ open, onClose, authUser, userData, trips, onUserDat
   const handleAccept = async (inv) => {
     if (inv.type === 'contact') {
       await fbAcceptContactInvite(inv, authUser.uid);
+      setPendingInvites(p => p.filter(i => i.id !== inv.id));
+      return;
+    }
+    if (inv.type === 'trip_copy') {
+      const tripId = await fbAcceptTripCopy(inv, authUser.uid);
+      onUserDataUpdate({ ...userData, tripIds: [...(userData.tripIds||[]), tripId] });
       setPendingInvites(p => p.filter(i => i.id !== inv.id));
       return;
     }
