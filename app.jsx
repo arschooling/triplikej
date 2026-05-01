@@ -1981,7 +1981,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v405</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v407</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -8865,6 +8865,7 @@ function App() {
     setNotifOpen(true);
   };
   const [notifs, setNotifs]                     = React.useState([]);
+  const [notifsReady, setNotifsReady]           = React.useState(false);
   const notifyTripEditTimer                     = React.useRef(null);
   const updateSampleTimer                       = React.useRef(null);
   const [shareTripTarget, setShareTripTarget] = React.useState(null);
@@ -8984,6 +8985,7 @@ function App() {
         const ts = n.createdAt?.toDate ? n.createdAt.toDate() : new Date(n.createdAt || 0);
         return now - ts.getTime() < CUTOFF;
       }));
+      setNotifsReady(true);
     });
   }, [authUser?.uid]);
 
@@ -9514,10 +9516,12 @@ function App() {
 
   // ── 홈화면 아이콘 뱃지 (Web App Badge API) ─────────────────
   React.useEffect(() => {
-    if (!('setAppBadge' in navigator)) return;
-    if (unreadCount > 0) navigator.setAppBadge(unreadCount).catch(() => {});
-    else                 navigator.clearAppBadge().catch(() => {});
-  }, [unreadCount]);
+    if (!notifsReady) return; // 데이터 로드 전에는 뱃지 건드리지 않음
+    try {
+      if (unreadCount > 0) navigator.setAppBadge(unreadCount).catch(() => {});
+      else                 navigator.clearAppBadge().catch(() => {});
+    } catch(_) {}
+  }, [unreadCount, notifsReady]);
 
   // ── Render ─────────────────────────────────────────────
   let screen, label;
