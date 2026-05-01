@@ -1981,7 +1981,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v388</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v389</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3308,6 +3308,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
             acc.push({
               name: nm,
               type: e.tags?.amenity || e.tags?.tourism || e.tags?.historic || e.tags?.leisure || '',
+              cuisine: e.tags?.cuisine || '',
               wikipedia: e.tags?.wikipedia || '',
               image: e.tags?.image || '',   // ① OSM 직접 첨부 이미지
               dist: haversineM(lat, lon, e.lat, e.lon),
@@ -3333,8 +3334,9 @@ function NearbySheet({ stop, initialTab, onClose }) {
     return () => ctrl.abort();
   }, [stop]);
 
-  // 사진 fetch: ① OSM image → ② Wikipedia 태그 → ③ Wikipedia/Commons 이름 검색
+  // 사진 fetch: ① OSM image → ② Unsplash → ③ Wikipedia 태그 → ④ Wikipedia 이름 검색
   React.useEffect(() => {
+    const UNSPLASH_KEY = 'BWmUabGdXaiSO-REdKlHwznAXADRJipRPLSDlIZltNA';
     [...(hotspots||[]), ...(food||[])].forEach(async (item) => {
       if (item.name in photos) return;
       const photoKey = `nearby_photo_${item.name}`;
@@ -3352,7 +3354,21 @@ function NearbySheet({ stop, initialTab, onClose }) {
         url = item.image;
       }
 
-      // ② Wikipedia 태그로 섬네일
+      // ② Unsplash 검색 (핫플: 장소명, 음식: 요리 종류 또는 타입)
+      if (!url) {
+        try {
+          const isFood = ['restaurant','cafe','bar','fast_food','pub','biergarten','food_court'].includes(item.type);
+          const q = isFood
+            ? (item.cuisine ? item.cuisine.split(';')[0].trim() + ' food' : item.type + ' food')
+            : item.name;
+          const uRes = await fetch(
+            `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape&content_filter=high&client_id=${UNSPLASH_KEY}`
+          ).then(r => r.json());
+          if (uRes.results?.[0]?.urls?.small) url = uRes.results[0].urls.small;
+        } catch(_) {}
+      }
+
+      // ③ Wikipedia 태그로 섬네일
       if (!url && item.wikipedia) {
         try {
           const t = item.wikipedia.replace(/^[a-z-]+:/, '').replace(/ /g, '_');
@@ -3361,7 +3377,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
         } catch(_) {}
       }
 
-      // ③ Wikipedia/Commons: 검색+이미지를 1번 요청으로 (generator=search)
+      // ④ Wikipedia/Commons: 검색+이미지를 1번 요청으로 (generator=search)
       if (!url) {
         try {
           const res = await fetch(
