@@ -1981,7 +1981,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v367</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v368</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6930,11 +6930,11 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
         try {
           // 이미 동행인으로 연결된 상태 → 수락 없이 바로 여행 공유
           await fbAddTripMember(fromUser, contact.uid, overId, trip?.title||'');
-          setTripCompanions(prev => ({
-            ...prev,
-            [overId]: [...(prev[overId]||[]), contact],
-          }));
-        } catch(e) { alert('추가 실패.'); }
+        } catch(e) { /* groups 쓰기 실패 — 무시 */ }
+        setTripCompanions(prev => ({
+          ...prev,
+          [overId]: [...(prev[overId]||[]), contact],
+        }));
       }
     };
     window.addEventListener('touchmove', onMove, {passive:false});

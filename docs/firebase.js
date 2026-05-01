@@ -59,10 +59,17 @@ window.fbGetOrCreateUser = async (fbUser) => {
     groupSnaps[i].exists &&
     (groupSnaps[i].data().members || []).includes(fbUser.uid)
   );
-  if (JSON.stringify(validTripIds) !== JSON.stringify(existing.tripIds || [])) {
-    await ref.update({ tripIds: validTripIds });
+
+  // groups 컬렉션에서 내가 멤버인 여행 중 tripIds에 없는 것도 추가 (다른 유저가 직접 추가한 경우)
+  const memberSnap = await _fbDb.collection('groups').where('members', 'array-contains', fbUser.uid).get();
+  const memberTripIds = memberSnap.docs.map(d => d.id);
+  const extraIds = memberTripIds.filter(id => !validTripIds.includes(id));
+  const allTripIds = [...validTripIds, ...extraIds];
+
+  if (JSON.stringify(allTripIds) !== JSON.stringify(existing.tripIds || [])) {
+    await ref.update({ tripIds: allTripIds });
   }
-  return { uid: fbUser.uid, ...existing, tripIds: validTripIds };
+  return { uid: fbUser.uid, ...existing, tripIds: allTripIds };
 };
 
 // ─── Shared group ─────────────────────────────────────────────
@@ -343,9 +350,10 @@ window.fbAddTripMember = async (fromUser, toUid, tripId, tripTitle) => {
     members: firebase.firestore.FieldValue.arrayUnion(toUid),
     [`permissions.${toUid}`]: 'edit',
   });
+  // 상대방 tripIds 업데이트 — 보안 규칙상 실패해도 무시 (상대방 로그인 시 자동 동기화됨)
   await _fbDb.collection('users').doc(toUid).update({
     tripIds: firebase.firestore.FieldValue.arrayUnion(tripId),
-  });
+  }).catch(() => {});
   _fbAddNotification(toUid, {
     type: 'invite_accepted',
     fromUid: fromUser.uid, fromName: fromUser.displayName || '', fromPhoto: fromUser.photoURL || '',
