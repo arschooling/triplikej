@@ -1983,7 +1983,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v422</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v423</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3305,40 +3305,53 @@ function NearbySheet({ stop, initialTab, onClose }) {
           if (!f) { setHotspots([]); setFood([]); return; }
           [lon, lat] = f.geometry.coordinates;
         }
-        // Google Places API (Nearby Search) — 한국어 지원, 사진 포함
-        const gNearby = async (types, radius) => {
+        // Google Places API (Nearby Search) — 한국어 + 원본 이름
+        const gNearby = async (types, radius, lang) => {
           const res = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
             method: 'POST',
             signal: ctrl.signal,
             headers: {
               'Content-Type': 'application/json',
               'X-Goog-Api-Key': GPLACES_KEY,
-              'X-Goog-FieldMask': 'places.displayName,places.location,places.types,places.photos,places.rating',
+              'X-Goog-FieldMask': 'places.id,places.displayName,places.location,places.types,places.photos,places.rating',
             },
             body: JSON.stringify({
               locationRestriction: { circle: { center: { latitude: lat, longitude: lon }, radius } },
               includedTypes: types,
               maxResultCount: 20,
-              languageCode: 'ko',
+              languageCode: lang,
             }),
           }).then(r => r.json());
           return res.places || [];
         };
-        const parseGP = (places, isFood) => places.map(p => ({
-          name: p.displayName?.text || '',
-          type: p.types?.[0] || (isFood ? 'restaurant' : 'tourist_attraction'),
-          cuisine: isFood ? (p.types?.find(t => t !== 'restaurant' && t !== 'food' && t !== 'point_of_interest' && t !== 'establishment') || '') : '',
-          isFood, fsq_id: null, dist: 0,
-          lat: p.location?.latitude,
-          lon: p.location?.longitude,
-          photoName: p.photos?.[0]?.name || null,
-        })).filter(p => p.name && p.lat && p.lon);
-        const [hR, fR] = await Promise.all([
-          gNearby(['tourist_attraction', 'museum', 'art_gallery', 'zoo', 'amusement_park', 'aquarium'], 1500),
-          gNearby(['restaurant', 'cafe', 'bar'], 800),
+        const parseGP = (koPlaces, enPlaces, isFood) => {
+          const enMap = Object.fromEntries(enPlaces.map(p => [p.id, p.displayName?.text || '']));
+          return koPlaces.map(p => {
+            const koName = p.displayName?.text || '';
+            const enName = enMap[p.id] || '';
+            const isSame = koName === enName || !enName;
+            return {
+              name: koName || enName,
+              nameOrig: isSame ? '' : enName,
+              type: p.types?.[0] || (isFood ? 'restaurant' : 'tourist_attraction'),
+              cuisine: isFood ? (p.types?.find(t => t !== 'restaurant' && t !== 'food' && t !== 'point_of_interest' && t !== 'establishment') || '') : '',
+              isFood, fsq_id: null, dist: 0,
+              lat: p.location?.latitude,
+              lon: p.location?.longitude,
+              photoName: p.photos?.[0]?.name || null,
+            };
+          }).filter(p => p.name && p.lat && p.lon);
+        };
+        const HOTSPOT_TYPES = ['tourist_attraction', 'museum', 'art_gallery', 'zoo', 'amusement_park', 'aquarium'];
+        const FOOD_TYPES = ['restaurant', 'cafe', 'bar'];
+        const [hKo, hEn, fKo, fEn] = await Promise.all([
+          gNearby(HOTSPOT_TYPES, 1500, 'ko'),
+          gNearby(HOTSPOT_TYPES, 1500, 'en'),
+          gNearby(FOOD_TYPES, 800, 'ko'),
+          gNearby(FOOD_TYPES, 800, 'en'),
         ]);
-        const hotspotsParsed = parseGP(hR, false);
-        const foodParsed = parseGP(fR, true);
+        const hotspotsParsed = parseGP(hKo, hEn, false);
+        const foodParsed = parseGP(fKo, fEn, true);
         ncSet(cacheKey, { hotspots: hotspotsParsed, food: foodParsed });  // 캐시 저장
         setHotspots(hotspotsParsed);
         setFood(foodParsed);
@@ -3435,6 +3448,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink,
             whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{item.name}</div>
+          {item.nameOrig && <div style={{ fontFamily:SANS, fontSize:9.5, color:COLORS.mute, marginTop:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{item.nameOrig}</div>}
           <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:3 }}>
             {TYPE_KO[item.type] || item.type || '—'} · {fmtDist(item.dist)}
           </div>
@@ -4478,31 +4492,41 @@ async function prefetchRoutes(trip) {
 
     // ③ NearbySheet 장소 목록 프리패치 (coords 있는 스탑만, 사진 제외)
     const allStops = trip.days.flatMap(d => (d.items||[]).filter(it => it.coords));
-    const gNearbyPrefetch = async (lat, lon, types, radius) => {
+    const gNearbyPrefetch = async (lat, lon, types, radius, lang) => {
       const res = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': GPLACES_KEY,
-          'X-Goog-FieldMask': 'places.displayName,places.location,places.types,places.photos,places.rating',
+          'X-Goog-FieldMask': 'places.id,places.displayName,places.location,places.types,places.photos,places.rating',
         },
         body: JSON.stringify({
           locationRestriction: { circle: { center: { latitude: lat, longitude: lon }, radius } },
           includedTypes: types,
           maxResultCount: 20,
-          languageCode: 'ko',
+          languageCode: lang,
         }),
       }).then(r => r.json());
-      return (res.places || []).map(p => ({
-        name: p.displayName?.text || '',
-        type: p.types?.[0] || '',
-        cuisine: '',
-        isFood: types.includes('restaurant'),
-        fsq_id: null, dist: 0,
-        lat: p.location?.latitude,
-        lon: p.location?.longitude,
-        photoName: p.photos?.[0]?.name || null,
-      })).filter(p => p.name && p.lat && p.lon);
+      return res.places || [];
+    };
+    const parsePrefetch = (koPlaces, enPlaces, isFood) => {
+      const enMap = Object.fromEntries(enPlaces.map(p => [p.id, p.displayName?.text || '']));
+      return koPlaces.map(p => {
+        const koName = p.displayName?.text || '';
+        const enName = enMap[p.id] || '';
+        const isSame = koName === enName || !enName;
+        return {
+          name: koName || enName,
+          nameOrig: isSame ? '' : enName,
+          type: p.types?.[0] || '',
+          cuisine: '',
+          isFood,
+          fsq_id: null, dist: 0,
+          lat: p.location?.latitude,
+          lon: p.location?.longitude,
+          photoName: p.photos?.[0]?.name || null,
+        };
+      }).filter(p => p.name && p.lat && p.lon);
     };
     for (const s of allStops) {
       try {
@@ -4510,10 +4534,16 @@ async function prefetchRoutes(trip) {
         const stopKey = `${lat.toFixed(3)}_${lon.toFixed(3)}`;
         const cacheKey = `nearby_places_${stopKey}`;
         if (ncGet(cacheKey, NC_PLACES_TTL) !== undefined) continue; // 이미 캐시됨
-        const [hotspots, food] = await Promise.all([
-          gNearbyPrefetch(lat, lon, ['tourist_attraction', 'museum', 'art_gallery', 'zoo', 'amusement_park', 'aquarium'], 1500),
-          gNearbyPrefetch(lat, lon, ['restaurant', 'cafe', 'bar'], 800),
+        const HOTSPOT_TYPES = ['tourist_attraction', 'museum', 'art_gallery', 'zoo', 'amusement_park', 'aquarium'];
+        const FOOD_TYPES = ['restaurant', 'cafe', 'bar'];
+        const [hKo, hEn, fKo, fEn] = await Promise.all([
+          gNearbyPrefetch(lat, lon, HOTSPOT_TYPES, 1500, 'ko'),
+          gNearbyPrefetch(lat, lon, HOTSPOT_TYPES, 1500, 'en'),
+          gNearbyPrefetch(lat, lon, FOOD_TYPES, 800, 'ko'),
+          gNearbyPrefetch(lat, lon, FOOD_TYPES, 800, 'en'),
         ]);
+        const hotspots = parsePrefetch(hKo, hEn, false);
+        const food = parsePrefetch(fKo, fEn, true);
         ncSet(cacheKey, { hotspots, food });
         await delay(500); // API 부담 최소화
       } catch(_) {}
