@@ -16,9 +16,17 @@ exports.sendPushNotification = onDocumentCreated(
 
     const uid = event.params.uid;
 
-    const userDoc = await db.collection('users').doc(uid).get();
+    // 유저 FCM 토큰 조회 + 미읽음 수 조회 병렬 처리
+    const [userDoc, unreadSnap] = await Promise.all([
+      db.collection('users').doc(uid).get(),
+      db.collection('users').doc(uid).collection('notifications')
+        .where('read', '==', false).count().get(),
+    ]);
+
     const fcmToken = userDoc.data()?.fcmToken;
     if (!fcmToken) return;
+
+    const unreadCount = unreadSnap.data().count;
 
     const name = notif.fromName || '누군가';
     const trip = notif.tripTitle ? `"${notif.tripTitle}"` : '여행';
@@ -48,6 +56,8 @@ exports.sendPushNotification = onDocumentCreated(
             badge: 'https://arschooling.github.io/TripLikeJ/icon-192.png',
           },
           fcmOptions: { link: 'https://arschooling.github.io/TripLikeJ/' },
+          // 미읽음 수를 data 필드로 전달 → 서비스 워커에서 뱃지 설정
+          data: { badge: String(unreadCount) },
         },
       });
     } catch (e) {
