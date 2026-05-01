@@ -10,8 +10,12 @@ service cloud.firestore {
       allow update: if request.auth != null && (
         request.auth.uid == uid ||
         (
+          // contacts 필드만 변경하고, 자기 자신을 추가하거나 제거하는 경우만 허용
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['contacts']) &&
-          !request.resource.data.contacts.hasAny([request.auth.uid])
+          (
+            (!resource.data.contacts.hasAny([request.auth.uid]) && request.resource.data.contacts.hasAny([request.auth.uid])) ||
+            (resource.data.contacts.hasAny([request.auth.uid]) && !request.resource.data.contacts.hasAny([request.auth.uid]))
+          )
         )
       );
 
