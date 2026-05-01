@@ -1982,7 +1982,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v412</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v413</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2328,10 +2328,13 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
           <Icon name="bell" size={20} color={COLORS.ink} stroke={1.8}/>
           {unreadCount > 0 && (
             <div style={{
-              position:'absolute', top:2, right:2,
-              width:8, height:8, borderRadius:4,
-              background:'#E03C31',
-            }}/>
+              position:'absolute', top:0, right:0,
+              minWidth:15, height:15, borderRadius:8,
+              background:'#E03C31', padding:'0 3px',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontFamily:MONO, fontSize:9, color:'#fff', fontWeight:700,
+              boxSizing:'border-box',
+            }}>{unreadCount > 9 ? '9+' : unreadCount}</div>
           )}
         </button>
       )}
