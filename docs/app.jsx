@@ -1981,7 +1981,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v376</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v377</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6894,6 +6894,10 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
   const [loading, setLoading]           = React.useState(false);
   const [removing, setRemoving]         = React.useState(null);
   const [addTripFor, setAddTripFor]     = React.useState(null);
+  const [expandedTrips, setExpandedTrips] = React.useState(new Set());
+  const toggleTripExpand = (id) => setExpandedTrips(prev => {
+    const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next;
+  });
   // ── 드래그로 여행 추가 ──────────────────────────────────────
   const [dragContact, setDragContact]   = React.useState(null);
   const [dragPos, setDragPos]           = React.useState({x:0, y:0});
@@ -7259,12 +7263,16 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
                   {(trips||[]).map(t => {
                     const members = tripCompanions[t.id] || [];
                     const isDropTarget = dragOverTripId === t.id;
+                    const isExpanded = expandedTrips.has(t.id);
                     return (
                       <div key={t.id} ref={el => tripCardRefs.current[t.id] = el}
                         style={{ background: isDropTarget ? '#EEF2FF' : COLORS.card, borderRadius:16,
                           border:`${isDropTarget ? 2 : 1}px solid ${isDropTarget ? '#4F6BED' : COLORS.line}`,
-                          transition:'border-color 0.12s, background 0.12s' }}>
-                        <div style={{ padding:'12px 16px', display:'flex', alignItems:'center', gap:10 }}>
+                          transition:'border-color 0.12s, background 0.12s', overflow:'hidden' }}>
+                        {/* 여행 헤더 — 탭으로 펼치기/접기 */}
+                        <div onClick={() => !isDropTarget && toggleTripExpand(t.id)}
+                          style={{ padding:'12px 16px', display:'flex', alignItems:'center', gap:10,
+                            cursor:'pointer' }}>
                           <div style={{ width:36, height:36, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
                             <Photo hue={t.hue ?? 25} height={36} small/>
                           </div>
@@ -7272,29 +7280,37 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
                             <div style={{ fontFamily:SERIF, fontSize:15, color:COLORS.ink }}>{t.title||'새 여행'}</div>
                             {t.dates && <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, marginTop:1 }}>{t.dates}</div>}
                           </div>
-                          <div style={{ fontFamily:MONO, fontSize:9.5, color: isDropTarget ? '#4F6BED' : COLORS.accent }}>
-                            {isDropTarget ? '여기에 추가' : `${members.length}명`}
-                          </div>
+                          {isDropTarget ? (
+                            <div style={{ fontFamily:MONO, fontSize:9.5, color:'#4F6BED' }}>여기에 추가</div>
+                          ) : (
+                            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                              <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.accent }}>{members.length}명</div>
+                              {members.length > 0 && (
+                                <Icon name="chevron-d" size={11} color={COLORS.mute} stroke={2.5}
+                                  style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition:'transform 0.2s' }}/>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        {members.length > 0 ? (
-                          <div style={{ padding:'0 12px 12px', display:'flex', flexDirection:'column', gap:6 }}>
+                        {/* 동행인 목록 — 펼쳤을 때만 */}
+                        {isExpanded && members.length > 0 && (
+                          <div style={{ padding:'0 10px 10px', display:'flex', flexDirection:'column', gap:5,
+                            borderTop:`1px solid ${COLORS.line}` }}>
                             {members.map(m => (
                               <SwipeableRow key={m.uid}
                                 onDelete={() => removeFromTrip(t.id, m.uid, m.displayName)}
-                                wrapStyle={{ borderRadius:10 }}>
-                                <div style={{ background:COLORS.softer, borderRadius:10, padding:'8px 12px',
-                                  display:'flex', alignItems:'center', gap:10 }}>
-                                  <Avatar u={m} size={28}/>
+                                wrapStyle={{ borderRadius:9, marginTop:5 }}>
+                                <div style={{ background:COLORS.softer, borderRadius:9, padding:'7px 10px',
+                                  display:'flex', alignItems:'center', gap:9 }}>
+                                  <Avatar u={m} size={26}/>
                                   <div style={{ flex:1, minWidth:0 }}>
-                                    <div style={{ fontFamily:SANS, fontSize:12.5, fontWeight:500, color:COLORS.ink }}>{m.displayName}</div>
+                                    <div style={{ fontFamily:SANS, fontSize:12, fontWeight:500, color:COLORS.ink }}>{m.displayName}</div>
                                   </div>
-                                  <div style={{ fontFamily:MONO, fontSize:9, color:COLORS.mute }}>← 스와이프</div>
+                                  <div style={{ fontFamily:MONO, fontSize:8.5, color:COLORS.mute }}>← 스와이프</div>
                                 </div>
                               </SwipeableRow>
                             ))}
                           </div>
-                        ) : (
-                          <div style={{ padding:'0 16px 12px', fontFamily:SANS, fontSize:12, color:COLORS.mute }}>동행인 없음</div>
                         )}
                       </div>
                     );
