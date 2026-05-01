@@ -1,4 +1,4 @@
-const V = 'tlj-v415';
+const V = 'tlj-v416';
 const CACHE = [
   './', './index.html',
   './react.min.js', './react-dom.min.js',
@@ -28,6 +28,8 @@ self.addEventListener('message', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // 외부 API 요청(Foursquare, Firebase, Photon 등)은 SW가 가로채지 않음 (iOS 호환)
+  if (!e.request.url.startsWith(self.location.origin)) return;
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request))
   );
