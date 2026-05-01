@@ -355,7 +355,7 @@ window.fbAddTripMember = async (fromUser, toUid, tripId, tripTitle) => {
     tripIds: firebase.firestore.FieldValue.arrayUnion(tripId),
   }).catch(() => {});
   _fbAddNotification(toUid, {
-    type: 'invite_accepted',
+    type: 'trip_member_added',
     fromUid: fromUser.uid, fromName: fromUser.displayName || '', fromPhoto: fromUser.photoURL || '',
     tripId, tripTitle: tripTitle || '',
   }).catch(() => {});
@@ -656,6 +656,14 @@ window.fbAcceptTripCopy = async (invite, myUid) => {
   await _fbDb.collection('users').doc(myUid).update({
     tripIds: firebase.firestore.FieldValue.arrayUnion(tripId),
   });
+  // 보낸 사람에게 수락 알림
+  const mySnap = await _fbDb.collection('users').doc(myUid).get();
+  const myData = mySnap.exists ? mySnap.data() : {};
+  _fbAddNotification(invite.fromUid, {
+    type: 'trip_copy_accepted',
+    fromUid: myUid, fromName: myData.displayName || '', fromPhoto: myData.photoURL || '',
+    tripTitle: invite.tripTitle || '',
+  }).catch(() => {});
   return tripId;
 };
 
