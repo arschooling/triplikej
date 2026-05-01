@@ -23,6 +23,32 @@ const COLORS = {
 const SERIF = '"Instrument Serif", Georgia, serif';
 const SANS  = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const MONO  = '"JetBrains Mono", ui-monospace, monospace';
+// 기존 여행 hue와 겹치지 않는 hue 선택
+function pickUniqueHue(existingHues) {
+  if (!existingHues || !existingHues.length) return Math.floor(Math.random() * 360);
+  const MIN_DIST = 40;
+  const candidates = [];
+  for (let h = 0; h < 360; h += 8) {
+    const minDist = Math.min(...existingHues.map(e => {
+      const d = Math.abs(h - e); return Math.min(d, 360 - d);
+    }));
+    if (minDist >= MIN_DIST) candidates.push({ h, minDist });
+  }
+  if (!candidates.length) {
+    // 모든 색이 꽉 찼으면 가장 멀리 떨어진 것 선택
+    const all = [];
+    for (let h = 0; h < 360; h += 8) {
+      const minDist = Math.min(...existingHues.map(e => { const d=Math.abs(h-e); return Math.min(d,360-d); }));
+      all.push({ h, minDist });
+    }
+    all.sort((a,b) => b.minDist - a.minDist);
+    return all[0].h;
+  }
+  candidates.sort((a,b) => b.minDist - a.minDist);
+  const top = candidates.filter(c => c.minDist >= candidates[0].minDist - 5);
+  return top[Math.floor(Math.random() * top.length)].h;
+}
+
 // 탭바 위에 시트가 뜨도록 하는 bottom 오프셋
 
 const CAT_META = {
@@ -1885,7 +1911,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v360</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v361</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9539,9 +9565,11 @@ function App() {
         open={newTripSheetOpen}
         onClose={() => setNewTripSheetOpen(false)}
         onSubmit={async (tripData) => {
-          const { tripId } = await fbCreateNewTrip(userData.uid, tripData.title);
-          await fbSaveGroup(tripId, tripData).catch(() => {});
-          setUserTrips(prev => [...prev, { id: tripId, ...tripData, members:[userData.uid] }]);
+          const existingHues = (userTrips||[]).map(t => t.hue ?? t.days?.[0]?.hero?.hue).filter(h => h != null);
+          const hue = pickUniqueHue(existingHues);
+          const { tripId } = await fbCreateNewTrip(userData.uid, tripData.title, hue);
+          await fbSaveGroup(tripId, { ...tripData, hue }).catch(() => {});
+          setUserTrips(prev => [...prev, { id: tripId, ...tripData, hue, members:[userData.uid] }]);
           setActiveTripId(tripId);
           setTab('home'); setDayIdx(null); setHotelIdx(null);
         }}/>
@@ -9653,9 +9681,11 @@ function App() {
         open={newTripSheetOpen}
         onClose={() => setNewTripSheetOpen(false)}
         onSubmit={async (tripData) => {
-          const { tripId } = await fbCreateNewTrip(userData.uid, tripData.title);
-          await fbSaveGroup(tripId, tripData).catch(() => {});
-          setUserTrips(prev => [...prev, { id: tripId, ...tripData, members:[userData.uid] }]);
+          const existingHues = (userTrips||[]).map(t => t.hue ?? t.days?.[0]?.hero?.hue).filter(h => h != null);
+          const hue = pickUniqueHue(existingHues);
+          const { tripId } = await fbCreateNewTrip(userData.uid, tripData.title, hue);
+          await fbSaveGroup(tripId, { ...tripData, hue }).catch(() => {});
+          setUserTrips(prev => [...prev, { id: tripId, ...tripData, hue, members:[userData.uid] }]);
           setActiveTripId(tripId);
           setTab('home'); setDayIdx(null); setHotelIdx(null);
         }}/>

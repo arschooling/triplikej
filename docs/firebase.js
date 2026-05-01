@@ -231,10 +231,10 @@ window.fbLoadTrips = async (tripIds) => {
   return snaps.filter(s => s.exists).map(s => ({ id: s.id, ...s.data() }));
 };
 
-window.fbCreateNewTrip = async (uid, title) => {
+window.fbCreateNewTrip = async (uid, title, hue) => {
   const ref = _fbDb.collection('groups').doc();
   const tripId = ref.id;
-  const hue = Math.floor(Math.random() * 360);
+  if (hue === undefined) hue = Math.floor(Math.random() * 360);
   await ref.set({
     title, dates: '', hotel: '', days: [], hotels: [], food: [],
     members: [uid], hue,
