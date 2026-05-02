@@ -1984,7 +1984,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v429</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v430</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5373,31 +5373,43 @@ function PrepCatItems({ ci, cat, cats, save, saveWithUndo, editing, editingItem,
 function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   const rawPrep = prepProp || trip.prep || {};
   const prep    = normalizePrepCats(rawPrep);
-  const cats    = prep.cats || [];
+  const storedCats = prep.cats || [];
 
   const [renamingCat,  setRenamingCat]  = React.useState(null);
   const [addInputCat,  setAddInputCat]  = React.useState(null);
   const [addInputText, setAddInputText] = React.useState('');
-  const [editingItem,  setEditingItem]  = React.useState(null); // { ci, ii }
+  const [editingItem,  setEditingItem]  = React.useState(null);
   const [pasteOpen,    setPasteOpen]    = React.useState(false);
   const [pasteText,    setPasteText]    = React.useState('');
   const [copyToast,    setCopyToast]    = React.useState(false);
-  const [undoSnap,     setUndoSnap]     = React.useState(null); // 되돌리기용 스냅샷
-  const undoTimer = React.useRef(null);
+  const [draftCats,    setDraftCats]    = React.useState(null);
 
-  const save = (newCats) => onEditPrep({ ...prep, cats: newCats });
+  // 편집 모드 진입 시 드래프트 생성, 종료 시 폐기
+  React.useEffect(() => {
+    if (editing) setDraftCats(storedCats.map(c => ({ ...c, items: [...(c.items || [])] })));
+    else setDraftCats(null);
+  }, [editing]);
 
-  const saveWithUndo = (newCats) => {
-    clearTimeout(undoTimer.current);
-    setUndoSnap(cats);
-    save(newCats);
-    undoTimer.current = setTimeout(() => setUndoSnap(null), 5000);
+  // 렌더에 사용할 cats: 편집 중이면 드래프트, 아니면 저장된 값
+  const cats = (editing && draftCats != null) ? draftCats : storedCats;
+
+  // 편집 중에는 드래프트만 업데이트 (저장 버튼 누를 때까지 실제 저장 안 함)
+  const save = (newCats) => {
+    if (editing) setDraftCats(newCats);
+    else onEditPrep({ ...prep, cats: newCats });
   };
 
-  const doUndo = () => {
-    clearTimeout(undoTimer.current);
-    if (undoSnap) { save(undoSnap); setUndoSnap(null); }
+  const commitEdit = () => {
+    onEditPrep({ ...prep, cats: draftCats || storedCats });
+    setEditing(false);
   };
+
+  const cancelEdit = () => {
+    setDraftCats(null);
+    setEditing(false);
+  };
+
+  const saveWithUndo = save; // 되돌리기 제거, 별칭만 유지
 
   const parsePasteText = (text) => {
     const result = [];
@@ -5759,16 +5771,20 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
         </div>
       )}
 
-      {/* 되돌리기 토스트 */}
-      {undoSnap && (
-        <div style={{ position:'fixed', bottom:100, left:'50%', transform:'translateX(-50%)',
-          background:COLORS.ink, color:COLORS.bg, padding:'10px 18px', borderRadius:20,
-          fontFamily:SANS, fontSize:13, zIndex:2000, whiteSpace:'nowrap',
-          boxShadow:'0 4px 20px rgba(0,0,0,0.18)',
-          display:'flex', alignItems:'center', gap:12 }}>
-          삭제됐어요
-          <button onClick={doUndo} style={{ border:'none', background:'transparent', cursor:'pointer',
-            padding:0, fontSize:18, lineHeight:1 }}>↩️</button>
+      {/* 편집 모드 저장/취소 바 */}
+      {editing && (
+        <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:500,
+          background:COLORS.bg, borderTop:`1px solid ${COLORS.line}`,
+          padding:'12px 16px calc(env(safe-area-inset-bottom,0px) + 12px)',
+          display:'flex', gap:8 }}>
+          <button onClick={cancelEdit} style={{ flex:1, padding:'13px', border:`1px solid ${COLORS.line}`,
+            borderRadius:14, background:COLORS.card, fontFamily:SANS, fontSize:14, color:COLORS.ink, cursor:'pointer' }}>
+            취소
+          </button>
+          <button onClick={commitEdit} style={{ flex:2, padding:'13px', border:'none',
+            borderRadius:14, background:COLORS.ink, color:COLORS.bg, fontFamily:SANS, fontSize:14, fontWeight:500, cursor:'pointer' }}>
+            저장
+          </button>
         </div>
       )}
 
