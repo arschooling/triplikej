@@ -111,6 +111,7 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
     case 'bell':       return <svg {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
     case 'copy':       return <svg {...p}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>;
     case 'clipboard':  return <svg {...p}><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14h6M9 10h6M9 18h4"/></svg>;
+    case 'camera':     return <svg {...p}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>;
     default: return null;
   }
 };
@@ -1984,7 +1985,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v429</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v424</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2005,7 +2006,10 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                     WebkitTapHighlightColor:'transparent',
                   }}>
                     <div style={{ position:'relative' }}>
-                      <Photo hue={hue} label={label} height={130}/>
+                      {t.coverImg
+                        ? <img src={t.coverImg} alt="" style={{ width:'100%', height:130, objectFit:'cover', display:'block' }}/>
+                        : <Photo hue={hue} label={label} height={130}/>
+                      }
                       {companionCount > 0 && (
                         <div style={{
                           position:'absolute', top:10, right:12,
@@ -2108,8 +2112,25 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onAddHotelViaStop, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
-                      userData, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount }) {
+                      userData, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount,
+                      tripId, authUser }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
+  const [photoUploading, setPhotoUploading] = React.useState(false);
+  const coverInputRef = React.useRef(null);
+  const handleCoverPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !tripId || !authUser) return;
+    setPhotoUploading(true);
+    try {
+      const url = await window.fbUploadTripPhoto(tripId, file);
+      onEditTrip({ coverImg: url });
+    } catch (err) {
+      console.error('커버 사진 업로드 실패:', err);
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = '';
+    }
+  };
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
   const [sampleLoading, setSampleLoading] = React.useState(false);
@@ -2432,7 +2453,28 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)',
                   background:COLORS.card,
                 }}>
-                  <Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>
+                  <div style={{ position:'relative' }}>
+                    {trip.coverImg
+                      ? <img src={trip.coverImg} alt="" style={{ width:'100%', height:170, objectFit:'cover', display:'block' }}/>
+                      : <Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>
+                    }
+                    {editing && i === 0 && (
+                      <button onClick={() => coverInputRef.current?.click()} style={{
+                        position:'absolute', bottom:10, right:10,
+                        background:'rgba(0,0,0,0.45)', border:'none', cursor:'pointer',
+                        borderRadius:20, padding:'6px 12px',
+                        display:'flex', alignItems:'center', gap:5,
+                      }}>
+                        {photoUploading
+                          ? <div className="ptr-spin" style={{ width:14, height:14, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
+                          : <span style={{ fontSize:14 }}>📷</span>
+                        }
+                        <span style={{ fontFamily:SANS, fontSize:12, color:'#fff', fontWeight:500 }}>
+                          {photoUploading ? '업로드 중...' : '사진 변경'}
+                        </span>
+                      </button>
+                    )}
+                  </div>
                   <div style={{ padding:'16px 18px 18px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
                       <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
@@ -2652,6 +2694,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         onClose={() => setDateRangeOpen(false)}
         onPick={(s, e) => { handlePickRange(s, e); setDateRangeOpen(false); }}
       />
+      <input ref={coverInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCoverPhoto}/>
     </div>
   );
 }
@@ -9791,6 +9834,7 @@ function App() {
         editing={editing} setEditing={setEditing}
         userData={userData} onOpenCompanion={() => setProfileSheetOpen(true)}
         onOpenNotifs={openNotifs} unreadCount={unreadCount}
+        tripId={activeTripId} authUser={authUser}
         onLoadSample={async () => {
           const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
           const patch = {

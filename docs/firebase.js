@@ -324,6 +324,17 @@ window.fbGetTripCompanions = async (tripId, myUid) => {
   return res.filter(Boolean);
 };
 
+window.fbUploadTripPhoto = async (tripId, file) => {
+  await _load();
+  const storage = firebase.storage();
+  const ext = file.name.split('.').pop() || 'jpg';
+  const ref = storage.ref(`trip-covers/${tripId}.${ext}`);
+  await ref.put(file, { contentType: file.type || 'image/jpeg' });
+  const url = await ref.getDownloadURL();
+  await _fbDb.collection('groups').doc(tripId).update({ coverImg: url });
+  return url;
+};
+
 window.fbDeleteTrip = async (tripId, uid) => {
   const snap = await _fbDb.collection('groups').doc(tripId).get();
   const members = snap.exists ? (snap.data().members || []) : [];
