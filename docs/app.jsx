@@ -2135,7 +2135,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v12</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v14</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5706,8 +5706,8 @@ const PrepCatItems = React.memo(function PrepCatItems({ ci, cat, cats, save, sav
   );
 });
 
-function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
-  const rawPrep = prepProp || trip.prep || {};
+function PrepScreen({ trip, onEditPrep, editing, setEditing }) {
+  const rawPrep = trip?.prep || window.TRIP_DEFAULT?.prep || {};
   const prep    = normalizePrepCats(rawPrep);
   const cats    = prep.cats || [];
 
@@ -9589,7 +9589,6 @@ function App() {
   const [authUser, setAuthUser]     = React.useState(null);
   const [userData, setUserData]     = React.useState(_cache?.userData || null);
   const [trip, setTrip]             = React.useState(normalizeTrip(_cache?.trip));
-  const [prep, setPrep]             = React.useState(_cache?.prep     || { checklist:[], docs:[], pack:[] });
   const [activeTripId, setActiveTripId] = React.useState(_nav.activeTripId || null);
   const [userTrips, setUserTrips]       = React.useState(() => (_cache?.userTrips || []));
   const [tripsLoading, setTripsLoading] = React.useState(!_cache?.userTrips);
@@ -9638,7 +9637,7 @@ function App() {
   const lastScrollTop    = React.useRef(0);
   const savedHomeScrollY = React.useRef(0);
   const navGoingBack     = React.useRef(false);
-  const editSnapshot     = React.useRef(null); // 편집 시작 시 trip+prep 스냅샷
+  const editSnapshot     = React.useRef(null); // 편집 시작 시 trip 스냅샷
 
   // 편집 버튼 토글 핸들러
   const stopSheetEditRef  = React.useRef(null); // StopSheet의 setEditing 연결용
@@ -9658,17 +9657,17 @@ function App() {
     }
     if (!editing) {
       if (!canEdit) return;
-      editSnapshot.current = JSON.stringify({ trip, prep });
+      editSnapshot.current = JSON.stringify(trip);
       setEditing(true);
     } else {
-      const changed = editSnapshot.current !== JSON.stringify({ trip, prep });
+      const changed = editSnapshot.current !== JSON.stringify(trip);
       if (changed) {
         setSaveConfirm(true); // 변경 있으면 확인 다이얼로그
       } else {
         setEditing(false);    // 변경 없으면 그냥 닫기
       }
     }
-  }, [openStop, hotelDetailSheet, editing, canEdit, trip, prep]);
+  }, [openStop, hotelDetailSheet, editing, canEdit, trip]);
 
   // ── 앱 준비되면 loginPending 해제 (trips 로딩 완료 후) ────────
   React.useEffect(() => {
@@ -9688,11 +9687,6 @@ function App() {
     const t = setTimeout(() => { try { localStorage.setItem('tlj_trip', JSON.stringify(trip)); } catch(_) {} }, 500);
     return () => clearTimeout(t);
   }, [trip]);
-  React.useEffect(() => {
-    if (!prep) return;
-    const t = setTimeout(() => { try { localStorage.setItem('tlj_prep', JSON.stringify(prep)); } catch(_) {} }, 500);
-    return () => clearTimeout(t);
-  }, [prep]);
   React.useEffect(() => {
     if (userTrips.length) {
       try { localStorage.setItem('tlj_userTrips', JSON.stringify(userTrips)); } catch(_) {}
@@ -9732,11 +9726,10 @@ function App() {
       } else {
         setAuthUser(null); setUserData(null);
         setTrip(null); setActiveTripId(null); setUserTrips([]);
-        setPrep({ checklist:[], docs:[], pack:[] });
         localStorage.removeItem('tlj_authed');
         localStorage.removeItem('tlj_userData');
         localStorage.removeItem('tlj_trip');
-        localStorage.removeItem('tlj_prep');
+        localStorage.removeItem('tlj_prep'); // legacy cleanup
         localStorage.removeItem('tlj_userTrips');
         setAuthState('out');
       }
@@ -9837,28 +9830,16 @@ function App() {
       const incoming = normalizeTrip(data, activeTripId);
       // 기존에 days 있는데 Firestore가 빈 데이터 주면 무시 (쓰기 진행 중)
       if (incoming.days.length === 0 && (tripRef.current?.days?.length || 0) > 0) return;
+      // prep 없으면 TRIP_DEFAULT.prep으로 초기화 (per-trip 아키텍처)
+      if (!incoming.prep && window.TRIP_DEFAULT?.prep?.cats?.length) {
+        const defaultPrep = window.TRIP_DEFAULT.prep;
+        incoming.prep = defaultPrep;
+        fbSaveGroup(activeTripId, { prep: defaultPrep }).catch(() => {});
+      }
       tripRef.current = incoming;
       setTrip(incoming);
     });
   }, [activeTripId]);
-
-  // ── Firestore: private prep listener ──────────────────────
-  React.useEffect(() => {
-    if (!authUser?.uid) return;
-    const PREP_VERSION = 1;
-    return fbListenPrep(authUser.uid, (p) => {
-      const def = window.TRIP_DEFAULT?.prep;
-      // prepVersion이 현재 버전보다 낮거나 cats 없으면 TRIP_DEFAULT.prep으로 업데이트
-      const needsUpdate = !p?.cats?.length || ((p.prepVersion || 0) < PREP_VERSION);
-      if (needsUpdate && def?.cats?.length > 0) {
-        const updated = { ...def, prepVersion: PREP_VERSION };
-        fbSavePrep(authUser.uid, updated).catch(console.error);
-        setPrep(updated);
-      } else {
-        setPrep(p);
-      }
-    });
-  }, [authUser?.uid]);
 
   // 여행 제목 바뀌면 시차 도시 · 환율 자동 감지 (저장된 timezone/defaultCurrency 우선 폴백)
   React.useEffect(() => {
@@ -9997,8 +9978,7 @@ function App() {
     }
   };
   const editPrep = (newPrep) => {
-    setPrep(newPrep);
-    if (authUser?.uid) fbSavePrep(authUser.uid, newPrep).catch(console.error);
+    editTrip({ prep: newPrep });
   };
 
   const deleteTrip = async (tripId) => {
@@ -10408,7 +10388,7 @@ function App() {
   }
   else if (tab === 'food')   { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} editing={editing} setEditing={setEditing}/>; label='Food'; }
   else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })} onSheetChange={v => { setBudgetSheetOpen(v); if (!v) setTabBarVisible(true); }} onTabBarToggle={() => setTabBarVisible(v => !v)}/>; label='Budget'; }
-  else                       { screen = <PrepScreen trip={trip} prep={prep} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
+  else                       { screen = <PrepScreen trip={trip} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
   const dayHue = dayIdx !== null && trip
     ? ((dayIdx === 0 ? (trip.hue ?? trip.days[0]?.hero?.hue) : trip.days[dayIdx]?.hero?.hue) ?? 30)
@@ -10440,6 +10420,7 @@ function App() {
                            : found.sampleId === 'nyc'  ? window.TRIP_DEFAULT
                            : window.TRIP_DEFAULT;
             const def = JSON.parse(JSON.stringify(localSrc));
+            const defPrep = def.prep?.cats?.length ? def.prep : (window.TRIP_DEFAULT?.prep || {});
             tripToShow = normalizeTrip({ ...found,
               title : found.title || def.title,
               dates : def.dates  || '',
@@ -10448,11 +10429,12 @@ function App() {
               hotels: def.hotels || [],
               food  : def.food   || [],
               budget: def.budget || {},
+              prep  : found.prep || defPrep,
             }, id);
             fbSaveGroup(id, { title: tripToShow.title, dates: tripToShow.dates,
               hotel: tripToShow.hotel, days: tripToShow.days,
               hotels: tripToShow.hotels, food: tripToShow.food,
-              budget: tripToShow.budget }).catch(() => {});
+              budget: tripToShow.budget, prep: tripToShow.prep }).catch(() => {});
           }
           if (tripToShow) { tripRef.current = tripToShow; setTrip(tripToShow); }
           setActiveTripId(id); setTab('home'); setDayIdx(null); setHotelIdx(null); setEditing(false);
@@ -10519,7 +10501,8 @@ function App() {
           const hue = pickUniqueHue(existingHues);
           const { tripId } = await fbCreateNewTrip(userData.uid, tripData.title, hue);
           await fbSaveGroup(tripId, { ...tripData, hue }).catch(() => {});
-          const newTrip = normalizeTrip({ id: tripId, ...tripData, hue, members:[userData.uid] }, tripId);
+          const defaultPrep = window.TRIP_DEFAULT?.prep?.cats?.length ? window.TRIP_DEFAULT.prep : { cats: [] };
+          const newTrip = normalizeTrip({ id: tripId, ...tripData, hue, prep: defaultPrep, members:[userData.uid] }, tripId);
           setUserTrips(prev => [...prev, newTrip]);
           tripRef.current = newTrip; setTrip(newTrip);
           setActiveTripId(tripId);
@@ -10642,7 +10625,8 @@ function App() {
           const hue = pickUniqueHue(existingHues);
           const { tripId } = await fbCreateNewTrip(userData.uid, tripData.title, hue);
           await fbSaveGroup(tripId, { ...tripData, hue }).catch(() => {});
-          const newTrip = normalizeTrip({ id: tripId, ...tripData, hue, members:[userData.uid] }, tripId);
+          const defaultPrep = window.TRIP_DEFAULT?.prep?.cats?.length ? window.TRIP_DEFAULT.prep : { cats: [] };
+          const newTrip = normalizeTrip({ id: tripId, ...tripData, hue, prep: defaultPrep, members:[userData.uid] }, tripId);
           setUserTrips(prev => [...prev, newTrip]);
           tripRef.current = newTrip; setTrip(newTrip);
           setActiveTripId(tripId);
