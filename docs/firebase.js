@@ -459,11 +459,9 @@ window.fbListenContacts = (uid, cb) => {
 };
 
 window.fbRemoveContact = async (myUid, contactUid) => {
-  // 양쪽 contacts에서 서로 제거 (보안 규칙: 자기 자신을 상대 contacts에서 제거하는 update 허용)
-  const batch = _fbDb.batch();
-  batch.update(_fbDb.collection('users').doc(myUid),      { contacts: firebase.firestore.FieldValue.arrayRemove(contactUid) });
-  batch.update(_fbDb.collection('users').doc(contactUid), { contacts: firebase.firestore.FieldValue.arrayRemove(myUid) });
-  await batch.commit();
+  // Cloud Function으로 양방향 삭제 (admin SDK → 보안 규칙 제한 없음)
+  const fn = firebase.functions().httpsCallable('removeContactBothSides');
+  await fn({ contactUid });
 };
 
 // ─── Notifications ──────────────────────────────────────────

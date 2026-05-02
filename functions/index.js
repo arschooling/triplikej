@@ -1,5 +1,6 @@
 const { setGlobalOptions } = require('firebase-functions');
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 
 setGlobalOptions({ maxInstances: 10 });
@@ -7,6 +8,22 @@ setGlobalOptions({ maxInstances: 10 });
 admin.initializeApp();
 const db = admin.firestore();
 const messaging = admin.messaging();
+
+// 동행인 양방향 삭제 — 보안 규칙 우회 없이 admin SDK로 처리
+exports.removeContactBothSides = onCall({ region: 'us-central1' }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Login required');
+  const myUid = request.auth.uid;
+  const { contactUid } = request.data;
+  if (!contactUid || typeof contactUid !== 'string') throw new HttpsError('invalid-argument', 'contactUid required');
+  if (contactUid === myUid) throw new HttpsError('invalid-argument', 'Cannot remove self');
+
+  const batch = db.batch();
+  const remove = admin.firestore.FieldValue.arrayRemove;
+  batch.update(db.collection('users').doc(myUid),      { contacts: remove(contactUid) });
+  batch.update(db.collection('users').doc(contactUid), { contacts: remove(myUid) });
+  await batch.commit();
+  return { success: true };
+});
 
 exports.sendPushNotification = onDocumentCreated(
   'users/{uid}/notifications/{notifId}',
