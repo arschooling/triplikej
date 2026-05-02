@@ -2098,7 +2098,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v462</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v463</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5578,7 +5578,8 @@ function PrepCatItems({ ci, cat, cats, save, saveWithUndo, editing, editingItem,
               isDragging={!!prepDrag}
               wrapStyle={{ borderRadius:14 }}
             >
-              <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px',
+              <div style={{ display:'flex', alignItems:'center', gap:12,
+                padding: isEditingThis ? '16px 14px' : '12px 14px',
                 background:COLORS.card, borderRadius:14 }}>
                 <button onClick={() => toggle(ii)} style={{
                   width:18, height:18, borderRadius:9, border:'none', padding:0, cursor:'pointer', flexShrink:0,
@@ -5593,8 +5594,12 @@ function PrepCatItems({ ci, cat, cats, save, saveWithUndo, editing, editingItem,
                     onChange={e => updateItem(ii, e.target.value)}
                     onBlur={() => { if (isEditingThis) setEditingItem(null); }}
                     onKeyDown={e => { if (e.key==='Enter' || e.key==='Escape') setEditingItem(null); }}
-                    style={{ flex:1, border:'none', outline:'none', background:'transparent',
-                      fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
+                    style={{ flex:1, border:'none', outline:'none',
+                      background: isEditingThis ? COLORS.softer : 'transparent',
+                      borderRadius: isEditingThis ? 8 : 0,
+                      padding: isEditingThis ? '8px 10px' : 0,
+                      fontFamily:SANS, fontSize: isEditingThis ? 15 : 13.5,
+                      color:COLORS.ink }}/>
                 ) : (
                   <span style={{ flex:1, fontFamily:SANS, fontSize:13.5, color:COLORS.ink,
                     textDecoration: isDone ? 'line-through' : 'none', opacity: isDone ? 0.5 : 1 }}>{item}</span>
@@ -5967,17 +5972,18 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
               emptyDropRef={el => { prepItemEls.current[`${ci}_empty`] = el; }}/>
             {/* 항목 추가 */}
             {addInputCat === ci ? (
-              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px',
+              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 14px',
                 borderTop: cat.items?.length ? `1px solid ${COLORS.line}` : 'none' }}>
                 <div style={{ width:16, height:16, borderRadius:8, border:`1.5px solid ${COLORS.line}`, flexShrink:0 }}/>
                 <input autoFocus value={addInputText} onChange={e => setAddInputText(e.target.value)}
                   placeholder="항목 입력..."
                   onKeyDown={e => { if (e.key==='Enter') addItem(ci); if (e.key==='Escape') { setAddInputCat(null); setAddInputText(''); }}}
-                  style={{ flex:1, border:'none', outline:'none', background:'transparent',
-                    fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
+                  style={{ flex:1, border:'none', outline:'none', background:COLORS.softer,
+                    borderRadius:8, padding:'8px 10px',
+                    fontFamily:SANS, fontSize:14, color:COLORS.ink }}/>
                 <button onClick={() => addItem(ci)} style={{
-                  padding:'4px 10px', border:'none', borderRadius:8,
-                  background:COLORS.accent, color:'#fff', fontFamily:SANS, fontSize:12, cursor:'pointer' }}>추가</button>
+                  padding:'8px 14px', border:'none', borderRadius:10,
+                  background:COLORS.accent, color:'#fff', fontFamily:SANS, fontSize:13, cursor:'pointer' }}>추가</button>
               </div>
             ) : (
               <button onClick={() => { setAddInputCat(ci); setAddInputText(''); }} style={{
