@@ -5617,9 +5617,19 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
 
   const copyAll = () => {
     const text = cats.map(c => c.name + '\n' + (c.items || []).map(i => `- [ ] ${i}`).join('\n')).join('\n\n');
-    navigator.clipboard?.writeText(text).catch(() => {});
-    setCopyToast(true);
-    setTimeout(() => setCopyToast(false), 2000);
+    const doToast = () => { setCopyToast(true); setTimeout(() => setCopyToast(false), 2000); };
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); doToast(); } catch(_) {}
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(doToast).catch(fallback);
+    } else {
+      fallback();
+    }
   };
 
   const clearCatItems = (ci) => {
