@@ -1314,7 +1314,7 @@ const FX_CURRENCIES = [
   { code:'AED', sym:'AED', name:'UAE 디르함',         unit:1   },
   { code:'MYR', sym:'RM',  name:'말레이시아 링깃',   unit:1   },
   { code:'VND', sym:'₫',   name:'베트남 동',         unit:100 },
-  { code:'PHP', sym:'₱',   name:'필리핀 페소',       unit:1   },
+  { code:'PHP', sym:'₱',   name:'필리핀 페소',       unit:100 },
   { code:'MXN', sym:'MX$', name:'멕시코 페소',       unit:1   },
 ];
 
@@ -2099,7 +2099,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v471</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v472</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
