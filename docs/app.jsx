@@ -2032,7 +2032,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v441</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v442</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2159,7 +2159,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onAddHotelViaStop, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
-                      userData, myUid, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount, photoVer }) {
+                      userData, myUid, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount, photoVer, onPhotoUploaded }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
@@ -2178,6 +2178,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
       const url = await window.fbUploadDayPhoto(myUid, trip.id, idx, dataUrl);
       _dayPhotoCache[`${myUid}_${trip.id}_${idx}`] = url;
       setCardPhotoVersions(v => ({ ...v, [idx]: (v[idx] || 0) + 1 }));
+      onPhotoUploaded?.();
     } catch(_) {} finally {
       setCardPhotoUploading(null);
       e.target.value = '';
@@ -9921,6 +9922,7 @@ function App() {
         editing={editing} setEditing={setEditing}
         userData={userData} myUid={authUser?.uid} onOpenCompanion={() => setProfileSheetOpen(true)}
         onOpenNotifs={openNotifs} unreadCount={unreadCount} photoVer={photoVer}
+        onPhotoUploaded={() => setPhotoVer(v => v + 1)}
         onLoadSample={async () => {
           const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
           const patch = {
