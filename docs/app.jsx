@@ -2032,7 +2032,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v434</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v435</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2510,18 +2510,14 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                     {editing && (
                       <button onClick={() => { if (cardPhotoUploading === null) { cardPhotoTargetIdx.current = i; cardPhotoInputRef.current?.click(); } }} style={{
                         position:'absolute', bottom:10, right:10, zIndex:5,
-                        background:'rgba(0,0,0,0.45)', border:'none', cursor: cardPhotoUploading === i ? 'default' : 'pointer',
-                        borderRadius:20, padding:'6px 10px',
-                        display:'flex', alignItems:'center', gap:5,
-                        opacity: cardPhotoUploading !== null && cardPhotoUploading !== i ? 0.5 : 1,
+                        background:'none', border:'none', cursor: cardPhotoUploading === i ? 'default' : 'pointer',
+                        padding:0, display:'flex', alignItems:'center',
+                        opacity: cardPhotoUploading !== null && cardPhotoUploading !== i ? 0.3 : 1,
                       }}>
                         {cardPhotoUploading === i
-                          ? <div className="ptr-spin" style={{ width:16, height:16, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
-                          : <Icon name="camera" size={16} color="#fff" stroke={1.8}/>
+                          ? <div className="ptr-spin" style={{ width:20, height:20, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
+                          : <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
                         }
-                        <span style={{ fontFamily:SANS, fontSize:12, color:'#fff', fontWeight:500 }}>
-                          {cardPhotoUploading === i ? '업로드 중...' : '사진 변경'}
-                        </span>
                       </button>
                     )}
                   </div>
@@ -2862,17 +2858,13 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
           <>
             <button onClick={() => !photoUploading && dayPhotoInputRef.current?.click()} style={{
               position:'absolute', bottom:42, right:16, zIndex:5,
-              background:'rgba(0,0,0,0.45)', border:'none', cursor: photoUploading ? 'default' : 'pointer',
-              borderRadius:20, padding:'6px 10px',
-              display:'flex', alignItems:'center', gap:5, opacity: photoUploading ? 0.5 : 1,
+              background:'none', border:'none', cursor: photoUploading ? 'default' : 'pointer',
+              padding:0, display:'flex', alignItems:'center', opacity: photoUploading ? 0.5 : 1,
             }}>
               {photoUploading
-                ? <div className="ptr-spin" style={{ width:16, height:16, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
-                : <Icon name="camera" size={16} color="#fff" stroke={1.8}/>
+                ? <div className="ptr-spin" style={{ width:22, height:22, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
+                : <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
               }
-              <span style={{ fontFamily:SANS, fontSize:12, color:'#fff', fontWeight:500 }}>
-                {photoUploading ? '업로드 중...' : '사진 변경'}
-              </span>
             </button>
             <input ref={dayPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleDayPhoto}/>
           </>
@@ -3613,9 +3605,25 @@ function NearbySheet({ stop, initialTab, onClose }) {
 }
 
 // ─── Stop sheet (unchanged except pulls editing from open) ─
-function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, onTabBarToggle }) {
+function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, onTabBarToggle, uid, tripId, stopIdx }) {
   if (!open) return null;
   const [editing, setEditing] = React.useState(!!open.editing);
+  const [stopPhotoUploading, setStopPhotoUploading] = React.useState(false);
+  const stopPhotoInputRef = React.useRef(null);
+  const handleStopPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !uid || !tripId) return;
+    setStopPhotoUploading(true);
+    try {
+      const dataUrl = await resizeImage(file);
+      const key = `stop_${stopIdx ?? 0}_${Date.now()}`;
+      const url = await window.fbUploadDayPhoto(uid, tripId, key, dataUrl);
+      setDraft(d => ({ ...d, photo: url }));
+    } catch(_) {} finally {
+      setStopPhotoUploading(false);
+      e.target.value = '';
+    }
+  };
   // 탭바 수정 버튼과 연동
   React.useEffect(() => {
     onRegisterEdit?.(() => setEditing(e => !e));
@@ -3770,19 +3778,38 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
         </div>
         {/* 사진 영역 + 수정 버튼 오버레이 */}
         <div style={{ position:'relative' }}>
-          <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180}/>
+          {draft.photo
+            ? <img src={draft.photo} alt="" style={{ width:'100%', height:180, objectFit:'cover', display:'block' }}/>
+            : <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180}/>
+          }
           {!editing && (
-            <button onClick={(e) => { e.stopPropagation(); setEditing(true); }} style={{
-              position:'absolute', top:12, right:12, zIndex:5,
-              border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
-              padding:'7px 13px', cursor:'pointer',
-              fontFamily:SANS, fontSize:12, fontWeight:500, color:COLORS.ink,
-              display:'flex', gap:5, alignItems:'center',
-              boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
-            }}>
-              <Icon name="edit" size={12} color={COLORS.ink} stroke={2}/> 수정
-            </button>
+            <div style={{ position:'absolute', top:12, right:12, zIndex:5, display:'flex', gap:8, alignItems:'center' }}>
+              {uid && tripId && (
+                <button onClick={e => { e.stopPropagation(); stopPhotoInputRef.current?.click(); }} style={{
+                  border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
+                  padding:'7px 10px', cursor:'pointer',
+                  display:'flex', alignItems:'center',
+                  boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
+                  opacity: stopPhotoUploading ? 0.5 : 1,
+                }}>
+                  {stopPhotoUploading
+                    ? <div className="ptr-spin" style={{ width:12, height:12, border:'2px solid rgba(0,0,0,0.2)', borderTopColor:COLORS.ink, borderRadius:'50%' }}/>
+                    : <Icon name="camera" size={12} color={COLORS.ink} stroke={2}/>
+                  }
+                </button>
+              )}
+              <button onClick={(e) => { e.stopPropagation(); setEditing(true); }} style={{
+                border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
+                padding:'7px 13px', cursor:'pointer',
+                fontFamily:SANS, fontSize:12, fontWeight:500, color:COLORS.ink,
+                display:'flex', gap:5, alignItems:'center',
+                boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
+              }}>
+                <Icon name="edit" size={12} color={COLORS.ink} stroke={2}/> 수정
+              </button>
+            </div>
           )}
+          <input ref={stopPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleStopPhoto}/>
         </div>
         <div style={{ padding:'18px 20px 0' }}>
           <div style={{ display:'flex', gap:6, alignItems:'center',
@@ -10130,7 +10157,8 @@ function App() {
         onClose={() => { setOpenStop(null); setTabBarPeeking(false); }}
         onSave={saveStop}
         onRegisterEdit={fn => { stopSheetEditRef.current = fn; }}
-        onTabBarToggle={() => setTabBarVisible(v => !v)}/>
+        onTabBarToggle={() => setTabBarVisible(v => !v)}
+        uid={authUser?.uid} tripId={activeTripId} stopIdx={openStop?.idx}/>
       <HotelSheet
         open={hotelDetailSheet !== null}
         onClose={() => setHotelDetailSheet(null)}
