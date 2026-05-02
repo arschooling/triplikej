@@ -111,12 +111,26 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
     case 'bell':       return <svg {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
     case 'copy':       return <svg {...p}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>;
     case 'clipboard':  return <svg {...p}><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14h6M9 10h6M9 18h4"/></svg>;
+    case 'camera':     return <svg {...p}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>;
     default: return null;
   }
 };
 
 // ─── Photo placeholder ──────────────────────────────────────
-function Photo({ hue=20, label='', height=180, small=false }) {
+function Photo({ hue=20, label='', height=180, small=false, img=null }) {
+  if (img) {
+    return (
+      <div style={{ width:'100%', height, position:'relative', overflow:'hidden' }}>
+        <img src={img} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
+        {label && !small && (
+          <div style={{ position:'absolute', bottom:14, left:14,
+            fontFamily:MONO, fontSize:10, letterSpacing:'0.14em',
+            color:'rgba(255,255,255,0.85)', textTransform:'uppercase',
+            textShadow:'0 1px 4px rgba(0,0,0,0.4)' }}>{label}</div>
+        )}
+      </div>
+    );
+  }
   const bg=`oklch(0.88 0.035 ${hue})`, bg2=`oklch(0.80 0.045 ${hue})`;
   const ink=`oklch(0.36 0.04 ${hue})`;
   return (
@@ -1984,7 +1998,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v435</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v436</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2005,7 +2019,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                     WebkitTapHighlightColor:'transparent',
                   }}>
                     <div style={{ position:'relative' }}>
-                      <Photo hue={hue} label={label} height={130}/>
+                      <Photo hue={hue} label={label} height={130} img={t.coverImg || null}/>
                       {companionCount > 0 && (
                         <div style={{
                           position:'absolute', top:10, right:12,
@@ -2102,18 +2116,49 @@ function isoToWeekday(iso) {
   return WEEKDAY_NAMES[d.getDay()];
 }
 
+const resizeImage = (file, maxPx=1200, quality=0.82) => new Promise((resolve, reject) => {
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+    const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('resize failed')), 'image/jpeg', quality);
+  };
+  img.onerror = reject;
+  img.src = url;
+});
+
 // ─── Home ───────────────────────────────────────────────────
 function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPickCity,
                       curCode, onSetCurCode,
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onAddHotelViaStop, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
-                      userData, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount }) {
+                      userData, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount,
+                      authUser, tripId }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
   const [sampleLoading, setSampleLoading] = React.useState(false);
   const [sampleErr, setSampleErr] = React.useState('');
+  const [photoUploading, setPhotoUploading] = React.useState(false);
+  const coverFileRef = React.useRef(null);
+  const handleCoverPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !authUser || !tripId) return;
+    e.target.value = '';
+    setPhotoUploading(true);
+    try {
+      const blob = await resizeImage(file, 1200, 0.82);
+      const url = await window.fbUploadTripPhoto(authUser.uid, tripId, blob);
+      onEditTrip({ coverImg: url });
+    } catch(err) { console.error('photo upload:', err); }
+    finally { setPhotoUploading(false); }
+  };
   const handleLoadSample = async () => {
     if (!onLoadSample || sampleLoading) return;
     setSampleLoading(true); setSampleErr('');
@@ -2432,7 +2477,21 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   boxShadow:'0 1px 2px rgba(0,0,0,0.03), 0 12px 28px rgba(0,0,0,0.05)',
                   background:COLORS.card,
                 }}>
-                  <Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>
+                  <div style={{ position:'relative' }}>
+                    <Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170} img={trip.coverImg || null}/>
+                    {editing && i === featuredIdx && (
+                      <button onClick={() => coverFileRef.current?.click()}
+                        style={{ position:'absolute', bottom:10, right:10, zIndex:5,
+                          width:36, height:36, borderRadius:18, border:'none',
+                          background:'rgba(255,255,255,0.88)', cursor:'pointer',
+                          display:'flex', alignItems:'center', justifyContent:'center',
+                          boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>
+                        {photoUploading
+                          ? <div style={{ width:14, height:14, borderRadius:7, border:`2px solid ${COLORS.ink}`, borderTopColor:'transparent', animation:'ptr-spin 0.7s linear infinite' }}/>
+                          : <Icon name="camera" size={16} color={COLORS.ink} stroke={1.8}/>}
+                      </button>
+                    )}
+                  </div>
                   <div style={{ padding:'16px 18px 18px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
                       <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.accent, letterSpacing:'0.14em' }}>
@@ -2652,13 +2711,15 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         onClose={() => setDateRangeOpen(false)}
         onPick={(s, e) => { handlePickRange(s, e); setDateRangeOpen(false); }}
       />
+      <input ref={coverFileRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCoverPhoto}/>
     </div>
   );
 }
 
 // ─── Day screen ─────────────────────────────────────────────
 function DayScreen({ trip, dayIdx, onBack, onOpenStop, onNavDay,
-                     onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing }) {
+                     onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing,
+                     tripId, authUser }) {
   const day = trip.days[dayIdx] || { n: dayIdx+1, title:'', date:'', weekday:'', hero:{ hue:25, label:'' }, items:[] };
   const tripYear = extractTripYear(trip);
   const [travelTimes, setTravelTimes] = React.useState({});
@@ -9811,6 +9872,7 @@ function App() {
         editing={editing} setEditing={setEditing}
         userData={userData} onOpenCompanion={() => setProfileSheetOpen(true)}
         onOpenNotifs={openNotifs} unreadCount={unreadCount}
+        authUser={authUser} tripId={activeTripId}
         onLoadSample={async () => {
           const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
           const patch = {
