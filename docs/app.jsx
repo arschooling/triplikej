@@ -7827,13 +7827,10 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
       const reserve = dinnerDone ? 0 : DINNER_DUR;
       if (t + travelMin + dur > DAY_END - reserve) break outer;
 
-      // 대중교통 이동 항목
-      if (transit && prev) {
-        dayItems[dayIdx].push({ time:minToTime(t), title:'대중교통 이동', loc:'', done:false });
-      }
       t += travelMin;
+      const transitNote = (transit && prev) ? `대중교통 이동 약 ${travelMin}분` : '';
 
-      dayItems[dayIdx].push({ time:minToTime(t), title:p.name, loc:p.name, done:false, lat:p.lat, lon:p.lon, coords:[p.lat, p.lon], _popRank:p._popRank ?? 999 });
+      dayItems[dayIdx].push({ time:minToTime(t), title:p.name, loc:p.name, done:false, lat:p.lat, lon:p.lon, coords:[p.lat, p.lon], _popRank:p._popRank ?? 999, ...(transitNote ? { note: transitNote } : {}) });
       t += dur;
       prev = p;
       pIdx++;
