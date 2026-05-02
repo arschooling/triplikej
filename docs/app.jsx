@@ -364,7 +364,16 @@ function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDrag
       <div ref={outerRef}
         style={{ ...(sideLeft ? { display:'flex', alignItems:'flex-start' } : { flex: wrapStyle.flex }), ...collapseStyle }}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        {sideLeft}
+        {/* sideLeft(시간·체크박스)도 카드와 함께 이동 */}
+        {sideLeft && (
+          <div style={{
+            transform:`translateX(${x}px)`,
+            transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
+            willChange:'transform',
+          }}>
+            {sideLeft}
+          </div>
+        )}
         {/* overflow 없음 → 카드가 컨테이너 밖으로 자유롭게 이동 */}
         <div style={{ position:'relative', ...wrapStyle, flex: sideLeft ? 1 : undefined }}>
           {/* 버튼들: 카드 뒤에, 날아가는 동안 숨김 */}
@@ -2102,7 +2111,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v477</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v478</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
