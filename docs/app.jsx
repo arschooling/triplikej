@@ -1980,7 +1980,7 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
   );
 }
 
-function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loading, userData, onOpenCompanion, myUid, onOpenNotifs, unreadCount }) {
+function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loading, userData, onOpenCompanion, myUid, onOpenNotifs, unreadCount, photoVer }) {
   const [restoring, setRestoring] = React.useState(false);
   const [restoreErr, setRestoreErr] = React.useState('');
   const handleRestore = async () => {
@@ -2032,7 +2032,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v440</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v441</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2055,7 +2055,8 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                     <div style={{ position:'relative' }}>
                       <DayPhotoImg uid={myUid} tripId={t.id} dayIdx={0}
                         style={{ width:'100%', height:130, objectFit:'cover', display:'block' }}
-                        fallback={<Photo hue={hue} label={label} height={130}/>}/>
+                        fallback={<Photo hue={hue} label={label} height={130}/>}
+                        refreshKey={photoVer || 0}/>
                       {companionCount > 0 && (
                         <div style={{
                           position:'absolute', top:10, right:12,
@@ -2158,7 +2159,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onAddHotelViaStop, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
-                      userData, myUid, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount }) {
+                      userData, myUid, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount, photoVer }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
@@ -2506,7 +2507,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                     <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
                       style={{ width:'100%', height:170, objectFit:'cover', display:'block' }}
                       fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>}
-                      refreshKey={cardPhotoVersions[i] || 0}/>
+                      refreshKey={(cardPhotoVersions[i] || 0) + (photoVer || 0)}/>
                     {editing && (
                       <button onClick={() => { if (cardPhotoUploading === null) { cardPhotoTargetIdx.current = i; cardPhotoInputRef.current?.click(); } }} style={{
                         position:'absolute', bottom:10, right:10, zIndex:5,
@@ -2747,7 +2748,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
 
 // ─── Day screen ─────────────────────────────────────────────
 function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay,
-                     onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing }) {
+                     onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing, onPhotoUploaded }) {
   const day = trip.days[dayIdx] || { n: dayIdx+1, title:'', date:'', weekday:'', hero:{ hue:25, label:'' }, items:[] };
   const tripYear = extractTripYear(trip);
   const [travelTimes, setTravelTimes] = React.useState({});
@@ -2829,6 +2830,7 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
       const url = await window.fbUploadDayPhoto(authUid, tripId, dayIdx, dataUrl);
       _dayPhotoCache[`${authUid}_${tripId}_${dayIdx}`] = url;
       setDayPhoto(url);
+      onPhotoUploaded?.();
     } catch(_) {} finally {
       setPhotoUploading(false);
     }
@@ -9238,6 +9240,7 @@ function App() {
   const [hotelDetailSheet, setHotelDetailSheet] = React.useState(null); // null=closed, 'new'=add, number=idx
   const [scrollKey, setScrollKey]     = React.useState(0);
   const [editing, setEditing]         = React.useState(false);
+  const [photoVer, setPhotoVer]       = React.useState(0);
   const [tabBarVisible, setTabBarVisible] = React.useState(true);
   const [tabBarPeeking, setTabBarPeeking] = React.useState(false);
   const [budgetSheetOpen, setBudgetSheetOpen] = React.useState(false);
@@ -9895,7 +9898,8 @@ function App() {
         onNavDay={(i) => { setDayIdx(i); setOpenStop(null); setScrollKey(k=>k+1); }}
         onEditDay={editDay} onAddItem={addItem} onDeleteItem={deleteItem}
         onReorderItems={reorderItems}
-        editing={editing} setEditing={setEditing}/>;
+        editing={editing} setEditing={setEditing}
+        onPhotoUploaded={() => setPhotoVer(v => v + 1)}/>;
       label = `Day ${dayIdx + 1}`;
     } else {
       screen = <HomeScreen trip={trip}
@@ -9916,7 +9920,7 @@ function App() {
         onAddItemToFirstDay={addItemToFirstDay}
         editing={editing} setEditing={setEditing}
         userData={userData} myUid={authUser?.uid} onOpenCompanion={() => setProfileSheetOpen(true)}
-        onOpenNotifs={openNotifs} unreadCount={unreadCount}
+        onOpenNotifs={openNotifs} unreadCount={unreadCount} photoVer={photoVer}
         onLoadSample={async () => {
           const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
           const patch = {
@@ -9970,7 +9974,7 @@ function App() {
         userData={userData}
         myUid={authUser?.uid}
         onOpenCompanion={() => setProfileSheetOpen(true)}
-        onOpenNotifs={openNotifs} unreadCount={unreadCount}
+        onOpenNotifs={openNotifs} unreadCount={unreadCount} photoVer={photoVer}
         onSelect={(id) => {
           const found = userTrips.find(t => t.id === id);
           let tripToShow = found;
