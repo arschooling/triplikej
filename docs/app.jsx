@@ -2135,7 +2135,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v490</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v491</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9579,8 +9579,6 @@ function App() {
   const [shareTripTarget, setShareTripTarget] = React.useState(null);
   const [loginError, setLoginError] = React.useState('');
   const [loginPending, setLoginPending] = React.useState(false); // 로그인 버튼 누른 후 로딩 중
-  const [debugLogs, setDebugLogs] = React.useState([]);
-  const _dbg = (msg) => setDebugLogs(p => [...p.slice(-9), `${new Date().toISOString().slice(11,19)} ${msg}`]);
   const tripRef = React.useRef(null); // for loop-prevention
 
   // ── UI nav state ───────────────────────────────────────────
@@ -9729,7 +9727,6 @@ function App() {
     const uid = userData.uid;
     const email = userData.email || '';
     const tripIds = userData.tripIds.length > 0 ? userData.tripIds : (userData.groupId ? [userData.groupId] : []);
-    _dbg(`load start uid=${uid.slice(0,6)} ids=${tripIds.length}`);
     setTripsLoading(true);
 
     // 샘플 싱크: rome만 자동 추가 (nyc는 오너 전용)
@@ -9747,7 +9744,6 @@ function App() {
       const allIds = [...tripIds, ...newIds];
       return fbLoadTrips(allIds).then(async trips => {
         if (!alive) return;
-        _dbg(`load ok trips=${trips.length}`);
         const normalized = trips.map(t => normalizeTrip(t, t.id));
         // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 — 오너 계정 전용
         const isOwner = (email) => email === 'arjungtaeng@gmail.com';
@@ -10369,11 +10365,6 @@ function App() {
   // ── 여행 목록 화면 ─────────────────────────────────────────
   if (!activeTripId) return (
     <>
-      {debugLogs.length > 0 && (
-        <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:9999, background:'rgba(0,0,0,0.85)', color:'#0f0', fontFamily:'monospace', fontSize:10, padding:'4px 8px', pointerEvents:'none' }}>
-          {debugLogs.map((l,i) => <div key={i}>{l}</div>)}
-        </div>
-      )}
       <TripsScreen
         trips={userTrips}
         loading={tripsLoading}
