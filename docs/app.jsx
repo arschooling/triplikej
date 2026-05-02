@@ -134,14 +134,41 @@ function resizeImage(file, maxWidth=800, quality=0.75) {
     img.src = url;
   });
 }
-// 캐시: Storage URL을 메모리에 저장 (세션 중 재요청 방지)
+// 캐시: Storage URL + 이미지 데이터를 메모리/localStorage에 저장
 const _dayPhotoCache = {};
+const _imgDataCache  = {};
+const _LS_PREFIX  = 'tlj_ph_';
+const _IMG_PREFIX = 'tlj_imgb_';
+
+function getCachedDayPhotoData(uid, tripId, dayIdx) {
+  const key = `${uid}_${tripId}_${dayIdx}`;
+  if (_imgDataCache[key]) return _imgDataCache[key];
+  try {
+    const v = localStorage.getItem(_IMG_PREFIX + key);
+    if (v) { _imgDataCache[key] = v; return v; }
+  } catch(_) {}
+  return null;
+}
+function setCachedDayPhotoData(uid, tripId, dayIdx, dataUrl) {
+  const key = `${uid}_${tripId}_${dayIdx}`;
+  _imgDataCache[key] = dataUrl;
+  try { localStorage.setItem(_IMG_PREFIX + key, dataUrl); } catch(_) {}
+}
+
 async function getDayPhotoUrl(uid, tripId, dayIdx) {
+  // 캐시된 이미지 데이터가 있으면 네트워크 요청 없이 즉시 반환
+  const cached = getCachedDayPhotoData(uid, tripId, dayIdx);
+  if (cached) return cached;
   const key = `${uid}_${tripId}_${dayIdx}`;
   if (_dayPhotoCache[key] !== undefined) return _dayPhotoCache[key];
   try {
+    const lsVal = localStorage.getItem(_LS_PREFIX + key);
+    if (lsVal !== null) { _dayPhotoCache[key] = lsVal || null; return _dayPhotoCache[key]; }
+  } catch(_) {}
+  try {
     const url = await firebase.storage().ref(`user-photos/${uid}/${tripId}/${dayIdx}`).getDownloadURL();
     _dayPhotoCache[key] = url;
+    try { localStorage.setItem(_LS_PREFIX + key, url); } catch(_) {}
     return url;
   } catch(_) {
     _dayPhotoCache[key] = null;
@@ -149,20 +176,57 @@ async function getDayPhotoUrl(uid, tripId, dayIdx) {
   }
 }
 function invalidateDayPhotoCache(uid, tripId, dayIdx) {
-  delete _dayPhotoCache[`${uid}_${tripId}_${dayIdx}`];
+  const key = `${uid}_${tripId}_${dayIdx}`;
+  delete _dayPhotoCache[key];
+  delete _imgDataCache[key];
+  try { localStorage.removeItem(_LS_PREFIX + key); } catch(_) {}
+  try { localStorage.removeItem(_IMG_PREFIX + key); } catch(_) {}
+}
+// 동기 캐시 조회 — 이미지 데이터 또는 URL을 즉시 반환, 없으면 undefined
+function getCachedDayPhotoUrl(uid, tripId, dayIdx) {
+  if (!uid || !tripId) return null;
+  const cached = getCachedDayPhotoData(uid, tripId, dayIdx);
+  if (cached) return cached;
+  const key = `${uid}_${tripId}_${dayIdx}`;
+  if (_dayPhotoCache[key] !== undefined) return _dayPhotoCache[key];
+  try {
+    const v = localStorage.getItem(_LS_PREFIX + key);
+    if (v !== null) { _dayPhotoCache[key] = v || null; return _dayPhotoCache[key]; }
+  } catch(_) {}
+  return undefined;
 }
 
 // ─── DayPhotoImg: Storage URL 비동기 로드 래퍼 ─────────────
-const DayPhotoImg = React.memo(function DayPhotoImg({ uid, tripId, dayIdx, style, fallback }) {
-  const [url, setUrl] = React.useState(null);
+const DayPhotoImg = React.memo(function DayPhotoImg({ uid, tripId, dayIdx, style, fallback, refreshKey }) {
+  const initCached = getCachedDayPhotoUrl(uid, tripId, dayIdx);
+  const [url, setUrl]       = React.useState(initCached != null ? initCached : null);
+  const [loaded, setLoaded] = React.useState(false);
+  const [useFade, setUseFade] = React.useState(initCached == null);
+  const prevUrl = React.useRef(initCached != null ? initCached : null);
+
   React.useEffect(() => {
     if (!uid || !tripId) { setUrl(null); return; }
     let alive = true;
-    getDayPhotoUrl(uid, tripId, dayIdx).then(u => { if (alive) setUrl(u); });
+    getDayPhotoUrl(uid, tripId, dayIdx).then(u => {
+      if (!alive) return;
+      const changed = u !== prevUrl.current;
+      prevUrl.current = u;
+      setUrl(u);
+      if (u && changed) { setLoaded(false); setUseFade(true); }
+    });
     return () => { alive = false; };
-  }, [uid, tripId, dayIdx]);
+  }, [uid, tripId, dayIdx, refreshKey]);
+
   if (!url) return fallback || null;
-  return <img src={url} alt="" style={style}/>;
+  if (!useFade) return <img src={url} alt="" style={style}/>;
+  return (
+    <div style={{ position:'relative', width: style && style.width, height: style && style.height }}>
+      {fallback}
+      <img src={url} alt="" onLoad={() => setLoaded(true)}
+        style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover',
+                 opacity: loaded ? 1 : 0, transition: loaded ? 'opacity 0.3s ease' : 'none' }}/>
+    </div>
+  );
 });
 
 // ─── Photo placeholder ──────────────────────────────────────
@@ -213,7 +277,7 @@ function EditBtn({ editing, onClick, compact }) {
 }
 
 // ─── Swipeable row (swipe-left to reveal edit/delete) ────────
-const SwipeableRow = React.memo(function SwipeableRow({ children, onEdit, onDelete, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe }) {
+const SwipeableRow = React.memo(function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe, compact, sideLeft, bottomGap = 0 }) {
   const [x, setX]             = React.useState(0);
   const [open, setOpen]       = React.useState(false);
   const [flying, setFlying]   = React.useState(false);  // 날아가는 중
@@ -232,6 +296,7 @@ const SwipeableRow = React.memo(function SwipeableRow({ children, onEdit, onDele
   // 카드를 화면 밖으로 날린 뒤 높이를 접고 onDelete 호출
   const flyOff = () => {
     if (flying) return;
+    onFlyStart?.();
     const h = outerRef.current?.offsetHeight || 0;
     if (h) setCollapseH(h); // 현재 높이 고정 (접기 시작점)
     setFlying(true);
@@ -293,53 +358,84 @@ const SwipeableRow = React.memo(function SwipeableRow({ children, onEdit, onDele
   } : {};
 
   if (cardSwipe) {
+    // 버튼 + 카드 (sideLeft 유무 공통)
+    const _buttons = !flying && (
+      <div style={{
+        position:'absolute', right:0, top:0, bottom:0,
+        display:'flex', alignItems:'center', justifyContent:'flex-end',
+        gap:8, paddingRight:10,
+      }}>
+        {onEdit && (
+          <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
+            minWidth: editLabel ? 56 : compact ? 30 : 38, height: editLabel ? 36 : compact ? 30 : 38,
+            borderRadius: editLabel ? 10 : compact ? 15 : 19, border:'none', cursor:'pointer',
+            background: editBg || '#ffa500', flexShrink:0, padding: editLabel ? '0 12px' : 0,
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            {editLabel
+              ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{editLabel}</span>
+              : <Icon name={editIcon||'edit'} size={compact ? 12 : 14} color="#fff" stroke={2}/>}
+          </button>
+        )}
+        <button onClick={(e)=>{e.stopPropagation(); flyOff();}} style={{
+          minWidth: deleteLabel ? 48 : compact ? 30 : 38, height: deleteLabel ? 36 : compact ? 30 : 38,
+          borderRadius: deleteLabel ? 10 : compact ? 15 : 19, border:'none', cursor:'pointer',
+          background:'#B5451B', flexShrink:0, padding: deleteLabel ? '0 12px' : 0,
+          display:'flex', alignItems:'center', justifyContent:'center',
+        }}>
+          {deleteLabel
+            ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{deleteLabel}</span>
+            : <Icon name="trash" size={compact ? 12 : 14} color="#fff" stroke={2}/>}
+        </button>
+      </div>
+    );
+    const _slideCard = (
+      <div style={{
+        position:'relative', zIndex:1,
+        transform:`translateX(${x}px)`,
+        transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
+        willChange:'transform', WebkitTapHighlightColor:'transparent',
+      }}>
+        {children}
+      </div>
+    );
+
+    if (sideLeft) {
+      // sideLeft 있는 경우: column flex로 bottomGap까지 함께 접힘
+      return (
+        <div ref={outerRef}
+          style={{ display:'flex', flexDirection:'column', ...collapseStyle }}
+          onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+          <div style={{ display:'flex', alignItems:'flex-start' }}>
+            {/* sideLeft(시간·체크박스)도 카드와 함께 이동 */}
+            <div style={{
+              transform:`translateX(${x}px)`,
+              transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
+              willChange:'transform',
+            }}>
+              {sideLeft}
+            </div>
+            {/* overflow 없음 → 카드가 컨테이너 밖으로 자유롭게 이동 */}
+            <div style={{ position:'relative', ...wrapStyle, flex:1 }}>
+              {_buttons}
+              {_slideCard}
+            </div>
+          </div>
+          {/* 하단 간격: 카드와 함께 접혀 삭제 시 튀는 현상 방지 */}
+          {bottomGap > 0 && <div style={{ height:bottomGap, flexShrink:0 }}/>}
+        </div>
+      );
+    }
+
+    // sideLeft 없는 경우: 기존 구조
     return (
-      // 높이 접힘용 래퍼 (overflow:hidden은 접힐 때만)
-      // flex:1을 여기에 적용해야 부모 flex row에서 남은 너비를 차지함
-      <div ref={outerRef} style={{ flex: wrapStyle.flex, ...collapseStyle }}
+      <div ref={outerRef}
+        style={{ flex: wrapStyle.flex, ...collapseStyle }}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         {/* overflow 없음 → 카드가 컨테이너 밖으로 자유롭게 이동 */}
-        <div style={{ position:'relative', ...wrapStyle, flex: undefined }}>
-          {/* 버튼들: 카드 뒤에, 날아가는 동안 숨김 */}
-          {!flying && (
-            <div style={{
-              position:'absolute', right:0, top:0, bottom:0,
-              display:'flex', alignItems:'center', justifyContent:'flex-end',
-              gap:8, paddingRight:10,
-            }}>
-              {onEdit && (
-                <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
-                  minWidth: editLabel ? 56 : 38, height: editLabel ? 36 : 38,
-                  borderRadius: editLabel ? 10 : 19, border:'none', cursor:'pointer',
-                  background: editBg || '#ffa500', flexShrink:0, padding: editLabel ? '0 12px' : 0,
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                }}>
-                  {editLabel
-                    ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{editLabel}</span>
-                    : <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>}
-                </button>
-              )}
-              <button onClick={(e)=>{e.stopPropagation(); flyOff();}} style={{
-                minWidth: deleteLabel ? 48 : 38, height: deleteLabel ? 36 : 38,
-                borderRadius: deleteLabel ? 10 : 19, border:'none', cursor:'pointer',
-                background:'#B5451B', flexShrink:0, padding: deleteLabel ? '0 12px' : 0,
-                display:'flex', alignItems:'center', justifyContent:'center',
-              }}>
-                {deleteLabel
-                  ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{deleteLabel}</span>
-                  : <Icon name="trash" size={14} color="#fff" stroke={2}/>}
-              </button>
-            </div>
-          )}
-          {/* 카드: position:relative + zIndex:1 → 이웃 카드 위에 표시되며 프레임 밖으로 이동 */}
-          <div style={{
-            position:'relative', zIndex:1,
-            transform:`translateX(${x}px)`,
-            transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
-            willChange:'transform', WebkitTapHighlightColor:'transparent',
-          }}>
-            {children}
-          </div>
+        <div style={{ position:'relative', ...wrapStyle }}>
+          {_buttons}
+          {_slideCard}
         </div>
       </div>
     );
@@ -695,7 +791,7 @@ function DatePickerSheet({ open, value, onClose, onPick, minDate, title='날짜 
           display:'flex', alignItems:'center', gap:6,
         }}>
           {view.y}년 {MONTH_KR[view.mo]}
-          <Icon name={pickingYM?'chevron-d':'chevron-d'} size={12} color={COLORS.mute} stroke={2.5}/>
+          <Icon name={pickingYM?'chevron-u':'chevron-d'} size={12} color={COLORS.mute} stroke={2.5}/>
         </button>
         {!pickingYM && (
           <div style={{ display:'flex', gap:4 }}>
@@ -1233,24 +1329,25 @@ function PickerSheet({ open, onClose, title, items, getKey, filterFn, renderRow,
 }
 
 // ─── FX ─────────────────────────────────────────────────────
+// unit: 화면 표시 기준 단위 (은행 환율 표시 관행 — JPY·VND는 100단위)
 const FX_CURRENCIES = [
-  { code:'USD', sym:'$',   name:'미국 달러' },
-  { code:'EUR', sym:'€',   name:'유로' },
-  { code:'JPY', sym:'¥',   name:'일본 엔' },
-  { code:'GBP', sym:'£',   name:'영국 파운드' },
-  { code:'CNY', sym:'¥',   name:'중국 위안' },
-  { code:'HKD', sym:'HK$', name:'홍콩 달러' },
-  { code:'TWD', sym:'NT$', name:'대만 달러' },
-  { code:'SGD', sym:'S$',  name:'싱가포르 달러' },
-  { code:'THB', sym:'฿',   name:'태국 바트' },
-  { code:'AUD', sym:'A$',  name:'호주 달러' },
-  { code:'CAD', sym:'C$',  name:'캐나다 달러' },
-  { code:'CHF', sym:'Fr',  name:'스위스 프랑' },
-  { code:'AED', sym:'AED', name:'UAE 디르함' },
-  { code:'MYR', sym:'RM',  name:'말레이시아 링깃' },
-  { code:'VND', sym:'₫',   name:'베트남 동' },
-  { code:'PHP', sym:'₱',   name:'필리핀 페소' },
-  { code:'MXN', sym:'MX$', name:'멕시코 페소' },
+  { code:'USD', sym:'$',   name:'미국 달러',        unit:1   },
+  { code:'EUR', sym:'€',   name:'유로',              unit:1   },
+  { code:'JPY', sym:'¥',   name:'일본 엔',           unit:100 },
+  { code:'GBP', sym:'£',   name:'영국 파운드',       unit:1   },
+  { code:'CNY', sym:'¥',   name:'중국 위안',         unit:1   },
+  { code:'HKD', sym:'HK$', name:'홍콩 달러',         unit:1   },
+  { code:'TWD', sym:'NT$', name:'대만 달러',         unit:1   },
+  { code:'SGD', sym:'S$',  name:'싱가포르 달러',     unit:1   },
+  { code:'THB', sym:'฿',   name:'태국 바트',         unit:1   },
+  { code:'AUD', sym:'A$',  name:'호주 달러',         unit:1   },
+  { code:'CAD', sym:'C$',  name:'캐나다 달러',       unit:1   },
+  { code:'CHF', sym:'Fr',  name:'스위스 프랑',       unit:1   },
+  { code:'AED', sym:'AED', name:'UAE 디르함',         unit:1   },
+  { code:'MYR', sym:'RM',  name:'말레이시아 링깃',   unit:1   },
+  { code:'VND', sym:'₫',   name:'베트남 동',         unit:100 },
+  { code:'PHP', sym:'₱',   name:'필리핀 페소',       unit:100 },
+  { code:'MXN', sym:'MX$', name:'멕시코 페소',       unit:1   },
 ];
 
 function useFxRate(currency) {
@@ -1306,10 +1403,10 @@ function FxCard({ curCode, onSetCurCode }) {
       </div>
       <div style={{ marginTop:5, display:'flex', alignItems:'flex-end', gap:6 }}>
         <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink, lineHeight:1 }}>
-          {loading ? '…' : rate ? `₩${Math.round(rate).toLocaleString()}` : '—'}
+          {loading ? '…' : rate ? `₩${Math.round(rate * (cur.unit || 1)).toLocaleString()}` : '—'}
         </div>
         <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, paddingBottom:4 }}>
-          = {cur.sym}1
+          = {cur.sym}{cur.unit > 1 ? cur.unit : 1}
         </div>
       </div>
       <div style={{ marginTop:4, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -1982,7 +2079,7 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
   );
 }
 
-function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loading, userData, onOpenCompanion, myUid, onOpenNotifs, unreadCount }) {
+function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loading, userData, onOpenCompanion, myUid, onOpenNotifs, unreadCount, photoVer }) {
   const [restoring, setRestoring] = React.useState(false);
   const [restoreErr, setRestoreErr] = React.useState('');
   const sortedTrips = React.useMemo(
@@ -2038,9 +2135,9 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v438</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v488</span></div>
       </div>
-      {loading
+      {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
         : <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:12 }}>
             {sortedTrips.map(t => {
@@ -2061,7 +2158,8 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                     <div style={{ position:'relative' }}>
                       <DayPhotoImg uid={myUid} tripId={t.id} dayIdx={0}
                         style={{ width:'100%', height:130, objectFit:'cover', display:'block' }}
-                        fallback={<Photo hue={hue} label={label} height={130}/>}/>
+                        fallback={<Photo hue={hue} label={label} height={130}/>}
+                        refreshKey={photoVer || 0}/>
                       {companionCount > 0 && (
                         <div style={{
                           position:'absolute', top:10, right:12,
@@ -2164,10 +2262,33 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onAddHotelViaStop, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
-                      userData, myUid, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount }) {
+                      userData, myUid, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount, photoVer, onPhotoUploaded }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
+  const [cardPhotoUploading, setCardPhotoUploading] = React.useState(null);
+  const [cardPhotoVersions, setCardPhotoVersions] = React.useState({});
+  const cardPhotoInputRef = React.useRef(null);
+  const cardPhotoTargetIdx = React.useRef(null);
+  const handleCardPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    const idx = cardPhotoTargetIdx.current;
+    if (!file || !myUid || idx === null) return;
+    setCardPhotoUploading(idx);
+    try {
+      const dataUrl = await resizeImage(file);
+      invalidateDayPhotoCache(myUid, trip.id, idx);
+      const url = await window.fbUploadDayPhoto(myUid, trip.id, idx, dataUrl);
+      setCachedDayPhotoData(myUid, trip.id, idx, dataUrl);
+      _dayPhotoCache[`${myUid}_${trip.id}_${idx}`] = url;
+      try { localStorage.setItem(_LS_PREFIX + `${myUid}_${trip.id}_${idx}`, url); } catch(_) {}
+      setCardPhotoVersions(v => ({ ...v, [idx]: (v[idx] || 0) + 1 }));
+      onPhotoUploaded?.();
+    } catch(_) {} finally {
+      setCardPhotoUploading(null);
+      e.target.value = '';
+    }
+  };
   const [sampleLoading, setSampleLoading] = React.useState(false);
   const [sampleErr, setSampleErr] = React.useState('');
   const handleLoadSample = async () => {
@@ -2202,9 +2323,10 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const [fWidth, setFWidth]   = React.useState(window.innerWidth);  // 측정된 실제 너비
   const fOffsetRef = React.useRef(0);
   const fGesture   = React.useRef({ on:false, startX:0, startY:0, drag:false });
-  const fVelSamples = React.useRef([]);
-  const fWrapRef   = React.useRef(null);
-  const fTrackRef  = React.useRef(null);
+  const fVelSamples  = React.useRef([]);
+  const fWrapRef     = React.useRef(null);
+  const fTrackRef    = React.useRef(null);
+  const fSwipeTimer  = React.useRef(null);
   const fW = () => fWrapRef.current?.offsetWidth || fWidth;
 
   // 마운트 후 실제 너비 측정 (다른 화면 갔다 돌아올 때도 정확히 반영)
@@ -2280,10 +2402,12 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
     fTrans(dur, 'cubic-bezier(0.25,0.46,0.45,0.94)');
     if (toNext) {
       fSet(-w);
-      setTimeout(() => { fSetNone(); setFeaturedIdx(i => i + 1); fSet(0); }, dur + 20);
+      clearTimeout(fSwipeTimer.current);
+      fSwipeTimer.current = setTimeout(() => { fSetNone(); setFeaturedIdx(i => i + 1); fSet(0); }, dur + 20);
     } else if (toPrev) {
       fSet(w);
-      setTimeout(() => { fSetNone(); setFeaturedIdx(i => i - 1); fSet(0); }, dur + 20);
+      clearTimeout(fSwipeTimer.current);
+      fSwipeTimer.current = setTimeout(() => { fSetNone(); setFeaturedIdx(i => i - 1); fSet(0); }, dur + 20);
     } else {
       // 스냅백: 스프링 느낌
       fTrans(380, 'cubic-bezier(0.22,1,0.36,1)');
@@ -2494,7 +2618,21 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   <div style={{ position:'relative' }}>
                     <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
                       style={{ width:'100%', height:170, objectFit:'cover', display:'block' }}
-                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>}/>
+                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>}
+                      refreshKey={(cardPhotoVersions[i] || 0) + (photoVer || 0)}/>
+                    {editing && (
+                      <button onClick={() => { if (cardPhotoUploading === null) { cardPhotoTargetIdx.current = i; cardPhotoInputRef.current?.click(); } }} style={{
+                        position:'absolute', bottom:10, right:10, zIndex:5,
+                        background:'none', border:'none', cursor: cardPhotoUploading === i ? 'default' : 'pointer',
+                        padding:0, display:'flex', alignItems:'center',
+                        opacity: cardPhotoUploading !== null && cardPhotoUploading !== i ? 0.3 : 1,
+                      }}>
+                        {cardPhotoUploading === i
+                          ? <div className="ptr-spin" style={{ width:22, height:22, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
+                          : <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
+                        }
+                      </button>
+                    )}
                   </div>
                   <div style={{ padding:'16px 18px 18px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
@@ -2544,7 +2682,10 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
             }}>
               <div style={{ padding:12, display:'flex', gap:12, alignItems:'center' }}>
                   <div style={{ width:64, height:64, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
-                    <Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} height={64} small/>
+                    <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
+                      style={{ width:64, height:64, objectFit:'cover', display:'block' }}
+                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} height={64} small/>}
+                      refreshKey={(cardPhotoVersions[i] || 0) + (photoVer || 0)}/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:'flex', gap:8, alignItems:'baseline' }}>
@@ -2707,6 +2848,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         <div className="arshooling-text" style={{ fontFamily:'Adam, serif', fontSize:15, letterSpacing:'0.18em' }}>ARSHOOLING</div>
       </div>
 
+      <input ref={cardPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCardPhoto}/>
       {/* 날짜 달력 팝업 */}
       <DateRangeSheet
         open={dateRangeOpen}
@@ -2721,7 +2863,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
 
 // ─── Day screen ─────────────────────────────────────────────
 function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay,
-                     onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing }) {
+                     onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing, onPhotoUploaded }) {
   const day = trip.days[dayIdx] || { n: dayIdx+1, title:'', date:'', weekday:'', hero:{ hue:25, label:'' }, items:[] };
   const tripYear = extractTripYear(trip);
   const [travelTimes, setTravelTimes] = React.useState({});
@@ -2769,12 +2911,12 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
   const fmtMin = (m) => m >= 60 ? `${Math.floor(m/60)}시간${m%60 ? ` ${m%60}분` : ''}` : `${m}분`;
 
   const [done, setDone] = React.useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem('done_' + (tripId || trip.title) + '_' + dayIdx) || '[]')); }
+    try { return new Set(JSON.parse(localStorage.getItem('done_' + tripId + '_' + dayIdx) || '[]')); }
     catch(e) { return new Set(); }
   });
   const toggle = (i) => setDone(s => {
     const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i);
-    localStorage.setItem('done_' + (tripId || trip.title) + '_' + dayIdx, JSON.stringify([...n]));
+    localStorage.setItem('done_' + tripId + '_' + dayIdx, JSON.stringify([...n]));
     return n;
   });
   const [editingTitle, setEditingTitle] = React.useState(false);
@@ -2803,8 +2945,11 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
       const dataUrl = await resizeImage(file);
       invalidateDayPhotoCache(authUid, tripId, dayIdx);
       const url = await window.fbUploadDayPhoto(authUid, tripId, dayIdx, dataUrl);
+      setCachedDayPhotoData(authUid, tripId, dayIdx, dataUrl);
       _dayPhotoCache[`${authUid}_${tripId}_${dayIdx}`] = url;
-      setDayPhoto(url);
+      try { localStorage.setItem(_LS_PREFIX + `${authUid}_${tripId}_${dayIdx}`, url); } catch(_) {}
+      setDayPhoto(dataUrl);
+      onPhotoUploaded?.();
     } catch(_) {} finally {
       setPhotoUploading(false);
     }
@@ -2827,21 +2972,22 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
         }}>
           <Icon name="chevron-l" size={18} color={COLORS.ink} stroke={2}/>
         </button>
-        <div style={{ position:'absolute', top:'calc(16px + env(safe-area-inset-top, 0px))', right:16, zIndex:5 }}>
+        <div style={{ position:'absolute', top:'calc(16px + env(safe-area-inset-top, 0px))', right:16, zIndex:5,
+          display:'flex', gap:8, alignItems:'center' }}>
+          {editing && (
+            <button onClick={() => !photoUploading && dayPhotoInputRef.current?.click()} style={{
+              background:'none', border:'none', cursor: photoUploading ? 'default' : 'pointer',
+              padding:0, display:'flex', alignItems:'center', opacity: photoUploading ? 0.5 : 1,
+            }}>
+              {photoUploading
+                ? <div className="ptr-spin" style={{ width:22, height:22, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
+                : <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
+              }
+            </button>
+          )}
           <EditBtn editing={editing} onClick={() => setEditing(e => !e)}/>
         </div>
-        {editing && (
-          <>
-            <button onClick={() => !photoUploading && dayPhotoInputRef.current?.click()} style={{
-              position:'absolute', bottom:42, right:16, zIndex:5,
-              background:'none', border:'none', cursor: photoUploading ? 'default' : 'pointer', padding:0,
-              display:'flex', alignItems:'center', opacity: photoUploading ? 0.5 : 1,
-            }}>
-              <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
-            </button>
-            <input ref={dayPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleDayPhoto}/>
-          </>
-        )}
+        <input ref={dayPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleDayPhoto}/>
 
         <div style={{ position:'absolute', left:0, right:0, bottom:-30, padding:'0 16px' }}>
           <div style={{ background:COLORS.bg, borderRadius:20, padding:'18px 20px 18px' }}>
@@ -2910,23 +3056,24 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
             const isDone = done.has(i);
             const dp = itemDragProps(i);
             return (
-              <div key={i} {...dp} style={{ display:'flex', alignItems:'flex-start', marginBottom:12, position:'relative', ...(dp.style || {}) }}>
-                {/* 시간 — marginTop으로 카드 첫째 줄에 맞춤 */}
-                <div style={{ width:32, flexShrink:0, marginTop:11,
-                  fontFamily:MONO, fontSize:10.5, color:COLORS.mute,
-                  textAlign:'right', paddingRight:4 }}>{it.time}</div>
-                {/* 체크박스: 타임라인 선 가로 중간(x=40)에 독립 배치 — 슬라이드 시 카드에 가려짐 */}
-                <button onClick={(e)=>{e.stopPropagation(); toggle(i);}} style={{
-                  width:16, height:16, borderRadius:8, flexShrink:0, marginTop:11,
-                  boxSizing:'border-box',
-                  border:`1.5px solid ${isDone?COLORS.accent:COLORS.ink}`,
-                  background: isDone?COLORS.accent:COLORS.bg, cursor:'pointer', padding:0,
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                }}>
-                  {isDone && <Icon name="check" size={10} color="#fff" stroke={3}/>}
-                </button>
+              <div key={i} {...dp} style={{ position:'relative', ...(dp.style || {}) }}>
                 <SwipeableRow
                   cardSwipe
+                  bottomGap={12}
+                  sideLeft={<>
+                    <div style={{ width:32, flexShrink:0, marginTop:11,
+                      fontFamily:MONO, fontSize:10.5, color:COLORS.mute,
+                      textAlign:'right', paddingRight:4 }}>{it.time}</div>
+                    <button onClick={(e)=>{e.stopPropagation(); toggle(i);}} style={{
+                      width:16, height:16, borderRadius:8, flexShrink:0, marginTop:11,
+                      boxSizing:'border-box',
+                      border:`1.5px solid ${isDone?COLORS.accent:COLORS.ink}`,
+                      background: isDone?COLORS.accent:COLORS.bg, cursor:'pointer', padding:0,
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                    }}>
+                      {isDone && <Icon name="check" size={10} color="#fff" stroke={3}/>}
+                    </button>
+                  </>}
                   wrapStyle={{ flex:1, marginLeft:12, borderRadius:14 }}
                   disabled={editing}
                   onEdit={() => onOpenStop({ idx: i, stop: it, editing: true })}
@@ -3730,24 +3877,34 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
           transition: sheetUp > 0 ? 'none' : 'max-height 0.36s cubic-bezier(0.32,0.72,0,1)',
         }}>
         {/* 드래그 핸들 */}
-        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px' }}>
+        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 2px' }}>
           <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
         </div>
-        {/* 사진 영역 + 수정 버튼 오버레이 */}
-        <div style={{ position:'relative' }}>
-          <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180}/>
-          {!editing && (
-            <button onClick={(e) => { e.stopPropagation(); setEditing(true); }} style={{
-              position:'absolute', top:12, right:12, zIndex:5,
-              border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
-              padding:'7px 13px', cursor:'pointer',
-              fontFamily:SANS, fontSize:12, fontWeight:500, color:COLORS.ink,
-              display:'flex', gap:5, alignItems:'center',
-              boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
-            }}>
-              <Icon name="edit" size={12} color={COLORS.ink} stroke={2}/> 수정
-            </button>
-          )}
+        {/* 헤더: 제목 + 수정 */}
+        <div style={{ padding:'8px 16px 10px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:10 }}>
+          <div style={{ fontFamily:SERIF, fontSize:18, color:COLORS.ink, flex:1, minWidth:0,
+            whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+            {draft.title}
+          </div>
+          <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
+            {!editing && (
+              <button onClick={(e) => { e.stopPropagation(); setEditing(true); }} style={{
+                border:'none', background:COLORS.softer, borderRadius:10,
+                padding:'6px 10px', cursor:'pointer',
+                fontFamily:SANS, fontSize:12, fontWeight:500, color:COLORS.ink,
+                display:'flex', gap:4, alignItems:'center',
+              }}>
+                <Icon name="edit" size={12} color={COLORS.ink} stroke={2}/> 수정
+              </button>
+            )}
+          </div>
+        </div>
+        {/* 사진 영역 */}
+        <div>
+          {draft.photo
+            ? <img src={draft.photo} alt="" style={{ width:'100%', height:180, objectFit:'cover', display:'block' }}/>
+            : <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180}/>
+          }
         </div>
         <div style={{ padding:'18px 20px 0' }}>
           <div style={{ display:'flex', gap:6, alignItems:'center',
@@ -3958,6 +4115,7 @@ function HotelSheet({ open, onClose, hotel, trip, tripDays, onSave, onDelete }) 
         if (feats.length && searchFocused.current) setShowSearch(true);
       } catch(_) {}
     }, 350);
+    return () => clearTimeout(searchTimer.current);
   }, [searchQ]);
 
   const save = () => { onSave(draft); committed.current = { ...draft }; setEditing(false); };
@@ -4441,16 +4599,49 @@ function computeRouteTip(pts, times) {
   const lunch  = foods.find(p => { const m=toMin(p.time); return m && m>=600 && m<=900; }) || foods[0] || null;
   const dinner = foods.find(p => { const m=toMin(p.time); return m && m>=1020; }) || (foods.length>1 ? foods[foods.length-1] : null);
   const dinnerIsLunch = dinner && lunch && dinner === lunch;
-  const startIdx = hotel ? pts.indexOf(hotel) : 0;
-  const n = pts.length;
-  const visited = Array(n).fill(false);
-  const order = [startIdx]; visited[startIdx] = true;
-  for (let step=1; step<n; step++) {
-    let best=-1, bestD=Infinity;
-    const last=order[order.length-1];
-    for (let j=0; j<n; j++) { if (!visited[j]) { const d=dist2(pts[last],pts[j]); if (d<bestD){bestD=d;best=j;} } }
-    visited[best]=true; order.push(best);
-  }
+
+  // hotel · lunch · dinner 은 위치 고정 (anchor) — 그 사이 구간별로만 greedy
+  const pinnedIdxs = [];
+  if (hotel)                 { pinnedIdxs.push(pts.indexOf(hotel)); }
+  if (lunch)                 { const i=pts.indexOf(lunch);  if (!pinnedIdxs.includes(i)) pinnedIdxs.push(i); }
+  if (!dinnerIsLunch&&dinner){ const i=pts.indexOf(dinner); if (!pinnedIdxs.includes(i)) pinnedIdxs.push(i); }
+  pinnedIdxs.sort((a,b)=>a-b);
+  const pinnedSet = new Set(pinnedIdxs);
+
+  // anchor 사이 구간 분리
+  const boundaries = [-1, ...pinnedIdxs, pts.length];
+  const sections = boundaries.slice(0,-1).map((b,i) => {
+    const seg=[];
+    for (let j=b+1; j<boundaries[i+1]; j++) { if (!pinnedSet.has(j)) seg.push(j); }
+    return seg;
+  });
+
+  // 구간 내 greedy NN (lastIdx=-1 이면 첫 요소부터)
+  const greedySeg = (segIdxs, lastIdx) => {
+    const rem=[...segIdxs], result=[];
+    let last=lastIdx;
+    while (rem.length) {
+      if (last===-1) { result.push(rem.shift()); }
+      else {
+        let best=0, bestD=Infinity;
+        rem.forEach((idx,i)=>{ const d=dist2(pts[last],pts[idx]); if(d<bestD){bestD=d;best=i;} });
+        result.push(rem.splice(best,1)[0]);
+      }
+      last=result[result.length-1];
+    }
+    return result;
+  };
+
+  // 최종 순서 조립: [구간0] [pin0] [구간1] [pin1] …
+  const order=[];
+  let lastIdx=-1;
+  sections.forEach((seg,i) => {
+    const opt=greedySeg(seg,lastIdx);
+    order.push(...opt);
+    if (opt.length) lastIdx=opt[opt.length-1];
+    if (i<pinnedIdxs.length) { order.push(pinnedIdxs[i]); lastIdx=pinnedIdxs[i]; }
+  });
+
   const isOptimal = order.every((v,i) => v===i);
   const totalTransit = Object.values(times).reduce((s,t) => s+(t.transit||0), 0);
   const longestLeg   = Object.entries(times).sort((a,b)=>(b[1].transit||0)-(a[1].transit||0))[0];
@@ -5427,12 +5618,14 @@ const PrepCatItems = React.memo(function PrepCatItems({ ci, cat, cats, save, sav
             style={{ position:'relative', marginBottom:6, ...(dp.style||{}) }}>
             <SwipeableRow
               cardSwipe
+              compact
               onEdit={() => setEditingItem({ ci, ii })}
               onDelete={() => deleteItem(ii)}
               isDragging={!!prepDrag}
               wrapStyle={{ borderRadius:14 }}
             >
-              <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px',
+              <div style={{ display:'flex', alignItems:'center', gap:12,
+                padding: isEditingThis ? '12px 14px' : '8px 14px',
                 background:COLORS.card, borderRadius:14 }}>
                 <button onClick={() => toggle(ii)} style={{
                   width:18, height:18, borderRadius:9, border:'none', padding:0, cursor:'pointer', flexShrink:0,
@@ -5447,8 +5640,12 @@ const PrepCatItems = React.memo(function PrepCatItems({ ci, cat, cats, save, sav
                     onChange={e => updateItem(ii, e.target.value)}
                     onBlur={() => { if (isEditingThis) setEditingItem(null); }}
                     onKeyDown={e => { if (e.key==='Enter' || e.key==='Escape') setEditingItem(null); }}
-                    style={{ flex:1, border:'none', outline:'none', background:'transparent',
-                      fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
+                    style={{ flex:1, border:'none', outline:'none',
+                      background: isEditingThis ? COLORS.softer : 'transparent',
+                      borderRadius: isEditingThis ? 8 : 0,
+                      padding: isEditingThis ? '8px 10px' : 0,
+                      fontFamily:SANS, fontSize: isEditingThis ? 15 : 13.5,
+                      color:COLORS.ink }}/>
                 ) : (
                   <span style={{ flex:1, fontFamily:SANS, fontSize:13.5, color:COLORS.ink,
                     textDecoration: isDone ? 'line-through' : 'none', opacity: isDone ? 0.5 : 1 }}>{item}</span>
@@ -5535,9 +5732,19 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
 
   const copyAll = () => {
     const text = cats.map(c => c.name + '\n' + (c.items || []).map(i => `- [ ] ${i}`).join('\n')).join('\n\n');
-    navigator.clipboard?.writeText(text).catch(() => {});
-    setCopyToast(true);
-    setTimeout(() => setCopyToast(false), 2000);
+    const doToast = () => { setCopyToast(true); setTimeout(() => setCopyToast(false), 2000); };
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); doToast(); } catch(_) {}
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(doToast).catch(fallback);
+    } else {
+      fallback();
+    }
   };
 
   const clearCatItems = (ci) => {
@@ -5615,6 +5822,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
     })(),
     onTouchStart: e => {
       if (prepDragRef.current) return;
+      clearTimeout(prepTimer.current);
       const startY = e.touches[0].clientY;
       prepTimer.current = setTimeout(() => {
         const el = prepItemEls.current[`${ci}_${ii}`];
@@ -5723,9 +5931,12 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
           <div style={{ display:'flex', gap:4, paddingBottom:6 }}>
             <button onClick={copyAll} title="복사" style={{
               width:36, height:36, borderRadius:10,
-              border:`1px solid ${COLORS.line}`, background:COLORS.card, cursor:'pointer',
-              display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <Icon name="copy" size={15} color={COLORS.mute} stroke={1.8}/>
+              border:`1px solid ${copyToast ? '#27AE60' : COLORS.line}`,
+              background: copyToast ? '#EAFAF1' : COLORS.card, cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              transition:'background 0.2s, border-color 0.2s' }}>
+              <Icon name={copyToast ? 'check' : 'copy'} size={15}
+                color={copyToast ? '#27AE60' : COLORS.mute} stroke={2}/>
             </button>
             <button onClick={() => { const text = cats.map(c => c.name + '\n' + (c.items||[]).map(i => `- [ ] ${i}`).join('\n')).join('\n\n'); setPasteText(text); setPasteOpen(true); }} title="편집" style={{
               width:36, height:36, borderRadius:10,
@@ -5807,17 +6018,18 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
               emptyDropRef={el => { prepItemEls.current[`${ci}_empty`] = el; }}/>
             {/* 항목 추가 */}
             {addInputCat === ci ? (
-              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px',
+              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 14px',
                 borderTop: cat.items?.length ? `1px solid ${COLORS.line}` : 'none' }}>
                 <div style={{ width:16, height:16, borderRadius:8, border:`1.5px solid ${COLORS.line}`, flexShrink:0 }}/>
                 <input autoFocus value={addInputText} onChange={e => setAddInputText(e.target.value)}
                   placeholder="항목 입력..."
                   onKeyDown={e => { if (e.key==='Enter') addItem(ci); if (e.key==='Escape') { setAddInputCat(null); setAddInputText(''); }}}
-                  style={{ flex:1, border:'none', outline:'none', background:'transparent',
-                    fontFamily:SANS, fontSize:13.5, color:COLORS.ink, padding:0 }}/>
+                  style={{ flex:1, border:'none', outline:'none', background:COLORS.softer,
+                    borderRadius:8, padding:'8px 10px',
+                    fontFamily:SANS, fontSize:14, color:COLORS.ink }}/>
                 <button onClick={() => addItem(ci)} style={{
-                  padding:'4px 10px', border:'none', borderRadius:8,
-                  background:COLORS.accent, color:'#fff', fontFamily:SANS, fontSize:12, cursor:'pointer' }}>추가</button>
+                  padding:'8px 14px', border:'none', borderRadius:10,
+                  background:COLORS.accent, color:'#fff', fontFamily:SANS, fontSize:13, cursor:'pointer' }}>추가</button>
               </div>
             ) : (
               <button onClick={() => { setAddInputCat(ci); setAddInputText(''); }} style={{
@@ -5888,9 +6100,9 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
                 value={pasteText}
                 onChange={e => setPasteText(e.target.value)}
                 placeholder={'카테고리 이름\n- [ ] 항목\n- [ ] 항목\n\n카테고리 이름\n- [ ] 항목'}
-                style={{ width:'100%', boxSizing:'border-box', height:200, border:`1px solid ${COLORS.line}`,
-                  borderRadius:14, padding:'12px 14px', fontFamily:SANS, fontSize:13.5, color:COLORS.ink,
-                  background:COLORS.card, outline:'none', resize:'none', lineHeight:1.6 }}/>
+                style={{ width:'100%', boxSizing:'border-box', minHeight:280, border:`1px solid ${COLORS.line}`,
+                  borderRadius:14, padding:'14px 16px', fontFamily:SANS, fontSize:15, color:COLORS.ink,
+                  background:COLORS.card, outline:'none', resize:'none', lineHeight:1.7 }}/>
               {/* 파싱 미리보기 */}
               {(() => {
                 const parsed = parsePasteText(pasteText);
@@ -5914,7 +6126,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
                 );
               })()}
             </div>
-            <div style={{ padding:'12px 16px 0' }}>
+            <div style={{ padding:'12px 16px 20px' }}>
               <button onClick={applyPaste} disabled={!parsePasteText(pasteText).length}
                 style={{ width:'100%', padding:'14px', border:'none', borderRadius:14, cursor:'pointer',
                   background: parsePasteText(pasteText).length ? COLORS.ink : COLORS.line,
@@ -7177,7 +7389,7 @@ function NotificationsScreen({ open, onClose, authUser, notifications, onGoToCom
 }
 
 // ─── Companions ───────────────────────────────────────────────
-function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserDataUpdate }) {
+function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserDataUpdate, onRemoveTripMember }) {
   const [contacts, setContacts]         = React.useState([]);
   const [sentInvites, setSentInvites]   = React.useState([]);
   const [receivedInvites, setReceivedInvites] = React.useState([]);
@@ -7244,6 +7456,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
   }, [!!dragContact]);
 
   const startLongPress = (e, contact) => {
+    clearTimeout(longPressRef.current);
     const touch = e.touches[0];
     longPressRef.current = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(25);
@@ -7260,7 +7473,12 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
     document.body.style.overflow = 'hidden';
     setLoading(true);
 
-    fbGetContacts(authUser.uid).then(setContacts).catch(() => setContacts([]));
+    let unsubContacts = () => {};
+    if (typeof fbListenContacts === 'function') {
+      unsubContacts = fbListenContacts(authUser.uid, setContacts);
+    } else {
+      fbGetContacts(authUser.uid).then(setContacts).catch(() => setContacts([]));
+    }
 
     Promise.all((trips||[]).map(t =>
       fbGetTripCompanions(t.id, authUser.uid)
@@ -7296,7 +7514,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
       });
     }
 
-    return () => { unsubSent(); unsubReceived(); document.body.style.overflow = ''; };
+    return () => { unsubContacts(); unsubSent(); unsubReceived(); document.body.style.overflow = ''; };
   }, [open, authUser?.uid, tripIds]);
 
   if (!open) return null;
@@ -7313,16 +7531,16 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
     }
     // 연락처 삭제 성공 → UI 즉시 반영
     setContacts(prev => prev.filter(x => x.uid !== c.uid));
+    const affectedTripIds = (trips||[]).filter(t => (tripCompanions[t.id]||[]).some(m => m.uid === c.uid)).map(t => t.id);
     setTripCompanions(prev => {
       const next = {...prev};
       Object.keys(next).forEach(tid => { next[tid] = next[tid].filter(m => m.uid !== c.uid); });
       return next;
     });
+    // 부모 userTrips 즉시 반영 (여행 카드 숫자 업데이트)
+    affectedTripIds.forEach(tid => onRemoveTripMember?.(tid, c.uid));
     // 여행 멤버 제거는 별도 처리 (실패해도 UI에 영향 없음)
-    Promise.all((trips||[]).map(t =>
-      (tripCompanions[t.id]||[]).some(m => m.uid === c.uid)
-        ? fbRemoveTripMember(t.id, c.uid) : Promise.resolve()
-    )).catch(e => console.warn('trip member removal:', e));
+    Promise.all(affectedTripIds.map(tid => fbRemoveTripMember(tid, c.uid))).catch(e => console.warn('trip member removal:', e));
     setRemoving(null);
   };
 
@@ -7332,6 +7550,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
     try {
       await fbRemoveTripMember(tripId, uid);
       setTripCompanions(prev => ({ ...prev, [tripId]: (prev[tripId]||[]).filter(m => m.uid !== uid) }));
+      onRemoveTripMember?.(tripId, uid);
     } catch(e) { alert('제거 실패.'); }
     setRemoving(null);
   };
@@ -7512,8 +7731,14 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
                             } : undefined}
                             editLabel={pendingInv ? '재신청' : undefined} editBg="#4F6BED"
                             onDelete={async () => {
-                              if (pendingInv) await fbCancelInvite(pendingInv.id).catch(() => {});
-                              await removeContact(c, true);
+                              if (pendingInv) {
+                                // 미수락 상태: 초대만 취소하고 contacts에서 제거 (fbRemoveContact 레코드 없음)
+                                await fbCancelInvite(pendingInv.id).catch(() => {});
+                                setSentInvites(prev => prev.filter(i => i.id !== pendingInv.id));
+                                setContacts(prev => prev.filter(x => x.uid !== c.uid));
+                              } else {
+                                await removeContact(c, true);
+                              }
                             }}
                             deleteLabel="삭제"
                             wrapStyle={{ borderRadius:14 }}>
@@ -7715,6 +7940,23 @@ const DURATION_BY_TYPE = {
   ruins:120, castle:120, monument:60, viewpoint:45,
   cathedral:60, church:60, park:90, beach:180, marketplace:60, attraction:90,
 };
+const PLACE_TYPE_NOTES = {
+  museum:          '내부 사진 촬영 제한 있을 수 있음',
+  art_gallery:     '내부 사진 촬영 제한 있을 수 있음',
+  gallery:         '내부 사진 촬영 제한 있을 수 있음',
+  theme_park:      '대기시간 긴 편 · 사전 예매 추천',
+  amusement_park:  '대기시간 긴 편 · 사전 예매 추천',
+  zoo:             '사전 예매 추천',
+  aquarium:        '사전 예매 추천',
+  night_club:      '야간 운영 · 신분증 지참',
+  spa:             '예약 필수인 경우 많음',
+  beach:           '수영복 · 자외선 차단제 준비',
+  cathedral:       '복장 규정 있을 수 있음',
+  church:          '복장 규정 있을 수 있음',
+  mosque:          '복장 규정 엄격 · 신발 벗기 필요할 수 있음',
+  marketplace:     '현금 준비 권장',
+  market:          '현금 준비 권장',
+};
 function getPlaceDuration(type) { return DURATION_BY_TYPE[type] || 90; }
 function minToTime(min) {
   const h = Math.floor(min / 60) % 24;
@@ -7786,13 +8028,12 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
       const reserve = dinnerDone ? 0 : DINNER_DUR;
       if (t + travelMin + dur > DAY_END - reserve) break outer;
 
-      // 대중교통 이동 항목
-      if (transit && prev) {
-        dayItems[dayIdx].push({ time:minToTime(t), title:'대중교통 이동', loc:'', done:false });
-      }
       t += travelMin;
+      const transitNote = (transit && prev) ? `대중교통 이동 약 ${travelMin}분` : '';
+      const typeNote    = PLACE_TYPE_NOTES[p.type] || '';
+      const stopNote    = [transitNote, typeNote].filter(Boolean).join('\n');
 
-      dayItems[dayIdx].push({ time:minToTime(t), title:p.name, loc:p.name, done:false, lat:p.lat, lon:p.lon, coords:[p.lat, p.lon], _popRank:p._popRank ?? 999 });
+      dayItems[dayIdx].push({ time:minToTime(t), title:p.name, loc:p.name, done:false, lat:p.lat, lon:p.lon, coords:[p.lat, p.lon], _popRank:p._popRank ?? 999, ...(stopNote ? { note: stopNote } : {}) });
       t += dur;
       prev = p;
       pIdx++;
@@ -8095,6 +8336,106 @@ const CITY_DB = [
   { key:'guam',        kor:'괌',         eng:'Guam',           flag:'🇬🇺', zone:'Pacific/Guam',         currency:'USD', lat:13.4443,  lon:144.7937  },
   { key:'saipan',      kor:'사이판',     eng:'Saipan',         flag:'🇲🇵', zone:'Pacific/Saipan',       currency:'USD', lat:15.1778,  lon:145.7553  },
 ]; 
+
+const AIRPORTS = [
+  // 한국
+  {kor:'인천국제공항',          eng:'Incheon International Airport',                    code:'ICN'},
+  {kor:'김포국제공항',          eng:'Gimpo International Airport',                      code:'GMP'},
+  {kor:'김해국제공항',          eng:'Gimhae International Airport',                     code:'PUS'},
+  {kor:'제주국제공항',          eng:'Jeju International Airport',                       code:'CJU'},
+  {kor:'대구국제공항',          eng:'Daegu International Airport',                      code:'TAE'},
+  {kor:'청주국제공항',          eng:'Cheongju International Airport',                   code:'CJJ'},
+  {kor:'무안국제공항',          eng:'Muan International Airport',                       code:'MWX'},
+  // 일본
+  {kor:'나리타 국제공항',       eng:'Narita International Airport',                     code:'NRT'},
+  {kor:'하네다 국제공항',       eng:'Tokyo Haneda Airport',                             code:'HND'},
+  {kor:'간사이 국제공항',       eng:'Kansai International Airport',                     code:'KIX'},
+  {kor:'신치토세 공항',         eng:'New Chitose Airport',                              code:'CTS'},
+  {kor:'후쿠오카 공항',         eng:'Fukuoka Airport',                                  code:'FUK'},
+  {kor:'나고야 중부국제공항',   eng:'Chubu Centrair International Airport',             code:'NGO'},
+  {kor:'오키나와 나하 공항',    eng:'Naha Airport',                                     code:'OKA'},
+  {kor:'히로시마 공항',         eng:'Hiroshima Airport',                                code:'HIJ'},
+  {kor:'센다이 공항',           eng:'Sendai Airport',                                   code:'SDJ'},
+  {kor:'나가사키 공항',         eng:'Nagasaki Airport',                                 code:'NGS'},
+  // 미국
+  {kor:'JFK 국제공항',          eng:'John F. Kennedy International Airport',            code:'JFK'},
+  {kor:'로스앤젤레스 국제공항', eng:'Los Angeles International Airport',                code:'LAX'},
+  {kor:'오헤어 국제공항',       eng:"O'Hare International Airport",                     code:'ORD'},
+  {kor:'샌프란시스코 국제공항', eng:'San Francisco International Airport',              code:'SFO'},
+  {kor:'마이애미 국제공항',     eng:'Miami International Airport',                      code:'MIA'},
+  {kor:'시애틀-타코마 국제공항',eng:'Seattle-Tacoma International Airport',             code:'SEA'},
+  {kor:'보스턴 로건 국제공항',  eng:'Boston Logan International Airport',               code:'BOS'},
+  {kor:'댈러스 포트워스 국제공항',eng:'Dallas/Fort Worth International Airport',        code:'DFW'},
+  {kor:'라스베이거스 국제공항', eng:'Harry Reid International Airport',                 code:'LAS'},
+  {kor:'워싱턴 덜레스 국제공항',eng:'Washington Dulles International Airport',          code:'IAD'},
+  {kor:'호놀룰루 국제공항',     eng:'Daniel K. Inouye International Airport',           code:'HNL'},
+  {kor:'애틀랜타 국제공항',     eng:'Hartsfield-Jackson Atlanta International Airport', code:'ATL'},
+  // 유럽
+  {kor:'히드로 공항',           eng:'London Heathrow Airport',                          code:'LHR'},
+  {kor:'파리 샤를드골 공항',    eng:'Paris Charles de Gaulle Airport',                  code:'CDG'},
+  {kor:'프랑크푸르트 공항',     eng:'Frankfurt Airport',                                code:'FRA'},
+  {kor:'암스테르담 스히폴 공항',eng:'Amsterdam Airport Schiphol',                       code:'AMS'},
+  {kor:'마드리드 바라하스 공항',eng:'Adolfo Suárez Madrid–Barajas Airport',             code:'MAD'},
+  {kor:'바르셀로나 엘프라트 공항',eng:'Barcelona–El Prat Airport',                      code:'BCN'},
+  {kor:'로마 피우미치노 공항',  eng:'Leonardo da Vinci International Airport',          code:'FCO'},
+  {kor:'밀라노 말펜사 공항',    eng:'Milan Malpensa Airport',                           code:'MXP'},
+  {kor:'아테네 국제공항',       eng:'Athens International Airport',                     code:'ATH'},
+  {kor:'이스탄불 공항',         eng:'Istanbul Airport',                                 code:'IST'},
+  {kor:'취리히 공항',           eng:'Zurich Airport',                                   code:'ZRH'},
+  {kor:'비엔나 국제공항',       eng:'Vienna International Airport',                     code:'VIE'},
+  {kor:'코펜하겐 공항',         eng:'Copenhagen Airport',                               code:'CPH'},
+  {kor:'헬싱키 반타 공항',      eng:'Helsinki-Vantaa Airport',                          code:'HEL'},
+  {kor:'오슬로 공항',           eng:'Oslo Gardermoen Airport',                          code:'OSL'},
+  {kor:'스톡홀름 아를란다 공항',eng:'Stockholm Arlanda Airport',                        code:'ARN'},
+  {kor:'리스본 공항',           eng:'Humberto Delgado Airport',                         code:'LIS'},
+  {kor:'브뤼셀 공항',           eng:'Brussels Airport',                                 code:'BRU'},
+  {kor:'더블린 공항',           eng:'Dublin Airport',                                   code:'DUB'},
+  {kor:'뮌헨 공항',             eng:'Munich Airport',                                   code:'MUC'},
+  {kor:'베를린 브란덴부르크 공항',eng:'Berlin Brandenburg Airport',                     code:'BER'},
+  {kor:'프라하 공항',           eng:'Václav Havel Airport Prague',                      code:'PRG'},
+  // 중동
+  {kor:'두바이 국제공항',       eng:'Dubai International Airport',                      code:'DXB'},
+  {kor:'아부다비 국제공항',     eng:'Abu Dhabi International Airport',                  code:'AUH'},
+  {kor:'도하 하마드 국제공항',  eng:'Hamad International Airport',                      code:'DOH'},
+  // 아시아
+  {kor:'싱가포르 창이 공항',    eng:'Singapore Changi Airport',                         code:'SIN'},
+  {kor:'홍콩 국제공항',         eng:'Hong Kong International Airport',                  code:'HKG'},
+  {kor:'타이베이 타오위안 국제공항',eng:'Taiwan Taoyuan International Airport',         code:'TPE'},
+  {kor:'방콕 수완나품 공항',    eng:'Suvarnabhumi Airport',                             code:'BKK'},
+  {kor:'방콕 돈므앙 공항',      eng:'Don Mueang International Airport',                 code:'DMK'},
+  {kor:'발리 응우라라이 공항',  eng:'Ngurah Rai International Airport',                 code:'DPS'},
+  {kor:'쿠알라룸푸르 국제공항', eng:'Kuala Lumpur International Airport',               code:'KUL'},
+  {kor:'마닐라 니노이아키노 국제공항',eng:'Ninoy Aquino International Airport',         code:'MNL'},
+  {kor:'하노이 노이바이 국제공항',eng:'Noi Bai International Airport',                  code:'HAN'},
+  {kor:'호치민 탄손녓 국제공항',eng:'Tan Son Nhat International Airport',               code:'SGN'},
+  {kor:'자카르타 수카르노하타 국제공항',eng:'Soekarno-Hatta International Airport',     code:'CGK'},
+  {kor:'콜롬보 반다라나이케 국제공항',eng:'Bandaranaike International Airport',         code:'CMB'},
+  // 중국
+  {kor:'베이징 캐피털 국제공항',eng:'Beijing Capital International Airport',            code:'PEK'},
+  {kor:'베이징 다싱 국제공항',  eng:'Beijing Daxing International Airport',             code:'PKX'},
+  {kor:'상하이 푸둥 국제공항',  eng:'Shanghai Pudong International Airport',            code:'PVG'},
+  {kor:'상하이 훙차오 국제공항',eng:'Shanghai Hongqiao International Airport',          code:'SHA'},
+  {kor:'광저우 바이윈 국제공항',eng:'Guangzhou Baiyun International Airport',           code:'CAN'},
+  {kor:'청두 솽류 국제공항',    eng:'Chengdu Shuangliu International Airport',          code:'CTU'},
+  // 오세아니아
+  {kor:'시드니 킹스퍼드스미스 공항',eng:'Sydney Kingsford Smith Airport',               code:'SYD'},
+  {kor:'멜버른 공항',           eng:'Melbourne Airport',                                code:'MEL'},
+  {kor:'오클랜드 공항',         eng:'Auckland Airport',                                 code:'AKL'},
+  {kor:'브리즈번 공항',         eng:'Brisbane Airport',                                 code:'BNE'},
+  {kor:'케언즈 공항',           eng:'Cairns Airport',                                   code:'CNS'},
+  // 아프리카
+  {kor:'요하네스버그 올리버탐보 국제공항',eng:'O.R. Tambo International Airport',       code:'JNB'},
+  {kor:'케이프타운 국제공항',   eng:'Cape Town International Airport',                  code:'CPT'},
+  {kor:'나이로비 조모케냐타 국제공항',eng:'Jomo Kenyatta International Airport',        code:'NBO'},
+  // 아메리카
+  {kor:'토론토 피어슨 국제공항',eng:'Toronto Pearson International Airport',            code:'YYZ'},
+  {kor:'밴쿠버 국제공항',       eng:'Vancouver International Airport',                  code:'YVR'},
+  {kor:'몬트리올 트뤼도 국제공항',eng:'Montréal-Trudeau International Airport',         code:'YUL'},
+  {kor:'멕시코시티 베니토후아레스 국제공항',eng:'Benito Juárez International Airport',  code:'MEX'},
+  {kor:'상파울루 과룰류스 국제공항',eng:'São Paulo/Guarulhos International Airport',    code:'GRU'},
+  {kor:'부에노스아이레스 에세이사 국제공항',eng:'Ministro Pistarini International Airport',code:'EZE'},
+  {kor:'리마 호르헤차베스 국제공항',eng:'Jorge Chávez International Airport',           code:'LIM'},
+];
 
 const CITIES_BY_KEY = {
   japan:       [{kor:'도쿄',eng:'Tokyo'},{kor:'오사카',eng:'Osaka'},{kor:'교토',eng:'Kyoto'},{kor:'삿포로',eng:'Sapporo'},{kor:'후쿠오카',eng:'Fukuoka'},{kor:'나고야',eng:'Nagoya'},{kor:'나라',eng:'Nara'},{kor:'고베',eng:'Kobe'},{kor:'히로시마',eng:'Hiroshima'},{kor:'오키나와',eng:'Okinawa'},{kor:'하코다테',eng:'Hakodate'},{kor:'아사히카와',eng:'Asahikawa'},{kor:'가나자와',eng:'Kanazawa'},{kor:'마쓰야마',eng:'Matsuyama'},{kor:'나가사키',eng:'Nagasaki'},{kor:'구마모토',eng:'Kumamoto'},{kor:'센다이',eng:'Sendai'},{kor:'닛코',eng:'Nikko'},{kor:'하코네',eng:'Hakone'},{kor:'시즈오카',eng:'Shizuoka'},{kor:'오이타',eng:'Oita'},{kor:'미야자키',eng:'Miyazaki'},{kor:'아오모리',eng:'Aomori'}],
@@ -8694,27 +9035,66 @@ function NewTripSheet({ open, onClose, onSubmit }) {
           )}
 
           {/* Step 4: 공항 */}
-          {step === 4 && (
-            <div>
-              <div style={{ marginBottom:18 }}>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>출발 공항</div>
-                <input value={depAirport} autoFocus onChange={e=>setDepAirport(e.target.value)}
-                  placeholder="예) 인천국제공항"
-                  style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
-                />
+          {step === 4 && (() => {
+            const makeAirportInput = (value, setValue, label, isAutoFocus, placeholder) => {
+              const q = value.toLowerCase();
+              const korMatch = value.length > 0 ? AIRPORTS.find(a => a.kor.startsWith(value) && a.kor !== value) : null;
+              const engMatch = value.length > 0 ? AIRPORTS.find(a => a.eng.toLowerCase().startsWith(q) && a.eng.toLowerCase() !== q) : null;
+              // 코드 매칭: 2자 이상이고 한글/영어 매칭이 없을 때만
+              const codeMatch = (value.length >= 2 && !korMatch && !engMatch) ? AIRPORTS.find(a => a.code.toLowerCase().startsWith(q)) : null;
+              const textMatch = korMatch || engMatch;
+              const ghostFull = korMatch ? korMatch.kor : engMatch ? engMatch.eng : '';
+              const ghostSuffix = ghostFull ? ghostFull.slice(value.length) : '';
+              let typedPx = 16 + value.length * 14;
+              try { const cv=document.createElement('canvas'); const cx=cv.getContext('2d'); cx.font=`15px ${SANS},sans-serif`; typedPx=16+cx.measureText(value).width; } catch(_){}
+              const acceptMatch = () => {
+                if (korMatch) setValue(korMatch.kor);
+                else if (engMatch) setValue(engMatch.eng);
+                else if (codeMatch) setValue(codeMatch.kor);
+              };
+              return (
+                <div style={{ marginBottom:18 }}>
+                  <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>{label}</div>
+                  <div style={{ position:'relative', borderRadius:14, background:COLORS.card, border:`1.5px solid ${COLORS.line}` }}>
+                    {ghostSuffix && (
+                      <div aria-hidden="true" style={{ position:'absolute', inset:0, padding:'12px 40px 12px 16px', display:'flex', alignItems:'center', pointerEvents:'none', overflow:'hidden', fontFamily:SANS, fontSize:15, lineHeight:'normal', borderRadius:14 }}>
+                        <span style={{ color:'transparent', whiteSpace:'pre' }}>{value}</span>
+                        <span style={{ color:COLORS.mute, opacity:0.55, whiteSpace:'pre' }}>{ghostSuffix}</span>
+                      </div>
+                    )}
+                    <input autoFocus={isAutoFocus} value={value}
+                      onChange={e => setValue(e.target.value)}
+                      onKeyDown={e => { if ((e.key==='Tab'||e.key==='ArrowRight') && (ghostSuffix||codeMatch)) { e.preventDefault(); acceptMatch(); } }}
+                      placeholder={ghostSuffix ? '' : placeholder}
+                      style={{ width:'100%', boxSizing:'border-box', padding:'12px 40px 12px 16px', border:'none', borderRadius:14, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, position:'relative', zIndex:1 }}
+                    />
+                    {ghostSuffix && (
+                      <div onMouseDown={e => { e.preventDefault(); acceptMatch(); }} style={{ position:'absolute', top:0, bottom:0, left:typedPx, right:36, zIndex:2, cursor:'pointer' }}/>
+                    )}
+                    {value.length > 0 && (
+                      <button onClick={() => setValue('')} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontSize:18, lineHeight:1, padding:4, zIndex:3 }}>×</button>
+                    )}
+                  </div>
+                  {codeMatch && (
+                    <div onMouseDown={e => { e.preventDefault(); setValue(codeMatch.kor); }}
+                      style={{ marginTop:6, display:'inline-flex', alignItems:'center', gap:6, background:COLORS.card, border:`1px solid ${COLORS.line}`, borderRadius:20, padding:'5px 12px', cursor:'pointer' }}>
+                      <span style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute }}>{codeMatch.code}</span>
+                      <span style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink }}>{codeMatch.kor}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            };
+            return (
+              <div>
+                {makeAirportInput(depAirport, setDepAirport, '출발 공항', true, '예) 인천국제공항')}
+                {makeAirportInput(arrAirport, setArrAirport, '도착 공항', false, '예) 나리타 국제공항')}
+                <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.5 }}>
+                  비행기를 이용하지 않는다면 넘어가세요.
+                </div>
               </div>
-              <div style={{ marginBottom:18 }}>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>도착 공항</div>
-                <input value={arrAirport} onChange={e=>setArrAirport(e.target.value)}
-                  placeholder="예) 나리타 국제공항"
-                  style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
-                />
-              </div>
-              <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.5 }}>
-                비행기를 이용하지 않는다면 넘어가세요.
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Step 5: 숙소 */}
           {step === 5 && (
@@ -9142,9 +9522,10 @@ function _readCache() {
   if (!localStorage.getItem('tlj_authed')) return null;
   try {
     return {
-      userData: JSON.parse(localStorage.getItem('tlj_userData') || 'null'),
-      trip    : JSON.parse(localStorage.getItem('tlj_trip')     || 'null'),
-      prep    : JSON.parse(localStorage.getItem('tlj_prep')     || 'null'),
+      userData : JSON.parse(localStorage.getItem('tlj_userData')  || 'null'),
+      trip     : JSON.parse(localStorage.getItem('tlj_trip')      || 'null'),
+      prep     : JSON.parse(localStorage.getItem('tlj_prep')      || 'null'),
+      userTrips: JSON.parse(localStorage.getItem('tlj_userTrips') || 'null'),
     };
   } catch(e) { return null; }
 }
@@ -9175,8 +9556,8 @@ function App() {
   const [trip, setTrip]             = React.useState(normalizeTrip(_cache?.trip));
   const [prep, setPrep]             = React.useState(_cache?.prep     || { checklist:[], docs:[], pack:[] });
   const [activeTripId, setActiveTripId] = React.useState(_nav.activeTripId || null);
-  const [userTrips, setUserTrips]       = React.useState([]);
-  const [tripsLoading, setTripsLoading] = React.useState(false);
+  const [userTrips, setUserTrips]       = React.useState(() => (_cache?.userTrips || []));
+  const [tripsLoading, setTripsLoading] = React.useState(!_cache?.userTrips);
   const [tripsReady,   setTripsReady]   = React.useState(false);
   const [profileSheetOpen,     setProfileSheetOpen]     = React.useState(false);
   const [addCompanionOpen,     setAddCompanionOpen]     = React.useState(null); // null=closed, false=open(no trip), tripId=open(with trip)
@@ -9198,6 +9579,8 @@ function App() {
   const [shareTripTarget, setShareTripTarget] = React.useState(null);
   const [loginError, setLoginError] = React.useState('');
   const [loginPending, setLoginPending] = React.useState(false); // 로그인 버튼 누른 후 로딩 중
+  const [debugLogs, setDebugLogs] = React.useState([]);
+  const _dbg = (msg) => setDebugLogs(p => [...p.slice(-9), `${new Date().toISOString().slice(11,19)} ${msg}`]);
   const tripRef = React.useRef(null); // for loop-prevention
 
   // ── UI nav state ───────────────────────────────────────────
@@ -9213,6 +9596,7 @@ function App() {
   const [hotelDetailSheet, setHotelDetailSheet] = React.useState(null); // null=closed, 'new'=add, number=idx
   const [scrollKey, setScrollKey]     = React.useState(0);
   const [editing, setEditing]         = React.useState(false);
+  const [photoVer, setPhotoVer]       = React.useState(0);
   const [tabBarVisible, setTabBarVisible] = React.useState(true);
   const [tabBarPeeking, setTabBarPeeking] = React.useState(false);
   const [budgetSheetOpen, setBudgetSheetOpen] = React.useState(false);
@@ -9269,6 +9653,11 @@ function App() {
     const t = setTimeout(() => { try { localStorage.setItem('tlj_prep', JSON.stringify(prep)); } catch(_) {} }, 500);
     return () => clearTimeout(t);
   }, [prep]);
+  React.useEffect(() => {
+    if (userTrips.length) {
+      try { localStorage.setItem('tlj_userTrips', JSON.stringify(userTrips)); } catch(_) {}
+    }
+  }, [userTrips]);
 
   // ── Firebase auth listener ─────────────────────────────────
   React.useEffect(() => {
@@ -9301,6 +9690,7 @@ function App() {
         localStorage.removeItem('tlj_userData');
         localStorage.removeItem('tlj_trip');
         localStorage.removeItem('tlj_prep');
+        localStorage.removeItem('tlj_userTrips');
         setAuthState('out');
       }
     });
@@ -9322,7 +9712,7 @@ function App() {
     });
   }, [authUser?.uid]);
 
-  // ── 여행 목록 로드 + 샘플 싱크 ────────────────────────────
+  // ── 여행 목록 로드 ────────────────────────────────────────
   React.useEffect(() => {
     if (!userData?.uid) return;
     // tripIds가 undefined면 Firestore 데이터 아직 안 온 fallback → 실제 데이터 올 때까지 대기
@@ -9331,6 +9721,7 @@ function App() {
     const uid = userData.uid;
     const email = userData.email || '';
     const tripIds = userData.tripIds.length > 0 ? userData.tripIds : (userData.groupId ? [userData.groupId] : []);
+    _dbg(`load start uid=${uid.slice(0,6)} ids=${tripIds.length}`);
     setTripsLoading(true);
 
     // 샘플 싱크: rome만 자동 추가 (nyc는 오너 전용)
@@ -9348,6 +9739,7 @@ function App() {
       const allIds = [...tripIds, ...newIds];
       return fbLoadTrips(allIds).then(async trips => {
         if (!alive) return;
+        _dbg(`load ok trips=${trips.length}`);
         const normalized = trips.map(t => normalizeTrip(t, t.id));
         // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 — 오너 계정 전용
         const isOwner = (email) => email === 'arjungtaeng@gmail.com';
@@ -9425,12 +9817,25 @@ function App() {
     });
   }, [authUser?.uid]);
 
-  // 여행 제목 바뀌면 시차 도시 · 환율 자동 감지
+  // 여행 제목 바뀌면 시차 도시 · 환율 자동 감지 (저장된 timezone/defaultCurrency 우선 폴백)
   React.useEffect(() => {
     const detected = detectCityFromTitle(trip?.title);
-    if (detected) setCity(detected);
-    setCurCode(detectCurrencyFromTitle(trip?.title));
-  }, [trip?.title]);
+    if (detected) {
+      setCity(detected);
+    } else if (trip?.timezone) {
+      const byZone = CITIES.find(c => c.zone === trip.timezone)
+        || (typeof CITY_DB !== 'undefined' ? CITY_DB.find(c => c.zone === trip.timezone) : null);
+      if (byZone) setCity(byZone);
+    }
+    const detectedCur = detectCurrencyFromTitle(trip?.title);
+    if (detectedCur !== 'USD') {
+      setCurCode(detectedCur);
+    } else if (trip?.defaultCurrency) {
+      setCurCode(trip.defaultCurrency);
+    } else {
+      setCurCode(detectedCur);
+    }
+  }, [trip?.title, trip?.timezone, trip?.defaultCurrency]);
 
   // 백그라운드 프리패치: 지도·경로·이동시간을 미리 캐싱
   // → Map 탭 클릭 시 즉시 표시, DayScreen 타임라인도 즉시 표시
@@ -9618,7 +10023,6 @@ function App() {
     setOpenStop({ idx: days[0].items.length - 1, stop: newItem, editing: true });
   };
   const deleteItem = (i) => {
-    if (!confirm('이 일정을 삭제할까요?')) return;
     const days = [...trip.days];
     days[dayIdx] = { ...days[dayIdx], items: days[dayIdx].items.filter((_, j) => j !== i) };
     editTrip({ days });
@@ -9888,7 +10292,8 @@ function App() {
         onNavDay={(i) => { setDayIdx(i); setOpenStop(null); setScrollKey(k=>k+1); }}
         onEditDay={editDay} onAddItem={addItem} onDeleteItem={deleteItem}
         onReorderItems={reorderItems}
-        editing={editing} setEditing={setEditing}/>;
+        editing={editing} setEditing={setEditing}
+        onPhotoUploaded={() => setPhotoVer(v => v + 1)}/>;
       label = `Day ${dayIdx + 1}`;
     } else {
       screen = <HomeScreen trip={trip}
@@ -9909,7 +10314,8 @@ function App() {
         onAddItemToFirstDay={addItemToFirstDay}
         editing={editing} setEditing={setEditing}
         userData={userData} myUid={authUser?.uid} onOpenCompanion={() => setProfileSheetOpen(true)}
-        onOpenNotifs={openNotifs} unreadCount={unreadCount}
+        onOpenNotifs={openNotifs} unreadCount={unreadCount} photoVer={photoVer}
+        onPhotoUploaded={() => setPhotoVer(v => v + 1)}
         onLoadSample={async () => {
           const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
           const patch = {
@@ -9957,13 +10363,18 @@ function App() {
   // ── 여행 목록 화면 ─────────────────────────────────────────
   if (!activeTripId) return (
     <>
+      {debugLogs.length > 0 && (
+        <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:9999, background:'rgba(0,0,0,0.85)', color:'#0f0', fontFamily:'monospace', fontSize:10, padding:'4px 8px', pointerEvents:'none' }}>
+          {debugLogs.map((l,i) => <div key={i}>{l}</div>)}
+        </div>
+      )}
       <TripsScreen
         trips={userTrips}
         loading={tripsLoading}
         userData={userData}
         myUid={authUser?.uid}
         onOpenCompanion={() => setProfileSheetOpen(true)}
-        onOpenNotifs={openNotifs} unreadCount={unreadCount}
+        onOpenNotifs={openNotifs} unreadCount={unreadCount} photoVer={photoVer}
         onSelect={(id) => {
           const found = userTrips.find(t => t.id === id);
           let tripToShow = found;
@@ -10024,7 +10435,7 @@ function App() {
         onAddCompanion={(tripId) => setAddCompanionOpen(tripId || false)}
         onViewCompanions={() => { setProfileSheetOpen(false); setCompanionsScreenOpen(true); }}
         onDeleteAccount={() => {
-          ['tlj_authed','tlj_userData','tlj_trip','tlj_prep','tlj_nav'].forEach(k => localStorage.removeItem(k));
+          ['tlj_authed','tlj_userData','tlj_trip','tlj_prep','tlj_nav','tlj_userTrips'].forEach(k => localStorage.removeItem(k));
           setAuthState('out'); setAuthUser(null); setUserData(null);
           setProfileSheetOpen(false);
         }}/>
@@ -10033,7 +10444,8 @@ function App() {
         defaultTripId={addCompanionOpen || null}
         onUserDataUpdate={ud => setUserData(ud)}/>
       <CompanionsScreen open={companionsScreenOpen} onClose={() => setCompanionsScreenOpen(false)}
-        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}/>
+        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}
+        onRemoveTripMember={(tid, uid) => setUserTrips(prev => prev.map(t => t.id !== tid ? t : { ...t, members: (t.members||[]).filter(m => m !== uid) }))}/>
       <NotificationsScreen open={notifOpen} onClose={() => setNotifOpen(false)}
         authUser={authUser} notifications={notifs}
         onGoToCompanions={() => { setNotifOpen(false); setCompanionsScreenOpen(true); }}
@@ -10130,7 +10542,8 @@ function App() {
         onClose={() => { setOpenStop(null); setTabBarPeeking(false); }}
         onSave={saveStop}
         onRegisterEdit={fn => { stopSheetEditRef.current = fn; }}
-        onTabBarToggle={() => setTabBarVisible(v => !v)}/>
+        onTabBarToggle={() => setTabBarVisible(v => !v)}
+        />
       <HotelSheet
         open={hotelDetailSheet !== null}
         onClose={() => setHotelDetailSheet(null)}
@@ -10153,7 +10566,7 @@ function App() {
         onAddCompanion={(tripId) => setAddCompanionOpen(tripId || false)}
         onViewCompanions={() => { setProfileSheetOpen(false); setCompanionsScreenOpen(true); }}
         onDeleteAccount={() => {
-          ['tlj_authed','tlj_userData','tlj_trip','tlj_prep','tlj_nav'].forEach(k => localStorage.removeItem(k));
+          ['tlj_authed','tlj_userData','tlj_trip','tlj_prep','tlj_nav','tlj_userTrips'].forEach(k => localStorage.removeItem(k));
           setAuthState('out'); setAuthUser(null); setUserData(null);
           setProfileSheetOpen(false);
         }}/>
@@ -10176,7 +10589,8 @@ function App() {
           setTab('home'); setDayIdx(null); setHotelIdx(null);
         }}/>
       <CompanionsScreen open={companionsScreenOpen} onClose={() => setCompanionsScreenOpen(false)}
-        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}/>
+        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}
+        onRemoveTripMember={(tid, uid) => setUserTrips(prev => prev.map(t => t.id !== tid ? t : { ...t, members: (t.members||[]).filter(m => m !== uid) }))}/>
       <NotificationsScreen open={notifOpen} onClose={() => setNotifOpen(false)}
         authUser={authUser} notifications={notifs}
         onGoToCompanions={() => { setNotifOpen(false); setCompanionsScreenOpen(true); }}

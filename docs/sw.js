@@ -1,6 +1,6 @@
-const V = 'tlj-v438';
+const V = 'tlj-v488';
+// index.html은 캐시하지 않음 — 항상 네트워크에서 받아야 버전 감지가 동작함
 const CACHE = [
-  './', './index.html',
   './react.min.js', './react-dom.min.js',
   './firebase-sdk.min.js', './firebase-messaging.js', './firebase.js',
   './dnd-hotel.js', './bundle.min.js',
@@ -30,6 +30,11 @@ self.addEventListener('message', e => {
 self.addEventListener('fetch', e => {
   // 외부 API 요청(Foursquare, Firebase, Photon 등)은 SW가 가로채지 않음 (iOS 호환)
   if (!e.request.url.startsWith(self.location.origin)) return;
+  // index.html(네비게이션): 항상 네트워크 우선, 실패 시 캐시 fallback
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request).catch(() => caches.match('./index.html')));
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request))
   );

@@ -448,12 +448,25 @@ window.fbGetContacts = async (uid) => {
   return window.fbGetUsersById(ids);
 };
 
+// contacts 실시간 리스너 — 상대방이 삭제해도 즉시 반영
+window.fbListenContacts = (uid, cb) => {
+  return _fbDb.collection('users').doc(uid).onSnapshot(async snap => {
+    const ids = snap.data()?.contacts || [];
+    if (!ids.length) { cb([]); return; }
+    const users = await window.fbGetUsersById(ids).catch(() => []);
+    cb(users);
+  });
+};
+
 window.fbRemoveContact = async (myUid, contactUid) => {
-  // 양쪽 contacts에서 서로 제거 (보안 규칙: 자기 자신을 상대 contacts에서 제거하는 update 허용)
-  const batch = _fbDb.batch();
-  batch.update(_fbDb.collection('users').doc(myUid),      { contacts: firebase.firestore.FieldValue.arrayRemove(contactUid) });
-  batch.update(_fbDb.collection('users').doc(contactUid), { contacts: firebase.firestore.FieldValue.arrayRemove(myUid) });
-  await batch.commit();
+  // 내 contacts에서 제거 (항상 성공 — 내 문서라 권한 있음)
+  await _fbDb.collection('users').doc(myUid).update({
+    contacts: firebase.firestore.FieldValue.arrayRemove(contactUid),
+  });
+  // 상대방 contacts에서도 나 제거 — best effort (보안 규칙 허용 시 성공)
+  _fbDb.collection('users').doc(contactUid).update({
+    contacts: firebase.firestore.FieldValue.arrayRemove(myUid),
+  }).catch(() => {});
 };
 
 // ─── Notifications ──────────────────────────────────────────
