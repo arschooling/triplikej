@@ -136,12 +136,18 @@ function resizeImage(file, maxWidth=800, quality=0.75) {
 }
 // 캐시: Storage URL을 메모리에 저장 (세션 중 재요청 방지)
 const _dayPhotoCache = {};
+const _LS_PREFIX = 'tlj_ph_';
 async function getDayPhotoUrl(uid, tripId, dayIdx) {
   const key = `${uid}_${tripId}_${dayIdx}`;
   if (_dayPhotoCache[key] !== undefined) return _dayPhotoCache[key];
   try {
+    const lsVal = localStorage.getItem(_LS_PREFIX + key);
+    if (lsVal !== null) { _dayPhotoCache[key] = lsVal || null; return _dayPhotoCache[key]; }
+  } catch(_) {}
+  try {
     const url = await firebase.storage().ref(`user-photos/${uid}/${tripId}/${dayIdx}`).getDownloadURL();
     _dayPhotoCache[key] = url;
+    try { localStorage.setItem(_LS_PREFIX + key, url); } catch(_) {}
     return url;
   } catch(_) {
     _dayPhotoCache[key] = null;
@@ -149,7 +155,9 @@ async function getDayPhotoUrl(uid, tripId, dayIdx) {
   }
 }
 function invalidateDayPhotoCache(uid, tripId, dayIdx) {
-  delete _dayPhotoCache[`${uid}_${tripId}_${dayIdx}`];
+  const key = `${uid}_${tripId}_${dayIdx}`;
+  delete _dayPhotoCache[key];
+  try { localStorage.removeItem(_LS_PREFIX + key); } catch(_) {}
 }
 
 // ─── DayPhotoImg: Storage URL 비동기 로드 래퍼 ─────────────
@@ -2032,7 +2040,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v442</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v443</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2177,6 +2185,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
       invalidateDayPhotoCache(myUid, trip.id, idx);
       const url = await window.fbUploadDayPhoto(myUid, trip.id, idx, dataUrl);
       _dayPhotoCache[`${myUid}_${trip.id}_${idx}`] = url;
+      try { localStorage.setItem(_LS_PREFIX + `${myUid}_${trip.id}_${idx}`, url); } catch(_) {}
       setCardPhotoVersions(v => ({ ...v, [idx]: (v[idx] || 0) + 1 }));
       onPhotoUploaded?.();
     } catch(_) {} finally {
@@ -2830,6 +2839,7 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
       invalidateDayPhotoCache(authUid, tripId, dayIdx);
       const url = await window.fbUploadDayPhoto(authUid, tripId, dayIdx, dataUrl);
       _dayPhotoCache[`${authUid}_${tripId}_${dayIdx}`] = url;
+      try { localStorage.setItem(_LS_PREFIX + `${authUid}_${tripId}_${dayIdx}`, url); } catch(_) {}
       setDayPhoto(url);
       onPhotoUploaded?.();
     } catch(_) {} finally {
