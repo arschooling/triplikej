@@ -9451,12 +9451,25 @@ function App() {
     });
   }, [authUser?.uid]);
 
-  // 여행 제목 바뀌면 시차 도시 · 환율 자동 감지
+  // 여행 제목 바뀌면 시차 도시 · 환율 자동 감지 (저장된 timezone/defaultCurrency 우선 폴백)
   React.useEffect(() => {
     const detected = detectCityFromTitle(trip?.title);
-    if (detected) setCity(detected);
-    setCurCode(detectCurrencyFromTitle(trip?.title));
-  }, [trip?.title]);
+    if (detected) {
+      setCity(detected);
+    } else if (trip?.timezone) {
+      const byZone = CITIES.find(c => c.zone === trip.timezone)
+        || (typeof CITY_DB !== 'undefined' ? CITY_DB.find(c => c.zone === trip.timezone) : null);
+      if (byZone) setCity(byZone);
+    }
+    const detectedCur = detectCurrencyFromTitle(trip?.title);
+    if (detectedCur !== 'USD') {
+      setCurCode(detectedCur);
+    } else if (trip?.defaultCurrency) {
+      setCurCode(trip.defaultCurrency);
+    } else {
+      setCurCode(detectedCur);
+    }
+  }, [trip?.title, trip?.timezone, trip?.defaultCurrency]);
 
   // 백그라운드 프리패치: 지도·경로·이동시간을 미리 캐싱
   // → Map 탭 클릭 시 즉시 표시, DayScreen 타임라인도 즉시 표시
