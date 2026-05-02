@@ -2135,7 +2135,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v9</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v10</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9846,13 +9846,11 @@ function App() {
   React.useEffect(() => {
     if (!authUser?.uid) return;
     return fbListenPrep(authUser.uid, (p) => {
-      // preps 문서가 없거나 비어있으면 TRIP_DEFAULT.prep으로 초기화
-      const hasData = p && (p.cats?.length || p.checklist?.length || p.docs?.length || p.pack?.length);
-      if (!hasData) {
-        // TRIP_DEFAULT.prep이 없거나 비어있으면 저장하지 않음 (무한 저장 방지)
+      // cats 데이터가 없으면 TRIP_DEFAULT.prep으로 초기화 (신규·구형 계정 대응)
+      const hasCats = p?.cats?.length > 0;
+      if (!hasCats) {
         const def = window.TRIP_DEFAULT?.prep;
-        const defHasData = def && (def.cats?.length || def.checklist?.length || def.docs?.length || def.pack?.length);
-        if (defHasData) {
+        if (def?.cats?.length > 0) {
           fbSavePrep(authUser.uid, def).catch(console.error);
           setPrep(def);
         }

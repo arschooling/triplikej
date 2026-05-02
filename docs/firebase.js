@@ -45,9 +45,10 @@ window.fbGetOrCreateUser = async (fbUser) => {
       createdAt   : firebase.firestore.FieldValue.serverTimestamp(),
     };
     await ref.set(data);
-    await _fbDb.collection('preps').doc(fbUser.uid).set({
-      prep: { checklist:[], docs:[], pack:[] },
-    });
+    const initPrep = (window.TRIP_DEFAULT?.prep?.cats?.length)
+      ? window.TRIP_DEFAULT.prep
+      : { cats: [{ id:'cat_1', name:'체크리스트', items:[] }] };
+    await _fbDb.collection('preps').doc(fbUser.uid).set({ prep: initPrep });
     return { ...data, uid: fbUser.uid };
   }
   const existing = snap.data();
