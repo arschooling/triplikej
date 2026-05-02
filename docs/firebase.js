@@ -324,15 +324,22 @@ window.fbGetTripCompanions = async (tripId, myUid) => {
   return res.filter(Boolean);
 };
 
-window.fbUploadTripPhoto = async (tripId, file) => {
-  await _load();
+window.fbUploadDayPhoto = async (uid, tripId, dayIdx, blob) => {
   const storage = firebase.storage();
-  const ext = file.name.split('.').pop() || 'jpg';
-  const ref = storage.ref(`trip-covers/${tripId}.${ext}`);
-  await ref.put(file, { contentType: file.type || 'image/jpeg' });
-  const url = await ref.getDownloadURL();
-  await _fbDb.collection('groups').doc(tripId).update({ coverImg: url });
-  return url;
+  const ref = storage.ref(`user-photos/${uid}/${tripId}/${dayIdx}`);
+  await ref.putString(blob, 'data_url', { contentType: 'image/jpeg' });
+  return await ref.getDownloadURL();
+};
+
+window.fbDeleteTripPhotos = async (uid, tripId, dayCount) => {
+  const storage = firebase.storage();
+  const tasks = [];
+  for (let i = 0; i < dayCount; i++) {
+    tasks.push(
+      storage.ref(`user-photos/${uid}/${tripId}/${i}`).delete().catch(() => {})
+    );
+  }
+  await Promise.all(tasks);
 };
 
 window.fbDeleteTrip = async (tripId, uid) => {

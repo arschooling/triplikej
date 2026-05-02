@@ -116,11 +116,7 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
   }
 };
 
-// ─── Local day photo helpers ────────────────────────────────
-function getLocalDayPhoto(tripId, dayIdx) {
-  try { return localStorage.getItem('day_photo_' + tripId + '_' + dayIdx) || null; }
-  catch(_) { return null; }
-}
+// ─── Day photo helpers ──────────────────────────────────────
 function resizeImage(file, maxWidth=800, quality=0.75) {
   return new Promise(resolve => {
     const img = new Image();
@@ -137,6 +133,34 @@ function resizeImage(file, maxWidth=800, quality=0.75) {
     };
     img.src = url;
   });
+}
+// 캐시: Storage URL을 메모리에 저장 (세션 중 재요청 방지)
+const _dayPhotoCache = {};
+async function getDayPhotoUrl(uid, tripId, dayIdx) {
+  const key = `${uid}_${tripId}_${dayIdx}`;
+  if (_dayPhotoCache[key] !== undefined) return _dayPhotoCache[key];
+  try {
+    const url = await firebase.storage().ref(`user-photos/${uid}/${tripId}/${dayIdx}`).getDownloadURL();
+    _dayPhotoCache[key] = url;
+    return url;
+  } catch(_) {
+    _dayPhotoCache[key] = null;
+    return null;
+  }
+}
+function invalidateDayPhotoCache(uid, tripId, dayIdx) {
+  delete _dayPhotoCache[`${uid}_${tripId}_${dayIdx}`];
+}
+
+// ─── DayPhotoImg: Storage URL 비동기 로드 래퍼 ─────────────
+function DayPhotoImg({ uid, tripId, dayIdx, style, fallback }) {
+  const [url, setUrl] = React.useState(null);
+  React.useEffect(() => {
+    if (!uid || !tripId) { setUrl(null); return; }
+    getDayPhotoUrl(uid, tripId, dayIdx).then(setUrl);
+  }, [uid, tripId, dayIdx]);
+  if (!url) return fallback || null;
+  return <img src={url} alt="" style={style}/>;
 }
 
 // ─── Photo placeholder ──────────────────────────────────────
@@ -2008,7 +2032,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v432</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v433</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2029,10 +2053,9 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                     WebkitTapHighlightColor:'transparent',
                   }}>
                     <div style={{ position:'relative' }}>
-                      {(() => { const p = getLocalDayPhoto(t.id, 0); return p
-                        ? <img src={p} alt="" style={{ width:'100%', height:130, objectFit:'cover', display:'block' }}/>
-                        : <Photo hue={hue} label={label} height={130}/>;
-                      })()}
+                      <DayPhotoImg uid={myUid} tripId={t.id} dayIdx={0}
+                        style={{ width:'100%', height:130, objectFit:'cover', display:'block' }}
+                        fallback={<Photo hue={hue} label={label} height={130}/>}/>
                       {companionCount > 0 && (
                         <div style={{
                           position:'absolute', top:10, right:12,
@@ -2135,7 +2158,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       onEditTrip, onReorderDays, onAddDay, onDeleteDay, onBack,
                       onAddHotel, onAddHotelFromSearch, onAddHotelViaStop, onDeleteHotel, onReorderHotels,
                       onConvertInlineHotel, onAddItemToFirstDay, editing, setEditing,
-                      userData, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount }) {
+                      userData, myUid, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
@@ -2460,10 +2483,9 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   background:COLORS.card,
                 }}>
                   <div style={{ position:'relative' }}>
-                    {(() => { const p = getLocalDayPhoto(trip.id, i); return p
-                      ? <img src={p} alt="" style={{ width:'100%', height:170, objectFit:'cover', display:'block' }}/>
-                      : <Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>;
-                    })()}
+                    <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
+                      style={{ width:'100%', height:170, objectFit:'cover', display:'block' }}
+                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>}/>
                   </div>
                   <div style={{ padding:'16px 18px 18px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
@@ -2689,7 +2711,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
 }
 
 // ─── Day screen ─────────────────────────────────────────────
-function DayScreen({ trip, dayIdx, tripId, onBack, onOpenStop, onNavDay,
+function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay,
                      onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing }) {
   const day = trip.days[dayIdx] || { n: dayIdx+1, title:'', date:'', weekday:'', hero:{ hue:25, label:'' }, items:[] };
   const tripYear = extractTripYear(trip);
@@ -2755,14 +2777,26 @@ function DayScreen({ trip, dayIdx, tripId, onBack, onOpenStop, onNavDay,
 
   const heroHue = (dayIdx === 0 ? (trip.hue ?? day.hero?.hue) : day.hero?.hue) ?? 25;
   const heroBg  = `oklch(0.88 0.035 ${heroHue})`;
-  const [dayPhoto, setDayPhoto] = React.useState(() => getLocalDayPhoto(tripId, dayIdx));
+  const [dayPhoto, setDayPhoto] = React.useState(null);
+  const [photoUploading, setPhotoUploading] = React.useState(false);
   const dayPhotoInputRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!authUid || !tripId) return;
+    getDayPhotoUrl(authUid, tripId, dayIdx).then(url => setDayPhoto(url || null));
+  }, [authUid, tripId, dayIdx]);
   const handleDayPhoto = async (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const dataUrl = await resizeImage(file);
-    try { localStorage.setItem('day_photo_' + tripId + '_' + dayIdx, dataUrl); } catch(_) {}
-    setDayPhoto(dataUrl);
+    if (!file || !authUid) return;
+    setPhotoUploading(true);
+    try {
+      const dataUrl = await resizeImage(file);
+      invalidateDayPhotoCache(authUid, tripId, dayIdx);
+      const url = await window.fbUploadDayPhoto(authUid, tripId, dayIdx, dataUrl);
+      _dayPhotoCache[`${authUid}_${tripId}_${dayIdx}`] = url;
+      setDayPhoto(url);
+    } catch(_) {} finally {
+      setPhotoUploading(false);
+    }
     e.target.value = '';
   };
   return (
@@ -2787,10 +2821,10 @@ function DayScreen({ trip, dayIdx, tripId, onBack, onOpenStop, onNavDay,
         </div>
         {editing && (
           <>
-            <button onClick={() => dayPhotoInputRef.current?.click()} style={{
+            <button onClick={() => !photoUploading && dayPhotoInputRef.current?.click()} style={{
               position:'absolute', bottom:42, right:16, zIndex:5,
-              background:'none', border:'none', cursor:'pointer', padding:0,
-              display:'flex', alignItems:'center',
+              background:'none', border:'none', cursor: photoUploading ? 'default' : 'pointer', padding:0,
+              display:'flex', alignItems:'center', opacity: photoUploading ? 0.5 : 1,
             }}>
               <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
             </button>
@@ -9492,6 +9526,9 @@ function App() {
       fbMarkSampleDeleted(userData.uid, t.sampleId).catch(() => {});
     }
     await fbDeleteTrip(tripId, userData.uid);
+    if (authUser?.uid && t?.days?.length && typeof window.fbDeleteTripPhotos === 'function') {
+      window.fbDeleteTripPhotos(authUser.uid, tripId, t.days.length).catch(() => {});
+    }
     setUserTrips(prev => prev.filter(x => x.id !== tripId));
     setUserData(prev => ({ ...prev, tripIds: (prev.tripIds || []).filter(id => id !== tripId) }));
   };
@@ -9806,7 +9843,7 @@ function App() {
         editing={editing} setEditing={setEditing}/>;
       label = 'Hotel';
     } else if (dayIdx !== null && trip) {
-      screen = <DayScreen trip={trip} dayIdx={dayIdx} tripId={activeTripId}
+      screen = <DayScreen trip={trip} dayIdx={dayIdx} tripId={activeTripId} authUid={authUser?.uid}
         onBack={() => { navGoingBack.current = true; setDayIdx(null); }}
         onOpenStop={setOpenStop}
         onNavDay={(i) => { setDayIdx(i); setOpenStop(null); setScrollKey(k=>k+1); }}
@@ -9832,7 +9869,7 @@ function App() {
         onConvertInlineHotel={convertInlineHotel}
         onAddItemToFirstDay={addItemToFirstDay}
         editing={editing} setEditing={setEditing}
-        userData={userData} onOpenCompanion={() => setProfileSheetOpen(true)}
+        userData={userData} myUid={authUser?.uid} onOpenCompanion={() => setProfileSheetOpen(true)}
         onOpenNotifs={openNotifs} unreadCount={unreadCount}
         onLoadSample={async () => {
           const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));

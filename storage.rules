@@ -7,5 +7,8 @@ service firebase.storage {
                    && request.resource.size < 10 * 1024 * 1024
                    && request.resource.contentType.matches('image/.*');
     }
+    match /user-photos/{uid}/{tripId}/{dayIdx} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
   }
 }
