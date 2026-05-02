@@ -2032,7 +2032,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v438</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v439</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2851,13 +2851,10 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
         }}>
           <Icon name="chevron-l" size={18} color={COLORS.ink} stroke={2}/>
         </button>
-        <div style={{ position:'absolute', top:'calc(16px + env(safe-area-inset-top, 0px))', right:16, zIndex:5 }}>
-          <EditBtn editing={editing} onClick={() => setEditing(e => !e)}/>
-        </div>
-        {editing && (
-          <>
+        <div style={{ position:'absolute', top:'calc(16px + env(safe-area-inset-top, 0px))', right:16, zIndex:5,
+          display:'flex', gap:8, alignItems:'center' }}>
+          {editing && (
             <button onClick={() => !photoUploading && dayPhotoInputRef.current?.click()} style={{
-              position:'absolute', bottom:42, right:16, zIndex:5,
               background:'none', border:'none', cursor: photoUploading ? 'default' : 'pointer',
               padding:0, display:'flex', alignItems:'center', opacity: photoUploading ? 0.5 : 1,
             }}>
@@ -2866,9 +2863,10 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
                 : <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
               }
             </button>
-            <input ref={dayPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleDayPhoto}/>
-          </>
-        )}
+          )}
+          <EditBtn editing={editing} onClick={() => setEditing(e => !e)}/>
+        </div>
+        <input ref={dayPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleDayPhoto}/>
 
         <div style={{ position:'absolute', left:0, right:0, bottom:-30, padding:'0 16px' }}>
           <div style={{ background:COLORS.bg, borderRadius:20, padding:'18px 20px 18px' }}>
