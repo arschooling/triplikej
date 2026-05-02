@@ -277,7 +277,7 @@ function EditBtn({ editing, onClick, compact }) {
 }
 
 // ─── Swipeable row (swipe-left to reveal edit/delete) ────────
-function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe }) {
+function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe, compact }) {
   const [x, setX]             = React.useState(0);
   const [open, setOpen]       = React.useState(false);
   const [flying, setFlying]   = React.useState(false);  // 날아가는 중
@@ -374,25 +374,25 @@ function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDrag
             }}>
               {onEdit && (
                 <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
-                  minWidth: editLabel ? 56 : 38, height: editLabel ? 36 : 38,
-                  borderRadius: editLabel ? 10 : 19, border:'none', cursor:'pointer',
+                  minWidth: editLabel ? 56 : compact ? 30 : 38, height: editLabel ? 36 : compact ? 30 : 38,
+                  borderRadius: editLabel ? 10 : compact ? 15 : 19, border:'none', cursor:'pointer',
                   background: editBg || '#ffa500', flexShrink:0, padding: editLabel ? '0 12px' : 0,
                   display:'flex', alignItems:'center', justifyContent:'center',
                 }}>
                   {editLabel
                     ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{editLabel}</span>
-                    : <Icon name={editIcon||'edit'} size={14} color="#fff" stroke={2}/>}
+                    : <Icon name={editIcon||'edit'} size={compact ? 12 : 14} color="#fff" stroke={2}/>}
                 </button>
               )}
               <button onClick={(e)=>{e.stopPropagation(); flyOff();}} style={{
-                minWidth: deleteLabel ? 48 : 38, height: deleteLabel ? 36 : 38,
-                borderRadius: deleteLabel ? 10 : 19, border:'none', cursor:'pointer',
+                minWidth: deleteLabel ? 48 : compact ? 30 : 38, height: deleteLabel ? 36 : compact ? 30 : 38,
+                borderRadius: deleteLabel ? 10 : compact ? 15 : 19, border:'none', cursor:'pointer',
                 background:'#B5451B', flexShrink:0, padding: deleteLabel ? '0 12px' : 0,
                 display:'flex', alignItems:'center', justifyContent:'center',
               }}>
                 {deleteLabel
                   ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{deleteLabel}</span>
-                  : <Icon name="trash" size={14} color="#fff" stroke={2}/>}
+                  : <Icon name="trash" size={compact ? 12 : 14} color="#fff" stroke={2}/>}
               </button>
             </div>
           )}
@@ -2100,7 +2100,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v474</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v475</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5578,6 +5578,7 @@ function PrepCatItems({ ci, cat, cats, save, saveWithUndo, editing, editingItem,
             style={{ position:'relative', marginBottom:6, ...(dp.style||{}) }}>
             <SwipeableRow
               cardSwipe
+              compact
               onEdit={() => setEditingItem({ ci, ii })}
               onDelete={() => deleteItem(ii)}
               isDragging={!!prepDrag}
