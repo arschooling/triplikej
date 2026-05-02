@@ -2098,7 +2098,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v465</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v466</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -6054,9 +6054,9 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
                 value={pasteText}
                 onChange={e => setPasteText(e.target.value)}
                 placeholder={'카테고리 이름\n- [ ] 항목\n- [ ] 항목\n\n카테고리 이름\n- [ ] 항목'}
-                style={{ width:'100%', boxSizing:'border-box', height:200, border:`1px solid ${COLORS.line}`,
-                  borderRadius:14, padding:'12px 14px', fontFamily:SANS, fontSize:13.5, color:COLORS.ink,
-                  background:COLORS.card, outline:'none', resize:'none', lineHeight:1.6 }}/>
+                style={{ width:'100%', boxSizing:'border-box', minHeight:280, border:`1px solid ${COLORS.line}`,
+                  borderRadius:14, padding:'14px 16px', fontFamily:SANS, fontSize:15, color:COLORS.ink,
+                  background:COLORS.card, outline:'none', resize:'none', lineHeight:1.7 }}/>
               {/* 파싱 미리보기 */}
               {(() => {
                 const parsed = parsePasteText(pasteText);
