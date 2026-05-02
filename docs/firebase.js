@@ -588,6 +588,10 @@ window.fbSyncSample = async (uid, userEmail, sampleId) => {
       created = true;
     });
     if (!created) return null;
+    // Rome 샘플 생성 시 prep도 TRIP_DEFAULT.prep으로 초기화
+    if (sampleId === 'rome' && window.TRIP_DEFAULT?.prep?.cats?.length) {
+      await _fbDb.collection('preps').doc(uid).set({ prep: window.TRIP_DEFAULT.prep }, { merge: true });
+    }
     return { tripId, updated: true, isNew: true, tripData };
   }
 
@@ -601,6 +605,10 @@ window.fbSyncSample = async (uid, userEmail, sampleId) => {
     await _fbDb.collection('users').doc(uid).update({
       [`sampleVersions.${sampleId}`]: sampleVersion,
     });
+    // Rome 샘플 버전 업데이트 시 prep도 TRIP_DEFAULT.prep으로 덮어쓰기
+    if (sampleId === 'rome' && window.TRIP_DEFAULT?.prep?.cats?.length) {
+      await _fbDb.collection('preps').doc(uid).set({ prep: window.TRIP_DEFAULT.prep }, { merge: true });
+    }
     return { tripId: sampleTripSnap.id, updated: true, isNew: false, tripData };
   }
 
