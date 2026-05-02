@@ -159,17 +159,41 @@ function invalidateDayPhotoCache(uid, tripId, dayIdx) {
   delete _dayPhotoCache[key];
   try { localStorage.removeItem(_LS_PREFIX + key); } catch(_) {}
 }
+// 동기 캐시 조회 — 메모리 또는 localStorage에 있으면 즉시 반환, 없으면 undefined
+function getCachedDayPhotoUrl(uid, tripId, dayIdx) {
+  if (!uid || !tripId) return null;
+  const key = `${uid}_${tripId}_${dayIdx}`;
+  if (_dayPhotoCache[key] !== undefined) return _dayPhotoCache[key];
+  try {
+    const v = localStorage.getItem(_LS_PREFIX + key);
+    if (v !== null) { _dayPhotoCache[key] = v || null; return _dayPhotoCache[key]; }
+  } catch(_) {}
+  return undefined;
+}
 
 // ─── DayPhotoImg: Storage URL 비동기 로드 래퍼 ─────────────
 function DayPhotoImg({ uid, tripId, dayIdx, style, fallback, refreshKey }) {
-  const [url, setUrl] = React.useState(null);
+  const initCached = getCachedDayPhotoUrl(uid, tripId, dayIdx);
+  const [url, setUrl]       = React.useState(initCached ?? null);
   const [loaded, setLoaded] = React.useState(false);
+  // 캐시에 URL 없으면 fade-in 필요, 있으면 바로 표시
+  const [useFade, setUseFade] = React.useState(initCached == null);
+  const prevUrl = React.useRef(initCached ?? null);
+
   React.useEffect(() => {
-    setLoaded(false);
     if (!uid || !tripId) { setUrl(null); return; }
-    getDayPhotoUrl(uid, tripId, dayIdx).then(setUrl);
+    getDayPhotoUrl(uid, tripId, dayIdx).then(u => {
+      const changed = u !== prevUrl.current;
+      prevUrl.current = u;
+      setUrl(u);
+      if (u && changed) { setLoaded(false); setUseFade(true); }
+    });
   }, [uid, tripId, dayIdx, refreshKey]);
+
   if (!url) return fallback || null;
+  // 캐시된 URL: 파스텔 없이 바로 표시
+  if (!useFade) return <img src={url} alt="" style={style}/>;
+  // 처음 로드 or 사진 변경: 파스텔 위에 페이드인
   return (
     <div style={{ position:'relative', width: style?.width, height: style?.height }}>
       {fallback}
@@ -2049,7 +2073,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v450</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v451</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
