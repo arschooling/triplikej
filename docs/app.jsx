@@ -2135,7 +2135,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v2</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v3</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -4011,7 +4011,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
 }
 
 // ─── Hotel Sheet (bottom sheet for add / view / edit hotel) ──
-function HotelSheet({ open, onClose, hotel, trip, tripDays, onSave, onDelete, onRegisterEdit }) {
+function HotelSheet({ open, onClose, hotel, trip, tripDays, onSave, onDelete, onRegisterEdit, onTabBarToggle }) {
   if (!open) return null;
   const isNew = !hotel;
   const blank = { name:'', area:'', address:'', checkin:'', checkinTime:'15:00', checkout:'', checkoutTime:'12:00', nights:'', price:'', phone:'', confirmation:'', note:'', hue:30 };
@@ -4064,8 +4064,14 @@ function HotelSheet({ open, onClose, hotel, trip, tripDays, onSave, onDelete, on
       e.preventDefault();
       sheetYRef.current = Math.max(0, dy); setSheetY(sheetYRef.current);
     };
-    const onEnd = () => {
+    const onEnd = (e) => {
       dragRef.current.active = false;
+      const dy = Math.abs((e.changedTouches?.[0]?.clientY ?? dragRef.current.startY) - dragRef.current.startY);
+      if (dy < 8) {
+        onTabBarToggle?.();
+        sheetYRef.current = 0; setSheetY(0);
+        return;
+      }
       const top = sheetRef.current ? sheetRef.current.getBoundingClientRect().top : 0;
       if (top > window.innerHeight / 2) onClose();
       else { sheetYRef.current = 0; setSheetY(0); }
@@ -10607,6 +10613,7 @@ function App() {
         onSave={saveHotelDetailSheet}
         onDelete={deleteHotelDetailSheet}
         onRegisterEdit={fn => { hotelSheetEditRef.current = fn; }}
+        onTabBarToggle={() => setTabBarVisible(v => !v)}
       />
 
       {hotelSheet !== null && (
