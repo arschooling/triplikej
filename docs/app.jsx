@@ -2098,7 +2098,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v457</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v458</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5880,9 +5880,12 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
           <div style={{ display:'flex', gap:4, paddingBottom:6 }}>
             <button onClick={copyAll} title="복사" style={{
               width:36, height:36, borderRadius:10,
-              border:`1px solid ${COLORS.line}`, background:COLORS.card, cursor:'pointer',
-              display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <Icon name="copy" size={15} color={COLORS.mute} stroke={1.8}/>
+              border:`1px solid ${copyToast ? '#27AE60' : COLORS.line}`,
+              background: copyToast ? '#EAFAF1' : COLORS.card, cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              transition:'background 0.2s, border-color 0.2s' }}>
+              <Icon name={copyToast ? 'check' : 'copy'} size={15}
+                color={copyToast ? '#27AE60' : COLORS.mute} stroke={2}/>
             </button>
             <button onClick={() => { const text = cats.map(c => c.name + '\n' + (c.items||[]).map(i => `- [ ] ${i}`).join('\n')).join('\n\n'); setPasteText(text); setPasteOpen(true); }} title="편집" style={{
               width:36, height:36, borderRadius:10,
