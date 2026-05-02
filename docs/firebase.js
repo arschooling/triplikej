@@ -459,9 +459,14 @@ window.fbListenContacts = (uid, cb) => {
 };
 
 window.fbRemoveContact = async (myUid, contactUid) => {
-  // Cloud Function으로 양방향 삭제 (admin SDK → 보안 규칙 제한 없음)
-  const fn = firebase.functions().httpsCallable('removeContactBothSides');
-  await fn({ contactUid });
+  // 내 contacts에서 제거 (항상 성공 — 내 문서라 권한 있음)
+  await _fbDb.collection('users').doc(myUid).update({
+    contacts: firebase.firestore.FieldValue.arrayRemove(contactUid),
+  });
+  // 상대방 contacts에서도 나 제거 — best effort (보안 규칙 허용 시 성공)
+  _fbDb.collection('users').doc(contactUid).update({
+    contacts: firebase.firestore.FieldValue.arrayRemove(myUid),
+  }).catch(() => {});
 };
 
 // ─── Notifications ──────────────────────────────────────────
