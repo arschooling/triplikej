@@ -277,7 +277,7 @@ function EditBtn({ editing, onClick, compact }) {
 }
 
 // ─── Swipeable row (swipe-left to reveal edit/delete) ────────
-function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe, compact, sideLeft, bottomGap = 0 }) {
+function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe, compact, sideLeft }) {
   const [x, setX]             = React.useState(0);
   const [open, setOpen]       = React.useState(false);
   const [flying, setFlying]   = React.useState(false);  // 날아가는 중
@@ -358,84 +358,64 @@ function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDrag
   } : {};
 
   if (cardSwipe) {
-    // 버튼 + 카드 (sideLeft 유무 공통)
-    const _buttons = !flying && (
-      <div style={{
-        position:'absolute', right:0, top:0, bottom:0,
-        display:'flex', alignItems:'center', justifyContent:'flex-end',
-        gap:8, paddingRight:10,
-      }}>
-        {onEdit && (
-          <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
-            minWidth: editLabel ? 56 : compact ? 30 : 38, height: editLabel ? 36 : compact ? 30 : 38,
-            borderRadius: editLabel ? 10 : compact ? 15 : 19, border:'none', cursor:'pointer',
-            background: editBg || '#ffa500', flexShrink:0, padding: editLabel ? '0 12px' : 0,
-            display:'flex', alignItems:'center', justifyContent:'center',
-          }}>
-            {editLabel
-              ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{editLabel}</span>
-              : <Icon name={editIcon||'edit'} size={compact ? 12 : 14} color="#fff" stroke={2}/>}
-          </button>
-        )}
-        <button onClick={(e)=>{e.stopPropagation(); flyOff();}} style={{
-          minWidth: deleteLabel ? 48 : compact ? 30 : 38, height: deleteLabel ? 36 : compact ? 30 : 38,
-          borderRadius: deleteLabel ? 10 : compact ? 15 : 19, border:'none', cursor:'pointer',
-          background:'#B5451B', flexShrink:0, padding: deleteLabel ? '0 12px' : 0,
-          display:'flex', alignItems:'center', justifyContent:'center',
-        }}>
-          {deleteLabel
-            ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{deleteLabel}</span>
-            : <Icon name="trash" size={compact ? 12 : 14} color="#fff" stroke={2}/>}
-        </button>
-      </div>
-    );
-    const _slideCard = (
-      <div style={{
-        position:'relative', zIndex:1,
-        transform:`translateX(${x}px)`,
-        transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
-        willChange:'transform', WebkitTapHighlightColor:'transparent',
-      }}>
-        {children}
-      </div>
-    );
-
-    if (sideLeft) {
-      // sideLeft 있는 경우: column flex로 bottomGap까지 함께 접힘
-      return (
-        <div ref={outerRef}
-          style={{ display:'flex', flexDirection:'column', ...collapseStyle }}
-          onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-          <div style={{ display:'flex', alignItems:'flex-start' }}>
-            {/* sideLeft(시간·체크박스)도 카드와 함께 이동 */}
-            <div style={{
-              transform:`translateX(${x}px)`,
-              transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
-              willChange:'transform',
-            }}>
-              {sideLeft}
-            </div>
-            {/* overflow 없음 → 카드가 컨테이너 밖으로 자유롭게 이동 */}
-            <div style={{ position:'relative', ...wrapStyle, flex:1 }}>
-              {_buttons}
-              {_slideCard}
-            </div>
-          </div>
-          {/* 하단 간격: 카드와 함께 접혀 삭제 시 튀는 현상 방지 */}
-          {bottomGap > 0 && <div style={{ height:bottomGap, flexShrink:0 }}/>}
-        </div>
-      );
-    }
-
-    // sideLeft 없는 경우: 기존 구조
     return (
+      // 높이 접힘용 래퍼 (overflow:hidden은 접힐 때만)
+      // flex:1을 여기에 적용해야 부모 flex row에서 남은 너비를 차지함
       <div ref={outerRef}
-        style={{ flex: wrapStyle.flex, ...collapseStyle }}
+        style={{ ...(sideLeft ? { display:'flex', alignItems:'flex-start' } : { flex: wrapStyle.flex }), ...collapseStyle }}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+        {/* sideLeft(시간·체크박스)도 카드와 함께 이동 */}
+        {sideLeft && (
+          <div style={{
+            transform:`translateX(${x}px)`,
+            transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
+            willChange:'transform',
+          }}>
+            {sideLeft}
+          </div>
+        )}
         {/* overflow 없음 → 카드가 컨테이너 밖으로 자유롭게 이동 */}
-        <div style={{ position:'relative', ...wrapStyle }}>
-          {_buttons}
-          {_slideCard}
+        <div style={{ position:'relative', ...wrapStyle, flex: sideLeft ? 1 : undefined }}>
+          {/* 버튼들: 카드 뒤에, 날아가는 동안 숨김 */}
+          {!flying && (
+            <div style={{
+              position:'absolute', right:0, top:0, bottom:0,
+              display:'flex', alignItems:'center', justifyContent:'flex-end',
+              gap:8, paddingRight:10,
+            }}>
+              {onEdit && (
+                <button onClick={(e)=>{e.stopPropagation(); close(); setTimeout(onEdit,100);}} style={{
+                  minWidth: editLabel ? 56 : compact ? 30 : 38, height: editLabel ? 36 : compact ? 30 : 38,
+                  borderRadius: editLabel ? 10 : compact ? 15 : 19, border:'none', cursor:'pointer',
+                  background: editBg || '#ffa500', flexShrink:0, padding: editLabel ? '0 12px' : 0,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                }}>
+                  {editLabel
+                    ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{editLabel}</span>
+                    : <Icon name={editIcon||'edit'} size={compact ? 12 : 14} color="#fff" stroke={2}/>}
+                </button>
+              )}
+              <button onClick={(e)=>{e.stopPropagation(); flyOff();}} style={{
+                minWidth: deleteLabel ? 48 : compact ? 30 : 38, height: deleteLabel ? 36 : compact ? 30 : 38,
+                borderRadius: deleteLabel ? 10 : compact ? 15 : 19, border:'none', cursor:'pointer',
+                background:'#B5451B', flexShrink:0, padding: deleteLabel ? '0 12px' : 0,
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>
+                {deleteLabel
+                  ? <span style={{ fontFamily:'system-ui,sans-serif', fontSize:11, fontWeight:600, color:'#fff' }}>{deleteLabel}</span>
+                  : <Icon name="trash" size={compact ? 12 : 14} color="#fff" stroke={2}/>}
+              </button>
+            </div>
+          )}
+          {/* 카드: position:relative + zIndex:1 → 이웃 카드 위에 표시되며 프레임 밖으로 이동 */}
+          <div style={{
+            position:'relative', zIndex:1,
+            transform:`translateX(${x}px)`,
+            transition: flying ? flyTransition : dragging.current ? 'none' : snapTransition,
+            willChange:'transform', WebkitTapHighlightColor:'transparent',
+          }}>
+            {children}
+          </div>
         </div>
       </div>
     );
@@ -2131,9 +2111,9 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v483</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v484</span></div>
       </div>
-      {loading && trips.length === 0
+      {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
         : <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:12 }}>
             {[...trips].sort((a, b) => (b.sampleId ? 1 : 0) - (a.sampleId ? 1 : 0)).map(t => {
@@ -3047,10 +3027,9 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
             const isDone = done.has(i);
             const dp = itemDragProps(i);
             return (
-              <div key={i} {...dp} style={{ position:'relative', ...(dp.style || {}) }}>
+              <div key={i} {...dp} style={{ marginBottom:12, position:'relative', ...(dp.style || {}) }}>
                 <SwipeableRow
                   cardSwipe
-                  bottomGap={12}
                   sideLeft={<>
                     <div style={{ width:32, flexShrink:0, marginTop:11,
                       fontFamily:MONO, fontSize:10.5, color:COLORS.mute,
@@ -9685,36 +9664,65 @@ function App() {
     });
   }, [authUser?.uid]);
 
-  // ── 여행 목록 로드 ────────────────────────────────────────
+  // ── 여행 목록 로드 + 샘플 싱크 ────────────────────────────
   React.useEffect(() => {
     if (!userData?.uid) return;
+    const uid = userData.uid;
     const email = userData.email || '';
     const tripIds = userData.tripIds || [userData.groupId];
     setTripsLoading(true);
 
-    fbLoadTrips(tripIds).then(rawTrips => {
-      const normalized = rawTrips.map(t => normalizeTrip(t, t.id));
-      // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 — 오너 계정 전용
-      if (email === 'arjungtaeng@gmail.com') {
-        for (let i = 0; i < normalized.length; i++) {
-          if ((normalized[i].days || []).length === 0 && !normalized[i].sampleId) {
-            const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
-            const patch = {
-              title : def.title  || 'New York',
-              dates : def.dates  || '',
-              hotel : def.hotel  || '',
-              days  : def.days   || [],
-              hotels: def.hotels || [],
-              food  : def.food   || [],
-            };
-            normalized[i] = normalizeTrip({ ...normalized[i], ...patch }, normalized[i].id);
-            fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
+    // 샘플 싱크: rome만 자동 추가 (nyc는 오너 전용)
+    const SAMPLES = ['rome'];
+    const syncAll = (typeof fbSyncSample === 'function')
+      ? Promise.all(SAMPLES.map(sid => fbSyncSample(uid, email, sid).catch(() => null)))
+      : Promise.resolve([null, null]);
+
+    syncAll.then(syncResults => {
+      // 샘플 tripId 수집 (isNew 여부 무관 — effect 재실행 시에도 누락 방지)
+      const newIds = syncResults
+        .filter(r => r?.tripId && !tripIds.includes(r.tripId))
+        .map(r => r.tripId);
+      const allIds = [...tripIds, ...newIds];
+      return fbLoadTrips(allIds).then(async trips => {
+        const normalized = trips.map(t => normalizeTrip(t, t.id));
+        // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 — 오너 계정 전용
+        const isOwner = (email) => email === 'arjungtaeng@gmail.com';
+        if (isOwner(userData?.email)) {
+          for (let i = 0; i < normalized.length; i++) {
+            if ((normalized[i].days || []).length === 0 && !normalized[i].sampleId) {
+              const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+              const patch = {
+                title : def.title  || 'New York',
+                dates : def.dates  || '',
+                hotel : def.hotel  || '',
+                days  : def.days   || [],
+                hotels: def.hotels || [],
+                food  : def.food   || [],
+              };
+              normalized[i] = normalizeTrip({ ...normalized[i], ...patch }, normalized[i].id);
+              fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
+            }
           }
         }
-      }
-      setUserTrips(normalized);
-      setTripsLoading(false);
-      setTripsReady(true);
+        // 업데이트된 샘플 반영
+        syncResults.forEach(r => {
+          if (r?.updated && r.tripId && r.tripData) {
+            const idx = normalized.findIndex(t => t.id === r.tripId);
+            if (idx >= 0) normalized[idx] = normalizeTrip({ ...normalized[idx], ...r.tripData, sampleId: normalized[idx].sampleId }, r.tripId);
+          }
+        });
+        setUserTrips(normalized);
+        setTripsLoading(false);
+        setTripsReady(true);
+        // userData.tripIds에 샘플 ID 반영 → effect 재실행 시 allIds 누락 방지
+        if (newIds.length > 0) {
+          setUserData(prev => ({
+            ...prev,
+            tripIds: [...new Set([...(prev.tripIds || []), ...newIds])],
+          }));
+        }
+      });
     }).catch(() => { setTripsLoading(false); setTripsReady(true); });
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
 
