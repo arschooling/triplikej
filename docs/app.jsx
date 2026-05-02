@@ -1985,7 +1985,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v426</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v429</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2116,16 +2116,20 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       tripId, authUser }) {
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [photoUploading, setPhotoUploading] = React.useState(false);
+  const [photoError, setPhotoError] = React.useState('');
   const coverInputRef = React.useRef(null);
   const handleCoverPhoto = async (e) => {
     const file = e.target.files?.[0];
-    if (!file || !tripId || !authUser) return;
+    if (!file) return;
+    if (!tripId || !authUser) { setPhotoError('로그인 후 이용해주세요.'); return; }
     setPhotoUploading(true);
+    setPhotoError('');
     try {
       const url = await window.fbUploadTripPhoto(tripId, file);
       onEditTrip({ coverImg: url });
     } catch (err) {
       console.error('커버 사진 업로드 실패:', err);
+      setPhotoError('업로드 실패: ' + (err?.message || err));
     } finally {
       setPhotoUploading(false);
       e.target.value = '';
@@ -2691,6 +2695,15 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         onPick={(s, e) => { handlePickRange(s, e); setDateRangeOpen(false); }}
       />
       <input ref={coverInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCoverPhoto}/>
+      {photoError && (
+        <div style={{ position:'fixed', bottom:100, left:'50%', transform:'translateX(-50%)',
+          background:'#c0392b', color:'#fff', padding:'10px 18px', borderRadius:20,
+          fontFamily:SANS, fontSize:13, zIndex:2000, whiteSpace:'nowrap',
+          boxShadow:'0 4px 20px rgba(0,0,0,0.18)' }}
+          onClick={() => setPhotoError('')}>
+          {photoError}
+        </div>
+      )}
     </div>
   );
 }
@@ -5660,16 +5673,18 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
         <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:'0.12em', textTransform:'uppercase' }}>Preparation</div>
         <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginTop:4 }}>
           <div style={{ fontFamily:SERIF, fontSize:38, color:COLORS.ink, letterSpacing:'-0.02em' }}>Pack & Go.</div>
-          <div style={{ display:'flex', gap:6, paddingBottom:6 }}>
-            <button onClick={copyAll} style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 11px',
-              border:`1px solid ${COLORS.line}`, borderRadius:10, background:COLORS.card, cursor:'pointer',
-              fontFamily:SANS, fontSize:12, color:COLORS.mute }}>
-              <Icon name="copy" size={13} color={COLORS.mute} stroke={1.8}/> 복사
+          <div style={{ display:'flex', gap:4, paddingBottom:6 }}>
+            <button onClick={copyAll} title="복사" style={{
+              width:36, height:36, borderRadius:10,
+              border:`1px solid ${COLORS.line}`, background:COLORS.card, cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Icon name="copy" size={15} color={COLORS.mute} stroke={1.8}/>
             </button>
-            <button onClick={() => setPasteOpen(true)} style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 11px',
-              border:`1px solid ${COLORS.line}`, borderRadius:10, background:COLORS.card, cursor:'pointer',
-              fontFamily:SANS, fontSize:12, color:COLORS.mute }}>
-              <Icon name="clipboard" size={13} color={COLORS.mute} stroke={1.8}/> 붙여넣기
+            <button onClick={() => setPasteOpen(true)} title="붙여넣기" style={{
+              width:36, height:36, borderRadius:10,
+              border:`1px solid ${COLORS.line}`, background:COLORS.card, cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Icon name="clipboard" size={15} color={COLORS.mute} stroke={1.8}/>
             </button>
           </div>
         </div>
@@ -5719,13 +5734,6 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
                 width:22, height:22, borderRadius:11, border:'none', background:'transparent',
                 cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <Icon name="edit" size={12} color={COLORS.mute} stroke={2}/>
-              </button>
-            )}
-            {editing && (cat.items||[]).length > 0 && (
-              <button onClick={() => clearCatItems(ci)} style={{
-                width:22, height:22, borderRadius:11, border:'none', background:'rgba(193,79,46,0.10)',
-                cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <Icon name="minus" size={12} color={COLORS.accent} stroke={2.5}/>
               </button>
             )}
             {editing && (
@@ -10113,7 +10121,7 @@ function App() {
                 flex:1, padding:'13px', border:`1.5px solid ${COLORS.line}`,
                 borderRadius:14, background:'transparent', cursor:'pointer',
                 fontFamily:SANS, fontSize:14, color:COLORS.mute,
-              }}>계속 수정</button>
+              }}>취소</button>
               <button onClick={() => { setSaveConfirm(false); setEditing(false); }} style={{
                 flex:1, padding:'13px', border:'none',
                 borderRadius:14, background:COLORS.ink, cursor:'pointer',
