@@ -189,29 +189,29 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
   }
 
   void _editStop(BuildContext ctx, int stopIndex, TripStop stop) {
+    final formKey = GlobalKey<StopFormState>();
     showGeneralDialog(
       context: ctx,
       barrierDismissible: false,
       barrierColor: Colors.transparent,
       pageBuilder: (dCtx, _, __) {
-        TripStop current = stop;
         return BottomSheetModal(
           title: '일정 편집',
           onCancel: () => Navigator.pop(dCtx),
           onConfirm: () {
+            final updated = formKey.currentState?.buildCurrentStop() ?? stop;
             ref
                 .read(tripsProvider.notifier)
-                .saveStop(widget.tripIndex, widget.dayIndex, stopIndex, current);
+                .saveStop(widget.tripIndex, widget.dayIndex, stopIndex, updated);
             Navigator.pop(dCtx);
           },
           child: StopFormContent(
+            key: formKey,
             initial: stop,
             onSave: (s) {
-              current = s;
               ref
                   .read(tripsProvider.notifier)
-                  .saveStop(
-                      widget.tripIndex, widget.dayIndex, stopIndex, s);
+                  .saveStop(widget.tripIndex, widget.dayIndex, stopIndex, s);
               Navigator.pop(dCtx);
             },
           ),

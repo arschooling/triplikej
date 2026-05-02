@@ -17,10 +17,10 @@ class StopFormContent extends StatefulWidget {
   });
 
   @override
-  State<StopFormContent> createState() => _StopFormContentState();
+  State<StopFormContent> createState() => StopFormState();
 }
 
-class _StopFormContentState extends State<StopFormContent> {
+class StopFormState extends State<StopFormContent> {
   late String _time;
   late StopCategory _cat;
   late TextEditingController _titleCtrl;
@@ -54,7 +54,7 @@ class _StopFormContentState extends State<StopFormContent> {
     super.dispose();
   }
 
-  TripStop _buildStop() => widget.initial.copyWith(
+  TripStop buildCurrentStop() => widget.initial.copyWith(
         time: _time,
         cat: _cat,
         title: _titleCtrl.text,
@@ -64,6 +64,8 @@ class _StopFormContentState extends State<StopFormContent> {
         price: _priceCtrl.text.isEmpty ? null : _priceCtrl.text,
         duration: _durationCtrl.text.isEmpty ? null : _durationCtrl.text,
       );
+
+  TripStop _buildStop() => buildCurrentStop();
 
   void _pickTime() {
     showGeneralDialog(

@@ -30,6 +30,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _tab = 0;
   bool _editing = false;
   final Set<int> _visitedTabs = {0};
+  TextEditingController? _titleController;
+
+  @override
+  void dispose() {
+    _titleController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +53,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     final trip = trips[widget.tripIndex];
+    _titleController ??= TextEditingController(text: trip.title);
+    if (!_editing) _titleController!.text = trip.title;
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -69,8 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Expanded(
                         child: _editing
                             ? TextField(
-                                controller: TextEditingController(
-                                    text: trip.title),
+                                controller: _titleController,
                                 style: AppText.serif(18),
                                 onSubmitted: (v) {
                                   ref
