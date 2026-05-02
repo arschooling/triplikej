@@ -2135,7 +2135,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v499</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v500</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -4009,7 +4009,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
 }
 
 // ─── Hotel Sheet (bottom sheet for add / view / edit hotel) ──
-function HotelSheet({ open, onClose, hotel, trip, tripDays, onSave, onDelete }) {
+function HotelSheet({ open, onClose, hotel, trip, tripDays, onSave, onDelete, onRegisterEdit }) {
   if (!open) return null;
   const isNew = !hotel;
   const blank = { name:'', area:'', address:'', checkin:'', checkinTime:'15:00', checkout:'', checkoutTime:'12:00', nights:'', price:'', phone:'', confirmation:'', note:'', hue:30 };
@@ -4037,6 +4037,11 @@ function HotelSheet({ open, onClose, hotel, trip, tripDays, onSave, onDelete }) 
     setEntered(false);
     setSearchQ(''); setSearchRes([]); setShowSearch(false); setTimePicker(null);
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+  }, [open]);
+
+  React.useEffect(() => {
+    onRegisterEdit?.(() => setEditing(e => !e));
+    return () => onRegisterEdit?.(null);
   }, [open]);
 
   React.useEffect(() => {
@@ -9611,13 +9616,19 @@ function App() {
   const editSnapshot     = React.useRef(null); // 편집 시작 시 trip+prep 스냅샷
 
   // 편집 버튼 토글 핸들러
-  const stopSheetEditRef = React.useRef(null); // StopSheet의 setEditing 연결용
+  const stopSheetEditRef  = React.useRef(null); // StopSheet의 setEditing 연결용
+  const hotelSheetEditRef = React.useRef(null); // HotelSheet의 setEditing 연결용
   const canEdit = (trip?.permissions || {})[authUser?.uid] !== 'view';
 
   const handleEditToggle = React.useCallback(() => {
     // StopSheet가 열려있으면 팝업 편집 모드 토글
     if (openStop && stopSheetEditRef.current) {
       stopSheetEditRef.current();
+      return;
+    }
+    // HotelSheet가 열려있으면 숙소 편집 모드 토글
+    if (hotelDetailSheet !== null && hotelSheetEditRef.current) {
+      hotelSheetEditRef.current();
       return;
     }
     if (!editing) {
@@ -9632,7 +9643,7 @@ function App() {
         setEditing(false);    // 변경 없으면 그냥 닫기
       }
     }
-  }, [openStop, editing, canEdit, trip, prep]);
+  }, [openStop, hotelDetailSheet, editing, canEdit, trip, prep]);
 
   // ── 앱 준비되면 loginPending 해제 (trips 로딩 완료 후) ────────
   React.useEffect(() => {
@@ -10554,6 +10565,7 @@ function App() {
         tripDays={trip?.days}
         onSave={saveHotelDetailSheet}
         onDelete={deleteHotelDetailSheet}
+        onRegisterEdit={fn => { hotelSheetEditRef.current = fn; }}
       />
 
       {hotelSheet !== null && (
