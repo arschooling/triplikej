@@ -163,12 +163,21 @@ function invalidateDayPhotoCache(uid, tripId, dayIdx) {
 // ─── DayPhotoImg: Storage URL 비동기 로드 래퍼 ─────────────
 function DayPhotoImg({ uid, tripId, dayIdx, style, fallback, refreshKey }) {
   const [url, setUrl] = React.useState(null);
+  const [loaded, setLoaded] = React.useState(false);
   React.useEffect(() => {
+    setLoaded(false);
     if (!uid || !tripId) { setUrl(null); return; }
     getDayPhotoUrl(uid, tripId, dayIdx).then(setUrl);
   }, [uid, tripId, dayIdx, refreshKey]);
   if (!url) return fallback || null;
-  return <img src={url} alt="" style={style}/>;
+  return (
+    <div style={{ position:'relative', width: style?.width, height: style?.height }}>
+      {fallback}
+      <img src={url} alt="" onLoad={() => setLoaded(true)}
+        style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover',
+                 opacity: loaded ? 1 : 0, transition: loaded ? 'opacity 0.3s ease' : 'none' }}/>
+    </div>
+  );
 }
 
 // ─── Photo placeholder ──────────────────────────────────────
@@ -2040,7 +2049,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v449</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v450</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
