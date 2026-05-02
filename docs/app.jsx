@@ -2098,7 +2098,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v469</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v470</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -8283,6 +8283,26 @@ const CITY_DB = [
   { key:'saipan',      kor:'사이판',     eng:'Saipan',         flag:'🇲🇵', zone:'Pacific/Saipan',       currency:'USD', lat:15.1778,  lon:145.7553  },
 ]; 
 
+const AIRPORTS = [
+  // 한국
+  '인천국제공항','김포국제공항','김해국제공항','제주국제공항','대구국제공항','청주국제공항','무안국제공항','양양국제공항',
+  // 일본
+  '나리타 국제공항','하네다 국제공항','간사이 국제공항','신치토세 공항','후쿠오카 공항','나고야 중부국제공항','오키나와 나하 공항','히로시마 공항','센다이 공항','나가사키 공항',
+  // 미국
+  'JFK 국제공항','로스앤젤레스 국제공항','오헤어 국제공항','샌프란시스코 국제공항','마이애미 국제공항','시애틀-타코마 국제공항','보스턴 로건 국제공항','댈러스 포트워스 국제공항','라스베이거스 맥캐런 국제공항','워싱턴 덜레스 국제공항','호놀룰루 국제공항','애틀랜타 국제공항',
+  // 유럽
+  '히드로 공항','파리 샤를드골 공항','프랑크푸르트 공항','암스테르담 스히폴 공항','마드리드 바라하스 공항','바르셀로나 엘프라트 공항','로마 피우미치노 공항','밀라노 말펜사 공항','아테네 국제공항','이스탄불 공항','취리히 공항','비엔나 국제공항','코펜하겐 공항','헬싱키 반타 공항','오슬로 가르데르모엔 공항','스톡홀름 아를란다 공항','리스본 공항','브뤼셀 공항','더블린 공항','뮌헨 공항','베를린 브란덴부르크 공항','프라하 공항',
+  // 중동·아시아
+  '두바이 국제공항','아부다비 국제공항','도하 하마드 국제공항','싱가포르 창이 공항','홍콩 국제공항','타이베이 타오위안 국제공항','방콕 수완나품 공항','방콕 돈므앙 공항','발리 응우라라이 공항','쿠알라룸푸르 국제공항','마닐라 니노이아키노 국제공항','하노이 노이바이 국제공항','호치민 탄손녓 국제공항','자카르타 수카르노하타 국제공항','콜롬보 반다라나이케 국제공항',
+  // 중국·대만
+  '베이징 캐피털 국제공항','베이징 다싱 국제공항','상하이 푸둥 국제공항','상하이 훙차오 국제공항','광저우 바이윈 국제공항','청두 솽류 국제공항',
+  // 오세아니아·기타
+  '시드니 킹스퍼드스미스 공항','멜버른 공항','오클랜드 공항','브리즈번 공항','케언즈 공항',
+  '요하네스버그 올리버탐보 국제공항','케이프타운 국제공항','나이로비 조모케냐타 국제공항',
+  '토론토 피어슨 국제공항','밴쿠버 국제공항','몬트리올 트뤼도 국제공항',
+  '멕시코시티 베니토후아레스 국제공항','상파울루 과룰류스 국제공항','부에노스아이레스 에세이사 국제공항','리마 호르헤차베스 국제공항',
+];
+
 const CITIES_BY_KEY = {
   japan:       [{kor:'도쿄',eng:'Tokyo'},{kor:'오사카',eng:'Osaka'},{kor:'교토',eng:'Kyoto'},{kor:'삿포로',eng:'Sapporo'},{kor:'후쿠오카',eng:'Fukuoka'},{kor:'나고야',eng:'Nagoya'},{kor:'나라',eng:'Nara'},{kor:'고베',eng:'Kobe'},{kor:'히로시마',eng:'Hiroshima'},{kor:'오키나와',eng:'Okinawa'},{kor:'하코다테',eng:'Hakodate'},{kor:'아사히카와',eng:'Asahikawa'},{kor:'가나자와',eng:'Kanazawa'},{kor:'마쓰야마',eng:'Matsuyama'},{kor:'나가사키',eng:'Nagasaki'},{kor:'구마모토',eng:'Kumamoto'},{kor:'센다이',eng:'Sendai'},{kor:'닛코',eng:'Nikko'},{kor:'하코네',eng:'Hakone'},{kor:'시즈오카',eng:'Shizuoka'},{kor:'오이타',eng:'Oita'},{kor:'미야자키',eng:'Miyazaki'},{kor:'아오모리',eng:'Aomori'}],
   france:      [{kor:'파리',eng:'Paris'},{kor:'니스',eng:'Nice'},{kor:'마르세유',eng:'Marseille'},{kor:'리옹',eng:'Lyon'},{kor:'보르도',eng:'Bordeaux'},{kor:'스트라스부르',eng:'Strasbourg'},{kor:'몽생미셸',eng:'Mont Saint-Michel'},{kor:'칸',eng:'Cannes'},{kor:'모나코',eng:'Monaco'},{kor:'낭트',eng:'Nantes'},{kor:'툴루즈',eng:'Toulouse'},{kor:'릴',eng:'Lille'},{kor:'렌',eng:'Rennes'},{kor:'엑상프로방스',eng:'Aix-en-Provence'},{kor:'아비뇽',eng:'Avignon'},{kor:'앙티브',eng:'Antibes'},{kor:'몽펠리에',eng:'Montpellier'},{kor:'샤모니',eng:'Chamonix'}],
@@ -8881,27 +8901,49 @@ function NewTripSheet({ open, onClose, onSubmit }) {
           )}
 
           {/* Step 4: 공항 */}
-          {step === 4 && (
-            <div>
-              <div style={{ marginBottom:18 }}>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>출발 공항</div>
-                <input value={depAirport} autoFocus onChange={e=>setDepAirport(e.target.value)}
-                  placeholder="예) 인천국제공항"
-                  style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
-                />
+          {step === 4 && (() => {
+            const makeAirportInput = (value, setValue, label, isAutoFocus, placeholder) => {
+              const ghostMatch = value.length === 0 ? null : AIRPORTS.find(a => a.startsWith(value) && a !== value);
+              const ghostSuffix = ghostMatch ? ghostMatch.slice(value.length) : '';
+              let typedPx = 16 + value.length * 14;
+              try { const cv=document.createElement('canvas'); const cx=cv.getContext('2d'); cx.font=`15px ${SANS},sans-serif`; typedPx=16+cx.measureText(value).width; } catch(_){}
+              const acceptGhost = () => { if (ghostMatch) setValue(ghostMatch); };
+              return (
+                <div style={{ marginBottom:18 }}>
+                  <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>{label}</div>
+                  <div style={{ position:'relative', borderRadius:14, background:COLORS.card, border:`1.5px solid ${COLORS.line}` }}>
+                    {ghostSuffix && (
+                      <div aria-hidden="true" style={{ position:'absolute', inset:0, padding:'12px 40px 12px 16px', display:'flex', alignItems:'center', pointerEvents:'none', overflow:'hidden', fontFamily:SANS, fontSize:15, lineHeight:'normal', borderRadius:14 }}>
+                        <span style={{ color:'transparent', whiteSpace:'pre' }}>{value}</span>
+                        <span style={{ color:COLORS.mute, opacity:0.55, whiteSpace:'pre' }}>{ghostSuffix}</span>
+                      </div>
+                    )}
+                    <input autoFocus={isAutoFocus} value={value}
+                      onChange={e => setValue(e.target.value)}
+                      onKeyDown={e => { if ((e.key==='Tab'||e.key==='ArrowRight') && ghostSuffix) { e.preventDefault(); acceptGhost(); } }}
+                      placeholder={ghostSuffix ? '' : placeholder}
+                      style={{ width:'100%', boxSizing:'border-box', padding:'12px 40px 12px 16px', border:'none', borderRadius:14, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, position:'relative', zIndex:1 }}
+                    />
+                    {ghostSuffix && (
+                      <div onMouseDown={e => { e.preventDefault(); acceptGhost(); }} style={{ position:'absolute', top:0, bottom:0, left:typedPx, right:36, zIndex:2, cursor:'pointer' }}/>
+                    )}
+                    {value.length > 0 && (
+                      <button onClick={() => setValue('')} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontSize:18, lineHeight:1, padding:4, zIndex:3 }}>×</button>
+                    )}
+                  </div>
+                </div>
+              );
+            };
+            return (
+              <div>
+                {makeAirportInput(depAirport, setDepAirport, '출발 공항', true, '예) 인천국제공항')}
+                {makeAirportInput(arrAirport, setArrAirport, '도착 공항', false, '예) 나리타 국제공항')}
+                <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.5 }}>
+                  비행기를 이용하지 않는다면 넘어가세요.
+                </div>
               </div>
-              <div style={{ marginBottom:18 }}>
-                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>도착 공항</div>
-                <input value={arrAirport} onChange={e=>setArrAirport(e.target.value)}
-                  placeholder="예) 나리타 국제공항"
-                  style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1.5px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, padding:'8px 0' }}
-                />
-              </div>
-              <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.5 }}>
-                비행기를 이용하지 않는다면 넘어가세요.
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Step 5: 숙소 */}
           {step === 5 && (
