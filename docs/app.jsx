@@ -7756,6 +7756,23 @@ const DURATION_BY_TYPE = {
   ruins:120, castle:120, monument:60, viewpoint:45,
   cathedral:60, church:60, park:90, beach:180, marketplace:60, attraction:90,
 };
+const PLACE_TYPE_NOTES = {
+  museum:          '내부 사진 촬영 제한 있을 수 있음',
+  art_gallery:     '내부 사진 촬영 제한 있을 수 있음',
+  gallery:         '내부 사진 촬영 제한 있을 수 있음',
+  theme_park:      '대기시간 긴 편 · 사전 예매 추천',
+  amusement_park:  '대기시간 긴 편 · 사전 예매 추천',
+  zoo:             '사전 예매 추천',
+  aquarium:        '사전 예매 추천',
+  night_club:      '야간 운영 · 신분증 지참',
+  spa:             '예약 필수인 경우 많음',
+  beach:           '수영복 · 자외선 차단제 준비',
+  cathedral:       '복장 규정 있을 수 있음',
+  church:          '복장 규정 있을 수 있음',
+  mosque:          '복장 규정 엄격 · 신발 벗기 필요할 수 있음',
+  marketplace:     '현금 준비 권장',
+  market:          '현금 준비 권장',
+};
 function getPlaceDuration(type) { return DURATION_BY_TYPE[type] || 90; }
 function minToTime(min) {
   const h = Math.floor(min / 60) % 24;
@@ -7829,8 +7846,10 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
 
       t += travelMin;
       const transitNote = (transit && prev) ? `대중교통 이동 약 ${travelMin}분` : '';
+      const typeNote    = PLACE_TYPE_NOTES[p.type] || '';
+      const stopNote    = [transitNote, typeNote].filter(Boolean).join('\n');
 
-      dayItems[dayIdx].push({ time:minToTime(t), title:p.name, loc:p.name, done:false, lat:p.lat, lon:p.lon, coords:[p.lat, p.lon], _popRank:p._popRank ?? 999, ...(transitNote ? { note: transitNote } : {}) });
+      dayItems[dayIdx].push({ time:minToTime(t), title:p.name, loc:p.name, done:false, lat:p.lat, lon:p.lon, coords:[p.lat, p.lon], _popRank:p._popRank ?? 999, ...(stopNote ? { note: stopNote } : {}) });
       t += dur;
       prev = p;
       pIdx++;
