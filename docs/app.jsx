@@ -2032,7 +2032,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v435</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v436</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3782,22 +3782,22 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
             ? <img src={draft.photo} alt="" style={{ width:'100%', height:180, objectFit:'cover', display:'block' }}/>
             : <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180}/>
           }
-          {!editing && (
-            <div style={{ position:'absolute', top:12, right:12, zIndex:5, display:'flex', gap:8, alignItems:'center' }}>
-              {uid && tripId && (
-                <button onClick={e => { e.stopPropagation(); stopPhotoInputRef.current?.click(); }} style={{
-                  border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
-                  padding:'7px 10px', cursor:'pointer',
-                  display:'flex', alignItems:'center',
-                  boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
-                  opacity: stopPhotoUploading ? 0.5 : 1,
-                }}>
-                  {stopPhotoUploading
-                    ? <div className="ptr-spin" style={{ width:12, height:12, border:'2px solid rgba(0,0,0,0.2)', borderTopColor:COLORS.ink, borderRadius:'50%' }}/>
-                    : <Icon name="camera" size={12} color={COLORS.ink} stroke={2}/>
-                  }
-                </button>
-              )}
+          <div style={{ position:'absolute', top:12, right:12, zIndex:5, display:'flex', gap:8, alignItems:'center' }}>
+            {uid && tripId && (
+              <button onClick={e => { e.stopPropagation(); !stopPhotoUploading && stopPhotoInputRef.current?.click(); }} style={{
+                border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
+                padding:'7px 10px', cursor: stopPhotoUploading ? 'default' : 'pointer',
+                display:'flex', alignItems:'center',
+                boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
+                opacity: stopPhotoUploading ? 0.5 : 1,
+              }}>
+                {stopPhotoUploading
+                  ? <div className="ptr-spin" style={{ width:12, height:12, border:'2px solid rgba(0,0,0,0.2)', borderTopColor:COLORS.ink, borderRadius:'50%' }}/>
+                  : <Icon name="camera" size={12} color={COLORS.ink} stroke={2}/>
+                }
+              </button>
+            )}
+            {!editing && (
               <button onClick={(e) => { e.stopPropagation(); setEditing(true); }} style={{
                 border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
                 padding:'7px 13px', cursor:'pointer',
@@ -3807,8 +3807,8 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
               }}>
                 <Icon name="edit" size={12} color={COLORS.ink} stroke={2}/> 수정
               </button>
-            </div>
-          )}
+            )}
+          </div>
           <input ref={stopPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleStopPhoto}/>
         </div>
         <div style={{ padding:'18px 20px 0' }}>
