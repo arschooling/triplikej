@@ -2032,7 +2032,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v437</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v438</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2162,6 +2162,26 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
+  const [cardPhotoUploading, setCardPhotoUploading] = React.useState(null);
+  const [cardPhotoVersions, setCardPhotoVersions] = React.useState({});
+  const cardPhotoInputRef = React.useRef(null);
+  const cardPhotoTargetIdx = React.useRef(null);
+  const handleCardPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    const idx = cardPhotoTargetIdx.current;
+    if (!file || !myUid || idx === null) return;
+    setCardPhotoUploading(idx);
+    try {
+      const dataUrl = await resizeImage(file);
+      invalidateDayPhotoCache(myUid, trip.id, idx);
+      const url = await window.fbUploadDayPhoto(myUid, trip.id, idx, dataUrl);
+      _dayPhotoCache[`${myUid}_${trip.id}_${idx}`] = url;
+      setCardPhotoVersions(v => ({ ...v, [idx]: (v[idx] || 0) + 1 }));
+    } catch(_) {} finally {
+      setCardPhotoUploading(null);
+      e.target.value = '';
+    }
+  };
   const [sampleLoading, setSampleLoading] = React.useState(false);
   const [sampleErr, setSampleErr] = React.useState('');
   const handleLoadSample = async () => {
@@ -2485,7 +2505,21 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   <div style={{ position:'relative' }}>
                     <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
                       style={{ width:'100%', height:170, objectFit:'cover', display:'block' }}
-                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>}/>
+                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>}
+                      refreshKey={cardPhotoVersions[i] || 0}/>
+                    {editing && (
+                      <button onClick={() => { if (cardPhotoUploading === null) { cardPhotoTargetIdx.current = i; cardPhotoInputRef.current?.click(); } }} style={{
+                        position:'absolute', bottom:10, right:10, zIndex:5,
+                        background:'none', border:'none', cursor: cardPhotoUploading === i ? 'default' : 'pointer',
+                        padding:0, display:'flex', alignItems:'center',
+                        opacity: cardPhotoUploading !== null && cardPhotoUploading !== i ? 0.3 : 1,
+                      }}>
+                        {cardPhotoUploading === i
+                          ? <div className="ptr-spin" style={{ width:22, height:22, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
+                          : <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
+                        }
+                      </button>
+                    )}
                   </div>
                   <div style={{ padding:'16px 18px 18px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
@@ -2698,6 +2732,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         <div className="arshooling-text" style={{ fontFamily:'Adam, serif', fontSize:15, letterSpacing:'0.18em' }}>ARSHOOLING</div>
       </div>
 
+      <input ref={cardPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCardPhoto}/>
       {/* 날짜 달력 팝업 */}
       <DateRangeSheet
         open={dateRangeOpen}
