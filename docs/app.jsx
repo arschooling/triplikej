@@ -2135,7 +2135,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v489</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v490</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9609,6 +9609,7 @@ function App() {
 
   // 편집 버튼 토글 핸들러
   const stopSheetEditRef = React.useRef(null); // StopSheet의 setEditing 연결용
+  const canEdit = (trip?.permissions || {})[authUser?.uid] !== 'view';
 
   const handleEditToggle = React.useCallback(() => {
     // StopSheet가 열려있으면 팝업 편집 모드 토글
@@ -10269,8 +10270,6 @@ function App() {
   };
 
   // ── Permission check ───────────────────────────────────
-  const myRole = (trip?.permissions || {})[authUser?.uid];
-  const canEdit = myRole !== 'view';
   const unreadCount = notifs.filter(n => !n.read).length;
 
   // ── 홈화면 아이콘 뱃지 (Web App Badge API) ─────────────────
