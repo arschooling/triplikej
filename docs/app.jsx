@@ -2135,7 +2135,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v488</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v489</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9659,6 +9659,13 @@ function App() {
     }
   }, [userTrips]);
 
+  // 8초 내 auth 응답 없으면 로그아웃 상태로 전환 (빈 화면 방지)
+  React.useEffect(() => {
+    if (authState !== 'loading') return;
+    const t = setTimeout(() => setAuthState('out'), 8000);
+    return () => clearTimeout(t);
+  }, [authState]);
+
   // ── Firebase auth listener ─────────────────────────────────
   React.useEffect(() => {
     return fbOnAuth(async (fbUser) => {
@@ -10357,7 +10364,7 @@ function App() {
   // 로그인 버튼 누른 후 데이터 준비될 때까지 스플래시 표시
   const showSplash = loginPending && (authState !== 'in' || trip === null);
   if (showSplash) return <SplashScreen visible={true}/>;
-  if (authState === 'loading') return null;
+  if (authState === 'loading') return <SplashScreen visible={true}/>;
   if (authState === 'out') return <LoginScreen errorMsg={loginError} onLoginStart={() => setLoginPending(true)}/>;
 
   // ── 여행 목록 화면 ─────────────────────────────────────────
