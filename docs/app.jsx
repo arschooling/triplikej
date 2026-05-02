@@ -2032,7 +2032,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v436</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v437</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2162,26 +2162,6 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
-  const [cardPhotoUploading, setCardPhotoUploading] = React.useState(null);
-  const [cardPhotoVersions, setCardPhotoVersions] = React.useState({});
-  const cardPhotoInputRef = React.useRef(null);
-  const cardPhotoTargetIdx = React.useRef(null);
-  const handleCardPhoto = async (e) => {
-    const file = e.target.files?.[0];
-    const idx = cardPhotoTargetIdx.current;
-    if (!file || !myUid || idx === null) return;
-    setCardPhotoUploading(idx);
-    try {
-      const dataUrl = await resizeImage(file);
-      invalidateDayPhotoCache(myUid, trip.id, idx);
-      const url = await window.fbUploadDayPhoto(myUid, trip.id, idx, dataUrl);
-      _dayPhotoCache[`${myUid}_${trip.id}_${idx}`] = url;
-      setCardPhotoVersions(v => ({ ...v, [idx]: (v[idx] || 0) + 1 }));
-    } catch(_) {} finally {
-      setCardPhotoUploading(null);
-      e.target.value = '';
-    }
-  };
   const [sampleLoading, setSampleLoading] = React.useState(false);
   const [sampleErr, setSampleErr] = React.useState('');
   const handleLoadSample = async () => {
@@ -2505,21 +2485,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   <div style={{ position:'relative' }}>
                     <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
                       style={{ width:'100%', height:170, objectFit:'cover', display:'block' }}
-                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>}
-                      refreshKey={cardPhotoVersions[i] || 0}/>
-                    {editing && (
-                      <button onClick={() => { if (cardPhotoUploading === null) { cardPhotoTargetIdx.current = i; cardPhotoInputRef.current?.click(); } }} style={{
-                        position:'absolute', bottom:10, right:10, zIndex:5,
-                        background:'none', border:'none', cursor: cardPhotoUploading === i ? 'default' : 'pointer',
-                        padding:0, display:'flex', alignItems:'center',
-                        opacity: cardPhotoUploading !== null && cardPhotoUploading !== i ? 0.3 : 1,
-                      }}>
-                        {cardPhotoUploading === i
-                          ? <div className="ptr-spin" style={{ width:20, height:20, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%' }}/>
-                          : <Icon name="camera" size={22} color="#fff" stroke={1.8}/>
-                        }
-                      </button>
-                    )}
+                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} label={d.hero?.label} height={170}/>}/>
                   </div>
                   <div style={{ padding:'16px 18px 18px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
@@ -2732,7 +2698,6 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         <div className="arshooling-text" style={{ fontFamily:'Adam, serif', fontSize:15, letterSpacing:'0.18em' }}>ARSHOOLING</div>
       </div>
 
-      <input ref={cardPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCardPhoto}/>
       {/* 날짜 달력 팝업 */}
       <DateRangeSheet
         open={dateRangeOpen}
@@ -3773,43 +3738,48 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
           transition: sheetUp > 0 ? 'none' : 'max-height 0.36s cubic-bezier(0.32,0.72,0,1)',
         }}>
         {/* 드래그 핸들 */}
-        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 6px' }}>
+        <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 2px' }}>
           <div style={{ width:36, height:4, background:COLORS.line, borderRadius:2 }}/>
         </div>
-        {/* 사진 영역 + 수정 버튼 오버레이 */}
-        <div style={{ position:'relative' }}>
-          {draft.photo
-            ? <img src={draft.photo} alt="" style={{ width:'100%', height:180, objectFit:'cover', display:'block' }}/>
-            : <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180}/>
-          }
-          <div style={{ position:'absolute', top:12, right:12, zIndex:5, display:'flex', gap:8, alignItems:'center' }}>
+        {/* 헤더: 제목 + 카메라 + 수정 */}
+        <div style={{ padding:'8px 16px 10px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:10 }}>
+          <div style={{ fontFamily:SERIF, fontSize:18, color:COLORS.ink, flex:1, minWidth:0,
+            whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+            {draft.title}
+          </div>
+          <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
             {uid && tripId && (
               <button onClick={e => { e.stopPropagation(); !stopPhotoUploading && stopPhotoInputRef.current?.click(); }} style={{
-                border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
-                padding:'7px 10px', cursor: stopPhotoUploading ? 'default' : 'pointer',
+                border:'none', background:COLORS.softer, borderRadius:10,
+                padding:'6px 8px', cursor: stopPhotoUploading ? 'default' : 'pointer',
                 display:'flex', alignItems:'center',
-                boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
                 opacity: stopPhotoUploading ? 0.5 : 1,
               }}>
                 {stopPhotoUploading
-                  ? <div className="ptr-spin" style={{ width:12, height:12, border:'2px solid rgba(0,0,0,0.2)', borderTopColor:COLORS.ink, borderRadius:'50%' }}/>
-                  : <Icon name="camera" size={12} color={COLORS.ink} stroke={2}/>
+                  ? <div className="ptr-spin" style={{ width:13, height:13, border:'2px solid rgba(0,0,0,0.2)', borderTopColor:COLORS.ink, borderRadius:'50%' }}/>
+                  : <Icon name="camera" size={13} color={COLORS.mute} stroke={2}/>
                 }
               </button>
             )}
             {!editing && (
               <button onClick={(e) => { e.stopPropagation(); setEditing(true); }} style={{
-                border:'none', background:'rgba(255,255,255,0.92)', borderRadius:14,
-                padding:'7px 13px', cursor:'pointer',
+                border:'none', background:COLORS.softer, borderRadius:10,
+                padding:'6px 10px', cursor:'pointer',
                 fontFamily:SANS, fontSize:12, fontWeight:500, color:COLORS.ink,
-                display:'flex', gap:5, alignItems:'center',
-                boxShadow:'0 1px 6px rgba(0,0,0,0.12)',
+                display:'flex', gap:4, alignItems:'center',
               }}>
                 <Icon name="edit" size={12} color={COLORS.ink} stroke={2}/> 수정
               </button>
             )}
           </div>
           <input ref={stopPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleStopPhoto}/>
+        </div>
+        {/* 사진 영역 */}
+        <div>
+          {draft.photo
+            ? <img src={draft.photo} alt="" style={{ width:'100%', height:180, objectFit:'cover', display:'block' }}/>
+            : <Photo hue={dayHue} label={(draft.en||'').toUpperCase()} height={180}/>
+          }
         </div>
         <div style={{ padding:'18px 20px 0' }}>
           <div style={{ display:'flex', gap:6, alignItems:'center',
