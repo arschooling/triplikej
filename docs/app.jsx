@@ -277,7 +277,7 @@ function EditBtn({ editing, onClick, compact }) {
 }
 
 // ─── Swipeable row (swipe-left to reveal edit/delete) ────────
-function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe, compact }) {
+function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDragging, wrapStyle = {}, editIcon, editBg, editLabel, deleteLabel, cardSwipe, compact, sideLeft }) {
   const [x, setX]             = React.useState(0);
   const [open, setOpen]       = React.useState(false);
   const [flying, setFlying]   = React.useState(false);  // 날아가는 중
@@ -361,10 +361,12 @@ function SwipeableRow({ children, onEdit, onDelete, onFlyStart, disabled, isDrag
     return (
       // 높이 접힘용 래퍼 (overflow:hidden은 접힐 때만)
       // flex:1을 여기에 적용해야 부모 flex row에서 남은 너비를 차지함
-      <div ref={outerRef} style={{ flex: wrapStyle.flex, ...collapseStyle }}
+      <div ref={outerRef}
+        style={{ ...(sideLeft ? { display:'flex', alignItems:'flex-start' } : { flex: wrapStyle.flex }), ...collapseStyle }}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+        {sideLeft}
         {/* overflow 없음 → 카드가 컨테이너 밖으로 자유롭게 이동 */}
-        <div style={{ position:'relative', ...wrapStyle, flex: undefined }}>
+        <div style={{ position:'relative', ...wrapStyle, flex: sideLeft ? 1 : undefined }}>
           {/* 버튼들: 카드 뒤에, 날아가는 동안 숨김 */}
           {!flying && (
             <div style={{
@@ -2100,7 +2102,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v476</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v477</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2829,8 +2831,6 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
   const day = trip.days[dayIdx] || { n: dayIdx+1, title:'', date:'', weekday:'', hero:{ hue:25, label:'' }, items:[] };
   const tripYear = extractTripYear(trip);
   const [travelTimes, setTravelTimes] = React.useState({});
-  const [flyingItemIdx, setFlyingItemIdx] = React.useState(null);
-  React.useEffect(() => { setFlyingItemIdx(null); }, [day.items?.length]);
 
   React.useEffect(() => {
     const items = day.items || [];
@@ -3018,27 +3018,25 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
             const isDone = done.has(i);
             const dp = itemDragProps(i);
             return (
-              <div key={i} {...dp} style={{ display:'flex', alignItems:'flex-start', marginBottom:12, position:'relative', ...(dp.style || {}),
-                opacity: flyingItemIdx === i ? 0 : 1, transition: flyingItemIdx === i ? 'opacity 0.26s' : 'none' }}>
-                {/* 시간 — marginTop으로 카드 첫째 줄에 맞춤 */}
-                <div style={{ width:32, flexShrink:0, marginTop:11,
-                  fontFamily:MONO, fontSize:10.5, color:COLORS.mute,
-                  textAlign:'right', paddingRight:4 }}>{it.time}</div>
-                {/* 체크박스: 타임라인 선 가로 중간(x=40)에 독립 배치 — 슬라이드 시 카드에 가려짐 */}
-                <button onClick={(e)=>{e.stopPropagation(); toggle(i);}} style={{
-                  width:16, height:16, borderRadius:8, flexShrink:0, marginTop:11,
-                  boxSizing:'border-box',
-                  border:`1.5px solid ${isDone?COLORS.accent:COLORS.ink}`,
-                  background: isDone?COLORS.accent:COLORS.bg, cursor:'pointer', padding:0,
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                }}>
-                  {isDone && <Icon name="check" size={10} color="#fff" stroke={3}/>}
-                </button>
+              <div key={i} {...dp} style={{ marginBottom:12, position:'relative', ...(dp.style || {}) }}>
                 <SwipeableRow
                   cardSwipe
+                  sideLeft={<>
+                    <div style={{ width:32, flexShrink:0, marginTop:11,
+                      fontFamily:MONO, fontSize:10.5, color:COLORS.mute,
+                      textAlign:'right', paddingRight:4 }}>{it.time}</div>
+                    <button onClick={(e)=>{e.stopPropagation(); toggle(i);}} style={{
+                      width:16, height:16, borderRadius:8, flexShrink:0, marginTop:11,
+                      boxSizing:'border-box',
+                      border:`1.5px solid ${isDone?COLORS.accent:COLORS.ink}`,
+                      background: isDone?COLORS.accent:COLORS.bg, cursor:'pointer', padding:0,
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                    }}>
+                      {isDone && <Icon name="check" size={10} color="#fff" stroke={3}/>}
+                    </button>
+                  </>}
                   wrapStyle={{ flex:1, marginLeft:12, borderRadius:14 }}
                   disabled={editing}
-                  onFlyStart={() => setFlyingItemIdx(i)}
                   onEdit={() => onOpenStop({ idx: i, stop: it, editing: true })}
                   onDelete={() => onDeleteItem(i)}>
                 {/* 카드 본체 */}
