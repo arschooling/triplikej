@@ -2098,7 +2098,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v453</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v454</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -7326,7 +7326,7 @@ function NotificationsScreen({ open, onClose, authUser, notifications, onGoToCom
 }
 
 // ─── Companions ───────────────────────────────────────────────
-function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserDataUpdate }) {
+function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserDataUpdate, onRemoveTripMember }) {
   const [contacts, setContacts]         = React.useState([]);
   const [sentInvites, setSentInvites]   = React.useState([]);
   const [receivedInvites, setReceivedInvites] = React.useState([]);
@@ -7463,16 +7463,16 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
     }
     // 연락처 삭제 성공 → UI 즉시 반영
     setContacts(prev => prev.filter(x => x.uid !== c.uid));
+    const affectedTripIds = (trips||[]).filter(t => (tripCompanions[t.id]||[]).some(m => m.uid === c.uid)).map(t => t.id);
     setTripCompanions(prev => {
       const next = {...prev};
       Object.keys(next).forEach(tid => { next[tid] = next[tid].filter(m => m.uid !== c.uid); });
       return next;
     });
+    // 부모 userTrips 즉시 반영 (여행 카드 숫자 업데이트)
+    affectedTripIds.forEach(tid => onRemoveTripMember?.(tid, c.uid));
     // 여행 멤버 제거는 별도 처리 (실패해도 UI에 영향 없음)
-    Promise.all((trips||[]).map(t =>
-      (tripCompanions[t.id]||[]).some(m => m.uid === c.uid)
-        ? fbRemoveTripMember(t.id, c.uid) : Promise.resolve()
-    )).catch(e => console.warn('trip member removal:', e));
+    Promise.all(affectedTripIds.map(tid => fbRemoveTripMember(tid, c.uid))).catch(e => console.warn('trip member removal:', e));
     setRemoving(null);
   };
 
@@ -7482,6 +7482,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
     try {
       await fbRemoveTripMember(tripId, uid);
       setTripCompanions(prev => ({ ...prev, [tripId]: (prev[tripId]||[]).filter(m => m.uid !== uid) }));
+      onRemoveTripMember?.(tripId, uid);
     } catch(e) { alert('제거 실패.'); }
     setRemoving(null);
   };
@@ -10197,7 +10198,8 @@ function App() {
         defaultTripId={addCompanionOpen || null}
         onUserDataUpdate={ud => setUserData(ud)}/>
       <CompanionsScreen open={companionsScreenOpen} onClose={() => setCompanionsScreenOpen(false)}
-        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}/>
+        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}
+        onRemoveTripMember={(tid, uid) => setUserTrips(prev => prev.map(t => t.id !== tid ? t : { ...t, members: (t.members||[]).filter(m => m !== uid) }))}/>
       <NotificationsScreen open={notifOpen} onClose={() => setNotifOpen(false)}
         authUser={authUser} notifications={notifs}
         onGoToCompanions={() => { setNotifOpen(false); setCompanionsScreenOpen(true); }}
@@ -10332,7 +10334,8 @@ function App() {
           setTab('home'); setDayIdx(null); setHotelIdx(null);
         }}/>
       <CompanionsScreen open={companionsScreenOpen} onClose={() => setCompanionsScreenOpen(false)}
-        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}/>
+        authUser={authUser} userData={userData} trips={userTrips} onUserDataUpdate={ud => setUserData(ud)}
+        onRemoveTripMember={(tid, uid) => setUserTrips(prev => prev.map(t => t.id !== tid ? t : { ...t, members: (t.members||[]).filter(m => m !== uid) }))}/>
       <NotificationsScreen open={notifOpen} onClose={() => setNotifOpen(false)}
         authUser={authUser} notifications={notifs}
         onGoToCompanions={() => { setNotifOpen(false); setCompanionsScreenOpen(true); }}
