@@ -1984,7 +1984,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v428</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v429</span></div>
       </div>
       {loading
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5292,10 +5292,10 @@ function normalizePrepCats(raw) {
   return { cats: result };
 }
 
-function PrepCatItems({ ci, cat, cats, save, editing, editingItem, setEditingItem, getItemDragProps, prepDrag, emptyDropRef }) {
+function PrepCatItems({ ci, cat, cats, save, saveWithUndo, editing, editingItem, setEditingItem, getItemDragProps, prepDrag, emptyDropRef }) {
   const deleteItem = (ii) => {
     const next = cats.map((c, i) => i !== ci ? c : { ...c, items: c.items.filter((_, j) => j !== ii) });
-    save(next);
+    (saveWithUndo || save)(next);
   };
   const updateItem = (ii, val) => {
     const next = cats.map((c, i) => i !== ci ? c : { ...c, items: c.items.map((x, j) => j === ii ? val : x) });
@@ -5382,8 +5382,22 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   const [pasteOpen,    setPasteOpen]    = React.useState(false);
   const [pasteText,    setPasteText]    = React.useState('');
   const [copyToast,    setCopyToast]    = React.useState(false);
+  const [undoSnap,     setUndoSnap]     = React.useState(null); // 되돌리기용 스냅샷
+  const undoTimer = React.useRef(null);
 
   const save = (newCats) => onEditPrep({ ...prep, cats: newCats });
+
+  const saveWithUndo = (newCats) => {
+    clearTimeout(undoTimer.current);
+    setUndoSnap(cats);
+    save(newCats);
+    undoTimer.current = setTimeout(() => setUndoSnap(null), 5000);
+  };
+
+  const doUndo = () => {
+    clearTimeout(undoTimer.current);
+    if (undoSnap) { save(undoSnap); setUndoSnap(null); }
+  };
 
   const parsePasteText = (text) => {
     const result = [];
@@ -5428,7 +5442,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   };
 
   const clearCatItems = (ci) => {
-    save(cats.map((c, i) => i !== ci ? c : { ...c, items: [] }));
+    saveWithUndo(cats.map((c, i) => i !== ci ? c : { ...c, items: [] }));
   };
 
   // ── Cross-category drag ───────────────────────────────────────
@@ -5559,7 +5573,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
     if (!confirm(`"${cats[i].name}" 카테고리를 삭제할까요?`)) return;
     const next = cats.filter((_, j) => j !== i);
     if (!next.length) next.push({ id:'cat_1', name:'체크리스트', items:[] });
-    save(next);
+    saveWithUndo(next);
   };
   const renameCat = (i, name) => { const next=[...cats]; next[i]={...next[i],name}; save(next); };
   const addItem = (ci) => {
@@ -5575,7 +5589,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
   const deleteItem = (ci, ii) => {
     const next=[...cats];
     next[ci]={...next[ci],items:next[ci].items.filter((_,j)=>j!==ii)};
-    save(next);
+    saveWithUndo(next);
   };
 
   // D-day
@@ -5692,7 +5706,7 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
                 항목이 없어요
               </div>
             )}
-            <PrepCatItems ci={ci} cat={cat} cats={cats} save={save} editing={editing}
+            <PrepCatItems ci={ci} cat={cat} cats={cats} save={save} saveWithUndo={saveWithUndo} editing={editing}
               editingItem={editingItem} setEditingItem={setEditingItem}
               getItemDragProps={getItemDragProps(ci)}
               prepDrag={prepDrag}
@@ -5742,6 +5756,19 @@ function PrepScreen({ trip, prep: prepProp, onEditPrep, editing, setEditing }) {
           fontFamily:SANS, fontSize:13, zIndex:2000, whiteSpace:'nowrap',
           boxShadow:'0 4px 20px rgba(0,0,0,0.18)' }}>
           클립보드에 복사됐어요
+        </div>
+      )}
+
+      {/* 되돌리기 토스트 */}
+      {undoSnap && (
+        <div style={{ position:'fixed', bottom:100, left:'50%', transform:'translateX(-50%)',
+          background:COLORS.ink, color:COLORS.bg, padding:'10px 18px', borderRadius:20,
+          fontFamily:SANS, fontSize:13, zIndex:2000, whiteSpace:'nowrap',
+          boxShadow:'0 4px 20px rgba(0,0,0,0.18)',
+          display:'flex', alignItems:'center', gap:12 }}>
+          삭제됐어요
+          <button onClick={doUndo} style={{ border:'none', background:'transparent', cursor:'pointer',
+            padding:0, fontSize:18, lineHeight:1 }}>↩️</button>
         </div>
       )}
 
