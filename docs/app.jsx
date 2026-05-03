@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v44</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v45</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2509,10 +2509,10 @@ function TicketViewer({ ticket, onClose }) {
                 display:'flex', alignItems:'center', justifyContent:'center',
               }}>
                 {isImg ? (() => {
-                  const crop = cropRegions[file.id];
+                  const crop = file.crop || cropRegions[file.id];
                   return (
                     <img src={file.url} draggable={false} alt=""
-                      onLoad={e => handleImgLoad(e, file.id)}
+                      onLoad={e => { if (!file.crop) handleImgLoad(e, file.id); }}
                       onClick={e => e.stopPropagation()}
                       style={{
                         maxWidth:'100%', maxHeight:'100%',
@@ -2654,10 +2654,38 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
     const { mode, cardId } = ticketAction.current;
     setTicketUploading(mode === 'new' ? 'new' : cardId);
     try {
+      const detectBarcode = async (file) => {
+        if (!file.type.startsWith('image/') || !('BarcodeDetector' in window)) return undefined;
+        try {
+          const bitmap = await createImageBitmap(file);
+          const W = bitmap.width, H = bitmap.height;
+          const formats = await BarcodeDetector.getSupportedFormats();
+          const detector = new BarcodeDetector({ formats });
+          const barcodes = await detector.detect(bitmap);
+          bitmap.close();
+          if (!barcodes.length) return undefined;
+          const bc = barcodes.reduce((a, b) =>
+            a.boundingBox.width * a.boundingBox.height >= b.boundingBox.width * b.boundingBox.height ? a : b
+          );
+          const { x, y, width, height } = bc.boundingBox;
+          const pad = Math.max(width, height) * 0.25;
+          return {
+            x1: Math.max(0, (x - pad) / W),
+            y1: Math.max(0, (y - pad) / H),
+            x2: Math.min(1, (x + width + pad) / W),
+            y2: Math.min(1, (y + height + pad) / H),
+          };
+        } catch (_) { return undefined; }
+      };
       const uploaded = await Promise.all(rawFiles.map(async (file) => {
         const fileId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
-        const url = await window.fbUploadTicket(myUid, trip.id, fileId, file);
-        return { id: fileId, url, type: file.type };
+        const [url, crop] = await Promise.all([
+          window.fbUploadTicket(myUid, trip.id, fileId, file),
+          detectBarcode(file),
+        ]);
+        const entry = { id: fileId, url, type: file.type };
+        if (crop) entry.crop = crop;
+        return entry;
       }));
       if (mode === 'new') {
         const newCard = {
