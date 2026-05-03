@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v41</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v42</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2356,6 +2356,38 @@ function TicketViewer({ ticket, onClose }) {
     if (headerRef.current) setHeaderH(headerRef.current.offsetHeight);
   }, []);
 
+  // BarcodeDetector: 이미지에서 QR/바코드 감지 후 해당 영역으로 크롭
+  const [croppedUrls, setCroppedUrls] = React.useState({});
+  React.useEffect(() => {
+    if (!('BarcodeDetector' in window)) return;
+    files.forEach(file => {
+      if (!file.type?.startsWith('image/') || !file.url) return;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = async () => {
+        try {
+          const detector = new BarcodeDetector();
+          const barcodes = await detector.detect(img);
+          if (!barcodes.length) return;
+          const bc = barcodes.reduce((a, b) =>
+            a.boundingBox.width * a.boundingBox.height >= b.boundingBox.width * b.boundingBox.height ? a : b
+          );
+          const { x, y, width, height } = bc.boundingBox;
+          const pad = Math.max(width, height) * 0.25;
+          const sx = Math.round(Math.max(0, x - pad));
+          const sy = Math.round(Math.max(0, y - pad));
+          const sw = Math.round(Math.min(img.naturalWidth - sx, width + pad * 2));
+          const sh = Math.round(Math.min(img.naturalHeight - sy, height + pad * 2));
+          const canvas = document.createElement('canvas');
+          canvas.width = sw; canvas.height = sh;
+          canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+          setCroppedUrls(p => ({ ...p, [file.id]: canvas.toDataURL('image/jpeg', 0.96) }));
+        } catch (_) {}
+      };
+      img.src = file.url;
+    });
+  }, []);
+
   const getW = () => containerRef.current?.offsetWidth || window.innerWidth;
   const setTrans = (dur, ease) => { if (trackRef.current) trackRef.current.style.transition = `transform ${dur}ms ${ease}`; };
   const setNone  = () => { if (trackRef.current) trackRef.current.style.transition = 'none'; };
@@ -2471,7 +2503,7 @@ function TicketViewer({ ticket, onClose }) {
                 display:'flex', alignItems:'center', justifyContent:'center',
               }}>
                 {isImg ? (
-                  <img src={file.url} draggable={false} alt=""
+                  <img src={croppedUrls[file.id] || file.url} draggable={false} alt=""
                     onClick={e => e.stopPropagation()}
                     style={{
                       maxWidth:'100%', maxHeight:'100%',
