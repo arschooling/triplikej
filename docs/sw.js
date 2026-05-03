@@ -1,4 +1,4 @@
-const V = 'tlj-v15';
+const V = 'tlj-v16';
 // index.html은 캐시하지 않음 — 항상 네트워크에서 받아야 버전 감지가 동작함
 const CACHE = [
   './react.min.js', './react-dom.min.js',
@@ -30,9 +30,14 @@ self.addEventListener('message', e => {
 self.addEventListener('fetch', e => {
   // 외부 API 요청(Foursquare, Firebase, Photon 등)은 SW가 가로채지 않음 (iOS 호환)
   if (!e.request.url.startsWith(self.location.origin)) return;
-  // index.html(네비게이션): 항상 네트워크 우선, 실패 시 캐시 fallback
+  // index.html(네비게이션): 항상 네트워크 우선, 5초 타임아웃 + 실패 시 캐시 fallback
   if (e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request).catch(() => caches.match('./index.html')));
+    e.respondWith(
+      Promise.race([
+        fetch(e.request),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000)),
+      ]).catch(() => caches.match('./index.html'))
+    );
     return;
   }
   e.respondWith(

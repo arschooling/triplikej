@@ -577,6 +577,24 @@ function SwipeBackLayer({ onBack, children }) {
   );
 }
 
+// ─── body 스크롤 잠금 (ref-counted: 모달 여러 개 겹쳐도 안전) ─
+let _scrollLockCount = 0;
+function lockBodyScroll() {
+  _scrollLockCount++;
+  if (_scrollLockCount === 1) document.body.style.overflow = 'hidden';
+}
+function unlockBodyScroll() {
+  _scrollLockCount = Math.max(0, _scrollLockCount - 1);
+  if (_scrollLockCount === 0) document.body.style.overflow = '';
+}
+function useBodyScrollLock(active) {
+  React.useEffect(() => {
+    if (!active) return;
+    lockBodyScroll();
+    return () => unlockBodyScroll();
+  }, [active]);
+}
+
 // ─── 키보드 높이 감지 (iOS visualViewport) ───────────────────
 function useKeyboardHeight() {
   const [kbh, setKbh] = React.useState(0);
@@ -603,16 +621,14 @@ function BottomSheet({ open, onClose, children, title, onConfirm, confirmLabel='
     if (open) {
       setMounted(true);
       setDrag(0);
-      // 배경 스크롤 잠금
-      document.body.style.overflow = 'hidden';
+      lockBodyScroll();
       requestAnimationFrame(() => setVisible(true));
+      return () => unlockBodyScroll();
     } else {
       setVisible(false);
-      document.body.style.overflow = '';
       const t = setTimeout(() => { setMounted(false); setDrag(0); }, 260);
       return () => clearTimeout(t);
     }
-    return () => { document.body.style.overflow = ''; };
   }, [open]);
 
   if (!mounted) return null;
@@ -1352,7 +1368,13 @@ const FX_CURRENCIES = [
 
 function useFxRate(currency) {
   const [state, setState] = React.useState({ loading: true, rate: null, ts: null });
+  const aliveRef = React.useRef(true);
+  React.useEffect(() => {
+    aliveRef.current = true;
+    return () => { aliveRef.current = false; };
+  }, []);
   const fetchRate = React.useCallback(() => {
+    if (!aliveRef.current) return;
     setState(s => ({ ...s, loading: true }));
     const cur = currency.toLowerCase();
     const sources = [
@@ -1369,13 +1391,21 @@ function useFxRate(currency) {
         parse: j => ({ rate: j?.[cur]?.krw, ts: j?.date }),
       },
     ];
+    // 8초 타임아웃 — 느린 응답으로 무한 대기 방지
+    const fetchWithTimeout = (url) => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+    };
     const tryNext = (i) => {
+      if (!aliveRef.current) return;
       if (i >= sources.length) { setState({ loading:false, rate:null, ts:null }); return; }
-      fetch(sources[i].url).then(r => r.json()).then(j => {
+      fetchWithTimeout(sources[i].url).then(r => r.json()).then(j => {
+        if (!aliveRef.current) return;
         const { rate, ts } = sources[i].parse(j);
         if (rate) setState({ loading:false, rate, ts: ts || null });
         else tryNext(i+1);
-      }).catch(() => tryNext(i+1));
+      }).catch(() => { if (aliveRef.current) tryNext(i+1); });
     };
     tryNext(0);
   }, [currency]);
@@ -1806,15 +1836,11 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
   const [sending, setSending]     = React.useState(false);
   const [removing, setRemoving]   = React.useState(null);
 
-  React.useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = ''; };
-    }
-  }, [open]);
+  useBodyScrollLock(open);
 
   React.useEffect(() => {
     if (!open || !trip) return;
+    let alive = true;
     setMode('edit'); setSelected(new Set()); setEmail(''); setMsg('');
     setMemberProfiles([]); setContacts([]);
 
@@ -1833,10 +1859,12 @@ function ShareTripSheet({ open, onClose, trip, userData, allTrips, myUid }) {
       memberUids.length ? window.fbGetUsersById(memberUids) : Promise.resolve([]),
       candidateUids.size ? window.fbGetUsersById([...candidateUids]) : Promise.resolve([]),
     ]).then(([members, candidates]) => {
+      if (!alive) return;
       setMemberProfiles(members);
       setContacts(candidates);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
   }, [open, trip?.id]);
 
   React.useEffect(() => {
@@ -2135,7 +2163,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v15</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v16</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2872,9 +2900,12 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
   const tripYear = extractTripYear(trip);
   const [travelTimes, setTravelTimes] = React.useState({});
 
+  const coordsKey = React.useMemo(
+    () => (day.items||[]).map(it => it.coords ? it.coords.join(',') : '').join('|'),
+    [day.items]
+  );
   React.useEffect(() => {
     const items = day.items || [];
-    const coordsKey = items.map(it => it.coords ? it.coords.join(',') : '').join('|');
     const cacheKey = `tt_day_${trip.title}_${dayIdx}_${coordsKey}`;
     const pending = items.reduce((acc, it, i) => {
       if (i > 0 && it.coords && items[i-1].coords) acc.push(i);
@@ -2888,13 +2919,16 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
     } catch(_) {}
 
     let alive = true;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000); // OSRM 공용 서버 느릴 때 8초컷
     const results = {};
     Promise.all(pending.map(async (i) => {
       const [lat1, lon1] = items[i-1].coords;
       const [lat2, lon2] = items[i].coords;
       try {
         const r = await (await fetch(
-          `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`
+          `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`,
+          { signal: ctrl.signal }
         )).json();
         if (r.routes?.[0]) {
           const { duration, distance } = r.routes[0];
@@ -2905,12 +2939,13 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
         }
       } catch(_) {}
     })).then(() => {
+      clearTimeout(timer);
       if (!alive) return;
       setTravelTimes(results);
       try { localStorage.setItem(cacheKey, JSON.stringify(results)); } catch(_) {}
     });
-    return () => { alive = false; };
-  }, [dayIdx, (day.items||[]).map(it => it.coords ? it.coords.join(',') : '').join('|')]);
+    return () => { alive = false; clearTimeout(timer); ctrl.abort(); };
+  }, [dayIdx, coordsKey, trip.title]);
 
   const fmtMin = (m) => m >= 60 ? `${Math.floor(m/60)}시간${m%60 ? ` ${m%60}분` : ''}` : `${m}분`;
 
@@ -3536,6 +3571,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
   // 두 타입 병렬 fetch (캐시 우선)
   React.useEffect(() => {
     if (!stop) return;
+    let alive = true;
     const ctrl = new AbortController();
     // 캐시 키: 좌표가 있으면 좌표 기반, 없으면 타이틀 기반
     const stopKey = stop.coords
@@ -3546,7 +3582,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
     if (cached && Array.isArray(cached.hotspots) && Array.isArray(cached.food)) {
       setHotspots(cached.hotspots);
       setFood(cached.food);
-      return;
+      return () => { alive = false; ctrl.abort(); };
     }
     (async () => {
       try {
@@ -3555,6 +3591,7 @@ function NearbySheet({ stop, initialTab, onClose }) {
         else {
           const q = encodeURIComponent([stop.title, stop.en, stop.loc].filter(Boolean).join(' '));
           const geo = await fetch(`https://photon.komoot.io/api/?q=${q}&limit=1`, { signal:ctrl.signal }).then(r=>r.json());
+          if (!alive) return;
           const f = geo.features?.[0];
           if (!f) { setHotspots([]); setFood([]); return; }
           [lon, lat] = f.geometry.coordinates;
@@ -3604,14 +3641,15 @@ function NearbySheet({ stop, initialTab, onClose }) {
           gNearby(FOOD_TYPES, 800, 'ko'),
           gNearby(FOOD_TYPES, 800, 'en'),
         ]);
+        if (!alive) return;
         const hotspotsParsed = parseGP(hKo, hEn, false);
         const foodParsed = parseGP(fKo, fEn, true);
         ncSet(cacheKey, { hotspots: hotspotsParsed, food: foodParsed });  // 캐시 저장
         setHotspots(hotspotsParsed);
         setFood(foodParsed);
-      } catch(e) { if (!ctrl.signal.aborted) { setHotspots([]); setFood([]); } }
+      } catch(e) { if (alive && !ctrl.signal.aborted) { setHotspots([]); setFood([]); } }
     })();
-    return () => ctrl.abort();
+    return () => { alive = false; ctrl.abort(); };
   }, [stop]);
 
 
@@ -3763,11 +3801,10 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
   }, [open]);
 
-  // 배경 스크롤 차단
+  // 배경 스크롤 차단 (ref-counted)
   React.useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prevOverflow; };
+    lockBodyScroll();
+    return () => unlockBodyScroll();
   }, []);
 
   // 시트 드래그 + 탭바 탭 토글
@@ -4047,9 +4084,8 @@ function HotelSheet({ open, onClose, hotel, trip, tripDays, onSave, onDelete, on
   }, [open]);
 
   React.useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    lockBodyScroll();
+    return () => unlockBodyScroll();
   }, []);
 
   React.useEffect(() => {
@@ -7510,7 +7546,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
   const tripIds = (trips||[]).map(t=>t.id).join(',');
   React.useEffect(() => {
     if (!open || !authUser) return;
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
     setLoading(true);
 
     let unsubContacts = () => {};
@@ -7554,7 +7590,7 @@ function CompanionsScreen({ open, onClose, authUser, userData, trips, onUserData
       });
     }
 
-    return () => { unsubContacts(); unsubSent(); unsubReceived(); document.body.style.overflow = ''; };
+    return () => { unsubContacts(); unsubSent(); unsubReceived(); unlockBodyScroll(); };
   }, [open, authUser?.uid, tripIds]);
 
   if (!open) return null;
@@ -9288,8 +9324,8 @@ function AddCompanionSheet({ open, onClose, authUser, userData, trips, onUserDat
 
   React.useEffect(() => {
     if (open) {
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = ''; };
+      lockBodyScroll();
+      return () => unlockBodyScroll();
     }
   }, [open]);
 
