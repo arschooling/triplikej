@@ -2202,7 +2202,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v18</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v19</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2997,7 +2997,7 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
   });
   const toggle = (i) => setDone(s => {
     const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i);
-    localStorage.setItem('done_' + tripId + '_' + dayIdx, JSON.stringify([...n]));
+    try { localStorage.setItem('done_' + tripId + '_' + dayIdx, JSON.stringify([...n])); } catch(_) {}
     return n;
   });
   const [editingTitle, setEditingTitle] = React.useState(false);
@@ -5729,7 +5729,7 @@ const PrepCatItems = React.memo(function PrepCatItems({ ci, cat, cats, save, sav
   const toggle = (item) => setChecked(s => {
     const n = new Set(s);
     n.has(item) ? n.delete(item) : n.add(item);
-    localStorage.setItem(storageKey, JSON.stringify([...n]));
+    try { localStorage.setItem(storageKey, JSON.stringify([...n])); } catch(_) {}
     return n;
   });
   return (
@@ -9650,14 +9650,13 @@ function ProfileSheet({ open, onClose, authUser, trips, onAddCompanion, onViewCo
 
 function _readCache() {
   if (!localStorage.getItem('tlj_authed')) return null;
-  try {
-    return {
-      userData : JSON.parse(localStorage.getItem('tlj_userData')  || 'null'),
-      trip     : JSON.parse(localStorage.getItem('tlj_trip')      || 'null'),
-      prep     : JSON.parse(localStorage.getItem('tlj_prep')      || 'null'),
-      userTrips: JSON.parse(localStorage.getItem('tlj_userTrips') || 'null'),
-    };
-  } catch(e) { return null; }
+  const _p = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(_) { return null; } };
+  return {
+    userData : _p('tlj_userData'),
+    trip     : _p('tlj_trip'),
+    prep     : _p('tlj_prep'),
+    userTrips: _p('tlj_userTrips'),
+  };
 }
 
 // Firestore 문서에 누락된 필드를 채워주는 정규화 함수
@@ -10092,6 +10091,19 @@ function App() {
     if (authUser?.uid && t?.days?.length && typeof window.fbDeleteTripPhotos === 'function') {
       window.fbDeleteTripPhotos(authUser.uid, tripId, t.days.length).catch(() => {});
     }
+    // localStorage 정리: done 체크 상태 + 사진 캐시
+    const uid = authUser?.uid || '';
+    const dayCount = t?.days?.length || 0;
+    for (let i = 0; i < dayCount; i++) {
+      try { localStorage.removeItem('done_' + tripId + '_' + i); } catch(_) {}
+      if (uid) {
+        try { localStorage.removeItem('tlj_ph_'   + uid + '_' + tripId + '_' + i); } catch(_) {}
+        try { localStorage.removeItem('tlj_imgb_' + uid + '_' + tripId + '_' + i); } catch(_) {}
+      }
+    }
+    (t?.prep?.cats || []).forEach(cat => {
+      try { localStorage.removeItem('prep_done_' + cat.id); } catch(_) {}
+    });
     setUserTrips(prev => prev.filter(x => x.id !== tripId));
     setUserData(prev => ({ ...prev, tripIds: (prev.tripIds || []).filter(id => id !== tripId) }));
   };
