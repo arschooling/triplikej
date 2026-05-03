@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v28</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v29</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2337,15 +2337,105 @@ function isoToWeekday(iso) {
 
 // ─── Ticket Viewer ──────────────────────────────────────────
 function TicketViewer({ ticket, onClose }) {
-  const isImage = ticket.type && ticket.type.startsWith('image/');
+  const files = ticket.files?.length
+    ? ticket.files
+    : [{ id: ticket.id || 't0', url: ticket.url, type: ticket.type }];
+  const n = files.length;
+  const [idx, setIdx] = React.useState(0);
+  const [offset, setOffset] = React.useState(0);
+  const offsetRef = React.useRef(0);
+  const containerRef = React.useRef(null);
+  const trackRef = React.useRef(null);
+  const gestureRef = React.useRef({ on:false, startX:0, startY:0, drag:false });
+  const velRef = React.useRef([]);
+  const timerRef = React.useRef(null);
+
+  React.useEffect(() => { lockBodyScroll(); return () => unlockBodyScroll(); }, []);
+
+  const getW = () => containerRef.current?.offsetWidth || window.innerWidth;
+  const setTrans = (dur, ease) => { if (trackRef.current) trackRef.current.style.transition = `transform ${dur}ms ${ease}`; };
+  const setNone  = () => { if (trackRef.current) trackRef.current.style.transition = 'none'; };
+  const setOff   = (v) => { offsetRef.current = v; setOffset(v); };
+
+  const goTo = (newIdx) => {
+    if (newIdx < 0 || newIdx >= n) return;
+    setTrans(300, 'cubic-bezier(0.4,0,0.2,1)');
+    setIdx(newIdx);
+    setOff(0);
+  };
+
+  const onStart = (e) => {
+    gestureRef.current = { on:true, startX:e.touches[0].clientX, startY:e.touches[0].clientY, drag:false };
+    velRef.current = [];
+  };
+  const onMove = (e) => {
+    const g = gestureRef.current;
+    if (!g.on) return;
+    const x = e.touches[0].clientX;
+    const dx = x - g.startX;
+    const dy = Math.abs(e.touches[0].clientY - g.startY);
+    if (!g.drag) {
+      if (dy > Math.abs(dx) + 8) { g.on = false; return; }
+      if (Math.abs(dx) > 6) g.drag = true;
+    }
+    if (!g.drag) return;
+    const now = Date.now();
+    velRef.current.push({ x, t: now });
+    if (velRef.current.length > 6) velRef.current.shift();
+    setNone();
+    const w = getW();
+    let lim;
+    if (dx < 0 && idx >= n - 1) lim = dx * 0.18;
+    else if (dx > 0 && idx <= 0) lim = dx * 0.18;
+    else lim = dx < 0 ? Math.max(dx, -w * 1.1) : Math.min(dx, w * 1.1);
+    setOff(lim);
+  };
+  const onEnd = () => {
+    const g = gestureRef.current;
+    gestureRef.current = { ...g, on:false, drag:false };
+    if (!g.drag) return;
+    const w = getW();
+    const cur = offsetRef.current;
+    const samples = velRef.current;
+    let vel = 0;
+    if (samples.length >= 2) {
+      const a = samples[0], b = samples[samples.length - 1];
+      const dt = b.t - a.t;
+      if (dt > 0) vel = (b.x - a.x) / dt;
+    }
+    const byDist  = Math.abs(cur) > w * 0.2;
+    const byFlick = Math.abs(vel) > 0.25;
+    const toNext  = (cur < 0 && (byDist || byFlick)) && idx < n - 1;
+    const toPrev  = (cur > 0 && (byDist || byFlick)) && idx > 0;
+    const remaining = toNext ? w + cur : toPrev ? w - cur : Math.abs(cur);
+    const dur = Math.min(360, Math.max(180, remaining * 0.9));
+    setTrans(dur, 'cubic-bezier(0.25,0.46,0.45,0.94)');
+    if (toNext) {
+      setOff(-w);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => { setNone(); setIdx(i => i + 1); setOff(0); }, dur + 20);
+    } else if (toPrev) {
+      setOff(w);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => { setNone(); setIdx(i => i - 1); setOff(0); }, dur + 20);
+    } else {
+      setTrans(Math.round(dur * 0.6), 'cubic-bezier(0.22,1,0.36,1)');
+      setOff(0);
+    }
+  };
+
+  const w = containerRef.current?.offsetWidth || window.innerWidth;
+
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.96)', zIndex:9999,
-      display:'flex', flexDirection:'column' }}>
+    <div style={{ position:'fixed', inset:0, background:'#111', zIndex:9999, display:'flex', flexDirection:'column' }}>
+      {/* Header */}
       <div style={{ padding:'16px 20px', display:'flex', justifyContent:'space-between',
         alignItems:'center', flexShrink:0 }}>
-        <div style={{ fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.75)',
+        <div style={{ fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.7)',
           maxWidth:'calc(100% - 52px)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
           {ticket.name}
+          {n > 1 && <span style={{ marginLeft:8, fontFamily:MONO, fontSize:11,
+            color:'rgba(255,255,255,0.4)', letterSpacing:'0.08em' }}>{idx + 1} / {n}</span>}
         </div>
         <button onClick={onClose} style={{
           width:36, height:36, borderRadius:18, border:'none',
@@ -2355,15 +2445,54 @@ function TicketViewer({ ticket, onClose }) {
           <Icon name="x" size={16} color="#fff" stroke={2}/>
         </button>
       </div>
-      <div style={{ flex:1, overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center',
-        padding:'0 0 env(safe-area-inset-bottom, 0)' }}>
-        {isImage ? (
-          <img src={ticket.url} style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain' }} alt={ticket.name}/>
-        ) : (
-          <iframe src={ticket.url} title={ticket.name}
-            style={{ width:'100%', height:'100%', border:'none', background:'#fff' }}/>
-        )}
+
+      {/* Carousel */}
+      <div ref={containerRef} style={{ flex:1, overflow:'hidden', position:'relative' }}
+        onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}>
+        <div ref={trackRef} style={{
+          display:'flex', height:'100%', willChange:'transform',
+          transform:`translateX(${-(idx * w) + offset}px)`,
+        }}>
+          {files.map((file, i) => {
+            const isImg = file.type && file.type.startsWith('image/');
+            return (
+              <div key={file.id || i} style={{
+                width:w, flexShrink:0, boxSizing:'border-box',
+                padding:'0 16px 20px',
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>
+                <div style={{
+                  width:'100%', height:'100%', borderRadius:18, overflow:'hidden',
+                  background: isImg ? '#000' : '#fff',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                }}>
+                  {isImg ? (
+                    <img src={file.url} draggable={false}
+                      style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain' }} alt=""/>
+                  ) : (
+                    <iframe src={file.url}
+                      style={{ width:'100%', height:'100%', border:'none' }}/>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Dots */}
+      {n > 1 && (
+        <div style={{ paddingBottom:'calc(16px + env(safe-area-inset-bottom, 0px))',
+          paddingTop:10, display:'flex', justifyContent:'center', gap:6, flexShrink:0 }}>
+          {files.map((_, i) => (
+            <div key={i} onClick={() => goTo(i)} style={{
+              width: i === idx ? 20 : 6, height:6, borderRadius:3, cursor:'pointer',
+              background: i === idx ? '#fff' : 'rgba(255,255,255,0.28)',
+              transition:'all 0.22s cubic-bezier(0.4,0,0.2,1)',
+            }}/>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -2423,32 +2552,55 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
     }
   };
   const [ticketViewer, setTicketViewer] = React.useState(null);
-  const [ticketUploading, setTicketUploading] = React.useState(false);
+  const [ticketUploading, setTicketUploading] = React.useState(null); // null | 'new' | cardId
   const [ticketDeleting, setTicketDeleting] = React.useState(null);
   const ticketInputRef = React.useRef(null);
+  const ticketAction = React.useRef({ mode: 'new', cardId: null });
+  const getTicketFiles = (card) => card.files?.length ? card.files : [{ id: card.id, url: card.url, type: card.type }];
+
+  const openTicketPicker = (mode, cardId = null) => {
+    ticketAction.current = { mode, cardId };
+    ticketInputRef.current?.click();
+  };
   const handleTicketUpload = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !myUid) return;
-    setTicketUploading(true);
+    const { mode, cardId } = ticketAction.current;
+    setTicketUploading(mode === 'new' ? 'new' : cardId);
     try {
-      const ticketId = Date.now().toString();
-      const url = await window.fbUploadTicket(myUid, trip.id, ticketId, file);
-      const newTicket = { id: ticketId, name: file.name, url, type: file.type };
-      onEditTrip({ tickets: [...(trip.tickets || []), newTicket] });
+      const fileId = Date.now().toString();
+      const url = await window.fbUploadTicket(myUid, trip.id, fileId, file);
+      const newFile = { id: fileId, url, type: file.type };
+      if (mode === 'new') {
+        const newCard = {
+          id: 'c_' + fileId,
+          name: file.name.replace(/\.[^.]+$/, ''),
+          files: [newFile],
+        };
+        onEditTrip({ tickets: [...(trip.tickets || []), newCard] });
+      } else {
+        onEditTrip({
+          tickets: (trip.tickets || []).map(t =>
+            t.id === cardId ? { ...t, files: [...getTicketFiles(t), newFile] } : t
+          ),
+        });
+      }
     } catch(err) {
       console.warn('Ticket upload failed:', err);
       alert('파일 업로드에 실패했어요. 다시 시도해 주세요.');
     } finally {
-      setTicketUploading(false);
+      setTicketUploading(null);
     }
   };
-  const handleTicketDelete = async (ticket) => {
+  const handleTicketDeleteCard = async (card) => {
     if (!myUid || ticketDeleting) return;
-    setTicketDeleting(ticket.id);
+    setTicketDeleting(card.id);
     try {
-      await window.fbDeleteTicket(myUid, trip.id, ticket.id);
-      onEditTrip({ tickets: (trip.tickets || []).filter(t => t.id !== ticket.id) });
+      await Promise.all(getTicketFiles(card).map(f =>
+        window.fbDeleteTicket(myUid, trip.id, f.id).catch(() => {})
+      ));
+      onEditTrip({ tickets: (trip.tickets || []).filter(t => t.id !== card.id) });
     } catch(err) {
       console.warn('Ticket delete failed:', err);
     } finally {
@@ -3021,66 +3173,93 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
       {/* Tickets & Vouchers */}
       {(() => {
         const tickets = trip.tickets || [];
+        const totalFiles = tickets.reduce((s, t) => s + getTicketFiles(t).length, 0);
+        const Spinner = () => (
+          <div style={{ width:12, height:12, borderRadius:'50%', border:`1.5px solid ${COLORS.mute}`, borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }}/>
+        );
         return (
           <>
             <div style={{ padding:'22px 24px 8px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>티켓 & 바우처</div>
               <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-                <button onClick={() => ticketInputRef.current?.click()} disabled={ticketUploading} style={{
+                <button onClick={() => openTicketPicker('new')} disabled={!!ticketUploading} style={{
                   width:28, height:28, borderRadius:14, border:'none',
                   background:COLORS.softer, cursor:'pointer',
                   display:'flex', alignItems:'center', justifyContent:'center',
-                  opacity: ticketUploading ? 0.5 : 1,
+                  opacity: ticketUploading === 'new' ? 0.5 : 1,
                 }}>
-                  {ticketUploading
-                    ? <div style={{ width:12, height:12, borderRadius:'50%', border:`1.5px solid ${COLORS.mute}`, borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }}/>
-                    : <Icon name="plus" size={14} color={COLORS.mute} stroke={2}/>}
+                  {ticketUploading === 'new' ? <Spinner/> : <Icon name="plus" size={14} color={COLORS.mute} stroke={2}/>}
                 </button>
                 <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em' }}>
-                  {tickets.length} FILES
+                  {totalFiles} FILES
                 </div>
               </div>
             </div>
             <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:8 }}>
-              {tickets.map((ticket) => (
-                <div key={ticket.id}
-                  onClick={() => !editing && setTicketViewer(ticket)}
-                  style={{
-                    background:COLORS.card, borderRadius:16, padding:'12px 14px',
-                    display:'flex', gap:12, alignItems:'center',
-                    cursor: editing ? 'default' : 'pointer',
-                  }}>
-                  <div style={{ width:40, height:40, borderRadius:10, background:COLORS.softer,
-                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <Icon name="file" size={18} color={COLORS.mute} stroke={1.8}/>
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontFamily:MONO, fontSize:9, color:COLORS.accent, letterSpacing:'0.12em' }}>
-                      {ticket.type === 'application/pdf' ? 'PDF' : 'IMAGE'}
+              {tickets.map((card) => {
+                const cardFiles = getTicketFiles(card);
+                const firstFile = cardFiles[0];
+                const isImg = firstFile?.type?.startsWith('image/');
+                return (
+                  <div key={card.id}
+                    onClick={() => !editing && setTicketViewer(card)}
+                    style={{
+                      background:COLORS.card, borderRadius:16, padding:'12px 14px',
+                      display:'flex', gap:12, alignItems:'center',
+                      cursor: editing ? 'default' : 'pointer',
+                    }}>
+                    {/* Thumbnail */}
+                    <div style={{ width:52, height:52, borderRadius:10, overflow:'hidden',
+                      background:COLORS.softer, flexShrink:0,
+                      display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      {isImg ? (
+                        <img src={firstFile.url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt=""/>
+                      ) : (
+                        <Icon name="file" size={22} color={COLORS.mute} stroke={1.5}/>
+                      )}
                     </div>
-                    <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, marginTop:2,
-                      whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                      {ticket.name}
+                    {/* Info */}
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontFamily:MONO, fontSize:9, color:COLORS.accent, letterSpacing:'0.12em' }}>
+                        {cardFiles.length > 1 ? `${cardFiles.length} FILES` : (firstFile?.type === 'application/pdf' ? 'PDF' : 'IMAGE')}
+                      </div>
+                      <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, marginTop:2,
+                        whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                        {card.name}
+                      </div>
                     </div>
+                    {/* Controls */}
+                    {editing ? (
+                      <div style={{ display:'flex', gap:6, flexShrink:0 }}>
+                        <button onClick={(e) => { e.stopPropagation(); openTicketPicker('addTo', card.id); }}
+                          disabled={!!ticketUploading}
+                          style={{
+                            width:26, height:26, borderRadius:13, border:'none',
+                            background:COLORS.softer, cursor:'pointer',
+                            display:'flex', alignItems:'center', justifyContent:'center',
+                            opacity: ticketUploading === card.id ? 0.5 : 1,
+                          }}>
+                          {ticketUploading === card.id ? <Spinner/> : <Icon name="plus" size={12} color={COLORS.mute} stroke={2}/>}
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); handleTicketDeleteCard(card); }}
+                          disabled={ticketDeleting === card.id}
+                          style={{
+                            width:26, height:26, borderRadius:13, border:'none',
+                            background:'rgba(193,79,46,0.12)', cursor:'pointer',
+                            display:'flex', alignItems:'center', justifyContent:'center',
+                            opacity: ticketDeleting === card.id ? 0.5 : 1,
+                          }}>
+                          <Icon name="trash" size={12} color={COLORS.accent} stroke={2}/>
+                        </button>
+                      </div>
+                    ) : (
+                      <Icon name="chevron" size={16} color={COLORS.mute} stroke={1.8}/>
+                    )}
                   </div>
-                  {editing ? (
-                    <button onClick={(e) => { e.stopPropagation(); handleTicketDelete(ticket); }}
-                      disabled={ticketDeleting === ticket.id}
-                      style={{
-                        width:26, height:26, borderRadius:13, border:'none',
-                        background:'rgba(193,79,46,0.12)', cursor:'pointer',
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                        opacity: ticketDeleting === ticket.id ? 0.5 : 1,
-                      }}>
-                      <Icon name="trash" size={12} color={COLORS.accent} stroke={2}/>
-                    </button>
-                  ) : (
-                    <Icon name="chevron" size={16} color={COLORS.mute} stroke={1.8}/>
-                  )}
-                </div>
-              ))}
+                );
+              })}
               {tickets.length === 0 && !ticketUploading && (
-                <button onClick={() => ticketInputRef.current?.click()} style={{
+                <button onClick={() => openTicketPicker('new')} style={{
                   padding:'16px 12px', background:'transparent',
                   border:`1.5px dashed ${COLORS.line}`, borderRadius:16,
                   color:COLORS.mute, cursor:'pointer',
