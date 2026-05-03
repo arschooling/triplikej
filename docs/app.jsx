@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v32</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v33</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2451,11 +2451,11 @@ function TicketViewer({ ticket, onClose }) {
         </button>
       </div>
 
-      {/* Carousel — flex:1, items width-fill, height auto (QR 코드가 가로폭 전체 차지) */}
-      <div ref={containerRef} style={{ flex:1, overflow:'hidden', display:'flex', alignItems:'center', minHeight:0 }}
+      {/* Carousel */}
+      <div ref={containerRef} style={{ flex:1, overflow:'hidden', display:'flex', alignItems:'stretch', minHeight:0 }}
         onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}>
         <div ref={trackRef} style={{
-          display:'flex', alignItems:'center', willChange:'transform',
+          display:'flex', alignItems:'stretch', height:'100%', willChange:'transform',
           transform:`translateX(${-(idx * w) + offset}px)`,
         }}>
           {files.map((file, i) => {
@@ -2469,8 +2469,8 @@ function TicketViewer({ ticket, onClose }) {
                 {isImg ? (
                   <img src={file.url} draggable={false} alt=""
                     style={{
-                      width:'100%', height:'auto',
-                      maxHeight:'calc(100vh - 140px)',
+                      maxWidth:'100%', maxHeight:'100%',
+                      width:'auto', height:'auto',
                       objectFit:'contain',
                       borderRadius:14, display:'block',
                       background:'#fff',
@@ -2478,7 +2478,7 @@ function TicketViewer({ ticket, onClose }) {
                 ) : (
                   <iframe src={file.url} title={file.id}
                     style={{
-                      width:'100%', height:'calc(100vh - 140px)',
+                      width:'100%', height:'100%',
                       border:'none', borderRadius:14, background:'#fff',
                     }}/>
                 )}
