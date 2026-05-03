@@ -2211,7 +2211,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v21</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v22</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9777,6 +9777,7 @@ function App() {
   const lastScrollTop    = React.useRef(0);
   const savedHomeScrollY = React.useRef(0);
   const navGoingBack     = React.useRef(false);
+  const tabBarNavLock    = React.useRef(false); // 네비게이션 직후 scroll 이벤트로 인한 탭바 숨김 방지
   const editSnapshot     = React.useRef(null); // 편집 시작 시 trip 스냅샷
 
   // 편집 버튼 토글 핸들러
@@ -10053,11 +10054,17 @@ function App() {
     }
     setTabBarVisible(true);
     setEditing(false);
+    // scrollTo 완료 전에 scroll 이벤트가 발생해 탭바를 바로 숨기는 레이스 컨디션 방지
+    tabBarNavLock.current = true;
+    const navLockTimer = setTimeout(() => { tabBarNavLock.current = false; }, 400);
+    return () => clearTimeout(navLockTimer);
   }, [scrollKey, tab, dayIdx, hotelIdx]);
 
   React.useEffect(() => {
     const handleScroll = () => {
       const st = window.scrollY;
+      // 네비게이션 직후 lock 기간에는 lastScrollTop만 갱신하고 탭바 숨김 무시
+      if (tabBarNavLock.current) { lastScrollTop.current = st; return; }
       const diff = st - lastScrollTop.current;
       if (Math.abs(diff) > 4) {
         setTabBarVisible(diff < 0 || st < 60);
