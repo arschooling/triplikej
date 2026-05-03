@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v30</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v31</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2427,10 +2427,15 @@ function TicketViewer({ ticket, onClose }) {
   const w = containerRef.current?.offsetWidth || window.innerWidth;
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'#111', zIndex:9999, display:'flex', flexDirection:'column' }}>
+    <div style={{ position:'fixed', inset:0, background:'#111', zIndex:9999,
+      display:'flex', flexDirection:'column', userSelect:'none' }}>
+
       {/* Header */}
-      <div style={{ padding:'16px 20px', display:'flex', justifyContent:'space-between',
-        alignItems:'center', flexShrink:0 }}>
+      <div style={{
+        paddingTop:'max(16px, env(safe-area-inset-top, 16px))',
+        padding:'16px 20px 12px',
+        display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0,
+      }}>
         <div style={{ fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.7)',
           maxWidth:'calc(100% - 52px)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
           {ticket.name}
@@ -2447,7 +2452,7 @@ function TicketViewer({ ticket, onClose }) {
       </div>
 
       {/* Carousel */}
-      <div ref={containerRef} style={{ flex:1, overflow:'hidden', position:'relative' }}
+      <div ref={containerRef} style={{ flex:1, overflow:'hidden', position:'relative', minHeight:0 }}
         onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}>
         <div ref={trackRef} style={{
           display:'flex', height:'100%', willChange:'transform',
@@ -2457,23 +2462,20 @@ function TicketViewer({ ticket, onClose }) {
             const isImg = file.type && file.type.startsWith('image/');
             return (
               <div key={file.id || i} style={{
-                width:w, flexShrink:0, boxSizing:'border-box',
-                padding:'0 16px 20px',
+                width:w, flexShrink:0, height:'100%',
+                padding:'8px 16px 16px', boxSizing:'border-box',
                 display:'flex', alignItems:'center', justifyContent:'center',
               }}>
-                <div style={{
-                  width:'100%', height:'100%', borderRadius:18, overflow:'hidden',
-                  background: isImg ? '#000' : '#fff',
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                }}>
-                  {isImg ? (
-                    <img src={file.url} draggable={false}
-                      style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain' }} alt=""/>
-                  ) : (
-                    <iframe src={file.url}
-                      style={{ width:'100%', height:'100%', border:'none' }}/>
-                  )}
-                </div>
+                {isImg ? (
+                  <img src={file.url} draggable={false} alt=""
+                    style={{
+                      maxWidth:'100%', maxHeight:'100%',
+                      objectFit:'contain', borderRadius:14, display:'block',
+                    }}/>
+                ) : (
+                  <iframe src={file.url} title={file.id}
+                    style={{ width:'100%', height:'100%', border:'none', borderRadius:14, background:'#fff' }}/>
+                )}
               </div>
             );
           })}
@@ -2482,8 +2484,11 @@ function TicketViewer({ ticket, onClose }) {
 
       {/* Dots */}
       {n > 1 && (
-        <div style={{ paddingBottom:'calc(16px + env(safe-area-inset-bottom, 0px))',
-          paddingTop:10, display:'flex', justifyContent:'center', gap:6, flexShrink:0 }}>
+        <div style={{
+          paddingTop:10,
+          paddingBottom:'calc(16px + env(safe-area-inset-bottom, 0px))',
+          display:'flex', justifyContent:'center', gap:6, flexShrink:0,
+        }}>
           {files.map((_, i) => (
             <div key={i} onClick={() => goTo(i)} style={{
               width: i === idx ? 20 : 6, height:6, borderRadius:3, cursor:'pointer',
