@@ -2211,7 +2211,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v20</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v21</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2349,7 +2349,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const handleCardPhoto = async (e) => {
     const file = e.target.files?.[0];
     const idx = cardPhotoTargetIdx.current;
-    if (!file || !myUid || idx === null) return;
+    if (!file || !myUid || idx === null || cardPhotoUploading !== null) return;
     setCardPhotoUploading(idx);
     try {
       const dataUrl = await resizeImage(file);
@@ -3030,7 +3030,7 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
   }, [authUid, tripId, dayIdx]);
   const handleDayPhoto = async (e) => {
     const file = e.target.files?.[0];
-    if (!file || !authUid) return;
+    if (!file || !authUid || photoUploading) return;
     setPhotoUploading(true);
     try {
       const dataUrl = await resizeImage(file);
@@ -9379,6 +9379,7 @@ function AddCompanionSheet({ open, onClose, authUser, userData, trips, onUserDat
   const [inviteEmail,    setInviteEmail]    = React.useState('');
   const [inviteMsg,      setInviteMsg]      = React.useState('');
   const [inviting,       setInviting]       = React.useState(false);
+  const [accepting,      setAccepting]      = React.useState(null);
   const [pendingInvites, setPendingInvites] = React.useState([]);
 
   React.useEffect(() => {
@@ -9418,20 +9419,28 @@ function AddCompanionSheet({ open, onClose, authUser, userData, trips, onUserDat
   };
 
   const handleAccept = async (inv) => {
-    if (inv.type === 'contact') {
-      await fbAcceptContactInvite(inv, authUser.uid);
-      setPendingInvites(p => p.filter(i => i.id !== inv.id));
-      return;
-    }
-    if (inv.type === 'trip_copy') {
-      const tripId = await fbAcceptTripCopy(inv, authUser.uid);
+    if (accepting) return;
+    setAccepting(inv.id);
+    try {
+      if (inv.type === 'contact') {
+        await fbAcceptContactInvite(inv, authUser.uid);
+        setPendingInvites(p => p.filter(i => i.id !== inv.id));
+        return;
+      }
+      if (inv.type === 'trip_copy') {
+        const tripId = await fbAcceptTripCopy(inv, authUser.uid);
+        onUserDataUpdate({ ...userData, tripIds: [...(userData.tripIds||[]), tripId] });
+        setPendingInvites(p => p.filter(i => i.id !== inv.id));
+        return;
+      }
+      const tripId = await fbAcceptTripInvite(inv, authUser.uid);
       onUserDataUpdate({ ...userData, tripIds: [...(userData.tripIds||[]), tripId] });
       setPendingInvites(p => p.filter(i => i.id !== inv.id));
-      return;
+    } catch(e) {
+      console.warn('invite accept failed:', e);
+    } finally {
+      setAccepting(null);
     }
-    const tripId = await fbAcceptTripInvite(inv, authUser.uid);
-    onUserDataUpdate({ ...userData, tripIds: [...(userData.tripIds||[]), tripId] });
-    setPendingInvites(p => p.filter(i => i.id !== inv.id));
   };
 
   if (!open) return null;
@@ -9472,10 +9481,10 @@ function AddCompanionSheet({ open, onClose, authUser, userData, trips, onUserDat
                     {inv.type === 'contact' ? '동행인 요청' : (inv.tripTitle || inv.fromEmail)}
                   </div>
                 </div>
-                <button onClick={() => handleAccept(inv)} style={{
-                  border:'none', borderRadius:9, padding:'6px 12px', cursor:'pointer',
-                  background:COLORS.ink, color:COLORS.bg, fontFamily:SANS, fontSize:12, fontWeight:500,
-                }}>수락</button>
+                <button onClick={() => handleAccept(inv)} disabled={!!accepting} style={{
+                  border:'none', borderRadius:9, padding:'6px 12px', cursor: accepting ? 'default' : 'pointer',
+                  background: accepting === inv.id ? COLORS.mute : COLORS.ink, color:COLORS.bg, fontFamily:SANS, fontSize:12, fontWeight:500,
+                }}>{accepting === inv.id ? '처리 중...' : '수락'}</button>
                 <button onClick={() => fbRejectInvite(inv.id).then(() => setPendingInvites(p=>p.filter(i=>i.id!==inv.id)))} style={{
                   border:`1px solid ${COLORS.line}`, borderRadius:9, padding:'6px 10px', cursor:'pointer',
                   background:'transparent', fontFamily:SANS, fontSize:12, color:COLORS.mute,
@@ -10582,7 +10591,7 @@ function App() {
               budget: tripToShow.budget, prep: tripToShow.prep }).catch(() => {});
           }
           if (tripToShow) { tripRef.current = tripToShow; setTrip(tripToShow); }
-          setActiveTripId(id); setTab('home'); setDayIdx(null); setHotelIdx(null); setEditing(false);
+          setActiveTripId(id); setTab('home'); setDayIdx(null); setHotelIdx(null); setEditing(false); setOpenStop(null);
           // Firestore에서 직접 읽어 최신 데이터로 보장 (days 있을 때만 반영)
           // 샘플 여행은 budget이 비어있으면 로컬 기본값으로 채워서 저장
           fbLoadTrips([id]).then(trips => {

@@ -463,12 +463,14 @@ window.fbGetContacts = async (uid) => {
 
 // contacts 실시간 리스너 — 상대방이 삭제해도 즉시 반영
 window.fbListenContacts = (uid, cb) => {
-  return _fbDb.collection('users').doc(uid).onSnapshot(async snap => {
+  let alive = true;
+  const unsub = _fbDb.collection('users').doc(uid).onSnapshot(async snap => {
     const ids = snap.data()?.contacts || [];
-    if (!ids.length) { cb([]); return; }
+    if (!ids.length) { if (alive) cb([]); return; }
     const users = await window.fbGetUsersById(ids).catch(() => []);
-    cb(users);
+    if (alive) cb(users);
   });
+  return () => { alive = false; unsub(); };
 };
 
 window.fbRemoveContact = async (myUid, contactUid) => {
