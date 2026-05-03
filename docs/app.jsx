@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v39</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v40</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2337,9 +2337,8 @@ function isoToWeekday(iso) {
 
 // ─── Ticket Viewer ──────────────────────────────────────────
 function TicketViewer({ ticket, onClose }) {
-  const files = ticket.files?.length
-    ? ticket.files
-    : [{ id: ticket.id || 't0', url: ticket.url, type: ticket.type }];
+  const files = Array.isArray(ticket.files) ? ticket.files
+    : (ticket.url ? [{ id: ticket.id || 't0', url: ticket.url, type: ticket.type }] : []);
   const n = files.length;
   const [idx, setIdx] = React.useState(0);
   const [offset, setOffset] = React.useState(0);
@@ -2598,7 +2597,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
   const [ticketDeleting, setTicketDeleting] = React.useState(null);
   const ticketInputRef = React.useRef(null);
   const ticketAction = React.useRef({ mode: 'new', cardId: null });
-  const getTicketFiles = (card) => card.files?.length ? card.files : [{ id: card.id, url: card.url, type: card.type }];
+  const getTicketFiles = (card) => Array.isArray(card.files) ? card.files : (card.url ? [{ id: card.id, url: card.url, type: card.type }] : []);
 
   const openTicketPicker = (mode, cardId = null) => {
     ticketAction.current = { mode, cardId };
