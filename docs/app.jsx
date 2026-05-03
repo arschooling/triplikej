@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v36</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v37</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2432,11 +2432,11 @@ function TicketViewer({ ticket, onClose }) {
   const w = containerRef.current?.offsetWidth || window.innerWidth;
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', zIndex:9999,
+    <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', zIndex:9999,
       overflow:'hidden', userSelect:'none' }}>
 
-      {/* Header */}
-      <div ref={headerRef} style={{
+      {/* Header — stop click propagation so tapping header doesn't close */}
+      <div ref={headerRef} onClick={e => e.stopPropagation()} style={{
         padding:'max(env(safe-area-inset-top,16px),16px) 20px 12px',
         display:'flex', justifyContent:'space-between', alignItems:'center',
       }}>
@@ -2473,6 +2473,7 @@ function TicketViewer({ ticket, onClose }) {
               }}>
                 {isImg ? (
                   <img src={file.url} draggable={false} alt=""
+                    onClick={e => e.stopPropagation()}
                     style={{
                       maxWidth:'100%', maxHeight:'100%',
                       width:'auto', height:'auto',
@@ -2482,6 +2483,7 @@ function TicketViewer({ ticket, onClose }) {
                     }}/>
                 ) : (
                   <iframe src={file.url} title={file.id}
+                    onClick={e => e.stopPropagation()}
                     style={{
                       width:'100%', height:'100%',
                       border:'none', borderRadius:14, background:'#fff',
@@ -3235,7 +3237,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                 const isImg = firstFile?.type?.startsWith('image/');
                 return (
                   <SwipeableRow key={card.id} cardSwipe
-                    onEdit={() => { setTicketEditCard(card); setTicketEditName(card.name); }}
+                    onEdit={() => { setTicketEditCard(card); setTicketEditName(card.name || ''); }}
                     onDelete={() => handleTicketDeleteCard(card)}
                     wrapStyle={{ borderRadius:16 }}>
                     <div onClick={() => setTicketViewer(card)} style={{
