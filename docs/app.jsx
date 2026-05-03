@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v34</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v35</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2346,11 +2346,16 @@ function TicketViewer({ ticket, onClose }) {
   const offsetRef = React.useRef(0);
   const containerRef = React.useRef(null);
   const trackRef = React.useRef(null);
+  const headerRef = React.useRef(null);
+  const [headerH, setHeaderH] = React.useState(64);
   const gestureRef = React.useRef({ on:false, startX:0, startY:0, drag:false });
   const velRef = React.useRef([]);
   const timerRef = React.useRef(null);
 
   React.useEffect(() => { lockBodyScroll(); return () => unlockBodyScroll(); }, []);
+  React.useLayoutEffect(() => {
+    if (headerRef.current) setHeaderH(headerRef.current.offsetHeight);
+  }, []);
 
   const getW = () => containerRef.current?.offsetWidth || window.innerWidth;
   const setTrans = (dur, ease) => { if (trackRef.current) trackRef.current.style.transition = `transform ${dur}ms ${ease}`; };
@@ -2428,12 +2433,12 @@ function TicketViewer({ ticket, onClose }) {
 
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', zIndex:9999,
-      display:'flex', flexDirection:'column', userSelect:'none', overflow:'hidden' }}>
+      overflow:'hidden', userSelect:'none' }}>
 
       {/* Header */}
-      <div style={{
+      <div ref={headerRef} style={{
         padding:'max(env(safe-area-inset-top,16px),16px) 20px 12px',
-        display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0,
+        display:'flex', justifyContent:'space-between', alignItems:'center',
       }}>
         <div style={{ fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.7)',
           maxWidth:'calc(100% - 52px)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
@@ -2450,18 +2455,19 @@ function TicketViewer({ ticket, onClose }) {
         </button>
       </div>
 
-      {/* Carousel */}
-      <div ref={containerRef} style={{ flex:1, overflow:'hidden', display:'flex', alignItems:'stretch', minHeight:0 }}
+      {/* Carousel — absolute so height is definite: height = bottom(0) - top(headerH) */}
+      <div ref={containerRef}
+        style={{ position:'absolute', top:headerH, left:0, right:0, bottom:0, overflow:'hidden' }}
         onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}>
         <div ref={trackRef} style={{
-          display:'flex', alignItems:'stretch', willChange:'transform',
+          display:'flex', height:'100%', willChange:'transform',
           transform:`translateX(${-(idx * w) + offset}px)`,
         }}>
           {files.map((file, i) => {
             const isImg = file.type && file.type.startsWith('image/');
             return (
               <div key={file.id || i} style={{
-                width:w, flexShrink:0,
+                width:w, flexShrink:0, height:'100%',
                 padding:'0 20px', boxSizing:'border-box',
                 display:'flex', alignItems:'center', justifyContent:'center',
               }}>
@@ -2485,24 +2491,25 @@ function TicketViewer({ ticket, onClose }) {
             );
           })}
         </div>
-      </div>
 
-      {/* Dots */}
-      {n > 1 && (
-        <div style={{
-          paddingTop:10,
-          paddingBottom:'calc(16px + env(safe-area-inset-bottom, 0px))',
-          display:'flex', justifyContent:'center', gap:6, flexShrink:0,
-        }}>
-          {files.map((_, i) => (
-            <div key={i} onClick={() => goTo(i)} style={{
-              width: i === idx ? 20 : 6, height:6, borderRadius:3, cursor:'pointer',
-              background: i === idx ? '#fff' : 'rgba(255,255,255,0.28)',
-              transition:'all 0.22s cubic-bezier(0.4,0,0.2,1)',
-            }}/>
-          ))}
-        </div>
-      )}
+        {/* Dots — overlaid at bottom of carousel */}
+        {n > 1 && (
+          <div style={{
+            position:'absolute', left:0, right:0,
+            bottom:'max(env(safe-area-inset-bottom,12px),12px)',
+            display:'flex', justifyContent:'center', gap:6, pointerEvents:'none',
+          }}>
+            {files.map((_, i) => (
+              <div key={i} onClick={() => goTo(i)} style={{
+                width: i === idx ? 20 : 6, height:6, borderRadius:3, cursor:'pointer',
+                background: i === idx ? '#fff' : 'rgba(255,255,255,0.28)',
+                transition:'all 0.22s cubic-bezier(0.4,0,0.2,1)',
+                pointerEvents:'auto',
+              }}/>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
