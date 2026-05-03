@@ -1,4 +1,4 @@
-const V = 'tlj-v40';
+const V = 'tlj-v41';
 // index.html은 캐시하지 않음 — 항상 네트워크에서 받아야 버전 감지가 동작함
 const CACHE = [
   './react.min.js', './react-dom.min.js',
@@ -16,7 +16,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== V).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== V && k !== 'tlj-photos').map(k => caches.delete(k))))
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
       .then(clients => clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' })))
@@ -28,6 +28,21 @@ self.addEventListener('message', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Firebase Storage 파일 — cache-first (티켓·QR코드 오프라인 지원)
+  if (e.request.url.includes('firebasestorage.googleapis.com')) {
+    e.respondWith(
+      caches.open('tlj-photos').then(cache =>
+        cache.match(e.request).then(cached => {
+          if (cached) return cached;
+          return fetch(e.request).then(res => {
+            try { if (res.type === 'opaque' || res.ok) cache.put(e.request, res.clone()); } catch (_) {}
+            return res;
+          }).catch(() => cached || new Response(null, { status: 504, statusText: 'Offline' }));
+        })
+      )
+    );
+    return;
+  }
   // 외부 API 요청(Foursquare, Firebase, Photon 등)은 SW가 가로채지 않음 (iOS 호환)
   if (!e.request.url.startsWith(self.location.origin)) return;
   // index.html(네비게이션): 항상 네트워크 우선, 5초 타임아웃 + 실패 시 캐시 fallback
