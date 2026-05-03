@@ -113,6 +113,7 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
     case 'clipboard':  return <svg {...p}><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14h6M9 10h6M9 18h4"/></svg>;
     case 'camera':     return <svg {...p}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>;
     case 'trash':      return <svg {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>;
+    case 'file':       return <svg {...p}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>;
     default: return null;
   }
 };
@@ -2213,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v26</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v27</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2334,6 +2335,39 @@ function isoToWeekday(iso) {
   return WEEKDAY_NAMES[d.getDay()];
 }
 
+// ─── Ticket Viewer ──────────────────────────────────────────
+function TicketViewer({ ticket, onClose }) {
+  const isImage = ticket.type && ticket.type.startsWith('image/');
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.96)', zIndex:9999,
+      display:'flex', flexDirection:'column' }}>
+      <div style={{ padding:'16px 20px', display:'flex', justifyContent:'space-between',
+        alignItems:'center', flexShrink:0 }}>
+        <div style={{ fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.75)',
+          maxWidth:'calc(100% - 52px)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+          {ticket.name}
+        </div>
+        <button onClick={onClose} style={{
+          width:36, height:36, borderRadius:18, border:'none',
+          background:'rgba(255,255,255,0.15)', cursor:'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+        }}>
+          <Icon name="x" size={16} color="#fff" stroke={2}/>
+        </button>
+      </div>
+      <div style={{ flex:1, overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center',
+        padding:'0 0 env(safe-area-inset-bottom, 0)' }}>
+        {isImage ? (
+          <img src={ticket.url} style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain' }} alt={ticket.name}/>
+        ) : (
+          <iframe src={ticket.url} title={ticket.name}
+            style={{ width:'100%', height:'100%', border:'none', background:'#fff' }}/>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Home ───────────────────────────────────────────────────
 function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPickCity,
                       curCode, onSetCurCode,
@@ -2386,6 +2420,39 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
     } finally {
       setCardPhotoUploading(null);
       e.target.value = '';
+    }
+  };
+  const [ticketViewer, setTicketViewer] = React.useState(null);
+  const [ticketUploading, setTicketUploading] = React.useState(false);
+  const [ticketDeleting, setTicketDeleting] = React.useState(null);
+  const ticketInputRef = React.useRef(null);
+  const handleTicketUpload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !myUid) return;
+    setTicketUploading(true);
+    try {
+      const ticketId = Date.now().toString();
+      const url = await window.fbUploadTicket(myUid, trip.id, ticketId, file);
+      const newTicket = { id: ticketId, name: file.name, url, type: file.type };
+      onEditTrip({ tickets: [...(trip.tickets || []), newTicket] });
+    } catch(err) {
+      console.warn('Ticket upload failed:', err);
+      alert('파일 업로드에 실패했어요. 다시 시도해 주세요.');
+    } finally {
+      setTicketUploading(false);
+    }
+  };
+  const handleTicketDelete = async (ticket) => {
+    if (!myUid || ticketDeleting) return;
+    setTicketDeleting(ticket.id);
+    try {
+      await window.fbDeleteTicket(myUid, trip.id, ticket.id);
+      onEditTrip({ tickets: (trip.tickets || []).filter(t => t.id !== ticket.id) });
+    } catch(err) {
+      console.warn('Ticket delete failed:', err);
+    } finally {
+      setTicketDeleting(null);
     }
   };
   const [sampleLoading, setSampleLoading] = React.useState(false);
@@ -2951,6 +3018,83 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         );
       })()}
 
+      {/* Tickets & Vouchers */}
+      {(() => {
+        const tickets = trip.tickets || [];
+        return (
+          <>
+            <div style={{ padding:'22px 24px 8px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>티켓 & 바우처</div>
+              <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+                <button onClick={() => ticketInputRef.current?.click()} disabled={ticketUploading} style={{
+                  width:28, height:28, borderRadius:14, border:'none',
+                  background:COLORS.softer, cursor:'pointer',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  opacity: ticketUploading ? 0.5 : 1,
+                }}>
+                  {ticketUploading
+                    ? <div style={{ width:12, height:12, borderRadius:'50%', border:`1.5px solid ${COLORS.mute}`, borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }}/>
+                    : <Icon name="plus" size={14} color={COLORS.mute} stroke={2}/>}
+                </button>
+                <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.1em' }}>
+                  {tickets.length} FILES
+                </div>
+              </div>
+            </div>
+            <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:8 }}>
+              {tickets.map((ticket) => (
+                <div key={ticket.id}
+                  onClick={() => !editing && setTicketViewer(ticket)}
+                  style={{
+                    background:COLORS.card, borderRadius:16, padding:'12px 14px',
+                    display:'flex', gap:12, alignItems:'center',
+                    cursor: editing ? 'default' : 'pointer',
+                  }}>
+                  <div style={{ width:40, height:40, borderRadius:10, background:COLORS.softer,
+                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <Icon name="file" size={18} color={COLORS.mute} stroke={1.8}/>
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontFamily:MONO, fontSize:9, color:COLORS.accent, letterSpacing:'0.12em' }}>
+                      {ticket.type === 'application/pdf' ? 'PDF' : 'IMAGE'}
+                    </div>
+                    <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink, marginTop:2,
+                      whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                      {ticket.name}
+                    </div>
+                  </div>
+                  {editing ? (
+                    <button onClick={(e) => { e.stopPropagation(); handleTicketDelete(ticket); }}
+                      disabled={ticketDeleting === ticket.id}
+                      style={{
+                        width:26, height:26, borderRadius:13, border:'none',
+                        background:'rgba(193,79,46,0.12)', cursor:'pointer',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                        opacity: ticketDeleting === ticket.id ? 0.5 : 1,
+                      }}>
+                      <Icon name="trash" size={12} color={COLORS.accent} stroke={2}/>
+                    </button>
+                  ) : (
+                    <Icon name="chevron" size={16} color={COLORS.mute} stroke={1.8}/>
+                  )}
+                </div>
+              ))}
+              {tickets.length === 0 && !ticketUploading && (
+                <button onClick={() => ticketInputRef.current?.click()} style={{
+                  padding:'16px 12px', background:'transparent',
+                  border:`1.5px dashed ${COLORS.line}`, borderRadius:16,
+                  color:COLORS.mute, cursor:'pointer',
+                  display:'flex', gap:8, alignItems:'center', justifyContent:'center',
+                  fontFamily:SANS, fontSize:13, width:'100%',
+                }}>
+                  <Icon name="plus" size={14} color={COLORS.mute} stroke={2}/> 파일 추가
+                </button>
+              )}
+            </div>
+          </>
+        );
+      })()}
+
       {/* Practical */}
       <div style={{ padding:'22px 24px 8px' }}>
         <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink }}>실용 정보</div>
@@ -2967,6 +3111,8 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
       </div>
 
       <input ref={cardPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCardPhoto}/>
+      <input ref={ticketInputRef} type="file" accept="image/*,.pdf,application/pdf" style={{ display:'none' }} onChange={handleTicketUpload}/>
+      {ticketViewer && <TicketViewer ticket={ticketViewer} onClose={() => setTicketViewer(null)}/>}
       {/* 날짜 달력 팝업 */}
       <DateRangeSheet
         open={dateRangeOpen}
