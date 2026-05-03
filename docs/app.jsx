@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v33</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v34</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2428,12 +2428,11 @@ function TicketViewer({ ticket, onClose }) {
 
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', zIndex:9999,
-      display:'flex', flexDirection:'column', userSelect:'none' }}>
+      display:'flex', flexDirection:'column', userSelect:'none', overflow:'hidden' }}>
 
       {/* Header */}
       <div style={{
-        paddingTop:'max(16px, env(safe-area-inset-top, 16px))',
-        padding:'16px 20px 12px',
+        padding:'max(env(safe-area-inset-top,16px),16px) 20px 12px',
         display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0,
       }}>
         <div style={{ fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.7)',
@@ -2455,7 +2454,7 @@ function TicketViewer({ ticket, onClose }) {
       <div ref={containerRef} style={{ flex:1, overflow:'hidden', display:'flex', alignItems:'stretch', minHeight:0 }}
         onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}>
         <div ref={trackRef} style={{
-          display:'flex', alignItems:'stretch', height:'100%', willChange:'transform',
+          display:'flex', alignItems:'stretch', willChange:'transform',
           transform:`translateX(${-(idx * w) + offset}px)`,
         }}>
           {files.map((file, i) => {
