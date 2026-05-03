@@ -749,8 +749,12 @@ window.fbNotifyTripEdit = async (tripId, editorUid, editorName, editorPhoto, tri
 // ─── FCM 푸시 알림 ────────────────────────────────────────────
 const VAPID_KEY = 'BLWRMiI4aTE95xIUSBgp-ZAcU5zqgDMUgd85V2NKpIvFyqxaqKMNdU-tL-m7nlA_TaQ3U_tV1xPiBp915bLhpgg';
 
+// 세션당 1회 init 가드 — 매 로그인마다 getToken/Firestore write 반복 방지
+let _fcmInitialized = false;
+const _LS_FCM_TOKEN = 'tlj_fcm_token';
 window.fbInitPush = async (uid) => {
   try {
+    if (_fcmInitialized) return;
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return;
@@ -758,12 +762,22 @@ window.fbInitPush = async (uid) => {
     const messaging = firebase.messaging();
     const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
     if (token) {
-      await _fbDb.collection('users').doc(uid).update({ fcmToken: token });
+      // 이전 토큰과 동일하면 Firestore write 스킵 (코스트/쓰기 한도 절약)
+      let prev = null;
+      try { prev = localStorage.getItem(_LS_FCM_TOKEN); } catch(_) {}
+      if (prev !== token) {
+        await _fbDb.collection('users').doc(uid).update({ fcmToken: token });
+        try { localStorage.setItem(_LS_FCM_TOKEN, token); } catch(_) {}
+      }
     }
+    _fcmInitialized = true;
     // 토큰 갱신 처리
     messaging.onTokenRefresh(async () => {
       const newToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-      if (newToken) await _fbDb.collection('users').doc(uid).update({ fcmToken: newToken });
+      if (newToken) {
+        await _fbDb.collection('users').doc(uid).update({ fcmToken: newToken });
+        try { localStorage.setItem(_LS_FCM_TOKEN, newToken); } catch(_) {}
+      }
     });
   } catch (e) {
     console.warn('FCM init:', e);

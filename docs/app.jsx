@@ -1456,8 +1456,9 @@ function FxCard({ curCode, onSetCurCode }) {
   const { loading, rate, ts, refresh } = useFxRate(cur.code);
 
   const fxFilterFn = React.useCallback((item, q) => {
-    const ql = q.toLowerCase();
-    return item.code.toLowerCase().includes(ql) || item.name.includes(q);
+    const t = q.trim();
+    const ql = t.toLowerCase();
+    return item.code.toLowerCase().includes(ql) || item.name.includes(t);
   }, []);
 
   return (
@@ -1697,8 +1698,9 @@ function TimezoneCard({ city, onPick }) {
   React.useEffect(() => { const t = setInterval(force, 30000); return () => clearInterval(t); }, []);
 
   const cityFilterFn = React.useCallback((item, q) => {
-    const ql = q.toLowerCase();
-    return item.key.toLowerCase().includes(ql) || item.kor.includes(q);
+    const t = q.trim();
+    const ql = t.toLowerCase();
+    return item.key.toLowerCase().includes(ql) || item.kor.includes(t);
   }, []);
 
   return (
@@ -2200,7 +2202,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v17</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v18</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -4799,7 +4801,8 @@ async function prefetchRoutes(trip) {
 
         // ① MapScreen 경로 캐시
         const mapKey = ordered.map(s => `${s.title}|${s.coords ? s.coords.join(',') : ''}`).join('~');
-        const routeCacheKey = `route_${trip.title}_${dayIdx}_${mapKey}`;
+        // trip.id 포함 — 빈 title 끼리 충돌 방지
+        const routeCacheKey = `route_${trip.id || trip.title}_${dayIdx}_${mapKey}`;
         let alreadyCached = false;
         try { alreadyCached = !!localStorage.getItem(routeCacheKey); } catch(_) {}
         if (!alreadyCached) {
@@ -4816,9 +4819,12 @@ async function prefetchRoutes(trip) {
           if (pts.length > 1) {
             try {
               const coords = pts.map(p => `${p.pos[1]},${p.pos[0]}`).join(';');
+              const ctrl = new AbortController();
+              const t = setTimeout(() => ctrl.abort(), 10000);
               const rd = await (await fetch(
-                `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
-              )).json();
+                `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`,
+                { signal: ctrl.signal }
+              )).json().finally(() => clearTimeout(t));
               if (rd.routes?.[0]) {
                 const times = {};
                 (rd.routes[0].legs||[]).forEach((leg,li) => {
@@ -4838,7 +4844,7 @@ async function prefetchRoutes(trip) {
         // ② DayScreen 이동시간 캐시 (coords 있는 항목만)
         const items = day.items || [];
         const coordsKey = items.map(it => it.coords ? it.coords.join(',') : '').join('|');
-        const ttCacheKey = `tt_day_${trip.title}_${dayIdx}_${coordsKey}`;
+        const ttCacheKey = `tt_day_${trip.id || trip.title}_${dayIdx}_${coordsKey}`;
         const pending = items.reduce((acc,it,i) => { if (i>0 && it.coords && items[i-1].coords) acc.push(i); return acc; }, []);
         let ttCached = false;
         try { ttCached = !!localStorage.getItem(ttCacheKey); } catch(_) {}
@@ -4847,9 +4853,12 @@ async function prefetchRoutes(trip) {
           for (const i of pending) {
             try {
               const [lat1,lon1]=items[i-1].coords, [lat2,lon2]=items[i].coords;
+              const ctrl2 = new AbortController();
+              const t2 = setTimeout(() => ctrl2.abort(), 8000);
               const r = await (await fetch(
-                `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`
-              )).json();
+                `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`,
+                { signal: ctrl2.signal }
+              )).json().finally(() => clearTimeout(t2));
               if (r.routes?.[0]) {
                 const {duration,distance}=r.routes[0];
                 results[i]={drive:Math.max(1,Math.round(duration/60)),walk:Math.max(1,Math.round(distance/83.33))};
@@ -5048,7 +5057,9 @@ function MapScreen({ trip, onEditItem }) {
   }, null, () => { const i = getTodayDayIdx(); return { selDay: i, ordered: makeOrdered(i) }; });
 
   const { selDay, ordered } = state;
-  const day = trip.days[selDay];
+  // 다른 클라이언트가 day를 삭제하면 selDay가 out-of-bounds 될 수 있어 폴백 필요
+  const safeDay = Math.min(Math.max(0, selDay), Math.max(0, (trip.days?.length || 1) - 1));
+  const day = trip.days[safeDay] || { items: [], hero: { hue: 25 } };
   const { itemProps } = useDragReorder((from, to) => dispatch({ type:'REORDER', from, to }), false);
 
   const [openStop, setOpenStop] = React.useState(null);
@@ -9915,8 +9926,9 @@ function App() {
       // 기존에 days 있는데 Firestore가 빈 데이터 주면 무시 (쓰기 진행 중)
       if (incoming.days.length === 0 && (tripRef.current?.days?.length || 0) > 0) return;
       // prep 없으면 TRIP_DEFAULT.prep으로 초기화 (per-trip 아키텍처)
+      // ⚠️ 깊은 복제 필수 — 공유 reference면 PrepScreen 편집이 전역 default 오염
       if (!incoming.prep && window.TRIP_DEFAULT?.prep?.cats?.length) {
-        const defaultPrep = window.TRIP_DEFAULT.prep;
+        const defaultPrep = JSON.parse(JSON.stringify(window.TRIP_DEFAULT.prep));
         incoming.prep = defaultPrep;
         fbSaveGroup(activeTripId, { prep: defaultPrep }).catch(() => {});
       }
