@@ -23,21 +23,30 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late final Animation<double> _fade;
   int _destIndex = 0;
   bool _navigated = false;
+  bool _minTimeElapsed = false;
+  bool _dataReady = false;
 
   @override
   void initState() {
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 400),
     )..addStatusListener(_onStatus);
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
     _ctrl.forward();
+
+    // 최소 10초 표시 — 10개 도시 전체 순환 (도시당 ~1초)
+    Future.delayed(const Duration(milliseconds: 10000), () {
+      if (!mounted) return;
+      _minTimeElapsed = true;
+      _tryNavigate();
+    });
   }
 
   void _onStatus(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
-      Future.delayed(const Duration(milliseconds: 600), () {
+      Future.delayed(const Duration(milliseconds: 200), () {
         if (mounted) _ctrl.reverse();
       });
     } else if (status == AnimationStatus.dismissed) {
@@ -46,6 +55,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         _ctrl.forward();
       }
     }
+  }
+
+  void _tryNavigate() {
+    if (_minTimeElapsed && _dataReady && !_navigated) _goToMain();
   }
 
   void _goToMain() {
@@ -70,13 +83,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     ref.listen(tripsProvider, (_, next) {
-      if (next.hasValue) _goToMain();
+      if (next.hasValue) {
+        _dataReady = true;
+        _tryNavigate();
+      }
     });
 
-    // 이미 로드된 경우 즉시 이동
-    final trips = ref.read(tripsProvider);
-    if (trips.hasValue && !_navigated) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _goToMain());
+    if (!_dataReady && ref.read(tripsProvider).hasValue) {
+      _dataReady = true;
     }
 
     return Scaffold(
