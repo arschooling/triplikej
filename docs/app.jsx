@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v29</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v30</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2563,26 +2563,28 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
     ticketInputRef.current?.click();
   };
   const handleTicketUpload = async (e) => {
-    const file = e.target.files?.[0];
+    const rawFiles = Array.from(e.target.files || []);
     e.target.value = '';
-    if (!file || !myUid) return;
+    if (!rawFiles.length || !myUid) return;
     const { mode, cardId } = ticketAction.current;
     setTicketUploading(mode === 'new' ? 'new' : cardId);
     try {
-      const fileId = Date.now().toString();
-      const url = await window.fbUploadTicket(myUid, trip.id, fileId, file);
-      const newFile = { id: fileId, url, type: file.type };
+      const uploaded = await Promise.all(rawFiles.map(async (file) => {
+        const fileId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
+        const url = await window.fbUploadTicket(myUid, trip.id, fileId, file);
+        return { id: fileId, url, type: file.type };
+      }));
       if (mode === 'new') {
         const newCard = {
-          id: 'c_' + fileId,
-          name: file.name.replace(/\.[^.]+$/, ''),
-          files: [newFile],
+          id: 'c_' + Date.now(),
+          name: rawFiles[0].name.replace(/\.[^.]+$/, ''),
+          files: uploaded,
         };
         onEditTrip({ tickets: [...(trip.tickets || []), newCard] });
       } else {
         onEditTrip({
           tickets: (trip.tickets || []).map(t =>
-            t.id === cardId ? { ...t, files: [...getTicketFiles(t), newFile] } : t
+            t.id === cardId ? { ...t, files: [...getTicketFiles(t), ...uploaded] } : t
           ),
         });
       }
@@ -3290,7 +3292,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
       </div>
 
       <input ref={cardPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCardPhoto}/>
-      <input ref={ticketInputRef} type="file" accept="image/*,.pdf,application/pdf" style={{ display:'none' }} onChange={handleTicketUpload}/>
+      <input ref={ticketInputRef} type="file" accept="image/*,.pdf,application/pdf" multiple style={{ display:'none' }} onChange={handleTicketUpload}/>
       {ticketViewer && <TicketViewer ticket={ticketViewer} onClose={() => setTicketViewer(null)}/>}
       {/* 날짜 달력 팝업 */}
       <DateRangeSheet
