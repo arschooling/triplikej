@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v49</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v50</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -4255,20 +4255,28 @@ function NearbySheet({ stop, initialTab, onClose }) {
           }).then(r => r.json());
           return res.places || [];
         };
-        const parseGP = (koPlaces, enPlaces, isFood) => {
+        const haversine = (la1, lo1, la2, lo2) => {
+          const R = 6371000, r = Math.PI/180;
+          const dLa = (la2-la1)*r, dLo = (lo2-lo1)*r;
+          const a = Math.sin(dLa/2)**2 + Math.cos(la1*r)*Math.cos(la2*r)*Math.sin(dLo/2)**2;
+          return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        };
+        const parseGP = (koPlaces, enPlaces, isFood, refLat, refLon) => {
           const enMap = Object.fromEntries(enPlaces.map(p => [p.id, p.displayName?.text || '']));
           return koPlaces.map(p => {
             const koName = p.displayName?.text || '';
             const enName = enMap[p.id] || '';
             const isSame = koName === enName || !enName;
+            const pLat = p.location?.latitude, pLon = p.location?.longitude;
             return {
               name: koName || enName,
               nameOrig: isSame ? '' : enName,
               type: p.types?.[0] || (isFood ? 'restaurant' : 'tourist_attraction'),
               cuisine: isFood ? (p.types?.find(t => t !== 'restaurant' && t !== 'food' && t !== 'point_of_interest' && t !== 'establishment') || '') : '',
-              isFood, fsq_id: null, dist: 0,
-              lat: p.location?.latitude,
-              lon: p.location?.longitude,
+              isFood, fsq_id: null,
+              dist: (refLat && refLon && pLat && pLon) ? haversine(refLat, refLon, pLat, pLon) : 0,
+              rating: p.rating || null,
+              lat: pLat, lon: pLon,
               photo: p.photos?.[0]?.name ? `https://places.googleapis.com/v1/${p.photos[0].name}/media?maxWidthPx=600&key=${GPLACES_KEY}` : null,
             };
           }).filter(p => p.name && p.lat && p.lon);
@@ -4282,8 +4290,8 @@ function NearbySheet({ stop, initialTab, onClose }) {
           gNearby(FOOD_TYPES, 800, 'en'),
         ]);
         if (!alive) return;
-        const hotspotsParsed = parseGP(hKo, hEn, false);
-        const foodParsed = parseGP(fKo, fEn, true);
+        const hotspotsParsed = parseGP(hKo, hEn, false, lat, lon);
+        const foodParsed = parseGP(fKo, fEn, true, lat, lon);
         ncSet(cacheKey, { hotspots: hotspotsParsed, food: foodParsed });  // 캐시 저장
         setHotspots(hotspotsParsed);
         setFood(foodParsed);
@@ -4346,8 +4354,10 @@ function NearbySheet({ stop, initialTab, onClose }) {
           <div style={{ fontFamily:SANS, fontSize:13.5, fontWeight:500, color:COLORS.ink,
             whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{item.name}</div>
           {item.nameOrig && <div style={{ fontFamily:SANS, fontSize:9.5, color:COLORS.mute, marginTop:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{item.nameOrig}</div>}
-          <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:3 }}>
-            {TYPE_KO[item.type] || item.type || '—'} · {fmtDist(item.dist)}
+          <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, marginTop:3, display:'flex', gap:6, alignItems:'center' }}>
+            <span>{TYPE_KO[item.type] || item.type || '—'}</span>
+            {item.dist > 0 && <><span style={{ opacity:0.4 }}>·</span><span>{fmtDist(item.dist)}</span></>}
+            {item.rating && <><span style={{ opacity:0.4 }}>·</span><span style={{ color:COLORS.accent }}>★ {item.rating.toFixed(1)}</span></>}
           </div>
         </div>
         <Icon name="chevron" size={14} color={COLORS.line} stroke={2}/>
