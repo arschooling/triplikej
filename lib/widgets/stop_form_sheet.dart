@@ -68,6 +68,7 @@ class StopFormState extends State<StopFormContent> {
   TripStop _buildStop() => buildCurrentStop();
 
   void _pickTime() {
+    String selected = _time.isEmpty ? '12:00' : _time;
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -75,10 +76,13 @@ class StopFormState extends State<StopFormContent> {
       pageBuilder: (ctx, _, __) => BottomSheetModal(
         title: '시간 선택',
         onCancel: () => Navigator.pop(ctx),
-        onConfirm: () => Navigator.pop(ctx),
+        onConfirm: () {
+          setState(() => _time = selected);
+          Navigator.pop(ctx);
+        },
         child: TimeWheelContent(
-          initialTime: _time.isEmpty ? '12:00' : _time,
-          onTimeSelected: (t) => setState(() => _time = t),
+          initialTime: selected,
+          onTimeSelected: (t) => selected = t,
         ),
       ),
     );
