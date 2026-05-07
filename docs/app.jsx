@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v74</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v75</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3357,14 +3357,15 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                 const firstFile = cardFiles[0];
                 const isImg = firstFile?.type?.startsWith('image/');
                 return (
-                  <div key={card.id} onClick={() => setTicketViewer(card)} style={{ cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
-                    {/* Square icon thumbnail */}
-                    <div style={{ width:'100%', aspectRatio:'1/1', background:COLORS.softer, borderRadius:14,
-                      display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+                  <div key={card.id} onClick={() => setTicketViewer(card)} style={{ cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'stretch', gap:6 }}>
+                    {/* Square icon thumbnail — paddingBottom trick guarantees square */}
+                    <div style={{ width:'100%', paddingBottom:'100%', position:'relative', background:COLORS.softer, borderRadius:14, overflow:'hidden' }}>
                       {isImg ? (
-                        <img src={firstFile.url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt=""/>
+                        <img src={firstFile.url} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} alt=""/>
                       ) : (
-                        <Icon name="file" size={28} color={COLORS.mute} stroke={1.5}/>
+                        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          <Icon name="file" size={28} color={COLORS.mute} stroke={1.5}/>
+                        </div>
                       )}
                     </div>
                     {/* Name */}
