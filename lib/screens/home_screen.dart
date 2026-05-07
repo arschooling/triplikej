@@ -640,23 +640,25 @@ class _DayCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(AppRadius.card),
-                    bottomLeft: Radius.circular(AppRadius.card),
+                Container(
+                  width: 56,
+                  height: 56,
+                  margin: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  clipBehavior: Clip.antiAlias,
                   child: PhotoPlaceholder(
                     hue: day.heroHue,
                     label: '',
-                    height: 80,
+                    height: 56,
                     small: true,
                   ),
                 ),
-                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       if (day.date.isNotEmpty || day.weekday.isNotEmpty)
                         Padding(
@@ -681,6 +683,15 @@ class _DayCard extends StatelessWidget {
                           ),
                         ),
                       Text(day.title, style: AppText.serif(16)),
+                      if (day.items.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: Text(
+                            '${day.items.length} stops',
+                            style: AppText.sans(11,
+                                color: AppColors.mute),
+                          ),
+                        ),
                     ],
                   ),
                 ),
