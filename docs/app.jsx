@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v58</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v59</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3142,62 +3142,50 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
               borderRadius:16, overflow:'hidden',
               cursor: editing ? 'grab' : 'pointer',
               background: COLORS.card,
+              display:'flex', alignItems:'stretch',
             }}>
-              {/* Header bar: DAY · 요일(색상) · 날짜 */}
-              {(() => {
+              {/* 사진 */}
+              <div style={{ width:64, flexShrink:0, overflow:'hidden' }}>
+                <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
+                  style={{ width:64, height:'100%', minHeight:80, objectFit:'cover', display:'block' }}
+                  fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} height={80} small/>}
+                  refreshKey={(cardPhotoVersions[i] || 0) + (photoVer || 0)}/>
+              </div>
+              {/* 제목 */}
+              <div style={{ flex:1, minWidth:0, padding:'0 12px', display:'flex', alignItems:'center' }}>
+                <div style={{ fontFamily:SERIF, fontSize:18, lineHeight:1.2, color:COLORS.ink,
+                  whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{d.title}</div>
+              </div>
+              {/* 날짜 컬럼 or 편집 버튼 */}
+              {editing ? (
+                <div style={{ display:'flex', alignItems:'center', gap:6, paddingRight:10 }}>
+                  <DragHandle size={14} color={COLORS.mute} {...dp.handleProps}/>
+                  {!isDayDragging && (
+                    <button onClick={(e)=>{e.stopPropagation(); onDeleteDay(i);}} style={{
+                      width:26, height:26, borderRadius:13, border:'none',
+                      background:'rgba(193,79,46,0.12)', cursor:'pointer',
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                    }}>
+                      <Icon name="trash" size={12} color={COLORS.accent} stroke={2}/>
+                    </button>
+                  )}
+                </div>
+              ) : (() => {
                 const wdLower = (d.weekday||'').toLowerCase();
-                const wdColor = wdLower==='sat' ? '#7B8FB8' : wdLower==='sun' ? '#C14F2E' : COLORS.mute;
+                const wdColor = wdLower==='sat' ? '#7B8FB8' : wdLower==='sun' ? '#C14F2E' : COLORS.accent;
                 const bgColor = wdLower==='sat' ? 'rgba(123,143,184,0.10)' : wdLower==='sun' ? 'rgba(193,79,46,0.08)' : COLORS.softer;
                 return (
-                  <div style={{ background:bgColor, padding:'5px 14px', display:'flex', gap:0, alignItems:'center' }}>
-                    <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.12em' }}>
-                      DAY {String(d.n).padStart(2,'0')}
+                  <div style={{ width:58, flexShrink:0, background:bgColor,
+                    display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:1 }}>
+                    <span style={{ fontFamily:MONO, fontSize:8, color:COLORS.mute, letterSpacing:'0.12em' }}>DAY</span>
+                    <span style={{ fontFamily:MONO, fontSize:24, color:wdColor, fontWeight:700, lineHeight:1.1 }}>
+                      {String(d.n).padStart(2,'0')}
                     </span>
-                    {d.weekday && <>
-                      <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>{' · '}</span>
-                      <span style={{ fontFamily:MONO, fontSize:9.5, color:wdColor, letterSpacing:'0.10em' }}>{d.weekday.toUpperCase()}</span>
-                    </>}
-                    {d.date && <>
-                      <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>{' · '}</span>
-                      <span style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{d.date}</span>
-                    </>}
+                    {d.weekday && <span style={{ fontFamily:MONO, fontSize:8.5, color:wdColor, letterSpacing:'0.08em' }}>{d.weekday.toUpperCase()}</span>}
+                    {d.date && <span style={{ fontFamily:SANS, fontSize:9.5, color:COLORS.mute, marginTop:2 }}>{d.date}</span>}
                   </div>
                 );
               })()}
-              {/* Main content row */}
-              <div style={{ padding:12, display:'flex', gap:12, alignItems:'center' }}>
-                  <div style={{ width:64, height:64, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
-                    <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
-                      style={{ width:64, height:64, objectFit:'cover', display:'block' }}
-                      fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} height={64} small/>}
-                      refreshKey={(cardPhotoVersions[i] || 0) + (photoVer || 0)}/>
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontFamily:SERIF, fontSize:18, lineHeight:1.2, color:COLORS.ink,
-                      whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{d.title}</div>
-                    <div style={{ marginTop:3, fontFamily:SANS, fontSize:11.5, color:COLORS.mute,
-                      display:'flex', gap:5, alignItems:'center' }}>
-                      <Icon name="pin" size={11} color={COLORS.mute} stroke={1.8}/>
-                      <span>{d.items?.length ?? 0} stops</span>
-                    </div>
-                  </div>
-                  {editing ? (
-                    <>
-                      <DragHandle size={14} color={COLORS.mute} {...dp.handleProps}/>
-                      {!isDayDragging && (
-                        <button onClick={(e)=>{e.stopPropagation(); onDeleteDay(i);}} style={{
-                          width:26, height:26, borderRadius:13, border:'none',
-                          background:'rgba(193,79,46,0.12)', cursor:'pointer',
-                          display:'flex', alignItems:'center', justifyContent:'center',
-                        }}>
-                          <Icon name="trash" size={12} color={COLORS.accent} stroke={2}/>
-                        </button>
-                      )}
-                    </>
-                  ) : (
-                    <Icon name="chevron" size={16} color={COLORS.mute} stroke={1.8}/>
-                  )}
-                </div>
             </div>
             </SwipeableRow>
             </div>
