@@ -612,92 +612,101 @@ class _DayCard extends StatelessWidget {
             ],
           ),
           clipBehavior: Clip.antiAlias,
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (editing)
-                GestureDetector(
-                  onTap: onDelete,
-                  child: Container(
-                    width: 44,
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.accent,
+              // Header bar: DAY · 요일(색상) · 날짜
+              Builder(builder: (context) {
+                final wdLower = day.weekday.toLowerCase();
+                final wdColor = wdLower == 'sat'
+                    ? AppColors.saturdayBlue
+                    : wdLower == 'sun'
+                        ? AppColors.sundayRed
+                        : AppColors.mute;
+                final bgColor = wdLower == 'sat'
+                    ? AppColors.saturdayBlue.withValues(alpha: 0.10)
+                    : wdLower == 'sun'
+                        ? AppColors.sundayRed.withValues(alpha: 0.08)
+                        : AppColors.softer;
+                return Container(
+                  width: double.infinity,
+                  color: bgColor,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 6),
+                  child: Row(
+                    children: [
+                      Text(
+                        'DAY ${day.n.toString().padLeft(2, '0')}',
+                        style: AppText.mono(9.5,
+                            color: AppColors.mute, letterSpacing: 1.2),
                       ),
-                      child: const Icon(Icons.remove,
-                          size: 14, color: Colors.white),
-                    ),
+                      if (day.weekday.isNotEmpty) ...[
+                        Text(' · ',
+                            style: AppText.mono(9.5,
+                                color: AppColors.mute)),
+                        Text(
+                          day.weekday.toUpperCase(),
+                          style: AppText.mono(9.5,
+                              color: wdColor, letterSpacing: 1.0),
+                        ),
+                      ],
+                      if (day.date.isNotEmpty) ...[
+                        Text(' · ',
+                            style: AppText.mono(9.5,
+                                color: AppColors.mute)),
+                        Text(day.date,
+                            style: AppText.sans(11,
+                                color: AppColors.mute)),
+                      ],
+                    ],
                   ),
-                ),
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(AppRadius.card),
-                  bottomLeft: Radius.circular(AppRadius.card),
-                ),
-                child: PhotoPlaceholder(
-                  hue: day.heroHue,
-                  label: '',
-                  height: 80,
-                  small: true,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(day.title, style: AppText.serif(16)),
-                    if (day.date.isNotEmpty || day.weekday.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
-                          children: [
-                            if (day.weekday.isNotEmpty) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent
-                                      .withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  day.weekday.toUpperCase(),
-                                  style: AppText.mono(9.5,
-                                      color: AppColors.accent,
-                                      letterSpacing: 0.8),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                            ],
-                            if (day.date.isNotEmpty)
-                              Text(
-                                day.date,
-                                style: AppText.sans(13,
-                                    color: AppColors.ink,
-                                    weight: FontWeight.w500),
-                              ),
-                          ],
+                );
+              }),
+              // Main content row
+              Row(
+                children: [
+                  if (editing)
+                    GestureDetector(
+                      onTap: onDelete,
+                      child: Container(
+                        width: 44,
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.accent,
+                          ),
+                          child: const Icon(Icons.remove,
+                              size: 14, color: Colors.white),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  PhotoPlaceholder(
+                    hue: day.heroHue,
+                    label: '',
+                    height: 80,
+                    small: true,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(day.title, style: AppText.serif(16)),
+                  ),
+                  if (editing)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(Icons.drag_handle_rounded,
+                          color: AppColors.mute, size: 18),
+                    )
+                  else
+                    const Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: Icon(Icons.chevron_right_rounded,
+                          color: AppColors.mute, size: 20),
+                    ),
+                ],
               ),
-              if (editing)
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Icon(Icons.drag_handle_rounded,
-                      color: AppColors.mute, size: 18),
-                )
-              else
-                const Padding(
-                  padding: EdgeInsets.only(right: 12),
-                  child: Icon(Icons.chevron_right_rounded,
-                      color: AppColors.mute, size: 20),
-                ),
             ],
           ),
         ),

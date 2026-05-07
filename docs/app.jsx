@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v57</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v58</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3139,10 +3139,32 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
             <SwipeableRow cardSwipe onEdit={() => onOpenDay(i)} onDelete={() => onDeleteDay(i)} disabled={editing} isDragging={isDayDragging} wrapStyle={{ borderRadius:16 }}>
             <div onTouchStart={dp.onTouchStart} onTouchMove={dp.onTouchMove} onTouchEnd={dp.onTouchEnd}
               onClick={() => !editing && !isDayDragging && onOpenDay(i)} style={{
-              borderRadius:16,
+              borderRadius:16, overflow:'hidden',
               cursor: editing ? 'grab' : 'pointer',
               background: COLORS.card,
             }}>
+              {/* Header bar: DAY · 요일(색상) · 날짜 */}
+              {(() => {
+                const wdLower = (d.weekday||'').toLowerCase();
+                const wdColor = wdLower==='sat' ? '#7B8FB8' : wdLower==='sun' ? '#C14F2E' : COLORS.mute;
+                const bgColor = wdLower==='sat' ? 'rgba(123,143,184,0.10)' : wdLower==='sun' ? 'rgba(193,79,46,0.08)' : COLORS.softer;
+                return (
+                  <div style={{ background:bgColor, padding:'5px 14px', display:'flex', gap:0, alignItems:'center' }}>
+                    <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.12em' }}>
+                      DAY {String(d.n).padStart(2,'0')}
+                    </span>
+                    {d.weekday && <>
+                      <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>{' · '}</span>
+                      <span style={{ fontFamily:MONO, fontSize:9.5, color:wdColor, letterSpacing:'0.10em' }}>{d.weekday.toUpperCase()}</span>
+                    </>}
+                    {d.date && <>
+                      <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>{' · '}</span>
+                      <span style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{d.date}</span>
+                    </>}
+                  </div>
+                );
+              })()}
+              {/* Main content row */}
               <div style={{ padding:12, display:'flex', gap:12, alignItems:'center' }}>
                   <div style={{ width:64, height:64, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
                     <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
@@ -3151,23 +3173,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       refreshKey={(cardPhotoVersions[i] || 0) + (photoVer || 0)}/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                      {(d.weekday || d.date) && (
-                        <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-                          {d.weekday && (
-                            <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.accent, background:'rgba(193,79,46,0.12)', borderRadius:5, padding:'2px 6px', letterSpacing:'0.08em' }}>
-                              {d.weekday.toUpperCase()}
-                            </span>
-                          )}
-                          {d.date && (
-                            <span style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, fontWeight:500 }}>
-                              {d.date}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ marginTop:3, fontFamily:SERIF, fontSize:18, lineHeight:1.2, color:COLORS.ink,
+                    <div style={{ fontFamily:SERIF, fontSize:18, lineHeight:1.2, color:COLORS.ink,
                       whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{d.title}</div>
                     <div style={{ marginTop:3, fontFamily:SANS, fontSize:11.5, color:COLORS.mute,
                       display:'flex', gap:5, alignItems:'center' }}>
@@ -3178,7 +3184,6 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   {editing ? (
                     <>
                       <DragHandle size={14} color={COLORS.mute} {...dp.handleProps}/>
-                      {/* 드래그 중엔 삭제 버튼 숨김 */}
                       {!isDayDragging && (
                         <button onClick={(e)=>{e.stopPropagation(); onDeleteDay(i);}} style={{
                           width:26, height:26, borderRadius:13, border:'none',
