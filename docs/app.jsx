@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v62</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v63</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3155,22 +3155,18 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} height={56} small/>}
                   refreshKey={(cardPhotoVersions[i] || 0) + (photoVer || 0)}/>
               </div>
-              {/* 요일·날짜 위, 제목, stops */}
+              {/* 제목 + Day N + stops */}
               <div style={{ flex:1, minWidth:0, display:'flex', flexDirection:'column', justifyContent:'center', gap:3 }}>
-                {(d.weekday || d.date) && (
-                  <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                    {d.weekday && <span style={{ fontFamily:MONO, fontSize:9.5, color:wdColor, letterSpacing:'0.08em' }}>{d.weekday.toUpperCase()}</span>}
-                    {d.weekday && d.date && <span style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}> · </span>}
-                    {d.date && <span style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{d.date}</span>}
-                  </div>
-                )}
                 <div style={{ fontFamily:SERIF, fontSize:18, lineHeight:1.2, color:COLORS.ink,
                   whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{d.title}</div>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.10em' }}>
+                  Day {String(d.n).padStart(2,'0')}
+                </div>
                 {(d.items?.length > 0) && (
                   <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute }}>{d.items.length} stops</div>
                 )}
               </div>
-              {/* 우측: DAY 컬럼 or 편집 버튼 */}
+              {/* 우측: 요일+날짜(색상) or 편집 버튼 */}
               {editing ? (
                 <div style={{ display:'flex', alignItems:'center', gap:6, paddingRight:10 }}>
                   <DragHandle size={14} color={COLORS.mute} {...dp.handleProps}/>
@@ -3185,12 +3181,10 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   )}
                 </div>
               ) : (
-                <div style={{ width:54, flexShrink:0,
-                  display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
-                  <span style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:'0.12em' }}>DAY</span>
-                  <span style={{ fontFamily:MONO, fontSize:28, color:wdColor, fontWeight:700, lineHeight:1.1 }}>
-                    {String(d.n).padStart(2,'0')}
-                  </span>
+                <div style={{ width:58, flexShrink:0,
+                  display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2 }}>
+                  {d.weekday && <span style={{ fontFamily:MONO, fontSize:11, color:wdColor, letterSpacing:'0.10em' }}>{d.weekday.toUpperCase()}</span>}
+                  {d.date && <span style={{ fontFamily:SANS, fontSize:11, color:wdColor }}>{d.date}</span>}
                 </div>
               )}
             </div>

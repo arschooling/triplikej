@@ -660,32 +660,19 @@ class _DayCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (day.date.isNotEmpty || day.weekday.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 3),
-                          child: Row(
-                            children: [
-                              if (day.weekday.isNotEmpty)
-                                Text(day.weekday.toUpperCase(),
-                                    style: AppText.mono(9.5,
-                                        color: wdColor,
-                                        letterSpacing: 0.8)),
-                              if (day.weekday.isNotEmpty &&
-                                  day.date.isNotEmpty)
-                                Text(' · ',
-                                    style: AppText.mono(9.5,
-                                        color: AppColors.mute)),
-                              if (day.date.isNotEmpty)
-                                Text(day.date,
-                                    style: AppText.sans(11,
-                                        color: AppColors.mute)),
-                            ],
-                          ),
-                        ),
                       Text(day.title, style: AppText.serif(16)),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: Text(
+                          'Day ${day.n.toString().padLeft(2, '0')}',
+                          style: AppText.mono(9.5,
+                              color: AppColors.mute,
+                              letterSpacing: 1.0),
+                        ),
+                      ),
                       if (day.items.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 3),
+                          padding: const EdgeInsets.only(top: 2),
                           child: Text(
                             '${day.items.length} stops',
                             style: AppText.sans(11,
@@ -703,21 +690,23 @@ class _DayCard extends StatelessWidget {
                   )
                 else
                   SizedBox(
-                    width: 54,
+                    width: 58,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text('DAY',
-                            style: AppText.mono(11,
-                                color: AppColors.mute,
-                                letterSpacing: 1.2)),
-                        Text(
-                          day.n.toString().padLeft(2, '0'),
-                          style: AppText.mono(28,
-                              color: wdColor,
-                              letterSpacing: 0,
-                              weight: FontWeight.w700),
-                        ),
+                        if (day.weekday.isNotEmpty)
+                          Text(day.weekday.toUpperCase(),
+                              style: AppText.mono(11,
+                                  color: wdColor,
+                                  letterSpacing: 1.0)),
+                        if (day.date.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(day.date,
+                                style: AppText.sans(11,
+                                    color: wdColor)),
+                          ),
                       ],
                     ),
                   ),
