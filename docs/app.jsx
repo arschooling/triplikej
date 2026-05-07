@@ -951,12 +951,16 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
   const [end,     setEnd]     = React.useState(null);
   const [picking, setPicking] = React.useState('start');
   const [showYM,  setShowYM]  = React.useState(false);
+  const [tmpY,    setTmpY]    = React.useState(String(today.getFullYear()));
+  const [tmpMo,   setTmpMo]   = React.useState('1월');
 
   React.useEffect(() => {
     if (!open) return;
     const s = parseIso(startIso), e = parseIso(endIso);
     setStart(s); setEnd(e);
-    setView(s ? {y:s.y, mo:s.mo} : {y:today.getFullYear(), mo:today.getMonth()});
+    const v = s ? {y:s.y, mo:s.mo} : {y:today.getFullYear(), mo:today.getMonth()};
+    setView(v);
+    setTmpY(String(v.y)); setTmpMo(['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'][v.mo]);
     setPicking('start'); setShowYM(false);
   }, [open]);
 
@@ -1021,13 +1025,17 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
         <button onClick={prevMonth} style={{width:34,height:34,borderRadius:17,border:'none',cursor:'pointer',background:COLORS.softer,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
           <Icon name="chevron-l" size={13} color={COLORS.ink} stroke={2.5}/>
         </button>
-        <button onClick={()=>setShowYM(p=>!p)} style={{
+        <button onClick={() => {
+          if (!showYM) { setTmpY(String(view.y)); setTmpMo(MONTH_KR[view.mo]); }
+          else { setView({ y:+tmpY, mo:MONTH_KR.indexOf(tmpMo) }); }
+          setShowYM(p=>!p);
+        }} style={{
           flex:1, border:'none', cursor:'pointer', borderRadius:10,
           background: showYM ? COLORS.softer : 'transparent',
           padding:'6px 0', display:'flex', alignItems:'center', justifyContent:'center', gap:5,
         }}>
           <span style={{fontFamily:SANS, fontSize:15, fontWeight:600, color:COLORS.ink, letterSpacing:'-0.01em'}}>
-            {view.y}년 {MONTH_KR[view.mo]}
+            {showYM ? `${tmpY}년 ${tmpMo}` : `${view.y}년 ${MONTH_KR[view.mo]}`}
           </span>
           <Icon name="chevron-d" size={11} color={COLORS.mute} stroke={2.5}
             style={{transform: showYM ? 'rotate(180deg)' : 'none', transition:'transform 0.2s'}}/>
@@ -1039,8 +1047,8 @@ function DateRangeSheet({ open, startIso, endIso, onClose, onPick }) {
 
       {showYM ? (
         <div style={{display:'flex', justifyContent:'center', gap:16, padding:'0 16px 16px', touchAction:'none'}}>
-          <WheelColumn items={YEARS_LIST} value={String(view.y)} onChange={y => setView(v => ({...v, y:+y}))} width={110} compact={true}/>
-          <WheelColumn items={MONTH_KR} value={MONTH_KR[view.mo]} onChange={m => setView(v => ({...v, mo:MONTH_KR.indexOf(m)}))} width={90} compact={true} loop={true}/>
+          <WheelColumn items={YEARS_LIST} value={tmpY} onChange={setTmpY} width={110} compact={true}/>
+          <WheelColumn items={MONTH_KR} value={tmpMo} onChange={setTmpMo} width={90} compact={true} loop={true}/>
         </div>
       ) : (
         <>
@@ -1221,11 +1229,12 @@ function WheelColumn({ items, value, onChange, width=70, loop=false, compact=fal
   };
 
   return (
-    <div style={{ position:'relative', width, height: ITEM_H * VISIBLE, overflow:'hidden' }}>
+    <div style={{ position:'relative', width, height: ITEM_H * VISIBLE, overflow:'hidden', touchAction:'none' }}>
       <style>{`.wheel-col::-webkit-scrollbar{display:none;}`}</style>
       <div ref={ref} onScroll={handleScroll} className="wheel-col" style={{
         width:'100%', height:'100%', overflowY:'scroll',
         scrollbarWidth:'none', msOverflowStyle:'none',
+        touchAction:'none',
       }}>
         <div style={{ height: ITEM_H * CENTER_OFFSET, flexShrink:0 }}/>
         {dispItems.map((it, i) => {
@@ -2216,7 +2225,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v82</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v83</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
