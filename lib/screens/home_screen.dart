@@ -641,8 +641,8 @@ class _DayCard extends StatelessWidget {
                     ),
                   ),
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 64,
+                  height: 64,
                   margin: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
@@ -651,7 +651,7 @@ class _DayCard extends StatelessWidget {
                   child: PhotoPlaceholder(
                     hue: day.heroHue,
                     label: '',
-                    height: 56,
+                    height: 64,
                     small: true,
                   ),
                 ),

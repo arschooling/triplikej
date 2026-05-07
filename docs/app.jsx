@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v63</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v64</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3148,11 +3148,11 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
               background: COLORS.card,
               display:'flex', alignItems:'center',
             }}>
-              {/* 사진 - 티켓 카드 동일 (56x56, 전체 라운드, 인셋) */}
-              <div style={{ width:56, height:56, borderRadius:10, overflow:'hidden', flexShrink:0, margin:12 }}>
+              {/* 사진 - 숙소 카드 동일 (64x64, 전체 라운드, 인셋) */}
+              <div style={{ width:64, height:64, borderRadius:10, overflow:'hidden', flexShrink:0, margin:12 }}>
                 <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
-                  style={{ width:56, height:56, objectFit:'cover', display:'block' }}
-                  fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} height={56} small/>}
+                  style={{ width:64, height:64, objectFit:'cover', display:'block' }}
+                  fallback={<Photo hue={(i === 0 ? (trip.hue ?? d.hero?.hue) : d.hero?.hue) ?? 25} height={64} small/>}
                   refreshKey={(cardPhotoVersions[i] || 0) + (photoVer || 0)}/>
               </div>
               {/* 제목 + Day N + stops */}
