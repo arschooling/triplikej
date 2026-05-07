@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v78</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v79</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -10601,6 +10601,7 @@ class AppErrorBoundary extends React.Component {
         React.createElement('div', { style:{ fontSize:36, marginBottom:16 } }, '🛫'),
         React.createElement('div', { style:{ fontFamily:'sans-serif', fontSize:17, fontWeight:600, marginBottom:8, color:'#1a1a1a' } }, '문제가 발생했어요'),
         React.createElement('div', { style:{ fontFamily:'sans-serif', fontSize:14, color:'#666', marginBottom:28 } }, '새로고침하면 대부분 해결됩니다'),
+        React.createElement('div', { style:{ fontFamily:'monospace', fontSize:11, color:'#c14f2e', marginBottom:16, maxWidth:320, wordBreak:'break-all' } }, String(this.state.err)),
         React.createElement('button', {
           onClick: () => window.location.reload(),
           style: { padding:'12px 28px', borderRadius:14, border:'none', background:'#1a1a1a',
