@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v68</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v69</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3349,8 +3349,8 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       background:COLORS.card, borderRadius:16,
                       overflow:'hidden', cursor:'pointer',
                     }}>
-                      {/* Thumbnail - 전체 너비, 정사각형 */}
-                      <div style={{ width:'100%', aspectRatio:'1', background:COLORS.softer,
+                      {/* Thumbnail */}
+                      <div style={{ width:'100%', height:90, background:COLORS.softer,
                         display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
                         {isImg ? (
                           <img src={firstFile.url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt=""/>
