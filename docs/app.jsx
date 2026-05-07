@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v71</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v72</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3335,7 +3335,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                 </div>
               </div>
             </div>
-            <div style={{ padding:'0 16px', display:'grid', gridTemplateColumns:'1fr', gap:8 }}>
+            <div style={{ padding:'0 16px', display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:10 }}>
               {tickets.map((card) => {
                 const cardFiles = getTicketFiles(card);
                 const firstFile = cardFiles[0];
@@ -3344,29 +3344,21 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   <SwipeableRow key={card.id} cardSwipe
                     onEdit={() => { setTicketEditCardId(card.id); setTicketEditName(card.name || ''); }}
                     onDelete={() => handleTicketDeleteCard(card)}
-                    wrapStyle={{ borderRadius:16 }}>
-                    <div onClick={() => setTicketViewer(card)} style={{
-                      background:COLORS.card, borderRadius:16,
-                      overflow:'hidden', cursor:'pointer',
-                    }}>
-                      {/* Thumbnail */}
-                      <div style={{ width:'100%', height:90, background:COLORS.softer,
+                    wrapStyle={{ borderRadius:14 }}>
+                    <div onClick={() => setTicketViewer(card)} style={{ cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+                      {/* Square icon thumbnail */}
+                      <div style={{ width:'100%', aspectRatio:'1/1', background:COLORS.softer, borderRadius:14,
                         display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
                         {isImg ? (
                           <img src={firstFile.url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt=""/>
                         ) : (
-                          <Icon name="file" size={32} color={COLORS.mute} stroke={1.5}/>
+                          <Icon name="file" size={28} color={COLORS.mute} stroke={1.5}/>
                         )}
                       </div>
-                      {/* Info */}
-                      <div style={{ padding:'10px 12px' }}>
-                        <div style={{ fontFamily:MONO, fontSize:9, color:COLORS.accent, letterSpacing:'0.12em' }}>
-                          {cardFiles.length > 1 ? `${cardFiles.length} FILES` : (firstFile?.type === 'application/pdf' ? 'PDF' : 'IMAGE')}
-                        </div>
-                        <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink, marginTop:2,
-                          overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
-                          {card.name}
-                        </div>
+                      {/* Name */}
+                      <div style={{ width:'100%', fontFamily:SANS, fontSize:11, color:COLORS.ink, textAlign:'center',
+                        overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', lineHeight:1.3 }}>
+                        {card.name}
                       </div>
                     </div>
                   </SwipeableRow>
@@ -3374,13 +3366,13 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
               })}
               {tickets.length === 0 && !ticketUploading && (
                 <button onClick={() => openTicketPicker('new')} style={{
-                  padding:'16px 12px', background:'transparent',
-                  border:`1.5px dashed ${COLORS.line}`, borderRadius:16,
+                  aspectRatio:'1/1', background:'transparent',
+                  border:`1.5px dashed ${COLORS.line}`, borderRadius:14,
                   color:COLORS.mute, cursor:'pointer',
-                  display:'flex', gap:8, alignItems:'center', justifyContent:'center',
-                  fontFamily:SANS, fontSize:13, width:'100%', gridColumn:'1 / -1',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  gridColumn:'1 / -1', width:'100%',
                 }}>
-                  <Icon name="plus" size={14} color={COLORS.mute} stroke={2}/> 파일 추가
+                  <Icon name="plus" size={20} color={COLORS.mute} stroke={2}/>
                 </button>
               )}
             </div>
