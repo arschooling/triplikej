@@ -632,29 +632,38 @@ class _DayCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(AppRadius.card),
-                  bottomLeft: Radius.circular(AppRadius.card),
+              SizedBox(
+                width: 54,
+                height: 80,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'DAY',
+                      style: AppText.mono(8,
+                          color: AppColors.accent, letterSpacing: 1.4),
+                    ),
+                    Text(
+                      day.n.toString().padLeft(2, '0'),
+                      style: AppText.mono(30,
+                          color: AppColors.accent,
+                          letterSpacing: 0,
+                          weight: FontWeight.w700),
+                    ),
+                  ],
                 ),
-                child: PhotoPlaceholder(
-                  hue: day.heroHue,
-                  label: '',
-                  height: 80,
-                  small: true,
-                ),
+              ),
+              PhotoPlaceholder(
+                hue: day.heroHue,
+                label: '',
+                height: 80,
+                small: true,
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Day ${day.n}',
-                      style: AppText.mono(9.5,
-                          letterSpacing: 1.2,
-                          color: AppColors.accent),
-                    ),
                     Text(day.title, style: AppText.serif(16)),
                     if (day.date.isNotEmpty || day.weekday.isNotEmpty)
                       Padding(

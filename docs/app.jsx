@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v54</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v55</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3144,6 +3144,12 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
               background: COLORS.card,
             }}>
               <div style={{ padding:12, display:'flex', gap:12, alignItems:'center' }}>
+                  <div style={{ width:54, flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+                    <div style={{ fontFamily:MONO, fontSize:9, color:COLORS.accent, letterSpacing:'0.14em' }}>DAY</div>
+                    <div style={{ fontFamily:MONO, fontSize:30, color:COLORS.accent, lineHeight:1.1, fontWeight:700 }}>
+                      {String(d.n).padStart(2,'0')}
+                    </div>
+                  </div>
                   <div style={{ width:64, height:64, borderRadius:10, overflow:'hidden', flexShrink:0 }}>
                     <DayPhotoImg uid={myUid} tripId={trip.id} dayIdx={i}
                       style={{ width:64, height:64, objectFit:'cover', display:'block' }}
@@ -3152,9 +3158,6 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                      <div style={{ fontFamily:MONO, fontSize:10, color:COLORS.mute, letterSpacing:'0.12em' }}>
-                        DAY {String(d.n).padStart(2,'0')}
-                      </div>
                       {(d.weekday || d.date) && (
                         <div style={{ display:'flex', gap:6, alignItems:'center' }}>
                           {d.weekday && (
