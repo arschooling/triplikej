@@ -2214,7 +2214,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v72</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v73</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -2336,7 +2336,7 @@ function isoToWeekday(iso) {
 }
 
 // ─── Ticket Viewer ──────────────────────────────────────────
-function TicketViewer({ ticket, onClose }) {
+function TicketViewer({ ticket, onClose, onEdit, onDelete }) {
   const files = Array.isArray(ticket.files) ? ticket.files
     : (ticket.url ? [{ id: ticket.id || 't0', url: ticket.url, type: ticket.type }] : []);
   const n = files.length;
@@ -2473,15 +2473,9 @@ function TicketViewer({ ticket, onClose }) {
 
       {/* Header — stop click propagation so tapping header doesn't close */}
       <div ref={headerRef} onClick={e => e.stopPropagation()} style={{
-        padding:'max(env(safe-area-inset-top,16px),16px) 20px 12px',
-        display:'flex', justifyContent:'space-between', alignItems:'center',
+        padding:'max(env(safe-area-inset-top,16px),16px) 16px 12px',
+        display:'flex', justifyContent:'space-between', alignItems:'center', gap:8,
       }}>
-        <div style={{ fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.7)',
-          maxWidth:'calc(100% - 52px)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-          {ticket.name}
-          {n > 1 && <span style={{ marginLeft:8, fontFamily:MONO, fontSize:11,
-            color:'rgba(255,255,255,0.4)', letterSpacing:'0.08em' }}>{idx + 1} / {n}</span>}
-        </div>
         <button onClick={onClose} style={{
           width:36, height:36, borderRadius:18, border:'none',
           background:'rgba(255,255,255,0.15)', cursor:'pointer',
@@ -2489,6 +2483,28 @@ function TicketViewer({ ticket, onClose }) {
         }}>
           <Icon name="x" size={16} color="#fff" stroke={2}/>
         </button>
+        <div style={{ flex:1, fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.7)',
+          textAlign:'center', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+          {ticket.name}
+          {n > 1 && <span style={{ marginLeft:8, fontFamily:MONO, fontSize:11,
+            color:'rgba(255,255,255,0.4)', letterSpacing:'0.08em' }}>{idx + 1} / {n}</span>}
+        </div>
+        <div style={{ display:'flex', gap:6, flexShrink:0 }}>
+          {onEdit && <button onClick={onEdit} style={{
+            width:36, height:36, borderRadius:18, border:'none',
+            background:'rgba(255,255,255,0.15)', cursor:'pointer',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            <Icon name="edit-2" size={15} color="#fff" stroke={2}/>
+          </button>}
+          {onDelete && <button onClick={onDelete} style={{
+            width:36, height:36, borderRadius:18, border:'none',
+            background:'rgba(255,255,255,0.15)', cursor:'pointer',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            <Icon name="trash-2" size={15} color="#ff6b6b" stroke={2}/>
+          </button>}
+        </div>
       </div>
 
       {/* Carousel — absolute so height is definite: height = bottom(0) - top(headerH) */}
@@ -3341,27 +3357,22 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                 const firstFile = cardFiles[0];
                 const isImg = firstFile?.type?.startsWith('image/');
                 return (
-                  <SwipeableRow key={card.id} cardSwipe
-                    onEdit={() => { setTicketEditCardId(card.id); setTicketEditName(card.name || ''); }}
-                    onDelete={() => handleTicketDeleteCard(card)}
-                    wrapStyle={{ borderRadius:14 }}>
-                    <div onClick={() => setTicketViewer(card)} style={{ cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
-                      {/* Square icon thumbnail */}
-                      <div style={{ width:'100%', aspectRatio:'1/1', background:COLORS.softer, borderRadius:14,
-                        display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
-                        {isImg ? (
-                          <img src={firstFile.url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt=""/>
-                        ) : (
-                          <Icon name="file" size={28} color={COLORS.mute} stroke={1.5}/>
-                        )}
-                      </div>
-                      {/* Name */}
-                      <div style={{ width:'100%', fontFamily:SANS, fontSize:11, color:COLORS.ink, textAlign:'center',
-                        overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', lineHeight:1.3 }}>
-                        {card.name}
-                      </div>
+                  <div key={card.id} onClick={() => setTicketViewer(card)} style={{ cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+                    {/* Square icon thumbnail */}
+                    <div style={{ width:'100%', aspectRatio:'1/1', background:COLORS.softer, borderRadius:14,
+                      display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+                      {isImg ? (
+                        <img src={firstFile.url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt=""/>
+                      ) : (
+                        <Icon name="file" size={28} color={COLORS.mute} stroke={1.5}/>
+                      )}
                     </div>
-                  </SwipeableRow>
+                    {/* Name */}
+                    <div style={{ width:'100%', fontFamily:SANS, fontSize:11, color:COLORS.ink, textAlign:'center',
+                      overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis' }}>
+                      {card.name}
+                    </div>
+                  </div>
                 );
               })}
               {tickets.length === 0 && !ticketUploading && (
@@ -3397,7 +3408,12 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
 
       <input ref={cardPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCardPhoto}/>
       <input ref={ticketInputRef} type="file" accept="image/*,.pdf,application/pdf" multiple style={{ display:'none' }} onChange={handleTicketUpload}/>
-      {ticketViewer && ReactDOM.createPortal(<TicketViewer ticket={ticketViewer} onClose={() => setTicketViewer(null)}/>, document.body)}
+      {ticketViewer && ReactDOM.createPortal(<TicketViewer
+        ticket={ticketViewer}
+        onClose={() => setTicketViewer(null)}
+        onEdit={() => { setTicketEditCardId(ticketViewer.id); setTicketEditName(ticketViewer.name || ''); setTicketViewer(null); }}
+        onDelete={() => { handleTicketDeleteCard(ticketViewer); setTicketViewer(null); }}
+      />, document.body)}
       {ticketEditCardId && (() => {
         const editCard = (trip.tickets || []).find(t => t.id === ticketEditCardId);
         const editFiles = editCard ? getTicketFiles(editCard) : [];
