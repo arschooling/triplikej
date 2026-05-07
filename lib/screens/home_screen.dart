@@ -713,17 +713,6 @@ class _DayCard extends StatelessWidget {
                                     letterSpacing: 1.0),
                               ),
                             ),
-                          if (month.isNotEmpty)
-                            SizedBox(
-                              width: 60,
-                              child: Text(
-                                month,
-                                textAlign: TextAlign.center,
-                                style: AppText.mono(10,
-                                    color: AppColors.mute,
-                                    letterSpacing: 1.0),
-                              ),
-                            ),
                           if (dayNum.isNotEmpty)
                             SizedBox(
                               width: 60,
@@ -734,6 +723,17 @@ class _DayCard extends StatelessWidget {
                                     color: wdColor,
                                     letterSpacing: 0,
                                     weight: FontWeight.w700),
+                              ),
+                            ),
+                          if (month.isNotEmpty)
+                            SizedBox(
+                              width: 60,
+                              child: Text(
+                                month,
+                                textAlign: TextAlign.center,
+                                style: AppText.mono(10,
+                                    color: AppColors.mute,
+                                    letterSpacing: 1.0),
                               ),
                             ),
                         ],
