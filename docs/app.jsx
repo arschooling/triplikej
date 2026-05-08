@@ -2233,7 +2233,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v95</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v96</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5752,47 +5752,11 @@ function MapScreen({ trip, onEditItem, editing, onRegisterEdit }) {
   const fmtMin = (m) => m >= 60 ? `${Math.floor(m/60)}시간${m%60 ? ` ${m%60}분` : ''}` : `${m}분`;
 
   const heroHue = (selDay === 0 ? (trip.hue ?? day?.hero?.hue) : day?.hero?.hue) ?? 25;
-  const city = trip.title || 'New York';
-  const CITY_BIAS_MAP = {
-    // English
-    'new york':[40.758,-73.985],'paris':[48.856,2.352],'london':[51.507,-0.127],
-    'tokyo':[35.690,139.692],'seoul':[37.563,126.997],'los angeles':[34.052,-118.244],
-    'rome':[41.900,12.496],'florence':[43.769,11.255],'milan':[45.464,9.190],
-    'venice':[45.437,12.335],'naples':[40.851,14.268],'barcelona':[41.385,2.173],
-    'madrid':[40.416,-3.703],'amsterdam':[52.370,4.895],'berlin':[52.520,13.405],
-    'vienna':[48.208,16.373],'prague':[50.075,14.437],'budapest':[47.498,19.040],
-    'lisbon':[38.717,-9.139],'porto':[41.157,-8.629],'athens':[37.979,23.716],
-    'dubai':[25.204,55.270],'istanbul':[41.015,28.980],'singapore':[1.352,103.820],
-    'bangkok':[13.753,100.502],'osaka':[34.693,135.502],'kyoto':[35.012,135.768],
-    'hong kong':[22.319,114.169],'taipei':[25.033,121.565],'sydney':[-33.869,151.209],
-    'melbourne':[-37.813,144.963],'chicago':[41.878,-87.630],'san francisco':[37.774,-122.419],
-    'miami':[25.774,-80.190],'las vegas':[36.174,-115.138],'cancun':[21.161,-86.852],
-    'bali':[-8.409,115.189],'phuket':[7.879,98.399],'hanoi':[21.028,105.834],
-    'ho chi minh':[10.823,106.630],'saigon':[10.823,106.630],
-    // Korean
-    '뉴욕':[40.758,-73.985],'파리':[48.856,2.352],'런던':[51.507,-0.127],
-    '도쿄':[35.690,139.692],'서울':[37.563,126.997],'로스앤젤레스':[34.052,-118.244],
-    '로마':[41.900,12.496],'피렌체':[43.769,11.255],'밀라노':[45.464,9.190],
-    '베네치아':[45.437,12.335],'나폴리':[40.851,14.268],'바르셀로나':[41.385,2.173],
-    '마드리드':[40.416,-3.703],'암스테르담':[52.370,4.895],'베를린':[52.520,13.405],
-    '빈':[48.208,16.373],'프라하':[50.075,14.437],'부다페스트':[47.498,19.040],
-    '리스본':[38.717,-9.139],'아테네':[37.979,23.716],'두바이':[25.204,55.270],
-    '이스탄불':[41.015,28.980],'싱가포르':[1.352,103.820],'방콕':[13.753,100.502],
-    '오사카':[34.693,135.502],'교토':[35.012,135.768],'홍콩':[22.319,114.169],
-    '타이베이':[25.033,121.565],'시드니':[-33.869,151.209],'멜버른':[-37.813,144.963],
-    '시카고':[41.878,-87.630],'샌프란시스코':[37.774,-122.419],'마이애미':[25.774,-80.190],
-    '라스베이거스':[36.174,-115.138],'발리':[-8.409,115.189],'푸켓':[7.879,98.399],
-    '하노이':[21.028,105.834],'호치민':[10.823,106.630],
-  };
-  // 여행 제목에서 도시 좌표 추출 — "로마&피렌체" 같은 복합 제목도 처리
-  const findCityCoords = (title) => {
-    const lc = title.toLowerCase().trim();
-    if (CITY_BIAS_MAP[lc]) return CITY_BIAS_MAP[lc];
-    const parts = lc.split(/[\s&·,\/+]+/);
-    for (const p of parts) { if (CITY_BIAS_MAP[p]) return CITY_BIAS_MAP[p]; }
-    return null;
-  };
-  const cityBias = findCityCoords(city);
+  const city = trip.title || '';
+  // 여행 생성 시 저장된 timezone으로 CITY_DB에서 좌표 조회
+  const cityEntry = (typeof CITY_DB !== 'undefined' && trip.timezone)
+    ? CITY_DB.find(c => c.zone === trip.timezone) : null;
+  const cityBias = cityEntry ? [cityEntry.lat, cityEntry.lon] : null;
 
   const mapDiv  = React.useRef(null);
   const mapInst = React.useRef(null);
@@ -5809,8 +5773,8 @@ function MapScreen({ trip, onEditItem, editing, onRegisterEdit }) {
       map.setView(cityBias, 12);
     } else {
       map.setView([20, 0], 2); // 도시 모를 때 세계 지도로 시작
-      // Nominatim으로 여행 제목 geocode
-      const q = encodeURIComponent(city);
+      // Nominatim으로 여행 제목 geocode (timezone 없는 구형 여행 대비)
+      const q = encodeURIComponent(city || 'world');
       fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`)
         .then(r => r.json())
         .then(data => {
