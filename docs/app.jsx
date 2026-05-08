@@ -2233,7 +2233,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v91</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v92</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -10819,60 +10819,70 @@ function App() {
     const tripIds = userData.tripIds.length > 0 ? userData.tripIds : (userData.groupId ? [userData.groupId] : []);
     setTripsLoading(true);
 
-    // 샘플 싱크: rome만 자동 추가 (nyc는 오너 전용)
+    // 샘플 싱크 + 여행 로드를 병렬 실행 — 어느 한쪽이 느려도 서로 블로킹 안 함
     const SAMPLES = ['rome'];
-    const syncAll = (typeof fbSyncSample === 'function')
+    const syncPromise = (typeof fbSyncSample === 'function')
       ? Promise.all(SAMPLES.map(sid => fbSyncSample(uid, email, sid).catch(() => null)))
-      : Promise.resolve([null, null]);
+      : Promise.resolve([null]);
+    const tripsPromise = fbLoadTrips(tripIds);
 
-    syncAll.then(syncResults => {
+    // ① 여행 목록 먼저 표시 (샘플 싱크 완료 안 기다림)
+    tripsPromise.then(trips => {
       if (!alive) return;
-      // 샘플 tripId 수집 (isNew 여부 무관 — effect 재실행 시에도 누락 방지)
-      const newIds = syncResults
-        .filter(r => r?.tripId && !tripIds.includes(r.tripId))
-        .map(r => r.tripId);
-      const allIds = [...tripIds, ...newIds];
-      return fbLoadTrips(allIds).then(async trips => {
-        if (!alive) return;
-        const normalized = trips.map(t => normalizeTrip(t, t.id));
-        // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 — 오너 계정 전용
-        const isOwner = (email) => email === 'arjungtaeng@gmail.com';
-        if (isOwner(userData?.email)) {
-          for (let i = 0; i < normalized.length; i++) {
-            if ((normalized[i].days || []).length === 0 && !normalized[i].sampleId) {
-              const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
-              const patch = {
-                title : def.title  || 'New York',
-                dates : def.dates  || '',
-                hotel : def.hotel  || '',
-                days  : def.days   || [],
-                hotels: def.hotels || [],
-                food  : def.food   || [],
-              };
-              normalized[i] = normalizeTrip({ ...normalized[i], ...patch }, normalized[i].id);
-              fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
-            }
+      const normalized = trips.map(t => normalizeTrip(t, t.id));
+      // days가 없는 여행은 TRIP_DEFAULT로 자동 복구 — 오너 계정 전용
+      if (email === 'arjungtaeng@gmail.com') {
+        for (let i = 0; i < normalized.length; i++) {
+          if ((normalized[i].days || []).length === 0 && !normalized[i].sampleId) {
+            const def = JSON.parse(JSON.stringify(window.TRIP_DEFAULT));
+            const patch = {
+              title : def.title  || 'New York',
+              dates : def.dates  || '',
+              hotel : def.hotel  || '',
+              days  : def.days   || [],
+              hotels: def.hotels || [],
+              food  : def.food   || [],
+            };
+            normalized[i] = normalizeTrip({ ...normalized[i], ...patch }, normalized[i].id);
+            fbSaveGroup(normalized[i].id, patch).catch(e => console.warn('auto-restore save failed', e));
           }
         }
-        // 업데이트된 샘플 반영
-        syncResults.forEach(r => {
-          if (r?.updated && r.tripId && r.tripData) {
-            const idx = normalized.findIndex(t => t.id === r.tripId);
-            if (idx >= 0) normalized[idx] = normalizeTrip({ ...normalized[idx], ...r.tripData, sampleId: normalized[idx].sampleId }, r.tripId);
-          }
-        });
-        setUserTrips(normalized);
-        setTripsLoading(false);
-        setTripsReady(true);
-        // userData.tripIds에 샘플 ID 반영 → effect 재실행 시 allIds 누락 방지
-        if (newIds.length > 0) {
-          setUserData(prev => ({
-            ...prev,
-            tripIds: [...new Set([...(prev.tripIds || []), ...newIds])],
-          }));
-        }
-      });
+      }
+      setUserTrips(normalized);
+      setTripsLoading(false);
+      setTripsReady(true);
     }).catch(() => { if (alive) { setTripsLoading(false); setTripsReady(true); } });
+
+    // ② 샘플 싱크 완료 후 새 샘플 추가 / 업데이트만 패치
+    Promise.all([syncPromise, tripsPromise]).then(([syncResults, _]) => {
+      if (!alive) return;
+      // 업데이트된 샘플 반영
+      const hasUpdate = syncResults.some(r => r?.updated && r.tripId && r.tripData);
+      if (hasUpdate) {
+        setUserTrips(prev => {
+          let patched = [...prev];
+          syncResults.forEach(r => {
+            if (r?.updated && r.tripId && r.tripData) {
+              const idx = patched.findIndex(t => t.id === r.tripId);
+              if (idx >= 0) patched[idx] = normalizeTrip({ ...patched[idx], ...r.tripData, sampleId: patched[idx].sampleId }, r.tripId);
+            }
+          });
+          return patched;
+        });
+      }
+      // 새 샘플 ID가 있으면 로드해서 추가
+      const newIds = syncResults
+        .filter(r => r?.isNew && r.tripId && !tripIds.includes(r.tripId))
+        .map(r => r.tripId);
+      if (newIds.length > 0) {
+        fbLoadTrips(newIds).then(newTrips => {
+          if (!alive) return;
+          const toAdd = newTrips.map(t => normalizeTrip(t, t.id));
+          setUserTrips(prev => [...prev, ...toAdd]);
+          // setUserData 호출 금지 — effect 재실행 방지
+        }).catch(() => {});
+      }
+    }).catch(() => {});
     return () => { alive = false; };
   }, [userData?.uid, JSON.stringify(userData?.tripIds)]);
 
