@@ -2233,7 +2233,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v97</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v98</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9248,6 +9248,7 @@ const AIRPORTS = [
   {kor:'발리 응우라라이 공항',  eng:'Ngurah Rai International Airport',                 code:'DPS'},
   {kor:'쿠알라룸푸르 국제공항', eng:'Kuala Lumpur International Airport',               code:'KUL'},
   {kor:'마닐라 니노이아키노 국제공항',eng:'Ninoy Aquino International Airport',         code:'MNL'},
+  {kor:'보홀 팡글라오 국제공항',     eng:'Bohol-Panglao International Airport',         code:'TAG'},
   {kor:'하노이 노이바이 국제공항',eng:'Noi Bai International Airport',                  code:'HAN'},
   {kor:'호치민 탄손녓 국제공항',eng:'Tan Son Nhat International Airport',               code:'SGN'},
   {kor:'자카르타 수카르노하타 국제공항',eng:'Soekarno-Hatta International Airport',     code:'CGK'},
@@ -9307,7 +9308,7 @@ const CITIES_BY_KEY = {
   austria:     [{kor:'빈',eng:'Vienna'},{kor:'잘츠부르크',eng:'Salzburg'},{kor:'인스브루크',eng:'Innsbruck'},{kor:'그라츠',eng:'Graz'},{kor:'할슈타트',eng:'Hallstatt'},{kor:'린츠',eng:'Linz'},{kor:'클라겐푸르트',eng:'Klagenfurt'},{kor:'장크트볼프강',eng:'St. Wolfgang'},{kor:'마이어호펜',eng:'Mayrhofen'},{kor:'바트이슐',eng:'Bad Ischl'}],
   croatia:     [{kor:'두브로브니크',eng:'Dubrovnik'},{kor:'스플리트',eng:'Split'},{kor:'자그레브',eng:'Zagreb'},{kor:'흐바르',eng:'Hvar'},{kor:'플리트비체',eng:'Plitvice'},{kor:'로빈',eng:'Rovinj'},{kor:'코르쿨라',eng:'Korčula'},{kor:'자다르',eng:'Zadar'},{kor:'풀라',eng:'Pula'},{kor:'브라치섬',eng:'Brač'}],
   cambodia:    [{kor:'씨엠립',eng:'Siem Reap'},{kor:'프놈펜',eng:'Phnom Penh'},{kor:'시하누크빌',eng:'Sihanoukville'},{kor:'캄폿',eng:'Kampot'},{kor:'케프',eng:'Kep'},{kor:'바탐방',eng:'Battambang'}],
-  philippines: [{kor:'마닐라',eng:'Manila'},{kor:'세부',eng:'Cebu'},{kor:'보라카이',eng:'Boracay'},{kor:'팔라완',eng:'Palawan'},{kor:'다바오',eng:'Davao'},{kor:'바기오',eng:'Baguio'},{kor:'시아르가오',eng:'Siargao'},{kor:'엘니도',eng:'El Nido'},{kor:'코론',eng:'Coron'},{kor:'딜리만',eng:'Dumaguete'},{kor:'일로일로',eng:'Iloilo'},{kor:'바타네스',eng:'Batanes'}],
+  philippines: [{kor:'마닐라',eng:'Manila'},{kor:'세부',eng:'Cebu'},{kor:'보라카이',eng:'Boracay'},{kor:'팔라완',eng:'Palawan'},{kor:'보홀',eng:'Bohol'},{kor:'다바오',eng:'Davao'},{kor:'바기오',eng:'Baguio'},{kor:'시아르가오',eng:'Siargao'},{kor:'엘니도',eng:'El Nido'},{kor:'코론',eng:'Coron'},{kor:'딜리만',eng:'Dumaguete'},{kor:'일로일로',eng:'Iloilo'},{kor:'바타네스',eng:'Batanes'}],
   newzealand:  [{kor:'오클랜드',eng:'Auckland'},{kor:'퀸스타운',eng:'Queenstown'},{kor:'크라이스트처치',eng:'Christchurch'},{kor:'웰링턴',eng:'Wellington'},{kor:'로토루아',eng:'Rotorua'},{kor:'더니든',eng:'Dunedin'},{kor:'와나카',eng:'Wanaka'},{kor:'해밀턴',eng:'Hamilton'},{kor:'피오르드랜드',eng:'Fiordland'},{kor:'아벨태즈먼',eng:'Abel Tasman'},{kor:'밀퍼드사운드',eng:'Milford Sound'}],
   morocco:     [{kor:'마라케시',eng:'Marrakech'},{kor:'페스',eng:'Fes'},{kor:'카사블랑카',eng:'Casablanca'},{kor:'쉐프샤우엔',eng:'Chefchaouen'},{kor:'에사우이라',eng:'Essaouira'},{kor:'라바트',eng:'Rabat'},{kor:'메크네스',eng:'Meknes'},{kor:'탕헤르',eng:'Tangier'},{kor:'와르자자트',eng:'Ouarzazate'},{kor:'사하라사막',eng:'Sahara Desert'},{kor:'아이트벤하두',eng:'Aït Benhaddou'}],
   peru:        [{kor:'리마',eng:'Lima'},{kor:'쿠스코',eng:'Cusco'},{kor:'마추픽추',eng:'Machu Picchu'},{kor:'아레키파',eng:'Arequipa'},{kor:'티티카카호수',eng:'Lake Titicaca'},{kor:'이카',eng:'Ica'},{kor:'트루히요',eng:'Trujillo'},{kor:'와라즈',eng:'Huaraz'},{kor:'이키토스',eng:'Iquitos'}],
