@@ -2233,7 +2233,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v90</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v91</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5379,15 +5379,19 @@ function computeRouteTip(pts, times) {
   if (pts.length < 2) return null;
   const toMin = t => { const m=(t||'').match(/^(\d{1,2}):(\d{2})/); return m ? +m[1]*60 + +m[2] : null; };
   const dist2 = (a, b) => { const dl=a.pos[0]-b.pos[0],dn=a.pos[1]-b.pos[1]; return dl*dl+dn*dn; };
-  const hotel  = pts.find(p => p.cat === 'hotel') || null;
+  // start/end anchor 스탑 (숙소 기상·귀환) 은 항상 첫·끝 고정
+  const startAnchor = pts[0]?._anchor === 'start' ? pts[0] : null;
+  const endAnchor   = pts[pts.length-1]?.cat === 'hotel' && !pts[pts.length-1]?._anchor ? pts[pts.length-1] : null;
+  const hotel  = startAnchor || pts.find(p => p.cat === 'hotel') || null;
   const foods  = pts.filter(p => p.cat === 'food');
   const lunch  = foods.find(p => { const m=toMin(p.time); return m && m>=600 && m<=900; }) || foods[0] || null;
   const dinner = foods.find(p => { const m=toMin(p.time); return m && m>=1020; }) || (foods.length>1 ? foods[foods.length-1] : null);
   const dinnerIsLunch = dinner && lunch && dinner === lunch;
 
-  // hotel · lunch · dinner 은 위치 고정 (anchor) — 그 사이 구간별로만 greedy
+  // hotel · endAnchor · lunch · dinner 은 위치 고정 — 그 사이 구간별로만 greedy
   const pinnedIdxs = [];
   if (hotel)                 { pinnedIdxs.push(pts.indexOf(hotel)); }
+  if (endAnchor)             { const i=pts.indexOf(endAnchor); if (!pinnedIdxs.includes(i)) pinnedIdxs.push(i); }
   if (lunch)                 { const i=pts.indexOf(lunch);  if (!pinnedIdxs.includes(i)) pinnedIdxs.push(i); }
   if (!dinnerIsLunch&&dinner){ const i=pts.indexOf(dinner); if (!pinnedIdxs.includes(i)) pinnedIdxs.push(i); }
   pinnedIdxs.sort((a,b)=>a-b);
@@ -5430,7 +5434,7 @@ function computeRouteTip(pts, times) {
   const isOptimal = order.every((v,i) => v===i);
   const totalTransit = Object.values(times).reduce((s,t) => s+(t.transit||0), 0);
   const longestLeg   = Object.entries(times).sort((a,b)=>(b[1].transit||0)-(a[1].transit||0))[0];
-  const returnsToHotel = hotel ? pts[pts.length-1].cat==='hotel' : null;
+  const returnsToHotel = hotel ? (endAnchor != null || pts[pts.length-1].cat==='hotel') : null;
   return { pts, order, isOptimal, totalTransit, longestLeg, times,
            hotel, lunch, dinner: dinnerIsLunch ? null : dinner, returnsToHotel };
 }
@@ -5482,7 +5486,7 @@ async function prefetchRoutes(trip) {
               const queries = [s.loc ? `${s.title}, ${s.loc}, ${city}` : null, `${s.title}, ${city}`, s.title].filter(Boolean);
               for (const q of queries) { pos = await geocode(q); if (pos) break; await delay(80); }
             }
-            if (pos) pts.push({ pos, title:s.title, cat:s.cat||'', time:s.time||'' });
+            if (pos) pts.push({ pos, title:s.title, cat:s.cat||'', time:s.time||'', _anchor:s._anchor||'' });
             await delay(60);
           }
           if (pts.length > 1) {
