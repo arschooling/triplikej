@@ -2233,7 +2233,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v93</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v94</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5697,7 +5697,7 @@ function PlaceSearchSheet({ open, item, cityBias, onClose, onPick }) {
 }
 
 // ─── Map ─────────────────────────────────────────────────────
-function MapScreen({ trip, onEditItem }) {
+function MapScreen({ trip, onEditItem, editing, onRegisterEdit }) {
   const makeOrdered = (dayIdx) =>
     trip.days[dayIdx].items
       .map((it, ii) => ({ ...it, _origIdx: ii }))
@@ -5738,6 +5738,17 @@ function MapScreen({ trip, onEditItem }) {
   const [openStop, setOpenStop] = React.useState(null);
   const [travelTimes, setTravelTimes] = React.useState({});
   const [routeTip, setRouteTip] = React.useState(null);
+
+  // 탭바 "수정" 버튼 연결 — 스탑 열려있으면 편집 토글, 닫히면 해제
+  React.useEffect(() => {
+    if (!onRegisterEdit) return;
+    if (openStop) {
+      onRegisterEdit(() => setOpenStop(s => s ? { ...s, editing: !s.editing } : s));
+    } else {
+      onRegisterEdit(null);
+    }
+    return () => { if (onRegisterEdit) onRegisterEdit(null); };
+  }, [!!openStop]);
   const fmtMin = (m) => m >= 60 ? `${Math.floor(m/60)}시간${m%60 ? ` ${m%60}분` : ''}` : `${m}분`;
 
   const heroHue = (selDay === 0 ? (trip.hue ?? day?.hero?.hue) : day?.hero?.hue) ?? 25;
@@ -5955,7 +5966,7 @@ function MapScreen({ trip, onEditItem }) {
               borderRadius:12, display:'flex', gap:10, alignItems:'center',
               overflow:'hidden', marginBottom:6,
             }}>
-              <button onClick={() => setOpenStop({ idx: it._origIdx, stop: it, editing: false })}
+              <button onClick={() => setOpenStop({ idx: it._origIdx, stop: it, editing: !!editing })}
                 style={{
                   flex:1, display:'flex', gap:10, alignItems:'center',
                   padding:'11px 0 11px 14px', border:'none', background:'transparent',
@@ -10698,6 +10709,7 @@ function App() {
   // 편집 버튼 토글 핸들러
   const stopSheetEditRef  = React.useRef(null); // StopSheet의 setEditing 연결용
   const hotelSheetEditRef = React.useRef(null); // HotelSheet의 setEditing 연결용
+  const mapStopEditRef    = React.useRef(null); // MapScreen 내부 StopSheet 연결용
   const canEdit = (trip?.permissions || {})[authUser?.uid] !== 'view';
 
   const handleEditToggle = React.useCallback(() => {
@@ -10709,6 +10721,11 @@ function App() {
     // HotelSheet가 열려있으면 숙소 편집 모드 토글
     if (hotelDetailSheet !== null && hotelSheetEditRef.current) {
       hotelSheetEditRef.current();
+      return;
+    }
+    // 지도 탭 내부 StopSheet가 열려있으면 그 편집 모드 토글
+    if (mapStopEditRef.current) {
+      mapStopEditRef.current();
       return;
     }
     if (!editing) {
@@ -11488,7 +11505,9 @@ function App() {
         );
         editTrip({ days });
       };
-      screen = <MapScreen trip={trip} onEditItem={editMapItem}/>;
+      screen = <MapScreen trip={trip} onEditItem={editMapItem}
+        editing={editing}
+        onRegisterEdit={fn => { mapStopEditRef.current = fn; }}/>;
     }
     label = 'Map';
   }
