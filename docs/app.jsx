@@ -2233,7 +2233,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v96</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v97</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -5752,8 +5752,9 @@ function MapScreen({ trip, onEditItem, editing, onRegisterEdit }) {
   const fmtMin = (m) => m >= 60 ? `${Math.floor(m/60)}시간${m%60 ? ` ${m%60}분` : ''}` : `${m}분`;
 
   const heroHue = (selDay === 0 ? (trip.hue ?? day?.hero?.hue) : day?.hero?.hue) ?? 25;
-  const city = trip.title || '';
-  // 여행 생성 시 저장된 timezone으로 CITY_DB에서 좌표 조회
+  // 여행 생성 시 저장된 첫 번째 도시명 (없으면 제목 사용)
+  const primaryCity = trip.cities?.[0] || trip.title || '';
+  // timezone → CITY_DB로 국가 중심 좌표 (즉시 표시용 placeholder)
   const cityEntry = (typeof CITY_DB !== 'undefined' && trip.timezone)
     ? CITY_DB.find(c => c.zone === trip.timezone) : null;
   const cityBias = cityEntry ? [cityEntry.lat, cityEntry.lon] : null;
@@ -5769,20 +5770,30 @@ function MapScreen({ trip, onEditItem, editing, onRegisterEdit }) {
     layers.current = [];
     const map = window.L.map(mapDiv.current, { zoomControl:true, attributionControl:false });
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(map);
+    // 국가 중심 좌표로 즉시 표시 (placeholder)
     if (cityBias) {
       map.setView(cityBias, 12);
     } else {
-      map.setView([20, 0], 2); // 도시 모를 때 세계 지도로 시작
-      // Nominatim으로 여행 제목 geocode (timezone 없는 구형 여행 대비)
-      const q = encodeURIComponent(city || 'world');
-      fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`)
-        .then(r => r.json())
-        .then(data => {
-          if (data?.[0] && mapInst.current === map) {
-            map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 12);
-          }
-        })
-        .catch(() => {});
+      map.setView([20, 0], 2);
+    }
+    // 첫 번째 도시명으로 정밀 geocode — GEO_CACHE로 탭 이동 시 재요청 방지
+    if (primaryCity) {
+      const ck = `_cityview_${primaryCity}`;
+      const setCity = pos => { if (mapInst.current === map) map.setView(pos, 12); };
+      if (GEO_CACHE[ck]) {
+        setCity(GEO_CACHE[ck]);
+      } else {
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(primaryCity)}&format=json&limit=1`)
+          .then(r => r.json())
+          .then(data => {
+            if (data?.[0]) {
+              const pos = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+              GEO_CACHE[ck] = pos;
+              setCity(pos);
+            }
+          })
+          .catch(() => {});
+      }
     }
     mapInst.current = map;
     return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; } };
@@ -8925,6 +8936,7 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
     days, hotels:[], food:[],
     timezone: selectedDest?.zone || null,
     defaultCurrency: selectedDest?.currency || 'KRW',
+    cities: cities.filter(Boolean),  // 지도 초기 뷰 geocoding에 사용
   };
 }
 
