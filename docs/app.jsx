@@ -2266,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v111</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v112</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -10148,12 +10148,16 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                         if (i > cityDrag.idx && i <= hoverIdx) translateY = -draggedCardH;
                       }
                     }
+                    const exactMatch = cityList.find(c => c.kor === qRaw || c.eng.toLowerCase() === q);
+                    const cityChips = exactMatch ? [] :
+                      !qRaw.trim() ? cityList :
+                      cityList.filter(c => c.kor.includes(qRaw) || c.eng.toLowerCase().includes(q));
                     return (
+                      <React.Fragment key={i}>
                       <div
-                        key={i}
                         ref={el => { cityCardRefs.current[i] = el; }}
                         style={{
-                          display:'flex', gap:8, marginBottom:10, alignItems:'center',
+                          display:'flex', gap:8, marginBottom: cityChips.length > 0 ? 6 : 10, alignItems:'center',
                           transform:`translateY(${translateY}px)`,
                           transition: isDragging ? 'none' : 'transform 0.22s cubic-bezier(0.22,1,0.36,1)',
                           zIndex: isDragging ? 50 : 1,
@@ -10210,6 +10214,17 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                           )}
                         </div>
                       </div>
+                      {cityChips.length > 0 && (
+                        <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:10, paddingLeft: cities.length > 1 ? 36 : 0 }}>
+                          {cityChips.map(c => (
+                            <button key={c.kor} onMouseDown={e=>{ e.preventDefault(); setCities(prev=>prev.map((v,j)=>j===i?c.kor:v)); }}
+                              style={{ background:COLORS.softer, border:`1px solid ${COLORS.line}`, borderRadius:20, padding:'5px 12px', cursor:'pointer', fontFamily:SANS, fontSize:12.5, color:COLORS.ink }}>
+                              {c.kor}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      </React.Fragment>
                     );
                   })}
                 </div>
