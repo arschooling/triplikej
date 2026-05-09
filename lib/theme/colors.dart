@@ -47,10 +47,10 @@ class AppColors extends ThemeExtension<AppColors> {
     ink:          Color(0xFFF0EDE7),
     mute:         Color(0xFF9B9690),
     line:         Color(0x1AFFFFFF),
-    accent:       Color(0xFFD12200),
+    accent:       Color(0xFFB51E00),
     soft:         Color(0xFF2E2A26),
     softer:       Color(0xFF282420),
-    sundayRed:    Color(0xFFD12200),
+    sundayRed:    Color(0xFFB51E00),
     saturdayBlue: Color(0xFF8B9FC8),
     disabledDate: Color(0xFF6B6660),
   );
