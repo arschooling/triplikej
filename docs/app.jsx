@@ -2266,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v110</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v111</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9303,6 +9303,17 @@ const AIRPORTS = [
   {kor:'뮌헨 공항',             eng:'Munich Airport',                                   code:'MUC'},
   {kor:'베를린 브란덴부르크 공항',eng:'Berlin Brandenburg Airport',                     code:'BER'},
   {kor:'프라하 공항',           eng:'Václav Havel Airport Prague',                      code:'PRG'},
+  {kor:'베네치아 마르코폴로 공항', eng:'Venice Marco Polo Airport',                      code:'VCE'},
+  {kor:'나폴리 카포디키노 공항',   eng:'Naples International Airport',                   code:'NAP'},
+  {kor:'피렌체 아메리고베스푸치 공항', eng:'Florence Peretola Airport',                  code:'FLR'},
+  {kor:'바리 팔레제 공항',         eng:'Bari Karol Wojtyla Airport',                     code:'BRI'},
+  {kor:'베르가모 오리오알세리오 공항', eng:'Milan Bergamo Airport',                       code:'BGY'},
+  {kor:'볼로냐 보르게파닌 공항',   eng:'Bologna Guglielmo Marconi Airport',               code:'BLQ'},
+  {kor:'팔레르모 팔코네보르셀리노 공항', eng:'Palermo Airport',                           code:'PMO'},
+  {kor:'제노바 크리스토포로콜롬보 공항', eng:'Genoa Cristoforo Colombo Airport',          code:'GOA'},
+  {kor:'토리노 카셀레 공항',       eng:'Turin Airport',                                   code:'TRN'},
+  {kor:'제네바 국제공항',          eng:'Geneva Airport',                                  code:'GVA'},
+  {kor:'바젤 유로에어포트',        eng:'EuroAirport Basel-Mulhouse-Freiburg',             code:'BSL'},
   // 중동
   {kor:'두바이 국제공항',       eng:'Dubai International Airport',                      code:'DXB'},
   {kor:'아부다비 국제공항',     eng:'Abu Dhabi International Airport',                  code:'AUH'},
@@ -9535,18 +9546,28 @@ const CITY_AIRPORT_MAP = {
   '발렌시아':'바르셀로나 엘프라트 공항','Valencia':'바르셀로나 엘프라트 공항',
   // 이탈리아
   '로마':'로마 피우미치노 공항','Rome':'로마 피우미치노 공항',
-  '나폴리':'로마 피우미치노 공항','Naples':'로마 피우미치노 공항',
-  '피렌체':'로마 피우미치노 공항','Florence':'로마 피우미치노 공항',
-  '팔레르모':'로마 피우미치노 공항','Palermo':'로마 피우미치노 공항',
-  '시칠리아':'로마 피우미치노 공항','Sicily':'로마 피우미치노 공항',
-  '밀라노':'밀라노 말펜사 공항','Milan':'밀라노 말펜사 공항',
-  '베네치아':'밀라노 말펜사 공항','Venice':'밀라노 말펜사 공항',
-  '볼로냐':'밀라노 말펜사 공항','Bologna':'밀라노 말펜사 공항',
-  '토리노':'밀라노 말펜사 공항','Turin':'밀라노 말펜사 공항',
-  '베로나':'밀라노 말펜사 공항','Verona':'밀라노 말펜사 공항',
+  '나폴리':'나폴리 카포디키노 공항','Naples':'나폴리 카포디키노 공항',
+  '아말피':['나폴리 카포디키노 공항'],'Amalfi':['나폴리 카포디키노 공항'],
+  '소렌토':['나폴리 카포디키노 공항'],'Sorrento':['나폴리 카포디키노 공항'],
+  '포지타노':['나폴리 카포디키노 공항'],'Positano':['나폴리 카포디키노 공항'],
+  '피렌체':['피렌체 아메리고베스푸치 공항','로마 피우미치노 공항'],'Florence':['피렌체 아메리고베스푸치 공항','로마 피우미치노 공항'],
+  '토스카나':['피렌체 아메리고베스푸치 공항','로마 피우미치노 공항'],'Tuscany':['피렌체 아메리고베스푸치 공항','로마 피우미치노 공항'],
+  '시에나':['피렌체 아메리고베스푸치 공항','로마 피우미치노 공항'],'Siena':['피렌체 아메리고베스푸치 공항','로마 피우미치노 공항'],
+  '아시시':['로마 피우미치노 공항','피렌체 아메리고베스푸치 공항'],'Assisi':['로마 피우미치노 공항','피렌체 아메리고베스푸치 공항'],
+  '티볼리':'로마 피우미치노 공항','Tivoli':'로마 피우미치노 공항',
+  '팔레르모':'팔레르모 팔코네보르셀리노 공항','Palermo':'팔레르모 팔코네보르셀리노 공항',
+  '시칠리아':'팔레르모 팔코네보르셀리노 공항','Sicily':'팔레르모 팔코네보르셀리노 공항',
+  '바리':'바리 팔레제 공항','Bari':'바리 팔레제 공항',
+  '밀라노':['밀라노 말펜사 공항','베르가모 오리오알세리오 공항'],'Milan':['밀라노 말펜사 공항','베르가모 오리오알세리오 공항'],
+  '베네치아':['베네치아 마르코폴로 공항','밀라노 말펜사 공항'],'Venice':['베네치아 마르코폴로 공항','밀라노 말펜사 공항'],
+  '돌로미티':['베네치아 마르코폴로 공항','밀라노 말펜사 공항'],'Dolomites':['베네치아 마르코폴로 공항','밀라노 말펜사 공항'],
+  '베로나':['베네치아 마르코폴로 공항','밀라노 말펜사 공항'],'Verona':['베네치아 마르코폴로 공항','밀라노 말펜사 공항'],
+  '볼로냐':['볼로냐 보르게파닌 공항','밀라노 말펜사 공항'],'Bologna':['볼로냐 보르게파닌 공항','밀라노 말펜사 공항'],
+  '파르마':['밀라노 말펜사 공항','볼로냐 보르게파닌 공항'],'Parma':['밀라노 말펜사 공항','볼로냐 보르게파닌 공항'],
+  '토리노':['토리노 카셀레 공항','밀라노 말펜사 공항'],'Turin':['토리노 카셀레 공항','밀라노 말펜사 공항'],
   '코모호수':'밀라노 말펜사 공항','Lake Como':'밀라노 말펜사 공항',
-  '제노바':'밀라노 말펜사 공항','Genoa':'밀라노 말펜사 공항',
-  '친퀘테레':'밀라노 말펜사 공항','Cinque Terre':'밀라노 말펜사 공항',
+  '제노바':['제노바 크리스토포로콜롬보 공항','밀라노 말펜사 공항'],'Genoa':['제노바 크리스토포로콜롬보 공항','밀라노 말펜사 공항'],
+  '친퀘테레':['밀라노 말펜사 공항','제노바 크리스토포로콜롬보 공항'],'Cinque Terre':['밀라노 말펜사 공항','제노바 크리스토포로콜롬보 공항'],
   // 그리스
   '아테네':'아테네 국제공항','Athens':'아테네 국제공항',
   '산토리니':'아테네 국제공항','Santorini':'아테네 국제공항',
@@ -9562,9 +9583,17 @@ const CITY_AIRPORT_MAP = {
   // 스위스
   '취리히':'취리히 공항','Zurich':'취리히 공항',
   '루체른':'취리히 공항','Lucerne':'취리히 공항',
-  '제네바':'취리히 공항','Geneva':'취리히 공항',
-  '인터라켄':'취리히 공항','Interlaken':'취리히 공항',
-  '체르마트':'취리히 공항','Zermatt':'취리히 공항',
+  '장크트갈렌':'취리히 공항','St. Gallen':'취리히 공항',
+  '다보스':'취리히 공항','Davos':'취리히 공항',
+  '제네바':'제네바 국제공항','Geneva':'제네바 국제공항',
+  '로잔':'제네바 국제공항','Lausanne':'제네바 국제공항',
+  '몽트뢰':'제네바 국제공항','Montreux':'제네바 국제공항',
+  '인터라켄':['취리히 공항','제네바 국제공항'],'Interlaken':['취리히 공항','제네바 국제공항'],
+  '그린델발트':['취리히 공항','제네바 국제공항'],'Grindelwald':['취리히 공항','제네바 국제공항'],
+  '베른':['취리히 공항','제네바 국제공항'],'Bern':['취리히 공항','제네바 국제공항'],
+  '체르마트':['제네바 국제공항','취리히 공항'],'Zermatt':['제네바 국제공항','취리히 공항'],
+  '루가노':['취리히 공항','밀라노 말펜사 공항'],'Lugano':['취리히 공항','밀라노 말펜사 공항'],
+  '바젤':['바젤 유로에어포트','취리히 공항'],'Basel':['바젤 유로에어포트','취리히 공항'],
   // 오스트리아
   '빈':'비엔나 국제공항','Vienna':'비엔나 국제공항',
   '잘츠부르크':'비엔나 국제공항','Salzburg':'비엔나 국제공항',
@@ -10206,16 +10235,15 @@ function NewTripSheet({ open, onClose, onSubmit }) {
           {/* Step 4: 공항 */}
           {step === 4 && (() => {
             const firstCity = (cities[0] || '').trim();
-            const citySuggest = firstCity ? (CITY_AIRPORT_MAP[firstCity] || null) : null;
-            const makeAirportInput = (value, setValue, label, isAutoFocus, placeholder, cityHint) => {
+            const rawSuggest = firstCity ? (CITY_AIRPORT_MAP[firstCity] || null) : null;
+            const citySuggests = rawSuggest ? (Array.isArray(rawSuggest) ? rawSuggest : [rawSuggest]) : [];
+            const makeAirportInput = (value, setValue, label, isAutoFocus, placeholder) => {
               const q = value.toLowerCase();
               const korMatch = value.length > 0 ? AIRPORTS.find(a => a.kor.startsWith(value) && a.kor !== value) : null;
               const engMatch = value.length > 0 ? AIRPORTS.find(a => a.eng.toLowerCase().startsWith(q) && a.eng.toLowerCase() !== q) : null;
               // 코드 매칭: 2자 이상이고 한글/영어 매칭이 없을 때만
               const codeMatch = (value.length >= 2 && !korMatch && !engMatch) ? AIRPORTS.find(a => a.code.toLowerCase().startsWith(q)) : null;
-              // 도시 기반 제안: 필드가 비어있고 타이핑 매칭이 없을 때만
-              const cityGhost = (!value && cityHint && !korMatch && !engMatch) ? cityHint : null;
-              const ghostFull = korMatch ? korMatch.kor : engMatch ? engMatch.eng : cityGhost || '';
+              const ghostFull = korMatch ? korMatch.kor : engMatch ? engMatch.eng : '';
               const ghostSuffix = ghostFull ? ghostFull.slice(value.length) : '';
               let typedPx = 16 + value.length * 14;
               try { const cv=document.createElement('canvas'); const cx=cv.getContext('2d'); cx.font=`15px ${SANS},sans-serif`; typedPx=16+cx.measureText(value).width; } catch(_){}
@@ -10223,7 +10251,6 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                 if (korMatch) setValue(korMatch.kor);
                 else if (engMatch) setValue(engMatch.eng);
                 else if (codeMatch) setValue(codeMatch.kor);
-                else if (cityGhost) setValue(cityGhost);
               };
               return (
                 <div style={{ marginBottom:18 }}>
@@ -10261,7 +10288,26 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             return (
               <div>
                 {makeAirportInput(depAirport, setDepAirport, '출발 공항', true, '예) 인천국제공항')}
-                {makeAirportInput(arrAirport, setArrAirport, '도착 공항', false, '예) 나리타 국제공항', citySuggest)}
+                {makeAirportInput(arrAirport, setArrAirport, '도착 공항', false, '예) 나리타 국제공항')}
+                {!arrAirport && citySuggests.length > 0 && (
+                  <div style={{ marginBottom:18, marginTop:-8 }}>
+                    <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:8, textTransform:'uppercase', letterSpacing:'0.05em' }}>
+                      {firstCity} 근처 공항
+                    </div>
+                    <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
+                      {citySuggests.map(apt => {
+                        const info = AIRPORTS.find(a => a.kor === apt);
+                        return (
+                          <button key={apt} onMouseDown={e=>e.preventDefault()} onClick={() => setArrAirport(apt)}
+                            style={{ display:'flex', alignItems:'center', gap:6, background:COLORS.card, border:`1.5px solid ${COLORS.line}`, borderRadius:20, padding:'6px 14px 6px 10px', cursor:'pointer', fontFamily:SANS, fontSize:12.5, color:COLORS.ink }}>
+                            <span style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:0.5 }}>{info?.code}</span>
+                            <span>{apt}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.5 }}>
                   비행기를 이용하지 않는다면 넘어가세요.
                 </div>
