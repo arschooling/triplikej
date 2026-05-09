@@ -292,21 +292,54 @@ function mapsDirectionsUrl(destination) {
 }
 
 // ─── Edit button (small pencil) ─────────────────────────────
-function EditBtn({ editing, onClick, compact }) {
-  return (
-    <button onClick={onClick} style={{
-      border:'none', cursor:'pointer',
-      background: editing ? COLORS.accent : 'rgba(26,24,22,0.06)',
-      color: editing ? '#fff' : COLORS.ink,
-      borderRadius: 14, padding: compact ? '5px 9px' : '6px 12px',
-      display:'flex', gap:5, alignItems:'center',
-      fontFamily:SANS, fontSize:11.5, fontWeight:500,
-    }}>
+// (hover:hover) = 마우스/데스크탑, (hover:none) = 터치/모바일
+const _isDesktopDevice = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
+
+function EditBtn({ editing, onClick, compact, canUndo, onUndo }) {
+  const lpTimer = React.useRef(null);
+
+  const handleTouchStart = () => {
+    if (!canUndo || !onUndo) return;
+    lpTimer.current = setTimeout(() => {
+      onUndo();
+      try { navigator.vibrate(30); } catch(_) {}
+    }, 600);
+  };
+  const handleTouchEnd = () => clearTimeout(lpTimer.current);
+
+  const btn = (
+    <button onClick={onClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      style={{
+        border:'none', cursor:'pointer',
+        background: editing ? COLORS.accent : 'rgba(26,24,22,0.06)',
+        color: editing ? '#fff' : COLORS.ink,
+        borderRadius: 14, padding: compact ? '5px 9px' : '6px 12px',
+        display:'flex', gap:5, alignItems:'center',
+        fontFamily:SANS, fontSize:11.5, fontWeight:500,
+      }}>
       <Icon name={editing ? 'check' : 'edit'} size={12}
         color={editing ? '#fff' : COLORS.ink} stroke={2}/>
       {editing ? '완료' : '편집'}
     </button>
   );
+
+  if (_isDesktopDevice && canUndo && onUndo) {
+    return (
+      <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+        <button onClick={onUndo} title="되돌리기" style={{
+          border:'none', cursor:'pointer',
+          background:'rgba(26,24,22,0.06)',
+          borderRadius:14, padding: compact ? '5px 9px' : '6px 10px',
+          fontFamily:SANS, fontSize:13, lineHeight:1,
+        }}>↩</button>
+        {btn}
+      </div>
+    );
+  }
+  return btn;
 }
 
 // ─── Swipeable row (swipe-left to reveal edit/delete) ────────
@@ -2233,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v99</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v103</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3713,7 +3746,8 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
               }
             </button>
           )}
-          <EditBtn editing={editing} onClick={() => setEditing(e => !e)}/>
+          <EditBtn editing={editing} onClick={handleEditToggle}
+            canUndo={!!undoState} onUndo={doUndo}/>
         </div>
         <input ref={dayPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleDayPhoto}/>
 
@@ -6177,7 +6211,7 @@ function MapScreen({ trip, onEditItem, editing, onRegisterEdit }) {
 }
 
 // ─── Food ───────────────────────────────────────────────────
-const FoodCatItems = React.memo(function FoodCatItems({ catItems, allFood, onEditFood, editing }) {
+const FoodCatItems = React.memo(function FoodCatItems({ catItems, allFood, onEditFood, onDeleteFood, editing }) {
   const reorder = (from, to) => {
     const globalFrom = catItems[from].idx;
     const globalTo   = catItems[to].idx;
@@ -6185,7 +6219,10 @@ const FoodCatItems = React.memo(function FoodCatItems({ catItems, allFood, onEdi
     newFood.splice(globalTo, 0, newFood.splice(globalFrom, 1)[0]);
     onEditFood(newFood);
   };
-  const delFood = (globalIdx) => onEditFood(allFood.filter((_, i) => i !== globalIdx));
+  const delFood = (globalIdx) => {
+    if (onDeleteFood) { onDeleteFood(globalIdx); return; }
+    onEditFood(allFood.filter((_, i) => i !== globalIdx));
+  };
   const updateFood = (globalIdx, patch) => {
     const list = [...allFood]; list[globalIdx] = { ...list[globalIdx], ...patch }; onEditFood(list);
   };
@@ -6257,7 +6294,7 @@ const FoodCatItems = React.memo(function FoodCatItems({ catItems, allFood, onEdi
   );
 });
 
-function FoodScreen({ trip, onEditFood, editing, setEditing }) {
+function FoodScreen({ trip, onEditFood, onDeleteFood, editing, setEditing }) {
   const [query,       setQuery]       = React.useState('');
   const [newCatInput, setNewCatInput] = React.useState(false);
   const [newCatName,  setNewCatName]  = React.useState('');
@@ -6348,7 +6385,7 @@ function FoodScreen({ trip, onEditFood, editing, setEditing }) {
               )}
             </div>
             <div>
-              <FoodCatItems catItems={items} allFood={allFood} onEditFood={onEditFood} editing={editing}/>
+              <FoodCatItems catItems={items} allFood={allFood} onEditFood={onEditFood} onDeleteFood={onDeleteFood} editing={editing}/>
               {/* 항목 추가 */}
               {addSelCat === cat ? (
                 <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px',
@@ -10731,6 +10768,7 @@ function App() {
   const navGoingBack     = React.useRef(false);
   const tabBarNavLock    = React.useRef(false); // 네비게이션 직후 scroll 이벤트로 인한 탭바 숨김 방지
   const editSnapshot     = React.useRef(null); // 편집 시작 시 trip 스냅샷
+  const [undoState, setUndoState] = React.useState(null); // { restore } — 되돌리기 가능 상태
 
   // 편집 버튼 토글 핸들러
   const stopSheetEditRef  = React.useRef(null); // StopSheet의 setEditing 연결용
@@ -10763,10 +10801,14 @@ function App() {
       if (changed) {
         setSaveConfirm(true); // 변경 있으면 확인 다이얼로그
       } else {
-        setEditing(false);    // 변경 없으면 그냥 닫기
+        setEditing(false);
       }
     }
   }, [openStop, hotelDetailSheet, editing, canEdit, trip]);
+
+  // 삭제 후 되돌리기 상태 등록 (편집 종료/저장 전까지 유지)
+  const scheduleUndo = (restore) => setUndoState({ restore });
+  const doUndo = () => { if (undoState?.restore) undoState.restore(); setUndoState(null); };
 
   // ── 앱 준비되면 loginPending 해제 (trips 로딩 완료 후) ────────
   React.useEffect(() => {
@@ -11102,36 +11144,49 @@ function App() {
     editTrip({ prep: newPrep });
   };
 
-  const deleteTrip = async (tripId) => {
+  const _pendingTripDelete = React.useRef(null);
+  const deleteTrip = (tripId) => {
     const t = userTrips.find(x => x.id === tripId);
     const isOwner = !t?.members || t.members[0] === userData?.uid;
     const msg = isOwner
-      ? `"${t?.title || '여행'}"을(를) 삭제할까요?\n삭제하면 복구할 수 없습니다.`
+      ? `"${t?.title || '여행'}"을(를) 삭제할까요?`
       : `"${t?.title || '여행'}"에서 나갈까요?`;
     if (!confirm(msg)) return;
-    // 샘플 여행 삭제 시 복구 방지 플래그
-    if (t?.sampleId && userData?.uid && typeof fbMarkSampleDeleted === 'function') {
-      fbMarkSampleDeleted(userData.uid, t.sampleId).catch(() => {});
-    }
-    await fbDeleteTrip(tripId, userData.uid);
-    if (authUser?.uid && t?.days?.length && typeof window.fbDeleteTripPhotos === 'function') {
-      window.fbDeleteTripPhotos(authUser.uid, tripId, t.days.length).catch(() => {});
-    }
-    // localStorage 정리: done 체크 상태 + 사진 캐시
-    const uid = authUser?.uid || '';
-    const dayCount = t?.days?.length || 0;
-    for (let i = 0; i < dayCount; i++) {
-      try { localStorage.removeItem('done_' + tripId + '_' + i); } catch(_) {}
-      if (uid) {
-        try { localStorage.removeItem('tlj_ph_'   + uid + '_' + tripId + '_' + i); } catch(_) {}
-        try { localStorage.removeItem('tlj_imgb_' + uid + '_' + tripId + '_' + i); } catch(_) {}
-      }
-    }
-    (t?.prep?.cats || []).forEach(cat => {
-      try { localStorage.removeItem('prep_done_' + cat.id); } catch(_) {}
-    });
+
+    // UI에서 즉시 제거 (낙관적 삭제)
     setUserTrips(prev => prev.filter(x => x.id !== tripId));
     setUserData(prev => ({ ...prev, tripIds: (prev.tripIds || []).filter(id => id !== tripId) }));
+
+    // 되돌리기 — 편집 진입 전까지 Firestore 삭제 보류
+    clearTimeout(_pendingTripDelete.current);
+    scheduleUndo(() => {
+      clearTimeout(_pendingTripDelete.current);
+      setUserTrips(prev => [...prev, t]);
+      setUserData(prev => ({ ...prev, tripIds: [...(prev.tripIds || []), tripId] }));
+    });
+
+    // 편집 진입(undoState 초기화) 시 실제 삭제 실행
+    _pendingTripDelete.current = setTimeout(async () => {
+      if (t?.sampleId && userData?.uid && typeof fbMarkSampleDeleted === 'function') {
+        fbMarkSampleDeleted(userData.uid, t.sampleId).catch(() => {});
+      }
+      await fbDeleteTrip(tripId, userData?.uid);
+      if (authUser?.uid && t?.days?.length && typeof window.fbDeleteTripPhotos === 'function') {
+        window.fbDeleteTripPhotos(authUser.uid, tripId, t.days.length).catch(() => {});
+      }
+      const uid = authUser?.uid || '';
+      const dayCount = t?.days?.length || 0;
+      for (let i = 0; i < dayCount; i++) {
+        try { localStorage.removeItem('done_' + tripId + '_' + i); } catch(_) {}
+        if (uid) {
+          try { localStorage.removeItem('tlj_ph_'   + uid + '_' + tripId + '_' + i); } catch(_) {}
+          try { localStorage.removeItem('tlj_imgb_' + uid + '_' + tripId + '_' + i); } catch(_) {}
+        }
+      }
+      (t?.prep?.cats || []).forEach(cat => {
+        try { localStorage.removeItem('prep_done_' + cat.id); } catch(_) {}
+      });
+    }, 30000); // 30초 유예 — 되돌리기 시 타이머 취소
   };
 
   // ── Day actions ────────────────────────────────────────
@@ -11146,9 +11201,10 @@ function App() {
     editTrip({ days: [...trip.days, newDay] });
   };
   const deleteDay = (i) => {
-    if (!confirm(`Day ${trip.days[i].n} 일정을 삭제할까요?`)) return;
+    const snap = { days: trip.days };
     const days = trip.days.filter((_, j) => j !== i).map((d, k) => ({ ...d, n: k + 1 }));
     editTrip({ days });
+    scheduleUndo(() => editTrip(snap));
   };
   const editDay = (patch) => {
     const days = [...trip.days]; days[dayIdx] = { ...days[dayIdx], ...patch };
@@ -11180,9 +11236,11 @@ function App() {
     setOpenStop({ idx: days[0].items.length - 1, stop: newItem, editing: true });
   };
   const deleteItem = (i) => {
+    const snap = { days: trip.days };
     const days = [...trip.days];
     days[dayIdx] = { ...days[dayIdx], items: days[dayIdx].items.filter((_, j) => j !== i) };
     editTrip({ days });
+    scheduleUndo(() => editTrip(snap));
   };
   const sortByTime = (items) => {
     const toMin = t => { const m = (t||'').match(/^(\d{1,2}):(\d{2})/); return m ? +m[1]*60 + +m[2] : Infinity; };
@@ -11373,14 +11431,14 @@ function App() {
     editTrip({ hotels, days });
   };
   const deleteHotel = (i) => {
-    if (!confirm(`"${trip.hotels[i].name}" 숙소를 삭제할까요?`)) return;
+    const snap = { hotels: trip.hotels, days: trip.days };
     const prev = trip.hotels[i];
     const hotels = (trip.hotels || []).filter((_, j) => j !== i);
-    // remove hotel items from days
     const days = trip.days.map(d => ({
       ...d, items: d.items.filter(it => it._hotelRef !== prev.name),
     }));
     editTrip({ hotels, days });
+    scheduleUndo(() => editTrip(snap));
   };
   const convertInlineHotel = (h) => {
     // 인라인 숙소를 trip.hotels에 추가하고 상세 화면 오픈
@@ -11537,7 +11595,7 @@ function App() {
     }
     label = 'Map';
   }
-  else if (tab === 'food')   { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} editing={editing} setEditing={setEditing}/>; label='Food'; }
+  else if (tab === 'food')   { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} onDeleteFood={(idx) => { const snap = { food: trip.food }; const food = trip.food.filter((_, i) => i !== idx); editTrip({ food }); scheduleUndo(() => editTrip(snap)); }} editing={editing} setEditing={setEditing}/>; label='Food'; }
   else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })} onSheetChange={v => { setBudgetSheetOpen(v); if (!v) setTabBarVisible(true); }} onTabBarToggle={() => setTabBarVisible(v => !v)}/>; label='Budget'; }
   else                       { screen = <PrepScreen trip={trip} onEditPrep={editPrep} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
@@ -11805,6 +11863,20 @@ function App() {
           setActiveTripId(tripId); setTab('home'); setDayIdx(null);
         }}/>
 
+      {/* 되돌리기 토스트 */}
+      {undoState && ReactDOM.createPortal(
+        <div style={{ position:'fixed', bottom:100, left:'50%', transform:'translateX(-50%)',
+          background:COLORS.ink, color:COLORS.bg, padding:'10px 18px', borderRadius:20,
+          fontFamily:SANS, fontSize:13, zIndex:3000, whiteSpace:'nowrap',
+          boxShadow:'0 4px 20px rgba(0,0,0,0.18)',
+          display:'flex', alignItems:'center', gap:12 }}>
+          삭제됐어요
+          <button onClick={doUndo} style={{ border:'none', background:'transparent', cursor:'pointer',
+            padding:0, fontSize:18, lineHeight:1, color:COLORS.bg }}>↩</button>
+        </div>,
+        document.body
+      )}
+
       {/* 저장 확인 다이얼로그 */}
       {saveConfirm && ReactDOM.createPortal(
         <div style={{ position:'fixed', inset:0, zIndex:700,
@@ -11825,7 +11897,7 @@ function App() {
                 borderRadius:14, background:'transparent', cursor:'pointer',
                 fontFamily:SANS, fontSize:14, color:COLORS.mute,
               }}>취소</button>
-              <button onClick={() => { setSaveConfirm(false); setEditing(false); }} style={{
+              <button onClick={() => { setSaveConfirm(false); setEditing(false); setUndoState(null); }} style={{
                 flex:1, padding:'13px', border:'none',
                 borderRadius:14, background:COLORS.ink, cursor:'pointer',
                 fontFamily:SANS, fontSize:14, fontWeight:600, color:'#fff',

@@ -5,18 +5,23 @@ import '../data/trip_repository.dart';
 
 final tripRepositoryProvider = Provider((_) => TripRepository());
 
+final canUndoProvider = StateProvider<bool>((_) => false);
+
 final tripsProvider = StateNotifierProvider<TripsNotifier, AsyncValue<List<Trip>>>(
-  (ref) => TripsNotifier(ref.read(tripRepositoryProvider)),
+  (ref) => TripsNotifier(ref.read(tripRepositoryProvider), ref),
 );
 
 class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   final TripRepository _repo;
+  final Ref _ref;
+  List<Trip>? _snapshot;
+  bool _isDeleting = false;
 
-  TripsNotifier(this._repo) : super(const AsyncValue.loading()) {
+  TripsNotifier(this._repo, this._ref) : super(const AsyncValue.loading()) {
     _load();
   }
 
-  TripsNotifier.preloaded(this._repo, List<Trip> trips)
+  TripsNotifier.preloaded(this._repo, this._ref, List<Trip> trips)
       : super(AsyncValue.data(trips));
 
   Future<void> _load() async {
@@ -33,6 +38,27 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   void _update(List<Trip> trips) {
     state = AsyncValue.data(trips);
     _repo.save(trips);
+    if (!_isDeleting) clearSnapshot(); // 삭제 외의 수정이면 스냅샷 폐기
+    _isDeleting = false;
+  }
+
+  void _saveSnapshot() {
+    _snapshot = [..._trips];
+    _isDeleting = true;
+    _ref.read(canUndoProvider.notifier).state = true;
+  }
+
+  void clearSnapshot() {
+    _snapshot = null;
+    _ref.read(canUndoProvider.notifier).state = false;
+  }
+
+  void undo() {
+    if (_snapshot != null) {
+      _update(_snapshot!);
+      _snapshot = null;
+      _ref.read(canUndoProvider.notifier).state = false;
+    }
   }
 
   String _newId() => 'trip-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(999)}';
@@ -44,6 +70,7 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   }
 
   void deleteTrip(int index) {
+    _saveSnapshot();
     final list = [..._trips];
     list.removeAt(index);
     _update(list);
@@ -95,6 +122,7 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   }
 
   void deleteDay(int tripIndex, int dayIndex) {
+    _saveSnapshot();
     updateTrip(tripIndex, (t) {
       final days = [...t.days];
       days.removeAt(dayIndex);
@@ -122,6 +150,7 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   }
 
   void deleteStop(int tripIndex, int dayIndex, int stopIndex) {
+    _saveSnapshot();
     updateTrip(tripIndex, (t) {
       final days = [...t.days];
       final items = [...days[dayIndex].items];
@@ -161,6 +190,7 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   }
 
   void deleteHotel(int tripIndex, int hotelIndex) {
+    _saveSnapshot();
     updateTrip(tripIndex, (t) {
       final prev = t.hotels[hotelIndex];
       final hotels = [...t.hotels];
@@ -179,6 +209,37 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
       hotels[hotelIndex] = updatedHotel;
       final days = _syncHotelToDays(t.days, updatedHotel, prev);
       return t.copyWith(hotels: hotels, days: days);
+    });
+  }
+
+  // ── Food actions ──────────────────────────────────────────
+  void deleteFood(int tripIndex, int foodIndex) {
+    _saveSnapshot();
+    updateTrip(tripIndex, (t) {
+      final food = [...t.food];
+      food.removeAt(foodIndex);
+      return t.copyWith(food: food);
+    });
+  }
+
+  // ── Prep actions ──────────────────────────────────────────
+  void deletePrepItem(int tripIndex, String section, int itemIndex) {
+    _saveSnapshot();
+    updateTrip(tripIndex, (t) {
+      final prep = t.prep;
+      switch (section) {
+        case 'checklist':
+          final list = [...prep.checklist]..removeAt(itemIndex);
+          return t.copyWith(prep: prep.copyWith(checklist: list));
+        case 'docs':
+          final list = [...prep.docs]..removeAt(itemIndex);
+          return t.copyWith(prep: prep.copyWith(docs: list));
+        case 'pack':
+          final list = [...prep.pack]..removeAt(itemIndex);
+          return t.copyWith(prep: prep.copyWith(pack: list));
+        default:
+          return t;
+      }
     });
   }
 

@@ -62,7 +62,11 @@ class _PrepScreenState extends ConsumerState<PrepScreen> {
               const Spacer(),
               EditButton(
                 editing: _editing,
-                onTap: () => setState(() => _editing = !_editing),
+                canUndo: ref.watch(canUndoProvider),
+                onUndo: () => ref.read(tripsProvider.notifier).undo(),
+                onTap: () {
+                  setState(() => _editing = !_editing);
+                },
               ),
             ],
           ),
@@ -107,12 +111,9 @@ class _PrepScreenState extends ConsumerState<PrepScreen> {
                 editing: _editing,
                 isChecked: (idx, item) => _isChecked(sectionKey, idx, item),
                 onToggle: (idx, item) => _toggle(sectionKey, idx, item),
-                onDelete: (idx) {
-                  final newPrep = _removeItem(prep, sectionKey, idx);
-                  ref
-                      .read(tripsProvider.notifier)
-                      .patchTrip(widget.tripIndex, prep: newPrep);
-                },
+                onDelete: (idx) => ref
+                    .read(tripsProvider.notifier)
+                    .deletePrepItem(widget.tripIndex, sectionKey, idx),
                 onAdd: () => _addItem(context, prep, sectionKey),
               );
             }).toList(),
@@ -120,22 +121,6 @@ class _PrepScreenState extends ConsumerState<PrepScreen> {
         ),
       ],
     );
-  }
-
-  TripPrep _removeItem(TripPrep prep, String section, int idx) {
-    switch (section) {
-      case 'checklist':
-        final list = [...prep.checklist]..removeAt(idx);
-        return prep.copyWith(checklist: list);
-      case 'docs':
-        final list = [...prep.docs]..removeAt(idx);
-        return prep.copyWith(docs: list);
-      case 'pack':
-        final list = [...prep.pack]..removeAt(idx);
-        return prep.copyWith(pack: list);
-      default:
-        return prep;
-    }
   }
 
   void _addItem(BuildContext ctx, TripPrep prep, String section) {
