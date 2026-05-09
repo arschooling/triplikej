@@ -2266,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v101</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v102</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -10795,19 +10795,19 @@ function App() {
     if (!editing) {
       if (!canEdit) return;
       editSnapshot.current = JSON.stringify(trip);
-      setUndoState(null); // 편집 시작 시 되돌리기 초기화
       setEditing(true);
     } else {
       const changed = editSnapshot.current !== JSON.stringify(trip);
       if (changed) {
         setSaveConfirm(true); // 변경 있으면 확인 다이얼로그
       } else {
-        setEditing(false);    // 변경 없으면 그냥 닫기
+        setUndoState(null); // 변경 없이 닫기 = 수정 완료로 간주
+        setEditing(false);
       }
     }
   }, [openStop, hotelDetailSheet, editing, canEdit, trip]);
 
-  // 삭제 후 되돌리기 상태 등록 (편집 진입 전까지 유지)
+  // 삭제 후 되돌리기 상태 등록 (편집 종료/저장 전까지 유지)
   const scheduleUndo = (restore) => setUndoState({ restore });
   const doUndo = () => { if (undoState?.restore) undoState.restore(); setUndoState(null); };
 
@@ -11898,7 +11898,7 @@ function App() {
                 borderRadius:14, background:'transparent', cursor:'pointer',
                 fontFamily:SANS, fontSize:14, color:COLORS.mute,
               }}>취소</button>
-              <button onClick={() => { setSaveConfirm(false); setEditing(false); }} style={{
+              <button onClick={() => { setSaveConfirm(false); setEditing(false); setUndoState(null); }} style={{
                 flex:1, padding:'13px', border:'none',
                 borderRadius:14, background:COLORS.ink, cursor:'pointer',
                 fontFamily:SANS, fontSize:14, fontWeight:600, color:'#fff',

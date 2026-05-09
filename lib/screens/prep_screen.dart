@@ -65,7 +65,7 @@ class _PrepScreenState extends ConsumerState<PrepScreen> {
                 canUndo: ref.watch(canUndoProvider),
                 onUndo: () => ref.read(tripsProvider.notifier).undo(),
                 onTap: () {
-                  if (!_editing) ref.read(tripsProvider.notifier).clearSnapshot();
+                  if (_editing) ref.read(tripsProvider.notifier).clearSnapshot();
                   setState(() => _editing = !_editing);
                 },
               ),
