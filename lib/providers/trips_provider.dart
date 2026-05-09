@@ -15,6 +15,7 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   final TripRepository _repo;
   final Ref _ref;
   List<Trip>? _snapshot;
+  bool _isDeleting = false;
 
   TripsNotifier(this._repo, this._ref) : super(const AsyncValue.loading()) {
     _load();
@@ -37,10 +38,13 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   void _update(List<Trip> trips) {
     state = AsyncValue.data(trips);
     _repo.save(trips);
+    if (!_isDeleting) clearSnapshot(); // 삭제 외의 수정이면 스냅샷 폐기
+    _isDeleting = false;
   }
 
   void _saveSnapshot() {
     _snapshot = [..._trips];
+    _isDeleting = true;
     _ref.read(canUndoProvider.notifier).state = true;
   }
 
