@@ -2266,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v113</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v114</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9740,7 +9740,6 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   const [selected,     setSelected]     = React.useState(new Set());
   const [cityStep,     setCityStep]     = React.useState(0);
   const [showCount,    setShowCount]    = React.useState(12);
-  const [cityPickerIdx, setCityPickerIdx] = React.useState(-1);
   const [showDepPicker, setShowDepPicker] = React.useState(false);
   const [showArrPicker, setShowArrPicker] = React.useState(false);
   const [kbOffset,     setKbOffset]     = React.useState(0);
@@ -10120,46 +10119,98 @@ function NewTripSheet({ open, onClose, onSubmit }) {
               }
             }
             const draggedCardH = cityDrag ? ((draggedSnap?.height || 54) + 10) : 0;
-            const cityList = selectedDest ? (CITIES_BY_KEY[selectedDest.key] || []) : [];
             return (
               <div>
                 <div style={{ position:'relative' }}>
                   {cities.map((city, i) => {
+                    const cityList = selectedDest ? (CITIES_BY_KEY[selectedDest.key] || []) : [];
+                    const qRaw = city;
+                    const q = qRaw.toLowerCase();
+                    const cityGhostMatch = qRaw.length === 0 ? null :
+                      cityList.find(c => c.kor.startsWith(qRaw) && c.kor !== qRaw) ||
+                      cityList.find(c => c.eng.toLowerCase().startsWith(q) && c.eng.toLowerCase() !== q) ||
+                      null;
+                    const cityGhostIsKor = cityGhostMatch && cityGhostMatch.kor.startsWith(qRaw);
+                    const cityGhostFull  = cityGhostMatch ? (cityGhostIsKor ? cityGhostMatch.kor : cityGhostMatch.eng) : '';
+                    const cityGhostSuffix = cityGhostFull ? cityGhostFull.slice(qRaw.length) : '';
+                    let cityTypedPx = 16 + qRaw.length * 14;
+                    try { const cv=document.createElement('canvas'); const cx=cv.getContext('2d'); cx.font=`15px ${SANS},sans-serif`; cityTypedPx=16+cx.measureText(qRaw).width; } catch(_){}
+                    const acceptCityGhost = () => {
+                      if (!cityGhostMatch) return;
+                      setCities(prev => prev.map((c,j) => j===i ? (cityGhostIsKor ? cityGhostMatch.kor : cityGhostMatch.eng) : c));
+                    };
                     const isDragging = cityDrag && cityDrag.idx === i;
                     let translateY = 0;
                     if (cityDrag) {
-                      if (isDragging) translateY = dragDelta;
-                      else if (hoverIdx < cityDrag.idx) { if (i >= hoverIdx && i < cityDrag.idx) translateY = draggedCardH; }
-                      else if (hoverIdx > cityDrag.idx) { if (i > cityDrag.idx && i <= hoverIdx) translateY = -draggedCardH; }
+                      if (isDragging) {
+                        translateY = dragDelta;
+                      } else if (hoverIdx < cityDrag.idx) {
+                        if (i >= hoverIdx && i < cityDrag.idx) translateY = draggedCardH;
+                      } else if (hoverIdx > cityDrag.idx) {
+                        if (i > cityDrag.idx && i <= hoverIdx) translateY = -draggedCardH;
+                      }
                     }
                     return (
-                      <div key={i}
+                      <div
+                        key={i}
                         ref={el => { cityCardRefs.current[i] = el; }}
-                        style={{ display:'flex', gap:8, marginBottom:10, alignItems:'center', transform:`translateY(${translateY}px)`, transition: isDragging ? 'none' : 'transform 0.22s cubic-bezier(0.22,1,0.36,1)', zIndex: isDragging ? 50 : 1, position:'relative' }}
+                        style={{
+                          display:'flex', gap:8, marginBottom:10, alignItems:'center',
+                          transform:`translateY(${translateY}px)`,
+                          transition: isDragging ? 'none' : 'transform 0.22s cubic-bezier(0.22,1,0.36,1)',
+                          zIndex: isDragging ? 50 : 1,
+                          position:'relative',
+                        }}
                       >
                         {cities.length > 1 && (
-                          <div onTouchStart={e => { e.preventDefault(); const touch=e.touches[0]; const snapshots={}; cities.forEach((_,j)=>{ const el=cityCardRefs.current[j]; if(el) snapshots[j]=el.getBoundingClientRect(); }); setCityDrag({idx:i,startY:touch.clientY,currentY:touch.clientY,snapshots,len:cities.length}); }}
-                            style={{ flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', width:28, height:44, cursor:'grab', touchAction:'none' }}>
+                          <div
+                            onTouchStart={e => {
+                              e.preventDefault();
+                              const touch = e.touches[0];
+                              const snapshots = {};
+                              cities.forEach((_, j) => {
+                                const el = cityCardRefs.current[j];
+                                if (el) snapshots[j] = el.getBoundingClientRect();
+                              });
+                              setCityDrag({ idx:i, startY:touch.clientY, currentY:touch.clientY, snapshots, len:cities.length });
+                            }}
+                            style={{
+                              flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center',
+                              width:28, height:44, cursor:'grab', touchAction:'none',
+                            }}
+                          >
                             <svg width="12" height="18" viewBox="0 0 12 18" fill="none">
-                              {[[2,2],[8,2],[2,7],[8,7],[2,12],[8,12]].map(([cx,cy]) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2" fill={COLORS.mute} opacity="0.55"/>)}
+                              {[[2,2],[8,2],[2,7],[8,7],[2,12],[8,12]].map(([cx,cy]) =>
+                                <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2" fill={COLORS.mute} opacity="0.55"/>
+                              )}
                             </svg>
                           </div>
                         )}
-                        <button onClick={() => setCityPickerIdx(i)} style={{
-                          flex:1, display:'flex', alignItems:'center', justifyContent:'space-between',
-                          padding:'12px 14px 12px 16px', borderRadius:14, background:COLORS.card,
-                          border:`1.5px solid ${city ? COLORS.ink : COLORS.line}`,
+                        <div style={{
+                          flex:1, position:'relative', borderRadius:14,
+                          background:COLORS.card, border:`1.5px solid ${COLORS.line}`,
                           boxShadow: isDragging ? '0 10px 32px rgba(0,0,0,0.18)' : 'none',
-                          cursor:'pointer', textAlign:'left',
+                          transition: isDragging ? 'none' : 'box-shadow 0.22s ease',
                         }}>
-                          <span style={{ fontFamily:SANS, fontSize:15, color: city ? COLORS.ink : COLORS.mute }}>
-                            {city || (i===0 ? '도시 선택' : `도시 ${i+1}`)}
-                          </span>
-                          {city
-                            ? <span onMouseDown={e=>{ e.preventDefault(); e.stopPropagation(); setCities(prev=>prev.map((v,j)=>j===i?'':v)); }} style={{ color:COLORS.mute, fontSize:18, lineHeight:1, padding:'0 2px' }}>×</span>
-                            : <Icon name="chevron-down" size={14} color={COLORS.mute} stroke={2}/>
-                          }
-                        </button>
+                          {cityGhostSuffix && (
+                            <div aria-hidden="true" style={{ position:'absolute', inset:0, padding:'12px 40px 12px 16px', display:'flex', alignItems:'center', pointerEvents:'none', overflow:'hidden', fontFamily:SANS, fontSize:15, lineHeight:'normal', borderRadius:14 }}>
+                              <span style={{ color:'transparent', whiteSpace:'pre' }}>{qRaw}</span>
+                              <span style={{ color:COLORS.mute, opacity:0.55, whiteSpace:'pre' }}>{cityGhostSuffix}</span>
+                            </div>
+                          )}
+                          <input value={city} autoFocus={i===0 && !cityDrag}
+                            onChange={e => setCities(prev => prev.map((c,j) => j===i ? e.target.value : c))}
+                            onKeyDown={e => { if (e.key==='Enter' && city.trim()) setStep(3); }}
+                            placeholder={cityGhostSuffix ? '' : (i===0 ? '도시 이름 (한글 또는 영어)' : `도시 ${i+1}`)}
+                            style={{ width:'100%', boxSizing:'border-box', padding:'12px 40px 12px 16px', border:'none', borderRadius:14, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, position:'relative', zIndex:1 }}
+                          />
+                          {cityGhostSuffix && (
+                            <div onMouseDown={e => { e.preventDefault(); acceptCityGhost(); }} style={{ position:'absolute', top:0, bottom:0, left:cityTypedPx, right:8, zIndex:2, cursor:'pointer' }}/>
+                          )}
+                          {city.length > 0 && (
+                            <button onClick={() => setCities(prev => prev.map((c,j) => j===i ? '' : c))} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontSize:18, lineHeight:1, padding:4, zIndex:3 }}>×</button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -10167,20 +10218,6 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                 <button onMouseDown={e => e.preventDefault()} onClick={() => setCities(prev=>[...prev,''])} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontFamily:SANS, fontSize:13, padding:'6px 0', marginTop:4 }}>
                   <span style={{ fontSize:18, lineHeight:1 }}>+</span> 도시 추가
                 </button>
-                <PickerSheet open={cityPickerIdx >= 0} title={selectedDest ? `${selectedDest.kor} 도시` : '도시 선택'}
-                  items={cityList}
-                  getKey={c => c.kor}
-                  filterFn={(c, q) => c.kor.includes(q) || c.eng.toLowerCase().includes(q.toLowerCase())}
-                  renderRow={(c, sel) => (
-                    <div style={{ display:'flex', alignItems:'baseline', gap:8 }}>
-                      <span style={{ fontFamily:SANS, fontSize:15, color: sel ? COLORS.accent : COLORS.ink }}>{c.kor}</span>
-                      <span style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute }}>{c.eng}</span>
-                    </div>
-                  )}
-                  onPick={c => { setCities(prev => prev.map((v,j) => j===cityPickerIdx ? c.kor : v)); setCityPickerIdx(-1); }}
-                  onClose={() => setCityPickerIdx(-1)}
-                  selectedKey={cities[cityPickerIdx] || ''}
-                />
               </div>
             );
           })()}
