@@ -2266,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v109</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v110</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -8827,6 +8827,21 @@ const DOLOMITES_TREKKING = [
   { id:'dlt_12', name:'발 디 푸네스 트레일',           nameOrig:'Val di Funes (Villnöss) · 9km · 약 4시간 · 중간', lat:46.634, lon:11.736, type:'hiking_trail', duration:240 },
 ];
 
+const SWITZERLAND_TREKKING = [
+  { id:'swt_1',  name:'고르너그라트 ~ 체르마트 하이킹',  nameOrig:'Gornergratt to Zermatt · 10km · 약 3시간 · 쉬움',       lat:45.984, lon:7.785,  type:'hiking_trail', duration:180 },
+  { id:'swt_2',  name:'그린델발트 퍼스트 트레일',         nameOrig:'Grindelwald First Cliff Walk · 7km · 약 3시간 · 쉬움',  lat:46.659, lon:8.071,  type:'hiking_trail', duration:180 },
+  { id:'swt_3',  name:'라우터브루넨 계곡 트레일',         nameOrig:'Lauterbrunnen Valley Walk · 8km · 약 3시간 · 쉬움',     lat:46.593, lon:7.908,  type:'hiking_trail', duration:180 },
+  { id:'swt_4',  name:'뮈렌 ~ 클라이네 샤이덱 트레일',   nameOrig:'Mürren to Kleine Scheidegg · 12km · 약 4시간 · 중간',  lat:46.560, lon:7.893,  type:'hiking_trail', duration:240 },
+  { id:'swt_5',  name:'알레취 빙하 트레일',               nameOrig:'Aletsch Glacier Trail · 14km · 약 5시간 · 중간',        lat:46.453, lon:8.072,  type:'hiking_trail', duration:300 },
+  { id:'swt_6',  name:'마테호른 전망 하이킹 (체르마트)',  nameOrig:'Matterhorn View Hike (Zermatt) · 8km · 약 4시간 · 중간',lat:46.020, lon:7.752,  type:'hiking_trail', duration:240 },
+  { id:'swt_7',  name:'필라투스 트레일 (루체른)',          nameOrig:'Pilatus Summit Trail · 6km · 약 3시간 · 중간',          lat:46.979, lon:8.253,  type:'hiking_trail', duration:180 },
+  { id:'swt_8',  name:'리기 정상 트레일',                 nameOrig:'Rigi Summit Trail · 7km · 약 2.5시간 · 쉬움',           lat:47.057, lon:8.484,  type:'hiking_trail', duration:150 },
+  { id:'swt_9',  name:'엥겔베르크 티틀리스 트레일',       nameOrig:'Engelberg Titlis Trail · 9km · 약 4시간 · 중간',        lat:46.808, lon:8.392,  type:'hiking_trail', duration:240 },
+  { id:'swt_10', name:'베르너 오버란트 파노라마 트레일',  nameOrig:'Bernese Oberland Panorama · 16km · 약 6시간 · 어려움',  lat:46.620, lon:7.970,  type:'hiking_trail', duration:360 },
+  { id:'swt_11', name:'스위스 국립공원 트레일',           nameOrig:'Swiss National Park Trail · 12km · 약 5시간 · 중간',    lat:46.651, lon:10.178, type:'hiking_trail', duration:300 },
+  { id:'swt_12', name:'생 베르나르 패스 트레일',          nameOrig:'Great St. Bernard Pass · 10km · 약 4시간 · 중간',       lat:45.869, lon:7.170,  type:'hiking_trail', duration:240 },
+];
+
 const DURATION_BY_TYPE = {
   museum:180, gallery:120, theme_park:480, zoo:150, aquarium:120,
   ruins:120, castle:120, monument:60, viewpoint:45,
@@ -9845,10 +9860,13 @@ function NewTripSheet({ open, onClose, onSubmit }) {
               _popRank: idx,  // 인기순 순위 (generateTripData에서 day 타이틀 선택에 사용)
             };
           }).filter(p => p.name && p.lat && p.lon);
-          // 돌로미티 선택 시 트래킹 코스를 앞에 추가
-          const isDolomites = cityEng.toLowerCase().includes('dolomit') || city.trim() === '돌로미티';
-          if (isDolomites) {
-            const trekCourses = DOLOMITES_TREKKING.map((t, idx) => ({ ...t, id:`${ci}_${t.id}`, cityIdx:ci, _popRank:idx }));
+          // 트래킹 특화 도시 선택 시 코스를 앞에 추가
+          const SWISS_TREK = ['interlaken','zermatt','grindelwald','davos','lucerne','engelberg'];
+          const isDolomites      = cityEng.toLowerCase().includes('dolomit') || city.trim() === '돌로미티';
+          const isSwissTrekCity  = selectedDest?.key === 'switzerland' && SWISS_TREK.some(k => cityEng.toLowerCase().includes(k));
+          const trekMap = isDolomites ? DOLOMITES_TREKKING : isSwissTrekCity ? SWITZERLAND_TREKKING : null;
+          if (trekMap) {
+            const trekCourses = trekMap.map((t, idx) => ({ ...t, id:`${ci}_${t.id}`, cityIdx:ci, _popRank:idx }));
             allPlaces.push(...trekCourses, ...list);
           } else {
             allPlaces.push(...list);
