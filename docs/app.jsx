@@ -2266,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v112</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v113</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9740,6 +9740,9 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   const [selected,     setSelected]     = React.useState(new Set());
   const [cityStep,     setCityStep]     = React.useState(0);
   const [showCount,    setShowCount]    = React.useState(12);
+  const [cityPickerIdx, setCityPickerIdx] = React.useState(-1);
+  const [showDepPicker, setShowDepPicker] = React.useState(false);
+  const [showArrPicker, setShowArrPicker] = React.useState(false);
   const [kbOffset,     setKbOffset]     = React.useState(0);
 
   // 키보드 올라올 때 팝업 위치 조정
@@ -10117,120 +10120,67 @@ function NewTripSheet({ open, onClose, onSubmit }) {
               }
             }
             const draggedCardH = cityDrag ? ((draggedSnap?.height || 54) + 10) : 0;
+            const cityList = selectedDest ? (CITIES_BY_KEY[selectedDest.key] || []) : [];
             return (
               <div>
                 <div style={{ position:'relative' }}>
                   {cities.map((city, i) => {
-                    const cityList = selectedDest ? (CITIES_BY_KEY[selectedDest.key] || []) : [];
-                    const qRaw = city;
-                    const q = qRaw.toLowerCase();
-                    const cityGhostMatch = qRaw.length === 0 ? null :
-                      cityList.find(c => c.kor.startsWith(qRaw) && c.kor !== qRaw) ||
-                      cityList.find(c => c.eng.toLowerCase().startsWith(q) && c.eng.toLowerCase() !== q) ||
-                      null;
-                    const cityGhostIsKor = cityGhostMatch && cityGhostMatch.kor.startsWith(qRaw);
-                    const cityGhostFull  = cityGhostMatch ? (cityGhostIsKor ? cityGhostMatch.kor : cityGhostMatch.eng) : '';
-                    const cityGhostSuffix = cityGhostFull ? cityGhostFull.slice(qRaw.length) : '';
-                    let cityTypedPx = 16 + qRaw.length * 14;
-                    try { const cv=document.createElement('canvas'); const cx=cv.getContext('2d'); cx.font=`15px ${SANS},sans-serif`; cityTypedPx=16+cx.measureText(qRaw).width; } catch(_){}
-                    const acceptCityGhost = () => {
-                      if (!cityGhostMatch) return;
-                      setCities(prev => prev.map((c,j) => j===i ? (cityGhostIsKor ? cityGhostMatch.kor : cityGhostMatch.eng) : c));
-                    };
                     const isDragging = cityDrag && cityDrag.idx === i;
                     let translateY = 0;
                     if (cityDrag) {
-                      if (isDragging) {
-                        translateY = dragDelta;
-                      } else if (hoverIdx < cityDrag.idx) {
-                        if (i >= hoverIdx && i < cityDrag.idx) translateY = draggedCardH;
-                      } else if (hoverIdx > cityDrag.idx) {
-                        if (i > cityDrag.idx && i <= hoverIdx) translateY = -draggedCardH;
-                      }
+                      if (isDragging) translateY = dragDelta;
+                      else if (hoverIdx < cityDrag.idx) { if (i >= hoverIdx && i < cityDrag.idx) translateY = draggedCardH; }
+                      else if (hoverIdx > cityDrag.idx) { if (i > cityDrag.idx && i <= hoverIdx) translateY = -draggedCardH; }
                     }
-                    const exactMatch = cityList.find(c => c.kor === qRaw || c.eng.toLowerCase() === q);
-                    const cityChips = exactMatch ? [] :
-                      !qRaw.trim() ? cityList :
-                      cityList.filter(c => c.kor.includes(qRaw) || c.eng.toLowerCase().includes(q));
                     return (
-                      <React.Fragment key={i}>
-                      <div
+                      <div key={i}
                         ref={el => { cityCardRefs.current[i] = el; }}
-                        style={{
-                          display:'flex', gap:8, marginBottom: cityChips.length > 0 ? 6 : 10, alignItems:'center',
-                          transform:`translateY(${translateY}px)`,
-                          transition: isDragging ? 'none' : 'transform 0.22s cubic-bezier(0.22,1,0.36,1)',
-                          zIndex: isDragging ? 50 : 1,
-                          position:'relative',
-                        }}
+                        style={{ display:'flex', gap:8, marginBottom:10, alignItems:'center', transform:`translateY(${translateY}px)`, transition: isDragging ? 'none' : 'transform 0.22s cubic-bezier(0.22,1,0.36,1)', zIndex: isDragging ? 50 : 1, position:'relative' }}
                       >
                         {cities.length > 1 && (
-                          <div
-                            onTouchStart={e => {
-                              e.preventDefault();
-                              const touch = e.touches[0];
-                              const snapshots = {};
-                              cities.forEach((_, j) => {
-                                const el = cityCardRefs.current[j];
-                                if (el) snapshots[j] = el.getBoundingClientRect();
-                              });
-                              setCityDrag({ idx:i, startY:touch.clientY, currentY:touch.clientY, snapshots, len:cities.length });
-                            }}
-                            style={{
-                              flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center',
-                              width:28, height:44, cursor:'grab', touchAction:'none',
-                            }}
-                          >
+                          <div onTouchStart={e => { e.preventDefault(); const touch=e.touches[0]; const snapshots={}; cities.forEach((_,j)=>{ const el=cityCardRefs.current[j]; if(el) snapshots[j]=el.getBoundingClientRect(); }); setCityDrag({idx:i,startY:touch.clientY,currentY:touch.clientY,snapshots,len:cities.length}); }}
+                            style={{ flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', width:28, height:44, cursor:'grab', touchAction:'none' }}>
                             <svg width="12" height="18" viewBox="0 0 12 18" fill="none">
-                              {[[2,2],[8,2],[2,7],[8,7],[2,12],[8,12]].map(([cx,cy]) =>
-                                <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2" fill={COLORS.mute} opacity="0.55"/>
-                              )}
+                              {[[2,2],[8,2],[2,7],[8,7],[2,12],[8,12]].map(([cx,cy]) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2" fill={COLORS.mute} opacity="0.55"/>)}
                             </svg>
                           </div>
                         )}
-                        <div style={{
-                          flex:1, position:'relative', borderRadius:14,
-                          background:COLORS.card, border:`1.5px solid ${COLORS.line}`,
+                        <button onClick={() => setCityPickerIdx(i)} style={{
+                          flex:1, display:'flex', alignItems:'center', justifyContent:'space-between',
+                          padding:'12px 14px 12px 16px', borderRadius:14, background:COLORS.card,
+                          border:`1.5px solid ${city ? COLORS.ink : COLORS.line}`,
                           boxShadow: isDragging ? '0 10px 32px rgba(0,0,0,0.18)' : 'none',
-                          transition: isDragging ? 'none' : 'box-shadow 0.22s ease',
+                          cursor:'pointer', textAlign:'left',
                         }}>
-                          {cityGhostSuffix && (
-                            <div aria-hidden="true" style={{ position:'absolute', inset:0, padding:'12px 40px 12px 16px', display:'flex', alignItems:'center', pointerEvents:'none', overflow:'hidden', fontFamily:SANS, fontSize:15, lineHeight:'normal', borderRadius:14 }}>
-                              <span style={{ color:'transparent', whiteSpace:'pre' }}>{qRaw}</span>
-                              <span style={{ color:COLORS.mute, opacity:0.55, whiteSpace:'pre' }}>{cityGhostSuffix}</span>
-                            </div>
-                          )}
-                          <input value={city} autoFocus={i===0 && !cityDrag}
-                            onChange={e => setCities(prev => prev.map((c,j) => j===i ? e.target.value : c))}
-                            onKeyDown={e => { if (e.key==='Enter' && city.trim()) setStep(3); }}
-                            placeholder={cityGhostSuffix ? '' : (i===0 ? '도시 이름 (한글 또는 영어)' : `도시 ${i+1}`)}
-                            style={{ width:'100%', boxSizing:'border-box', padding:'12px 40px 12px 16px', border:'none', borderRadius:14, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, position:'relative', zIndex:1 }}
-                          />
-                          {cityGhostSuffix && (
-                            <div onMouseDown={e => { e.preventDefault(); acceptCityGhost(); }} style={{ position:'absolute', top:0, bottom:0, left:cityTypedPx, right:8, zIndex:2, cursor:'pointer' }}/>
-                          )}
-                          {city.length > 0 && (
-                            <button onClick={() => setCities(prev => prev.map((c,j) => j===i ? '' : c))} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontSize:18, lineHeight:1, padding:4, zIndex:3 }}>×</button>
-                          )}
-                        </div>
+                          <span style={{ fontFamily:SANS, fontSize:15, color: city ? COLORS.ink : COLORS.mute }}>
+                            {city || (i===0 ? '도시 선택' : `도시 ${i+1}`)}
+                          </span>
+                          {city
+                            ? <span onMouseDown={e=>{ e.preventDefault(); e.stopPropagation(); setCities(prev=>prev.map((v,j)=>j===i?'':v)); }} style={{ color:COLORS.mute, fontSize:18, lineHeight:1, padding:'0 2px' }}>×</span>
+                            : <Icon name="chevron-down" size={14} color={COLORS.mute} stroke={2}/>
+                          }
+                        </button>
                       </div>
-                      {cityChips.length > 0 && (
-                        <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:10, paddingLeft: cities.length > 1 ? 36 : 0 }}>
-                          {cityChips.map(c => (
-                            <button key={c.kor} onMouseDown={e=>{ e.preventDefault(); setCities(prev=>prev.map((v,j)=>j===i?c.kor:v)); }}
-                              style={{ background:COLORS.softer, border:`1px solid ${COLORS.line}`, borderRadius:20, padding:'5px 12px', cursor:'pointer', fontFamily:SANS, fontSize:12.5, color:COLORS.ink }}>
-                              {c.kor}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      </React.Fragment>
                     );
                   })}
                 </div>
                 <button onMouseDown={e => e.preventDefault()} onClick={() => setCities(prev=>[...prev,''])} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontFamily:SANS, fontSize:13, padding:'6px 0', marginTop:4 }}>
                   <span style={{ fontSize:18, lineHeight:1 }}>+</span> 도시 추가
                 </button>
+                <PickerSheet open={cityPickerIdx >= 0} title={selectedDest ? `${selectedDest.kor} 도시` : '도시 선택'}
+                  items={cityList}
+                  getKey={c => c.kor}
+                  filterFn={(c, q) => c.kor.includes(q) || c.eng.toLowerCase().includes(q.toLowerCase())}
+                  renderRow={(c, sel) => (
+                    <div style={{ display:'flex', alignItems:'baseline', gap:8 }}>
+                      <span style={{ fontFamily:SANS, fontSize:15, color: sel ? COLORS.accent : COLORS.ink }}>{c.kor}</span>
+                      <span style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute }}>{c.eng}</span>
+                    </div>
+                  )}
+                  onPick={c => { setCities(prev => prev.map((v,j) => j===cityPickerIdx ? c.kor : v)); setCityPickerIdx(-1); }}
+                  onClose={() => setCityPickerIdx(-1)}
+                  selectedKey={cities[cityPickerIdx] || ''}
+                />
               </div>
             );
           })()}
@@ -10252,80 +10202,60 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             const firstCity = (cities[0] || '').trim();
             const rawSuggest = firstCity ? (CITY_AIRPORT_MAP[firstCity] || null) : null;
             const citySuggests = rawSuggest ? (Array.isArray(rawSuggest) ? rawSuggest : [rawSuggest]) : [];
-            const makeAirportInput = (value, setValue, label, isAutoFocus, placeholder) => {
-              const q = value.toLowerCase();
-              const korMatch = value.length > 0 ? AIRPORTS.find(a => a.kor.startsWith(value) && a.kor !== value) : null;
-              const engMatch = value.length > 0 ? AIRPORTS.find(a => a.eng.toLowerCase().startsWith(q) && a.eng.toLowerCase() !== q) : null;
-              // 코드 매칭: 2자 이상이고 한글/영어 매칭이 없을 때만
-              const codeMatch = (value.length >= 2 && !korMatch && !engMatch) ? AIRPORTS.find(a => a.code.toLowerCase().startsWith(q)) : null;
-              const ghostFull = korMatch ? korMatch.kor : engMatch ? engMatch.eng : '';
-              const ghostSuffix = ghostFull ? ghostFull.slice(value.length) : '';
-              let typedPx = 16 + value.length * 14;
-              try { const cv=document.createElement('canvas'); const cx=cv.getContext('2d'); cx.font=`15px ${SANS},sans-serif`; typedPx=16+cx.measureText(value).width; } catch(_){}
-              const acceptMatch = () => {
-                if (korMatch) setValue(korMatch.kor);
-                else if (engMatch) setValue(engMatch.eng);
-                else if (codeMatch) setValue(codeMatch.kor);
-              };
-              return (
-                <div style={{ marginBottom:18 }}>
-                  <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>{label}</div>
-                  <div style={{ position:'relative', borderRadius:14, background:COLORS.card, border:`1.5px solid ${COLORS.line}` }}>
-                    {ghostSuffix && (
-                      <div aria-hidden="true" style={{ position:'absolute', inset:0, padding:'12px 40px 12px 16px', display:'flex', alignItems:'center', pointerEvents:'none', overflow:'hidden', fontFamily:SANS, fontSize:15, lineHeight:'normal', borderRadius:14 }}>
-                        <span style={{ color:'transparent', whiteSpace:'pre' }}>{value}</span>
-                        <span style={{ color:COLORS.mute, opacity:0.55, whiteSpace:'pre' }}>{ghostSuffix}</span>
-                      </div>
-                    )}
-                    <input autoFocus={isAutoFocus} value={value}
-                      onChange={e => setValue(e.target.value)}
-                      onKeyDown={e => { if ((e.key==='Tab'||e.key==='ArrowRight') && (ghostSuffix||codeMatch)) { e.preventDefault(); acceptMatch(); } }}
-                      placeholder={ghostSuffix ? '' : placeholder}
-                      style={{ width:'100%', boxSizing:'border-box', padding:'12px 40px 12px 16px', border:'none', borderRadius:14, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, position:'relative', zIndex:1 }}
-                    />
-                    {ghostSuffix && (
-                      <div onMouseDown={e => { e.preventDefault(); acceptMatch(); }} style={{ position:'absolute', top:0, bottom:0, left:typedPx, right:36, zIndex:2, cursor:'pointer' }}/>
-                    )}
-                    {value.length > 0 && (
-                      <button onClick={() => setValue('')} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontSize:18, lineHeight:1, padding:4, zIndex:3 }}>×</button>
-                    )}
-                  </div>
-                  {codeMatch && (
-                    <div onMouseDown={e => { e.preventDefault(); setValue(codeMatch.kor); }}
-                      style={{ marginTop:6, display:'inline-flex', alignItems:'center', gap:6, background:COLORS.card, border:`1px solid ${COLORS.line}`, borderRadius:20, padding:'5px 12px', cursor:'pointer' }}>
-                      <span style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute }}>{codeMatch.code}</span>
-                      <span style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink }}>{codeMatch.kor}</span>
-                    </div>
-                  )}
-                </div>
-              );
-            };
+            const makeAirportField = (value, label, onOpen, onClear) => (
+              <div style={{ marginBottom:18 }}>
+                <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.05em' }}>{label}</div>
+                <button onClick={onOpen} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 14px 12px 16px', borderRadius:14, background:COLORS.card, border:`1.5px solid ${value ? COLORS.ink : COLORS.line}`, cursor:'pointer', textAlign:'left' }}>
+                  <span style={{ fontFamily:SANS, fontSize:15, color: value ? COLORS.ink : COLORS.mute }}>{value || '공항 선택'}</span>
+                  {value
+                    ? <span onMouseDown={e=>{ e.preventDefault(); e.stopPropagation(); onClear(); }} style={{ color:COLORS.mute, fontSize:18, lineHeight:1, padding:'0 2px' }}>×</span>
+                    : <Icon name="chevron-down" size={14} color={COLORS.mute} stroke={2}/>
+                  }
+                </button>
+              </div>
+            );
+            const airportFilterFn = (a, q) => a.kor.includes(q) || a.eng.toLowerCase().includes(q.toLowerCase()) || a.code.toLowerCase().startsWith(q.toLowerCase());
+            const airportRenderRow = (a, sel) => (
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ fontFamily:MONO, fontSize:12, color: sel ? COLORS.accent : COLORS.mute, minWidth:32 }}>{a.code}</span>
+                <span style={{ fontFamily:SANS, fontSize:14, color: sel ? COLORS.accent : COLORS.ink }}>{a.kor}</span>
+              </div>
+            );
+            // 도착 공항 목록: 첫 도시 근처 공항을 상단에 표시
+            const arrAirportItems = citySuggests.length > 0
+              ? [ ...citySuggests.map(kor => AIRPORTS.find(a => a.kor === kor)).filter(Boolean),
+                  ...AIRPORTS.filter(a => !citySuggests.includes(a.kor)) ]
+              : AIRPORTS;
             return (
               <div>
-                {makeAirportInput(depAirport, setDepAirport, '출발 공항', true, '예) 인천국제공항')}
-                {makeAirportInput(arrAirport, setArrAirport, '도착 공항', false, '예) 나리타 국제공항')}
-                {!arrAirport && citySuggests.length > 0 && (
-                  <div style={{ marginBottom:18, marginTop:-8 }}>
-                    <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:8, textTransform:'uppercase', letterSpacing:'0.05em' }}>
-                      {firstCity} 근처 공항
-                    </div>
-                    <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
-                      {citySuggests.map(apt => {
-                        const info = AIRPORTS.find(a => a.kor === apt);
-                        return (
-                          <button key={apt} onMouseDown={e=>e.preventDefault()} onClick={() => setArrAirport(apt)}
-                            style={{ display:'flex', alignItems:'center', gap:6, background:COLORS.card, border:`1.5px solid ${COLORS.line}`, borderRadius:20, padding:'6px 14px 6px 10px', cursor:'pointer', fontFamily:SANS, fontSize:12.5, color:COLORS.ink }}>
-                            <span style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:0.5 }}>{info?.code}</span>
-                            <span>{apt}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                {makeAirportField(depAirport, '출발 공항', () => setShowDepPicker(true), () => setDepAirport(''))}
+                {makeAirportField(arrAirport, '도착 공항', () => setShowArrPicker(true), () => setArrAirport(''))}
+                {citySuggests.length > 0 && !arrAirport && (
+                  <div style={{ fontFamily:SANS, fontSize:11.5, color:COLORS.mute, marginTop:-10, marginBottom:14 }}>
+                    {firstCity} 근처 공항이 목록 상단에 표시됩니다
                   </div>
                 )}
                 <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.5 }}>
                   비행기를 이용하지 않는다면 넘어가세요.
                 </div>
+                <PickerSheet open={showDepPicker} title="출발 공항"
+                  items={AIRPORTS}
+                  getKey={a => a.code}
+                  filterFn={airportFilterFn}
+                  renderRow={airportRenderRow}
+                  onPick={a => { setDepAirport(a.kor); setShowDepPicker(false); }}
+                  onClose={() => setShowDepPicker(false)}
+                  selectedKey={AIRPORTS.find(a => a.kor === depAirport)?.code || ''}
+                />
+                <PickerSheet open={showArrPicker} title="도착 공항"
+                  items={arrAirportItems}
+                  getKey={a => a.code}
+                  filterFn={airportFilterFn}
+                  renderRow={airportRenderRow}
+                  onPick={a => { setArrAirport(a.kor); setShowArrPicker(false); }}
+                  onClose={() => setShowArrPicker(false)}
+                  selectedKey={AIRPORTS.find(a => a.kor === arrAirport)?.code || ''}
+                />
               </div>
             );
           })()}
