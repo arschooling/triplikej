@@ -50,7 +50,12 @@ class _FoodScreenState extends ConsumerState<FoodScreen> {
               const Spacer(),
               EditButton(
                 editing: _editing,
-                onTap: () => setState(() => _editing = !_editing),
+                canUndo: ref.watch(canUndoProvider),
+                onUndo: () => ref.read(tripsProvider.notifier).undo(),
+                onTap: () {
+                  if (!_editing) ref.read(tripsProvider.notifier).clearSnapshot();
+                  setState(() => _editing = !_editing);
+                },
               ),
             ],
           ),
@@ -89,14 +94,9 @@ class _FoodScreenState extends ConsumerState<FoodScreen> {
                               child: _FoodCard(
                                 food: item,
                                 editing: _editing,
-                                onDelete: () {
-                                  final newFood = [...trip.food];
-                                  newFood.removeAt(idx);
-                                  ref
-                                      .read(tripsProvider.notifier)
-                                      .patchTrip(widget.tripIndex,
-                                          food: newFood);
-                                },
+                                onDelete: () => ref
+                                    .read(tripsProvider.notifier)
+                                    .deleteFood(widget.tripIndex, idx),
                                 onEdit: () => _editItem(context, idx, item),
                               ),
                             );

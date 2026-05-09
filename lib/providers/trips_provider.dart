@@ -5,19 +5,22 @@ import '../data/trip_repository.dart';
 
 final tripRepositoryProvider = Provider((_) => TripRepository());
 
+final canUndoProvider = StateProvider<bool>((_) => false);
+
 final tripsProvider = StateNotifierProvider<TripsNotifier, AsyncValue<List<Trip>>>(
-  (ref) => TripsNotifier(ref.read(tripRepositoryProvider)),
+  (ref) => TripsNotifier(ref.read(tripRepositoryProvider), ref),
 );
 
 class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
   final TripRepository _repo;
+  final Ref _ref;
   List<Trip>? _snapshot;
 
-  TripsNotifier(this._repo) : super(const AsyncValue.loading()) {
+  TripsNotifier(this._repo, this._ref) : super(const AsyncValue.loading()) {
     _load();
   }
 
-  TripsNotifier.preloaded(this._repo, List<Trip> trips)
+  TripsNotifier.preloaded(this._repo, this._ref, List<Trip> trips)
       : super(AsyncValue.data(trips));
 
   Future<void> _load() async {
@@ -36,14 +39,21 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
     _repo.save(trips);
   }
 
-  void _saveSnapshot() => _snapshot = [..._trips];
+  void _saveSnapshot() {
+    _snapshot = [..._trips];
+    _ref.read(canUndoProvider.notifier).state = true;
+  }
 
-  bool get canUndo => _snapshot != null;
+  void clearSnapshot() {
+    _snapshot = null;
+    _ref.read(canUndoProvider.notifier).state = false;
+  }
 
   void undo() {
     if (_snapshot != null) {
       _update(_snapshot!);
       _snapshot = null;
+      _ref.read(canUndoProvider.notifier).state = false;
     }
   }
 
@@ -195,6 +205,37 @@ class TripsNotifier extends StateNotifier<AsyncValue<List<Trip>>> {
       hotels[hotelIndex] = updatedHotel;
       final days = _syncHotelToDays(t.days, updatedHotel, prev);
       return t.copyWith(hotels: hotels, days: days);
+    });
+  }
+
+  // ── Food actions ──────────────────────────────────────────
+  void deleteFood(int tripIndex, int foodIndex) {
+    _saveSnapshot();
+    updateTrip(tripIndex, (t) {
+      final food = [...t.food];
+      food.removeAt(foodIndex);
+      return t.copyWith(food: food);
+    });
+  }
+
+  // ── Prep actions ──────────────────────────────────────────
+  void deletePrepItem(int tripIndex, String section, int itemIndex) {
+    _saveSnapshot();
+    updateTrip(tripIndex, (t) {
+      final prep = t.prep;
+      switch (section) {
+        case 'checklist':
+          final list = [...prep.checklist]..removeAt(itemIndex);
+          return t.copyWith(prep: prep.copyWith(checklist: list));
+        case 'docs':
+          final list = [...prep.docs]..removeAt(itemIndex);
+          return t.copyWith(prep: prep.copyWith(docs: list));
+        case 'pack':
+          final list = [...prep.pack]..removeAt(itemIndex);
+          return t.copyWith(prep: prep.copyWith(pack: list));
+        default:
+          return t;
+      }
     });
   }
 

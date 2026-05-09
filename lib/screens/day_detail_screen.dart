@@ -76,7 +76,12 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                     ),
                   EditButton(
                     editing: _editing,
-                    onTap: () => setState(() => _editing = !_editing),
+                    canUndo: ref.watch(canUndoProvider),
+                    onUndo: () => ref.read(tripsProvider.notifier).undo(),
+                    onTap: () {
+                      if (!_editing) ref.read(tripsProvider.notifier).clearSnapshot();
+                      setState(() => _editing = !_editing);
+                    },
                   ),
                 ],
               ),
