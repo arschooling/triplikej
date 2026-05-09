@@ -2266,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v104</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v105</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -3592,7 +3592,8 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
 
 // ─── Day screen ─────────────────────────────────────────────
 function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay,
-                     onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing, onPhotoUploaded }) {
+                     onEditDay, onAddItem, onDeleteItem, onReorderItems, editing, setEditing, onPhotoUploaded,
+                     onEditToggle, canUndo, onUndo }) {
   const day = trip.days[dayIdx] || { n: dayIdx+1, title:'', date:'', weekday:'', hero:{ hue:25, label:'' }, items:[] };
   const tripYear = extractTripYear(trip);
   const [travelTimes, setTravelTimes] = React.useState({});
@@ -3746,8 +3747,8 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
               }
             </button>
           )}
-          <EditBtn editing={editing} onClick={handleEditToggle}
-            canUndo={!!undoState} onUndo={doUndo}/>
+          <EditBtn editing={editing} onClick={onEditToggle || (() => setEditing(e => !e))}
+            canUndo={!!canUndo} onUndo={onUndo}/>
         </div>
         <input ref={dayPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleDayPhoto}/>
 
@@ -11520,7 +11521,8 @@ function App() {
         onEditDay={editDay} onAddItem={addItem} onDeleteItem={deleteItem}
         onReorderItems={reorderItems}
         editing={editing} setEditing={setEditing}
-        onPhotoUploaded={() => setPhotoVer(v => v + 1)}/>;
+        onPhotoUploaded={() => setPhotoVer(v => v + 1)}
+        onEditToggle={handleEditToggle} canUndo={!!undoState} onUndo={doUndo}/>;
       label = `Day ${dayIdx + 1}`;
     } else {
       screen = <HomeScreen trip={trip}
