@@ -2266,7 +2266,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v115</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v116</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>로딩 중...</div>
@@ -9327,7 +9327,13 @@ const AIRPORTS = [
   {kor:'발리 응우라라이 공항',  eng:'Ngurah Rai International Airport',                 code:'DPS'},
   {kor:'쿠알라룸푸르 국제공항', eng:'Kuala Lumpur International Airport',               code:'KUL'},
   {kor:'마닐라 니노이아키노 국제공항',eng:'Ninoy Aquino International Airport',         code:'MNL'},
+  {kor:'막탄 세부 국제공항',         eng:'Mactan-Cebu International Airport',           code:'CEB'},
   {kor:'보홀 팡글라오 국제공항',     eng:'Bohol-Panglao International Airport',         code:'TAG'},
+  {kor:'칼리보 국제공항',            eng:'Kalibo International Airport',                code:'KLO'},
+  {kor:'푸에르토프린세사 국제공항',  eng:'Puerto Princesa International Airport',       code:'PPS'},
+  {kor:'프란시스코 방고이 국제공항', eng:'Francisco Bangoy International Airport',      code:'DVO'},
+  {kor:'프란시스코 B. 레예스 공항',  eng:'Francisco B. Reyes Airport',                  code:'USU'},
+  {kor:'시아르가오 공항',            eng:'Sayak Airport',                               code:'IAO'},
   {kor:'하노이 노이바이 국제공항',eng:'Noi Bai International Airport',                  code:'HAN'},
   {kor:'호치민 탄손녓 국제공항',eng:'Tan Son Nhat International Airport',               code:'SGN'},
   {kor:'자카르타 수카르노하타 국제공항',eng:'Soekarno-Hatta International Airport',     code:'CGK'},
@@ -9656,6 +9662,14 @@ const CITY_AIRPORT_MAP = {
   '페낭':'쿠알라룸푸르 국제공항','Penang':'쿠알라룸푸르 국제공항',
   // 필리핀
   '마닐라':'마닐라 니노이아키노 국제공항','Manila':'마닐라 니노이아키노 국제공항',
+  '세부':'막탄 세부 국제공항','Cebu':'막탄 세부 국제공항',
+  '보홀':'보홀 팡글라오 국제공항','Bohol':'보홀 팡글라오 국제공항',
+  '보라카이':'칼리보 국제공항','Boracay':'칼리보 국제공항',
+  '팔라완':'푸에르토프린세사 국제공항','Palawan':'푸에르토프린세사 국제공항',
+  '엘니도':'푸에르토프린세사 국제공항','El Nido':'푸에르토프린세사 국제공항',
+  '코론':'프란시스코 B. 레예스 공항','Coron':'프란시스코 B. 레예스 공항',
+  '다바오':'프란시스코 방고이 국제공항','Davao':'프란시스코 방고이 국제공항',
+  '시아르가오':'시아르가오 공항','Siargao':'시아르가오 공항',
   // 베트남
   '하노이':'하노이 노이바이 국제공항','Hanoi':'하노이 노이바이 국제공항',
   '하롱베이':'하노이 노이바이 국제공항','Ha Long Bay':'하노이 노이바이 국제공항',
