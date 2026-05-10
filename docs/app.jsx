@@ -2391,7 +2391,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v139</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v141</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -9008,18 +9008,8 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
   const hasDep     = !!(depAirport && depAirport.trim());
   const getHotel   = n => hotels.find(h => h.name && n >= h.from && n <= h.to) || null;
 
-  // 도시별 장소 분리 → 각각 최적 경로 → 순차 합치기
-  // Foursquare가 인기순으로 반환하므로 원래 인덱스 = 인기도 순위
+  // 인기도 순위 보존
   const rankedPlaces = selectedPlaces.map((p, i) => ({ ...p, _popRank: i }));
-  const routedPlaces = [];
-  const hasCityIdx = rankedPlaces.some(p => p.cityIdx != null);
-  if (hasCityIdx) {
-    citiesList.forEach((_, ci) => {
-      greedyRoute(rankedPlaces.filter(p => (p.cityIdx ?? 0) === ci)).forEach(p => routedPlaces.push(p));
-    });
-  } else {
-    greedyRoute([...rankedPlaces]).forEach(p => routedPlaces.push(p));
-  }
 
   // 하루 시간 상수
   const DAY_START  = 9 * 60 + 30;   // 09:30
@@ -9034,49 +9024,83 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
   const sEnd   = hasDep ? dayCount - 1 : dayCount;
   const sCount = Math.max(0, sEnd - sStart + 1);
 
-  // 날짜별 장소 배분
+  // 날짜별 일정 생성 — 날마다 최근접 이웃(nearest-neighbor)으로 이동 거리 최소화
+  // 각 날은 전날 마지막 위치에서 출발해 가장 가까운 장소부터 배정
   const dayItems = Array.from({ length: dayCount }, () => []);
-  let pIdx = 0;
+  const remaining = [...rankedPlaces];
+  let lastPlace = null; // 전날 마지막 위치 → 다음 날 시작점
 
-  for (let d = 0; d < sCount && pIdx < routedPlaces.length; d++) {
+  for (let d = 0; d < sCount && remaining.length > 0; d++) {
     const dayIdx = sStart - 1 + d;
     let t = DAY_START;
     let lunchDone = false, dinnerDone = false;
-    let prev = null;
+    let prev = lastPlace;
+    let addedAny = false;
 
-    outer: while (pIdx < routedPlaces.length) {
-      const p = routedPlaces[pIdx];
-      const dur = p.duration ?? getPlaceDuration(p.type);
-      const km  = (prev && prev.lat && p.lat) ? haversineKm(prev.lat, prev.lon, p.lat, p.lon) : 0;
-      const transit = km >= 2;
-      const travelMin = km === 0 ? 0 : transit ? 30 : Math.max(5, Math.round(km / 5 * 60));
-
-      // 점심 삽입
-      if (!lunchDone && t + travelMin >= LUNCH_AT) {
-        const lt = Math.max(t, LUNCH_AT);
-        dayItems[dayIdx].push({ time:minToTime(lt), title:'점심', loc:'', done:false });
-        t = lt + LUNCH_DUR;
+    outer: while (remaining.length > 0) {
+      // 현재 시각이 점심 이후면 먼저 삽입
+      if (!lunchDone && t >= LUNCH_AT) {
+        dayItems[dayIdx].push({ time: minToTime(LUNCH_AT), title: '점심', loc: '', done: false });
+        t = LUNCH_AT + LUNCH_DUR;
         lunchDone = true;
         continue;
       }
 
-      // 이 장소가 오늘 안에 들어오는지 확인 (저녁 시간 확보)
+      // 오늘 남은 시간에 들어갈 수 있는 장소 중 이동 거리 최소인 것 선택
       const reserve = dinnerDone ? 0 : DINNER_DUR;
-      if (t + travelMin + dur > DAY_END - reserve) break outer;
+      let bestIdx = -1;
+      let bestKm = Infinity;
+
+      for (let i = 0; i < remaining.length; i++) {
+        const p = remaining[i];
+        const km = (prev && prev.lat && p.lat) ? haversineKm(prev.lat, prev.lon, p.lat, p.lon) : 0;
+        const transit = km >= 2;
+        const travelMin = km === 0 ? 0 : transit ? 30 : Math.max(5, Math.round(km / 5 * 60));
+        const dur = p.duration ?? getPlaceDuration(p.type);
+
+        // 점심 삽입 시뮬레이션: 이동 중 점심 시간 도래 시 점심 시간 반영
+        let curT = t;
+        if (!lunchDone && curT + travelMin >= LUNCH_AT) {
+          const lt = Math.max(curT, LUNCH_AT);
+          curT = lt + LUNCH_DUR;
+        }
+
+        if (curT + travelMin + dur <= DAY_END - reserve && km < bestKm) {
+          bestKm = km;
+          bestIdx = i;
+        }
+      }
+
+      if (bestIdx === -1) break outer; // 오늘 더 넣을 장소 없음 → 다음 날로
+
+      const p = remaining[bestIdx];
+      const km = (prev && prev.lat && p.lat) ? haversineKm(prev.lat, prev.lon, p.lat, p.lon) : 0;
+      const transit = km >= 2;
+      const travelMin = km === 0 ? 0 : transit ? 30 : Math.max(5, Math.round(km / 5 * 60));
+      const dur = p.duration ?? getPlaceDuration(p.type);
+
+      // 이동 중 점심 시간 도래 시 먼저 삽입
+      if (!lunchDone && t + travelMin >= LUNCH_AT) {
+        const lt = Math.max(t, LUNCH_AT);
+        dayItems[dayIdx].push({ time: minToTime(lt), title: '점심', loc: '', done: false });
+        t = lt + LUNCH_DUR;
+        lunchDone = true;
+      }
 
       t += travelMin;
       const transitNote = (transit && prev) ? `대중교통 이동 약 ${travelMin}분` : '';
       const typeNote    = PLACE_TYPE_NOTES[p.type] || '';
       const stopNote    = [transitNote, typeNote].filter(Boolean).join('\n');
 
-      dayItems[dayIdx].push({ time:minToTime(t), title:p.name, loc:p.name, done:false, lat:p.lat, lon:p.lon, coords:[p.lat, p.lon], _popRank:p._popRank ?? 999, ...(stopNote ? { note: stopNote } : {}) });
+      dayItems[dayIdx].push({ time: minToTime(t), title: p.name, loc: p.name, done: false, lat: p.lat, lon: p.lon, coords: [p.lat, p.lon], _popRank: p._popRank ?? 999, ...(stopNote ? { note: stopNote } : {}) });
       t += dur;
       prev = p;
-      pIdx++;
+      remaining.splice(bestIdx, 1);
+      addedAny = true;
 
-      // 저녁 삽입
+      // 저녁 시간 도래 시 삽입 후 오늘 일정 마감
       if (!dinnerDone && t >= DINNER_AT) {
-        dayItems[dayIdx].push({ time:minToTime(Math.max(t, DINNER_AT)), title:'저녁', loc:'', done:false });
+        dayItems[dayIdx].push({ time: minToTime(Math.max(t, DINNER_AT)), title: '저녁', loc: '', done: false });
         t = Math.max(t, DINNER_AT) + DINNER_DUR;
         dinnerDone = true;
         break outer;
@@ -9084,10 +9108,12 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
     }
 
     // 저녁 미삽입 시 추가
-    if (!dinnerDone && dayItems[dayIdx].some(it => it.title !== '점심')) {
+    if (!dinnerDone && addedAny) {
       const dt = Math.max(t, DINNER_AT);
-      if (dt < DAY_END) dayItems[dayIdx].push({ time:minToTime(dt), title:'저녁', loc:'', done:false });
+      if (dt < DAY_END) dayItems[dayIdx].push({ time: minToTime(dt), title: '저녁', loc: '', done: false });
     }
+
+    lastPlace = prev; // 다음 날 시작점 갱신
   }
 
   // 날짜 배열 빌드
@@ -9881,7 +9907,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   const [placeErr,     setPlaceErr]     = React.useState('');
   const [selected,     setSelected]     = React.useState(new Set());
   const [cityStep,     setCityStep]     = React.useState(0);
-  const [showCount,    setShowCount]    = React.useState(12);
+  const [showCount,    setShowCount]    = React.useState(8);
   const [kbOffset,     setKbOffset]     = React.useState(0);
 
   // 키보드 올라올 때 팝업 위치 조정
