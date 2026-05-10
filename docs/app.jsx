@@ -2391,7 +2391,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v137</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v139</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -2476,7 +2476,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
           </div>
       }
       <div style={{ textAlign:'center', paddingTop:20 }}>
-        <div className="arshooling-text" style={{ fontFamily:'Adam, serif', fontSize:15, letterSpacing:'0.18em' }}>ARSHOOLING</div>
+        <div className="arshooling-text" style={{ fontFamily:'Adam, serif', fontSize:15, letterSpacing:'0.18em', color:COLORS.mute }}>ARSHOOLING</div>
       </div>
     </div>
   );
@@ -3594,7 +3594,7 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
         <WeatherCard city={city}/>
       </div>
       <div style={{ textAlign:'center', paddingTop:16 }}>
-        <div className="arshooling-text" style={{ fontFamily:'Adam, serif', fontSize:15, letterSpacing:'0.18em' }}>ARSHOOLING</div>
+        <div className="arshooling-text" style={{ fontFamily:'Adam, serif', fontSize:15, letterSpacing:'0.18em', color:COLORS.mute }}>ARSHOOLING</div>
       </div>
 
       <input ref={cardPhotoInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleCardPhoto}/>
@@ -8250,7 +8250,7 @@ function NotificationsScreen({ open, onClose, authUser, notifications, onGoToCom
     const trip = n.tripTitle ? `"${n.tripTitle}"` : '여행';
     if (n.type === 'invite_received')    return `${name}님이 ${trip}에 초대했습니다.`;
     if (n.type === 'invite_accepted')    return `${name}님이 ${trip} 초대를 수락했습니다.`;
-    if (n.type === 'trip_edited')        return `${name}님이 ${trip} 일정을 수정했습니다.`;
+    if (n.type === 'trip_edited')        return `${name}님이 ${trip} 일정을 수정했습니다.${n.changeDesc ? ` (${n.changeDesc})` : ''}`;
     if (n.type === 'contact_added')      return `${name}님이 동행인으로 추가했습니다.`;
     if (n.type === 'contact_accepted')   return `${name}님이 동행인 요청을 수락했습니다.`;
     if (n.type === 'trip_copy_received') return `${name}님이 ${trip} 일정을 보냈습니다.`;
@@ -11103,6 +11103,7 @@ function App() {
   const [notifs, setNotifs]                     = React.useState([]);
   const [notifsReady, setNotifsReady]           = React.useState(false);
   const notifyTripEditTimer                     = React.useRef(null);
+  const notifyEditSnapshot                      = React.useRef(null);
   const updateSampleTimer                       = React.useRef(null);
   const [shareTripTarget, setShareTripTarget] = React.useState(null);
   const [loginError, setLoginError] = React.useState('');
@@ -11484,8 +11485,62 @@ function App() {
   }, []);
 
   // ── Trip-level actions (Firestore) ────────────────────────
+  const buildChangeDesc = (before, after) => {
+    if (!before || !after) return '';
+    const changes = [];
+    // 일정(days) 비교
+    const bDays = before.days || [];
+    const aDays = after.days || [];
+    const maxD = Math.max(bDays.length, aDays.length);
+    for (let i = 0; i < maxD; i++) {
+      const bDay = bDays[i], aDay = aDays[i];
+      if (!bDay && aDay) { changes.push(`${aDay.n || i+1}일차 추가`); continue; }
+      if (bDay && !aDay) { changes.push(`${bDay.n || i+1}일차 삭제`); continue; }
+      const bItems = bDay.items || [], aItems = aDay.items || [];
+      const dayN = aDay.n || i + 1;
+      const bKeys = new Set(bItems.map(it => it.title || it.en || '').filter(Boolean));
+      const aKeys = new Set(aItems.map(it => it.title || it.en || '').filter(Boolean));
+      for (const it of aItems) {
+        const k = it.title || it.en || '';
+        if (k && !bKeys.has(k)) changes.push(`${dayN}일차 "${k}" 추가`);
+      }
+      for (const it of bItems) {
+        const k = it.title || it.en || '';
+        if (k && !aKeys.has(k)) changes.push(`${dayN}일차 "${k}" 삭제`);
+      }
+      // 추가/삭제 없이 내용만 바뀐 경우
+      if (bItems.length === aItems.length && bItems.length > 0) {
+        const edited = bItems.some((bIt, idx) => JSON.stringify(bIt) !== JSON.stringify(aItems[idx]));
+        if (edited && aItems.every((it, idx) => (it.title||it.en) === (bItems[idx]?.title||bItems[idx]?.en))) {
+          changes.push(`${dayN}일차 일정 변경`);
+        }
+      }
+    }
+    // 숙소(hotels) 비교
+    const bHotels = before.hotels || [], aHotels = after.hotels || [];
+    const bHNames = new Set(bHotels.map(h => h.name || '').filter(Boolean));
+    const aHNames = new Set(aHotels.map(h => h.name || '').filter(Boolean));
+    for (const h of aHotels) { if (h.name && !bHNames.has(h.name)) changes.push(`"${h.name}" 숙소 추가`); }
+    for (const h of bHotels) { if (h.name && !aHNames.has(h.name)) changes.push(`"${h.name}" 숙소 삭제`); }
+    if (bHotels.length > 0 && bHotels.length === aHotels.length) {
+      if (bHotels.some((h, i) => JSON.stringify(h) !== JSON.stringify(aHotels[i]))) changes.push('숙소 정보 변경');
+    }
+    // 기타 필드
+    if (before.title !== after.title) changes.push('여행 이름 변경');
+    if (before.dates !== after.dates) changes.push('날짜 변경');
+    if (JSON.stringify(before.prep) !== JSON.stringify(after.prep)) changes.push('준비물 변경');
+    if (JSON.stringify(before.food) !== JSON.stringify(after.food)) changes.push('맛집 변경');
+    if (JSON.stringify(before.budget) !== JSON.stringify(after.budget)) changes.push('여비 변경');
+    if (!changes.length) return '';
+    const MAX = 3;
+    return changes.length > MAX
+      ? changes.slice(0, MAX).join(', ') + ` 외 ${changes.length - MAX}건`
+      : changes.join(', ');
+  };
+
   const editTrip = (patch) => {
-    const next = { ...(tripRef.current || trip), ...patch };
+    const prev = tripRef.current || trip;
+    const next = { ...prev, ...patch };
     tripRef.current = next;
     setTrip(prev => ({ ...prev, ...patch }));
     // My Trips 목록도 즉시 반영 (색상 등 변경 시 카드가 바로 업데이트)
@@ -11501,10 +11556,14 @@ function App() {
     }
     // 동행인에게 일정 수정 알림 (60초 디바운스)
     if (activeTripId && authUser && typeof fbNotifyTripEdit === 'function') {
+      if (!notifyTripEditTimer.current) notifyEditSnapshot.current = prev;
       clearTimeout(notifyTripEditTimer.current);
       const titleForNotif = next.title || trip?.title || '';
       notifyTripEditTimer.current = setTimeout(() => {
-        fbNotifyTripEdit(activeTripId, authUser.uid, authUser.displayName || '', authUser.photoURL || '', titleForNotif).catch(() => {});
+        notifyTripEditTimer.current = null;
+        const changeDesc = buildChangeDesc(notifyEditSnapshot.current, tripRef.current);
+        notifyEditSnapshot.current = null;
+        fbNotifyTripEdit(activeTripId, authUser.uid, authUser.displayName || '', authUser.photoURL || '', titleForNotif, changeDesc).catch(() => {});
       }, 60000);
     }
   };

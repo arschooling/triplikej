@@ -56,7 +56,7 @@ exports.sendPushNotification = onDocumentCreated(
       contact_accepted:   { title: '동행인 수락', body: `${name}님이 동행인 요청을 수락했어요.` },
       trip_copy_received: { title: '일정 공유',   body: `${name}님이 ${trip} 일정을 보냈어요.` },
       trip_copy_accepted: { title: '일정 수락',   body: `${name}님이 ${trip} 일정을 받았어요.` },
-      trip_edited:        { title: '일정 수정',   body: `${name}님이 ${trip} 일정을 수정했어요.` },
+      trip_edited:        { title: '일정 수정',   body: `${name}님이 ${trip} 일정을 수정했어요.${notif.changeDesc ? ` (${notif.changeDesc})` : ''}` },
     };
 
     const msg = messages[notif.type] || { title: 'TripLikeJ', body: '새 알림이 있어요.' };

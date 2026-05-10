@@ -753,7 +753,7 @@ window.fbAcceptTripCopy = async (invite, myUid) => {
   return tripId;
 };
 
-window.fbNotifyTripEdit = async (tripId, editorUid, editorName, editorPhoto, tripTitle) => {
+window.fbNotifyTripEdit = async (tripId, editorUid, editorName, editorPhoto, tripTitle, changeDesc) => {
   const snap = await _fbDb.collection('groups').doc(tripId).get();
   if (!snap.exists) return;
   const members = (snap.data().members || []).filter(u => u !== editorUid);
@@ -762,6 +762,7 @@ window.fbNotifyTripEdit = async (tripId, editorUid, editorName, editorPhoto, tri
     type: 'trip_edited',
     fromUid: editorUid, fromName: editorName || '', fromPhoto: editorPhoto || '',
     tripId, tripTitle: tripTitle || '',
+    ...(changeDesc ? { changeDesc } : {}),
   })));
 };
 
