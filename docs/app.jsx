@@ -45,6 +45,19 @@ const STRINGS = {
     confirmDeleteDesc:'모든 여행 데이터가 영구 삭제되며 복구할 수 없어요. Google 계정으로 재인증 후 진행됩니다.',
     cancel:'취소', withdraw:'탈퇴하기', deleting:'삭제 중...',
     deleteError:'오류가 발생했어요. 다시 시도해 주세요.',
+    wizTitle1:'어느 나라로 가요?', wizTitle2:'도시를 알려줘요', wizTitle3:'언제 가요?',
+    wizTitle4:'어느 공항으로?', wizTitle5:'숙소는요?', wizTitle6:'가고 싶은 곳을 골라요',
+    wizCityPlacesPrefix:'', wizCityPlacesSuffix:'에서 가고 싶은 곳',
+    wizCountryPh:'나라 이름 (한글 또는 영어)', wizCityPh:'도시 이름 (한글 또는 영어)', wizCityN:'도시 {n}',
+    wizAddCity:'도시 추가', wizNights:'{n}박 {d}일',
+    wizDepAirport:'출발 공항', wizArrAirport:'도착 공항',
+    wizDepAirportEx:'예) 인천국제공항', wizArrAirportEx:'예) 나리타 국제공항',
+    wizNearAirports:'{city} 근처 공항', wizNoFlight:'비행기를 이용하지 않는다면 넘어가세요.',
+    wizHotelPh:'숙소 이름', wizAddHotel:'숙소 추가', wizSkipHotel:'아직 못 정했어요',
+    wizLoadingPlaces:'장소 불러오는 중...', wizNoPlaces:'장소를 찾을 수 없어요',
+    wizSelCount:'{n}곳 선택됨', wizChoosePlaces:'가고 싶은 곳을 골라보세요',
+    wizHiking:'🥾 트래킹', wizShowMore:'더 보기 +{n}개',
+    wizPrev:'이전', wizNext:'다음', wizNextCity:'다음 도시', wizDone:'완료',
   },
   en: {
     myTrips:'My Trips', addTrip:'+ Add New Trip', emptyTrips:'No trips yet',
@@ -56,6 +69,19 @@ const STRINGS = {
     confirmDeleteDesc:'All trip data will be permanently deleted and cannot be recovered. You will need to re-authenticate with Google.',
     cancel:'Cancel', withdraw:'Delete', deleting:'Deleting...',
     deleteError:'An error occurred. Please try again.',
+    wizTitle1:'Where are you going?', wizTitle2:'Tell us the cities', wizTitle3:'When are you going?',
+    wizTitle4:'Which airports?', wizTitle5:'Where are you staying?', wizTitle6:'Choose places to visit',
+    wizCityPlacesPrefix:'Places to visit in ', wizCityPlacesSuffix:'',
+    wizCountryPh:'Country name', wizCityPh:'City name', wizCityN:'City {n}',
+    wizAddCity:'Add city', wizNights:'{n} nights, {d} days',
+    wizDepAirport:'Departure Airport', wizArrAirport:'Arrival Airport',
+    wizDepAirportEx:'e.g. Incheon Int\'l Airport', wizArrAirportEx:'e.g. Narita Int\'l Airport',
+    wizNearAirports:'Airports near {city}', wizNoFlight:'Skip if not taking a flight.',
+    wizHotelPh:'Hotel name', wizAddHotel:'Add hotel', wizSkipHotel:'Not decided yet',
+    wizLoadingPlaces:'Loading places...', wizNoPlaces:'No places found',
+    wizSelCount:'{n} selected', wizChoosePlaces:'Choose places to visit',
+    wizHiking:'🥾 Trekking', wizShowMore:'Show more +{n}',
+    wizPrev:'Back', wizNext:'Next', wizNextCity:'Next City', wizDone:'Done',
   },
   ja: {
     myTrips:'My Trips', addTrip:'+ 旅行を追加', emptyTrips:'旅行がまだありません',
@@ -67,6 +93,19 @@ const STRINGS = {
     confirmDeleteDesc:'すべての旅行データが完全に削除され、復元できません。Google アカウントで再認証後に進みます。',
     cancel:'キャンセル', withdraw:'退会する', deleting:'削除中...',
     deleteError:'エラーが発生しました。もう一度お試しください。',
+    wizTitle1:'どの国へ行きますか？', wizTitle2:'都市を教えてください', wizTitle3:'いつ行きますか？',
+    wizTitle4:'どの空港を使いますか？', wizTitle5:'宿泊先は？', wizTitle6:'行きたい場所を選んでください',
+    wizCityPlacesPrefix:'', wizCityPlacesSuffix:'で行きたい場所',
+    wizCountryPh:'国名', wizCityPh:'都市名', wizCityN:'都市 {n}',
+    wizAddCity:'都市を追加', wizNights:'{n}泊{d}日',
+    wizDepAirport:'出発空港', wizArrAirport:'到着空港',
+    wizDepAirportEx:'例）成田国際空港', wizArrAirportEx:'例）仁川国際空港',
+    wizNearAirports:'{city}周辺の空港', wizNoFlight:'飛行機を利用しない場合はスキップしてください。',
+    wizHotelPh:'宿泊先の名前', wizAddHotel:'宿泊先を追加', wizSkipHotel:'まだ決めていません',
+    wizLoadingPlaces:'場所を読み込み中...', wizNoPlaces:'場所が見つかりません',
+    wizSelCount:'{n}件選択済み', wizChoosePlaces:'行きたい場所を選んでください',
+    wizHiking:'🥾 トレッキング', wizShowMore:'もっと見る +{n}件',
+    wizPrev:'戻る', wizNext:'次へ', wizNextCity:'次の都市', wizDone:'完了',
   },
   zh: {
     myTrips:'My Trips', addTrip:'+ 添加旅行', emptyTrips:'还没有旅行',
@@ -78,6 +117,19 @@ const STRINGS = {
     confirmDeleteDesc:'所有旅行数据将被永久删除，无法恢复。需要通过 Google 账户重新验证后才能继续。',
     cancel:'取消', withdraw:'注销', deleting:'删除中...',
     deleteError:'发生错误，请重试。',
+    wizTitle1:'去哪个国家？', wizTitle2:'告诉我城市', wizTitle3:'什么时候去？',
+    wizTitle4:'哪个机场？', wizTitle5:'住哪里？', wizTitle6:'选择想去的地方',
+    wizCityPlacesPrefix:'', wizCityPlacesSuffix:'想去的地方',
+    wizCountryPh:'国家名', wizCityPh:'城市名', wizCityN:'城市 {n}',
+    wizAddCity:'添加城市', wizNights:'{n}晚{d}天',
+    wizDepAirport:'出发机场', wizArrAirport:'到达机场',
+    wizDepAirportEx:'例）仁川国际机场', wizArrAirportEx:'例）成田国际机场',
+    wizNearAirports:'{city}附近的机场', wizNoFlight:'如果不乘坐飞机，请跳过。',
+    wizHotelPh:'住宿名称', wizAddHotel:'添加住宿', wizSkipHotel:'还没决定',
+    wizLoadingPlaces:'加载景点中...', wizNoPlaces:'找不到景点',
+    wizSelCount:'已选{n}处', wizChoosePlaces:'选择想去的地方',
+    wizHiking:'🥾 徒步', wizShowMore:'更多 +{n}个',
+    wizPrev:'上一步', wizNext:'下一步', wizNextCity:'下一个城市', wizDone:'完成',
   },
 };
 function useT() {
@@ -2339,7 +2391,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v128</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v129</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -9802,6 +9854,7 @@ const CITY_AIRPORT_MAP = {
 };
 
 function NewTripSheet({ open, onClose, onSubmit }) {
+  const t = useT();
   const isKorean = React.useMemo(() => navigator.language.startsWith('ko'), []);
   const TOTAL    = 6;
   const HP_STEP  = 6;
@@ -10007,9 +10060,9 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   // Foursquare는 이미 인기순 정렬 → 순서 유지
   const sortByPriority = (arr) => [...arr];
 
-  const TITLES = { 1:'어느 나라로 가요?', 2:'도시를 알려줘요', 3:'언제 가요?', 4:'어느 공항으로?', 5:'숙소는요?' };
+  const TITLES = { 1:t('wizTitle1'), 2:t('wizTitle2'), 3:t('wizTitle3'), 4:t('wizTitle4'), 5:t('wizTitle5') };
   const currentCityName = validCities[cityStep] || '';
-  const stepTitle = step < HP_STEP ? TITLES[step] : (currentCityName ? `${currentCityName}에서 가고 싶은 곳` : '가고 싶은 곳을 골라요');
+  const stepTitle = step < HP_STEP ? TITLES[step] : (currentCityName ? `${t('wizCityPlacesPrefix')}${currentCityName}${t('wizCityPlacesSuffix')}` : t('wizTitle6'));
 
   const handleNext = () => {
     if (step === 1) {
@@ -10159,7 +10212,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                       const exact = CITY_DB.find(c => c.kor === val.trim() || c.eng.toLowerCase() === val.trim().toLowerCase());
                       setSelectedDest(exact || null);
                     }}
-                    placeholder={ghostSuffix ? '' : '나라 이름 (한글 또는 영어)'}
+                    placeholder={ghostSuffix ? '' : t('wizCountryPh')}
                     style={{
                       width:'100%', boxSizing:'border-box',
                       padding:'12px 40px 12px 16px',
@@ -10288,7 +10341,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                           <input value={city} autoFocus={i===0 && !cityDrag}
                             onChange={e => setCities(prev => prev.map((c,j) => j===i ? e.target.value : c))}
                             onKeyDown={e => { if (e.key==='Enter' && city.trim()) setStep(3); }}
-                            placeholder={cityGhostSuffix ? '' : (i===0 ? '도시 이름 (한글 또는 영어)' : `도시 ${i+1}`)}
+                            placeholder={cityGhostSuffix ? '' : (i===0 ? t('wizCityPh') : t('wizCityN').replace('{n}', i+1))}
                             style={{ width:'100%', boxSizing:'border-box', padding:'12px 40px 12px 16px', border:'none', borderRadius:14, outline:'none', background:'transparent', fontFamily:SANS, fontSize:15, color:COLORS.ink, position:'relative', zIndex:1 }}
                           />
                           {cityGhostSuffix && (
@@ -10303,7 +10356,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                   })}
                 </div>
                 <button onMouseDown={e => e.preventDefault()} onClick={() => setCities(prev=>[...prev,''])} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontFamily:SANS, fontSize:13, padding:'6px 0', marginTop:4 }}>
-                  <span style={{ fontSize:18, lineHeight:1 }}>+</span> 도시 추가
+                  <span style={{ fontSize:18, lineHeight:1 }}>+</span> {t('wizAddCity')}
                 </button>
               </div>
             );
@@ -10314,7 +10367,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             <div>
               {startIso && endIso && dayCount > 0 && (
                 <div style={{ fontFamily:SANS, fontSize:13, color:COLORS.accent, marginBottom:12, textAlign:'center', fontWeight:600 }}>
-                  {dayCount-1}박 {dayCount}일
+                  {t('wizNights').replace('{n}', dayCount-1).replace('{d}', dayCount)}
                 </div>
               )}
               <MiniCalendar startIso={startIso} endIso={endIso} onRange={(s,e) => { setStartIso(s); setEndIso(e); }} actionRef={miniCalRef} onPickingChange={setCalPicking}/>
@@ -10375,12 +10428,12 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             };
             return (
               <div>
-                {makeAirportInput(depAirport, setDepAirport, '출발 공항', true, '예) 인천국제공항')}
-                {makeAirportInput(arrAirport, setArrAirport, '도착 공항', false, '예) 나리타 국제공항')}
+                {makeAirportInput(depAirport, setDepAirport, t('wizDepAirport'), true, t('wizDepAirportEx'))}
+                {makeAirportInput(arrAirport, setArrAirport, t('wizArrAirport'), false, t('wizArrAirportEx'))}
                 {!arrAirport && citySuggests.length > 0 && (
                   <div style={{ marginBottom:18, marginTop:-8 }}>
                     <div style={{ fontFamily:SANS, fontSize:11, color:COLORS.mute, marginBottom:8, textTransform:'uppercase', letterSpacing:'0.05em' }}>
-                      {firstCity} 근처 공항
+                      {t('wizNearAirports').replace('{city}', firstCity)}
                     </div>
                     <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
                       {citySuggests.map(apt => {
@@ -10397,7 +10450,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                   </div>
                 )}
                 <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, lineHeight:1.5 }}>
-                  비행기를 이용하지 않는다면 넘어가세요.
+                  {t('wizNoFlight')}
                 </div>
               </div>
             );
@@ -10410,7 +10463,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                 <div key={i} style={{ background:COLORS.card, borderRadius:14, padding:'12px 14px', marginBottom:10, border:`1px solid ${COLORS.line}` }}>
                   <input value={h.name} autoFocus={i===0}
                     onChange={e => setHotels(prev => prev.map((hh,j) => j===i ? {...hh,name:e.target.value} : hh))}
-                    placeholder="숙소 이름"
+                    placeholder={t('wizHotelPh')}
                     style={{ width:'100%', boxSizing:'border-box', border:'none', borderBottom:`1px solid ${COLORS.line}`, outline:'none', background:'transparent', fontFamily:SANS, fontSize:14, color:COLORS.ink, padding:'4px 0 8px', marginBottom:10 }}
                   />
                   {dayCount > 1 && (
@@ -10434,11 +10487,11 @@ function NewTripSheet({ open, onClose, onSubmit }) {
               ))}
               {!skipHotel && (
                 <button onClick={() => setHotels(prev=>[...prev,{name:'',from:1,to:dayCount||1}])} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:COLORS.mute, fontFamily:SANS, fontSize:13, padding:'4px 0', marginBottom:14 }}>
-                  <span style={{ fontSize:18 }}>+</span> 숙소 추가
+                  <span style={{ fontSize:18 }}>+</span> {t('wizAddHotel')}
                 </button>
               )}
               <button onClick={() => setSkipHotel(s=>!s)} style={{ width:'100%', padding:'10px', border:`1px solid ${skipHotel?COLORS.accent:COLORS.line}`, borderRadius:12, background:'transparent', fontFamily:SANS, fontSize:13, color:skipHotel?COLORS.accent:COLORS.mute, cursor:'pointer' }}>
-                {skipHotel ? '✓ 아직 못 정했어요' : '아직 못 정했어요'}
+                {skipHotel ? `✓ ${t('wizSkipHotel')}` : t('wizSkipHotel')}
               </button>
             </div>
           )}
@@ -10454,7 +10507,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
               <div>
                 {loading && (
                   <div style={{ textAlign:'center', padding:'48px 0', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
-                    장소 불러오는 중...
+                    {t('wizLoadingPlaces')}
                   </div>
                 )}
                 {!loading && placeErr && (
@@ -10464,12 +10517,12 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                 )}
                 {!loading && !placeErr && cityPlaces.length === 0 && (
                   <div style={{ textAlign:'center', padding:'48px 0', fontFamily:SANS, fontSize:13, color:COLORS.mute }}>
-                    장소를 찾을 수 없어요
+                    {t('wizNoPlaces')}
                   </div>
                 )}
                 {!loading && cityPlaces.length > 0 && (
                   <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, marginBottom:12 }}>
-                    {selCount > 0 ? `${selCount}곳 선택됨` : '가고 싶은 곳을 골라보세요'}
+                    {selCount > 0 ? t('wizSelCount').replace('{n}', selCount) : t('wizChoosePlaces')}
                   </div>
                 )}
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
@@ -10492,7 +10545,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                           }
                           {p.type === 'hiking_trail' && (
                             <div style={{ position:'absolute', bottom:6, left:7, background:'rgba(0,0,0,0.52)', borderRadius:5, padding:'2px 6px', fontFamily:SANS, fontSize:9, color:'#fff', letterSpacing:0.3 }}>
-                              🥾 트래킹
+                              {t('wizHiking')}
                             </div>
                           )}
                           {sel && (
@@ -10514,7 +10567,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                 {!loading && hiddenCnt > 0 && (
                   <button onMouseDown={e=>e.preventDefault()} onClick={() => setShowCount(c => c + STEP)}
                     style={{ marginTop:14, width:'100%', padding:'11px 0', borderRadius:12, border:`1.5px solid ${COLORS.line}`, background:'transparent', fontFamily:SANS, fontSize:13, color:COLORS.mute, cursor:'pointer' }}>
-                    더 보기 +{Math.min(hiddenCnt, STEP)}개
+                    {t('wizShowMore').replace('{n}', Math.min(hiddenCnt, STEP))}
                   </button>
                 )}
               </div>
@@ -10525,8 +10578,8 @@ function NewTripSheet({ open, onClose, onSubmit }) {
         {/* 푸터 */}
         <div style={{ padding:'10px 20px 20px', display:'flex', gap:8, flexShrink:0, borderTop:`1px solid ${COLORS.line}` }}>
           {(step > 1 || (step === HP_STEP && cityStep > 0))
-            ? <button onMouseDown={e=>e.preventDefault()} onClick={handleBack} style={{ padding:'11px 18px', borderRadius:12, border:`1px solid ${COLORS.line}`, background:'transparent', fontFamily:SANS, fontSize:14, color:COLORS.ink, cursor:'pointer' }}>이전</button>
-            : <button onClick={onClose} style={{ padding:'11px 18px', borderRadius:12, border:`1px solid ${COLORS.line}`, background:'transparent', fontFamily:SANS, fontSize:14, color:COLORS.mute, cursor:'pointer' }}>취소</button>
+            ? <button onMouseDown={e=>e.preventDefault()} onClick={handleBack} style={{ padding:'11px 18px', borderRadius:12, border:`1px solid ${COLORS.line}`, background:'transparent', fontFamily:SANS, fontSize:14, color:COLORS.ink, cursor:'pointer' }}>{t('wizPrev')}</button>
+            : <button onClick={onClose} style={{ padding:'11px 18px', borderRadius:12, border:`1px solid ${COLORS.line}`, background:'transparent', fontFamily:SANS, fontSize:14, color:COLORS.mute, cursor:'pointer' }}>{t('cancel')}</button>
           }
           <button onMouseDown={e=>e.preventDefault()} onClick={handleNext} disabled={!canNext} style={{
             flex:1, padding:'11px 0', borderRadius:12, border:'none',
@@ -10535,7 +10588,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             fontFamily:SANS, fontSize:14, fontWeight:600,
             cursor: canNext ? 'pointer' : 'default',
             transition:'background 0.2s, color 0.15s',
-          }}>{step === TOTAL ? (isLastCity ? '완료' : '다음 도시') : '다음'}</button>
+          }}>{step === TOTAL ? (isLastCity ? t('wizDone') : t('wizNextCity')) : t('wizNext')}</button>
         </div>
       </div>
     </div>,
