@@ -2391,7 +2391,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v131</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v132</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -9855,7 +9855,7 @@ const CITY_AIRPORT_MAP = {
 
 function NewTripSheet({ open, onClose, onSubmit }) {
   const t = useT();
-  const isKorean = React.useMemo(() => navigator.language.startsWith('ko'), []);
+  const { lang } = React.useContext(SettingsCtx);
   const TOTAL    = 6;
   const HP_STEP  = 6;
 
@@ -10402,7 +10402,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
               const acceptMatch = () => {
                 if (korMatch) setValue(korMatch.kor);
                 else if (engMatch) setValue(engMatch.eng);
-                else if (codeMatch) setValue(codeMatch.kor);
+                else if (codeMatch) setValue(lang === 'ko' ? codeMatch.kor : codeMatch.eng);
               };
               return (
                 <div style={{ marginBottom:18 }}>
@@ -10428,10 +10428,10 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                     )}
                   </div>
                   {codeMatch && (
-                    <div onMouseDown={e => { e.preventDefault(); setValue(codeMatch.kor); }}
+                    <div onMouseDown={e => { e.preventDefault(); setValue(lang === 'ko' ? codeMatch.kor : codeMatch.eng); }}
                       style={{ marginTop:6, display:'inline-flex', alignItems:'center', gap:6, background:COLORS.card, border:`1px solid ${COLORS.line}`, borderRadius:20, padding:'5px 12px', cursor:'pointer' }}>
                       <span style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute }}>{codeMatch.code}</span>
-                      <span style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink }}>{codeMatch.kor}</span>
+                      <span style={{ fontFamily:SANS, fontSize:13, color:COLORS.ink }}>{lang === 'ko' ? codeMatch.kor : codeMatch.eng}</span>
                     </div>
                   )}
                 </div>
@@ -10449,11 +10449,12 @@ function NewTripSheet({ open, onClose, onSubmit }) {
                     <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
                       {citySuggests.map(apt => {
                         const info = AIRPORTS.find(a => a.kor === apt);
+                        const aptName = lang === 'ko' ? apt : (info?.eng || apt);
                         return (
-                          <button key={apt} onMouseDown={e=>e.preventDefault()} onClick={() => setArrAirport(apt)}
+                          <button key={apt} onMouseDown={e=>e.preventDefault()} onClick={() => setArrAirport(aptName)}
                             style={{ display:'flex', alignItems:'center', gap:6, background:COLORS.card, border:`1.5px solid ${COLORS.line}`, borderRadius:20, padding:'6px 14px 6px 10px', cursor:'pointer', fontFamily:SANS, fontSize:12.5, color:COLORS.ink }}>
                             <span style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, letterSpacing:0.5 }}>{info?.code}</span>
-                            <span>{apt}</span>
+                            <span>{aptName}</span>
                           </button>
                         );
                       })}
