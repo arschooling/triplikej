@@ -2391,7 +2391,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v135</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v137</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -9989,7 +9989,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
             body: JSON.stringify({
               locationRestriction: { circle: { center: { latitude: lat, longitude: lon }, radius: 10000 } },
               includedTypes: GPLACES_TYPES,
-              maxResultCount: 36,
+              maxResultCount: 20,
               languageCode: lang,
             }),
           }).then(r => r.json());
