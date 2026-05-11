@@ -2507,7 +2507,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v148</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v149</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -10099,7 +10099,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
     setHotels([{ name:'', from:1, to:1 }]); setSkipHotel(false);
     setArrAirport(''); setDepAirport('인천국제공항');
     setPlaces([]); setLoading(false); setSelected(new Set()); setPlaceErr('');
-    setCityStep(0); setShowCount(12);
+    setCityStep(0); setShowCount(8);
   }, [open]);
 
   React.useEffect(() => {
@@ -10243,7 +10243,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
     // step === HP_STEP: 도시별 순차 진행
     if (!isLastCity) {
       setCityStep(s => s + 1);
-      setShowCount(12);
+      setShowCount(8);
       return;
     }
     // 모든 도시 완료 → 여행 생성
@@ -10268,7 +10268,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
   const handleBack = () => {
     if (step === HP_STEP && cityStep > 0) {
       setCityStep(s => s - 1);
-      setShowCount(12);
+      setShowCount(8);
       return;
     }
     setStep(s => s - 1);
