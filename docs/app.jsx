@@ -2507,7 +2507,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v150</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v151</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -2893,7 +2893,12 @@ function HomeScreen({ trip, onOpenDay, onOpenHotel, onOpenHotelSheet, city, onPi
                       userData, myUid, onOpenCompanion, onLoadSample, onOpenNotifs, unreadCount, photoVer, onPhotoUploaded }) {
   const t = useT();
   const { lang } = React.useContext(SettingsCtx);
-  const dayDisplayTitle = (d) => lang !== 'ko' && d.titleEn && d.titleEn !== `Day ${d.n}` ? d.titleEn : d.title;
+  const dayDisplayTitle = (d) => {
+    if (lang === 'ko') return d.title;
+    const field = lang === 'en' ? 'titleEn' : lang === 'ja' ? 'titleJa' : 'titleZh';
+    const val = d[field];
+    return (val && val !== `Day ${d.n}`) ? val : (d.titleEn && d.titleEn !== `Day ${d.n}` ? d.titleEn : d.title);
+  };
   const [editingTitle, setEditingTitle] = React.useState(false);
   const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
   React.useEffect(() => { if (!editing) setEditingTitle(false); }, [editing]);
@@ -11519,6 +11524,30 @@ function App() {
       setTrip(incoming);
     });
   }, [activeTripId]);
+
+  // 언어 변경 시 day 제목 자동 번역 (무료 Google Translate 엔드포인트)
+  React.useEffect(() => {
+    if (lang === 'ko' || !trip?.days?.length || !activeTripId) return;
+    const titleField = lang === 'en' ? 'titleEn' : lang === 'ja' ? 'titleJa' : 'titleZh';
+    const tl = lang === 'zh' ? 'zh-CN' : lang;
+    const needsDays = trip.days.filter(d => !d[titleField] || d[titleField] === `Day ${d.n}`);
+    if (!needsDays.length) return;
+    (async () => {
+      try {
+        const translated = await Promise.all(needsDays.map(async d => {
+          const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=${tl}&dt=t&q=${encodeURIComponent(d.title)}`;
+          const j = await fetch(url).then(r => r.json());
+          return { n: d.n, text: (j[0]?.map(seg => seg[0]).join('')) || d.title };
+        }));
+        const updatedDays = trip.days.map(d => {
+          const tr = translated.find(t => t.n === d.n);
+          return tr ? { ...d, [titleField]: tr.text } : d;
+        });
+        setTrip(prev => ({ ...prev, days: updatedDays }));
+        fbSaveGroup(activeTripId, { days: updatedDays }).catch(() => {});
+      } catch (_) {}
+    })();
+  }, [lang, activeTripId]);
 
   // 여행 제목 바뀌면 시차 도시 · 환율 자동 감지 (저장된 timezone/defaultCurrency 우선 폴백)
   React.useEffect(() => {
