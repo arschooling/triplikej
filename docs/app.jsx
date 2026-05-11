@@ -196,16 +196,31 @@ function useT() {
   const { lang } = React.useContext(SettingsCtx);
   return (key) => (STRINGS[lang] || STRINGS.ko)[key] ?? STRINGS.ko[key] ?? key;
 }
-// 카테고리 레이블 번역
+// 카테고리 레이블 번역 (cat 없으면 빈 문자열)
 function catLabel(cat, t) {
+  if (!cat) return '';
   const key = 'cat' + cat.charAt(0).toUpperCase() + cat.slice(1);
-  return t(key) || CAT_META[cat]?.label || cat;
+  const label = t(key);
+  return label !== key ? label : (CAT_META[cat]?.label || cat);
 }
-// 자동 생성 스탑(_key 있을 때)은 현재 언어로 실시간 번역, 없으면 저장된 title 반환
+// 기존 여행(_key 없음)도 번역 가능하도록 역방향 조회 테이블 구성
+const _TITLE_TO_KEY = {};
+['lunch','dinner'].forEach(k => {
+  Object.values(STRINGS).forEach(s => { if (s[k]) _TITLE_TO_KEY[s[k]] = k; });
+});
+function _detectHotelKey(title) {
+  for (const s of Object.values(STRINGS)) {
+    if (s.checkin && title.startsWith(s.checkin + ' ·')) return 'checkin';
+    if (s.checkout && title.startsWith(s.checkout + ' ·')) return 'checkout';
+  }
+  return null;
+}
+// 자동 생성 스탑: _key 또는 역방향 조회로 현재 언어 번역
 function stopTitle(it, t) {
-  if (!it._key) return it.title;
-  if (it._key === 'checkin' || it._key === 'checkout') return `${t(it._key)} · ${it.loc || ''}`;
-  return t(it._key) || it.title;
+  const key = it._key || _TITLE_TO_KEY[it.title] || _detectHotelKey(it.title);
+  if (!key) return it.title;
+  if (key === 'checkin' || key === 'checkout') return `${t(key)} · ${it.loc || ''}`;
+  return t(key) || it.title;
 }
 
 // ─── Settings Context ─────────────────────────────────────────────────────
@@ -2463,7 +2478,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v146</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v147</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
