@@ -60,6 +60,9 @@ const STRINGS = {
     wizPrev:'이전', wizNext:'다음', wizNextCity:'다음 도시', wizDone:'완료',
     lunch:'점심', dinner:'저녁', checkin:'체크인', checkout:'체크아웃',
     transitNote:'대중교통 이동 약 {n}분',
+    catFlight:'비행', catHotel:'숙박', catWalk:'이동', catFood:'식사',
+    catView:'전망', catFerry:'페리', catSight:'관광', catShop:'쇼핑',
+    catShow:'공연', catBar:'바',
     ptnMuseum:'내부 사진 촬영 제한 있을 수 있음',
     ptnThemePark:'대기시간 긴 편 · 사전 예매 추천',
     ptnZoo:'사전 예매 추천',
@@ -96,6 +99,9 @@ const STRINGS = {
     wizPrev:'Back', wizNext:'Next', wizNextCity:'Next City', wizDone:'Done',
     lunch:'Lunch', dinner:'Dinner', checkin:'Check-in', checkout:'Check-out',
     transitNote:'Transit ~{n}min',
+    catFlight:'Flight', catHotel:'Stay', catWalk:'Walk', catFood:'Eat',
+    catView:'View', catFerry:'Ferry', catSight:'Sight', catShop:'Shop',
+    catShow:'Show', catBar:'Bar',
     ptnMuseum:'Photography may be restricted inside',
     ptnThemePark:'Long queues · Advance booking recommended',
     ptnZoo:'Advance booking recommended',
@@ -132,6 +138,9 @@ const STRINGS = {
     wizPrev:'戻る', wizNext:'次へ', wizNextCity:'次の都市', wizDone:'完了',
     lunch:'昼食', dinner:'夕食', checkin:'チェックイン', checkout:'チェックアウト',
     transitNote:'移動約{n}分',
+    catFlight:'フライト', catHotel:'宿泊', catWalk:'移動', catFood:'食事',
+    catView:'景観', catFerry:'フェリー', catSight:'観光', catShop:'ショッピング',
+    catShow:'ショー', catBar:'バー',
     ptnMuseum:'館内撮影に制限がある場合があります',
     ptnThemePark:'待ち時間長め · 事前予約推奨',
     ptnZoo:'事前予約推奨',
@@ -168,6 +177,9 @@ const STRINGS = {
     wizPrev:'上一步', wizNext:'下一步', wizNextCity:'下一个城市', wizDone:'完成',
     lunch:'午餐', dinner:'晚餐', checkin:'入住', checkout:'退房',
     transitNote:'换乘约{n}分钟',
+    catFlight:'航班', catHotel:'住宿', catWalk:'步行', catFood:'用餐',
+    catView:'景色', catFerry:'渡船', catSight:'观光', catShop:'购物',
+    catShow:'演出', catBar:'酒吧',
     ptnMuseum:'室内摄影可能受限',
     ptnThemePark:'等待时间较长 · 建议提前预订',
     ptnZoo:'建议提前预订',
@@ -183,6 +195,11 @@ const STRINGS = {
 function useT() {
   const { lang } = React.useContext(SettingsCtx);
   return (key) => (STRINGS[lang] || STRINGS.ko)[key] ?? STRINGS.ko[key] ?? key;
+}
+// 카테고리 레이블 번역
+function catLabel(cat, t) {
+  const key = 'cat' + cat.charAt(0).toUpperCase() + cat.slice(1);
+  return t(key) || CAT_META[cat]?.label || cat;
 }
 // 자동 생성 스탑(_key 있을 때)은 현재 언어로 실시간 번역, 없으면 저장된 title 반환
 function stopTitle(it, t) {
@@ -2446,7 +2463,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v145</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v146</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -2488,7 +2505,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
                         {(t.days||[]).length} DAYS{t.dates ? ' · ' + t.dates : ''}
                       </div>
                       <div style={{ marginTop:4, fontFamily:SERIF, fontSize:28, lineHeight:1.1, color:COLORS.ink, letterSpacing:'-0.015em' }}>
-                        {t.title || '새 여행'}
+                        {t.titleEn || t.title || 'New Trip'}
                       </div>
                       {isSample && (
                         <div style={{ position:'absolute', top:14, right:16 }}>
@@ -4065,7 +4082,7 @@ function DayScreen({ trip, dayIdx, tripId, authUid, onBack, onOpenStop, onNavDay
                       fontFamily:MONO, fontSize:9.5, color:COLORS.mute,
                       letterSpacing:'0.12em', textTransform:'uppercase' }}>
                       <Icon name={meta.icon} size={11} stroke={1.8}/>
-                      <span>{meta.label}</span>
+                      <span>{catLabel(it.cat || '', t)}</span>
                       {it.price && (<><span style={{ opacity:0.4 }}>·</span><span>{it.price}</span></>)}
                     </div>
                     {editing && inlineItemTitle?.idx === i ? (
@@ -4884,7 +4901,7 @@ function StopSheet({ open, dayHue, onClose, onSave, cityBias, onRegisterEdit, on
             fontFamily:MONO, fontSize:10, color:COLORS.mute,
             letterSpacing:'0.12em', textTransform:'uppercase' }}>
             <Icon name={(CAT_META[draft.cat]||{icon:'pin'}).icon} size={12} stroke={1.8}/>
-            <span>{(CAT_META[draft.cat]||{label:draft.cat}).label}</span>
+            <span>{catLabel(draft.cat || '', t)}</span>
             <span style={{ opacity:0.4 }}>·</span>
             <span>{draft.time}</span>
           </div>
@@ -5478,6 +5495,7 @@ function LocationField({ value, onChange, cityBias }) {
 }
 
 function EditStopForm({ draft, setDraft, cityBias, dayOptions }) {
+  const t = useT();
   const [showHotelSearch, setShowHotelSearch] = React.useState(false);
   const [timeOpen, setTimeOpen] = React.useState(false);
   const field = (key, label, type='text') => (
@@ -5495,7 +5513,7 @@ function EditStopForm({ draft, setDraft, cityBias, dayOptions }) {
           style={{ width:'100%', padding:'8px 10px', borderRadius:8,
           border:`1px solid ${COLORS.line}`, background:COLORS.card,
           fontFamily:SANS, fontSize:13, color:COLORS.ink, boxSizing:'border-box' }}>
-          {Object.entries(CAT_META).map(([k, v]) => (<option key={k} value={k}>{v.label}</option>))}
+          {Object.entries(CAT_META).map(([k]) => (<option key={k} value={k}>{catLabel(k, t)}</option>))}
         </select>
       ) : (
         <input value={draft[key] || ''} onChange={e => setDraft({...draft, [key]: e.target.value})}
@@ -9209,6 +9227,7 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
 
   return {
     title: citiesList.length <= 2 ? citiesList.join(' & ') : citiesList.join(' · ') || 'New Trip',
+    titleEn: citiesList.length <= 2 ? citiesList.join(' & ') : citiesList.join(' · ') || 'New Trip',
     dates: `${isoToDayDate(startIso)} – ${isoToDayDate(endIso)}`,
     hue:   DAY_HUES[0],
     days, hotels:[], food:[],
