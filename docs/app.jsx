@@ -58,6 +58,18 @@ const STRINGS = {
     wizSelCount:'{n}곳 선택됨', wizChoosePlaces:'가고 싶은 곳을 골라보세요',
     wizHiking:'🥾 트래킹', wizShowMore:'더 보기 +{n}개',
     wizPrev:'이전', wizNext:'다음', wizNextCity:'다음 도시', wizDone:'완료',
+    lunch:'점심', dinner:'저녁', checkin:'체크인', checkout:'체크아웃',
+    transitNote:'대중교통 이동 약 {n}분',
+    ptnMuseum:'내부 사진 촬영 제한 있을 수 있음',
+    ptnThemePark:'대기시간 긴 편 · 사전 예매 추천',
+    ptnZoo:'사전 예매 추천',
+    ptnNightClub:'야간 운영 · 신분증 지참',
+    ptnSpa:'예약 필수인 경우 많음',
+    ptnBeach:'수영복 · 자외선 차단제 준비',
+    ptnChurch:'복장 규정 있을 수 있음',
+    ptnMosque:'복장 규정 엄격 · 신발 벗기 필요할 수 있음',
+    ptnMarket:'현금 준비 권장',
+    ptnHiking:'등산화 · 방수 재킷 · 충분한 물 · 간식 준비',
   },
   en: {
     myTrips:'My Trips', addTrip:'+ Add New Trip', emptyTrips:'No trips yet',
@@ -82,6 +94,18 @@ const STRINGS = {
     wizSelCount:'{n} selected', wizChoosePlaces:'Choose places to visit',
     wizHiking:'🥾 Trekking', wizShowMore:'Show more +{n}',
     wizPrev:'Back', wizNext:'Next', wizNextCity:'Next City', wizDone:'Done',
+    lunch:'Lunch', dinner:'Dinner', checkin:'Check-in', checkout:'Check-out',
+    transitNote:'Transit ~{n}min',
+    ptnMuseum:'Photography may be restricted inside',
+    ptnThemePark:'Long queues · Advance booking recommended',
+    ptnZoo:'Advance booking recommended',
+    ptnNightClub:'Late night · Bring ID',
+    ptnSpa:'Reservation often required',
+    ptnBeach:'Bring swimsuit & sunscreen',
+    ptnChurch:'Dress code may apply',
+    ptnMosque:'Strict dress code · Shoes off required',
+    ptnMarket:'Cash recommended',
+    ptnHiking:'Hiking boots · Waterproof jacket · Water & snacks',
   },
   ja: {
     myTrips:'My Trips', addTrip:'+ 旅行を追加', emptyTrips:'旅行がまだありません',
@@ -106,6 +130,18 @@ const STRINGS = {
     wizSelCount:'{n}件選択済み', wizChoosePlaces:'行きたい場所を選んでください',
     wizHiking:'🥾 トレッキング', wizShowMore:'もっと見る +{n}件',
     wizPrev:'戻る', wizNext:'次へ', wizNextCity:'次の都市', wizDone:'完了',
+    lunch:'昼食', dinner:'夕食', checkin:'チェックイン', checkout:'チェックアウト',
+    transitNote:'移動約{n}分',
+    ptnMuseum:'館内撮影に制限がある場合があります',
+    ptnThemePark:'待ち時間長め · 事前予約推奨',
+    ptnZoo:'事前予約推奨',
+    ptnNightClub:'深夜営業 · 身分証持参',
+    ptnSpa:'予約必須の場合が多い',
+    ptnBeach:'水着・日焼け止め持参',
+    ptnChurch:'ドレスコードがある場合あり',
+    ptnMosque:'厳格なドレスコード · 脱靴が必要な場合あり',
+    ptnMarket:'現金推奨',
+    ptnHiking:'登山靴 · 防水ジャケット · 水・行動食持参',
   },
   zh: {
     myTrips:'My Trips', addTrip:'+ 添加旅行', emptyTrips:'还没有旅行',
@@ -130,6 +166,18 @@ const STRINGS = {
     wizSelCount:'已选{n}处', wizChoosePlaces:'选择想去的地方',
     wizHiking:'🥾 徒步', wizShowMore:'更多 +{n}个',
     wizPrev:'上一步', wizNext:'下一步', wizNextCity:'下一个城市', wizDone:'完成',
+    lunch:'午餐', dinner:'晚餐', checkin:'入住', checkout:'退房',
+    transitNote:'换乘约{n}分钟',
+    ptnMuseum:'室内摄影可能受限',
+    ptnThemePark:'等待时间较长 · 建议提前预订',
+    ptnZoo:'建议提前预订',
+    ptnNightClub:'深夜营业 · 请携带身份证',
+    ptnSpa:'通常需要预约',
+    ptnBeach:'请携带泳装和防晒霜',
+    ptnChurch:'可能有着装要求',
+    ptnMosque:'着装要求严格 · 可能需要脱鞋',
+    ptnMarket:'建议准备现金',
+    ptnHiking:'登山鞋 · 防水外套 · 足够的水和零食',
   },
 };
 function useT() {
@@ -1863,9 +1911,10 @@ function zoneOffsetMin(zone, d = new Date()) {
   const asUTC = Date.UTC(+parts.year, +parts.month-1, +parts.day, +parts.hour, +parts.minute, +parts.second);
   return Math.round((asUTC - d.getTime()) / 60000);
 }
-function formatDiffFromSeoul(zone) {
+const _localZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+function formatDiffFromLocal(zone) {
   const now = new Date();
-  const diff = (zoneOffsetMin(zone, now) - zoneOffsetMin('Asia/Seoul', now)) / 60;
+  const diff = (zoneOffsetMin(zone, now) - zoneOffsetMin(_localZone, now)) / 60;
   const sign = diff > 0 ? '+' : diff < 0 ? '−' : '±';
   return `${sign}${Math.abs(diff)}h`;
 }
@@ -1902,7 +1951,7 @@ function TimezoneCard({ city, onPick }) {
           <Icon name="chevron-d" size={12} color={COLORS.mute} stroke={1.8}/>
         </div>
         <div style={{ marginTop:5, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink, flexShrink:0, lineHeight:1 }}>{formatDiffFromSeoul(city.zone)}</div>
+          <div style={{ fontFamily:SERIF, fontSize:30, color:COLORS.ink, flexShrink:0, lineHeight:1 }}>{formatDiffFromLocal(city.zone)}</div>
           <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:2 }}>
             <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute, letterSpacing:'0.04em' }}>{formatCityDateWeekday(city.zone)}</div>
             <div style={{ fontFamily:MONO, fontSize:16, color:COLORS.ink, letterSpacing:'0.04em' }}>{formatCityTime(city.zone)}</div>
@@ -1926,7 +1975,7 @@ function TimezoneCard({ city, onPick }) {
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontFamily:SANS, fontSize:14, color:COLORS.ink }}>{c.key}</div>
               <div style={{ fontFamily:MONO, fontSize:10.5, color:COLORS.mute, marginTop:2 }}>
-                {formatDiffFromSeoul(c.zone)} · {formatCityTime(c.zone)}
+                {formatDiffFromLocal(c.zone)} · {formatCityTime(c.zone)}
               </div>
             </div>
           </>
@@ -2391,7 +2440,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v143</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v144</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -8975,24 +9024,7 @@ const DURATION_BY_TYPE = {
   cathedral:60, church:60, park:90, beach:180, marketplace:60, attraction:90,
   hiking_trail:240,
 };
-const PLACE_TYPE_NOTES = {
-  museum:          '내부 사진 촬영 제한 있을 수 있음',
-  art_gallery:     '내부 사진 촬영 제한 있을 수 있음',
-  gallery:         '내부 사진 촬영 제한 있을 수 있음',
-  theme_park:      '대기시간 긴 편 · 사전 예매 추천',
-  amusement_park:  '대기시간 긴 편 · 사전 예매 추천',
-  zoo:             '사전 예매 추천',
-  aquarium:        '사전 예매 추천',
-  night_club:      '야간 운영 · 신분증 지참',
-  spa:             '예약 필수인 경우 많음',
-  beach:           '수영복 · 자외선 차단제 준비',
-  cathedral:       '복장 규정 있을 수 있음',
-  church:          '복장 규정 있을 수 있음',
-  mosque:          '복장 규정 엄격 · 신발 벗기 필요할 수 있음',
-  marketplace:     '현금 준비 권장',
-  market:          '현금 준비 권장',
-  hiking_trail:    '등산화 · 방수 재킷 · 충분한 물 · 간식 준비',
-};
+
 function getPlaceDuration(type) { return DURATION_BY_TYPE[type] || 90; }
 function minToTime(min) {
   const h = Math.floor(min / 60) % 24;
@@ -9000,7 +9032,20 @@ function minToTime(min) {
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAirport, selectedPlaces, selectedDest }) {
+function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAirport, selectedPlaces, selectedDest, lang = 'ko' }) {
+  const S = STRINGS[lang] || STRINGS.ko;
+  const placeTypeNotes = {
+    museum: S.ptnMuseum, art_gallery: S.ptnMuseum, gallery: S.ptnMuseum,
+    theme_park: S.ptnThemePark, amusement_park: S.ptnThemePark,
+    zoo: S.ptnZoo, aquarium: S.ptnZoo,
+    night_club: S.ptnNightClub,
+    spa: S.ptnSpa,
+    beach: S.ptnBeach,
+    cathedral: S.ptnChurch, church: S.ptnChurch,
+    mosque: S.ptnMosque,
+    marketplace: S.ptnMarket, market: S.ptnMarket,
+    hiking_trail: S.ptnHiking,
+  };
   const startDate  = new Date(startIso + 'T12:00:00');
   const dayCount   = Math.round((new Date(endIso+'T12:00:00') - startDate) / 86400000) + 1;
   const citiesList = cities.filter(Boolean);
@@ -9040,7 +9085,7 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
     outer: while (remaining.length > 0) {
       // 현재 시각이 점심 이후면 먼저 삽입
       if (!lunchDone && t >= LUNCH_AT) {
-        dayItems[dayIdx].push({ time: minToTime(LUNCH_AT), title: '점심', loc: '', done: false });
+        dayItems[dayIdx].push({ time: minToTime(LUNCH_AT), title: S.lunch, loc: '', done: false });
         t = LUNCH_AT + LUNCH_DUR;
         lunchDone = true;
         continue;
@@ -9082,14 +9127,14 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
       // 이동 중 점심 시간 도래 시 먼저 삽입
       if (!lunchDone && t + travelMin >= LUNCH_AT) {
         const lt = Math.max(t, LUNCH_AT);
-        dayItems[dayIdx].push({ time: minToTime(lt), title: '점심', loc: '', done: false });
+        dayItems[dayIdx].push({ time: minToTime(lt), title: S.lunch, loc: '', done: false });
         t = lt + LUNCH_DUR;
         lunchDone = true;
       }
 
       t += travelMin;
-      const transitNote = (transit && prev) ? `대중교통 이동 약 ${travelMin}분` : '';
-      const typeNote    = PLACE_TYPE_NOTES[p.type] || '';
+      const transitNote = (transit && prev) ? S.transitNote.replace('{n}', travelMin) : '';
+      const typeNote    = placeTypeNotes[p.type] || '';
       const stopNote    = [transitNote, typeNote].filter(Boolean).join('\n');
 
       dayItems[dayIdx].push({ time: minToTime(t), title: p.name, loc: p.name, done: false, lat: p.lat, lon: p.lon, coords: [p.lat, p.lon], _popRank: p._popRank ?? 999, ...(stopNote ? { note: stopNote } : {}) });
@@ -9100,7 +9145,7 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
 
       // 저녁 시간 도래 시 삽입 후 오늘 일정 마감
       if (!dinnerDone && t >= DINNER_AT) {
-        dayItems[dayIdx].push({ time: minToTime(Math.max(t, DINNER_AT)), title: '저녁', loc: '', done: false });
+        dayItems[dayIdx].push({ time: minToTime(Math.max(t, DINNER_AT)), title: S.dinner, loc: '', done: false });
         t = Math.max(t, DINNER_AT) + DINNER_DUR;
         dinnerDone = true;
         break outer;
@@ -9110,7 +9155,7 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
     // 저녁 미삽입 시 추가
     if (!dinnerDone && addedAny) {
       const dt = Math.max(t, DINNER_AT);
-      if (dt < DAY_END) dayItems[dayIdx].push({ time: minToTime(dt), title: '저녁', loc: '', done: false });
+      if (dt < DAY_END) dayItems[dayIdx].push({ time: minToTime(dt), title: S.dinner, loc: '', done: false });
     }
 
     lastPlace = prev; // 다음 날 시작점 갱신
@@ -9130,10 +9175,10 @@ function generateTripData({ cities, startIso, endIso, hotels, arrAirport, depAir
       items.push({ time:'14:00', title:arrAirport.trim(), loc:'', done:false });
 
     if (hotel && (!prev || prev.name !== hotel.name))
-      items.push({ time:n===1 ? '16:00' : '15:00', title:`체크인 · ${hotel.name}`, loc:hotel.name, done:false });
+      items.push({ time:n===1 ? '16:00' : '15:00', title:`${S.checkin} · ${hotel.name}`, loc:hotel.name, done:false });
 
     if (n === dayCount) {
-      if (hotel)  items.push({ time:'10:00', title:`체크아웃 · ${hotel.name}`, loc:hotel.name, done:false });
+      if (hotel)  items.push({ time:'10:00', title:`${S.checkout} · ${hotel.name}`, loc:hotel.name, done:false });
       if (hasDep) items.push({ time:'13:00', title:depAirport.trim(), loc:'', done:false });
     }
 
@@ -10136,6 +10181,7 @@ function NewTripSheet({ open, onClose, onSubmit }) {
       hotels: skipHotel ? [] : hotels.filter(h => h.name.trim()),
       arrAirport, depAirport,
       selectedPlaces: selPlaces, selectedDest: resolvedDest,
+      lang,
     });
     onSubmit(tripData);
     onClose();
