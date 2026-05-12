@@ -2509,7 +2509,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v153</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v155</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -11635,10 +11635,10 @@ function App() {
       // 네비게이션 직후 lock 기간에는 lastScrollTop만 갱신하고 탭바 숨김 무시
       if (tabBarNavLock.current) { lastScrollTop.current = st; return; }
       const diff = st - lastScrollTop.current;
-      if (Math.abs(diff) > 4) {
-        setTabBarVisible(diff < 0 || st < 60);
-      }
       lastScrollTop.current = st;
+      if (Math.abs(diff) < 4) return;
+      if (diff > 0 && st > 80) { setTabBarVisible(false); }
+      else if (diff < 0 || st < 50) { setTabBarVisible(true); }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -12209,7 +12209,7 @@ function App() {
     label = 'Map';
   }
   else if (tab === 'food')   { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} onDeleteFood={(idx) => { const snap = { food: trip.food }; const food = trip.food.filter((_, i) => i !== idx); editTrip({ food }); scheduleUndo(() => editTrip(snap)); }} editing={editing} setEditing={setEditing}/>; label='Food'; }
-  else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })} onSheetChange={v => { setBudgetSheetOpen(v); if (!v) setTabBarVisible(true); }} onTabBarToggle={() => setTabBarVisible(v => !v)}/>; label='Budget'; }
+  else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })} onSheetChange={v => { setBudgetSheetOpen(v); setTabBarVisible(!v); }} onTabBarToggle={() => setTabBarVisible(true)}/>; label='Budget'; }
   else                       { screen = <PrepScreen trip={trip} onEditPrep={editPrep} onScheduleUndo={scheduleUndo} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
   const dayHue = dayIdx !== null && trip
@@ -12418,7 +12418,7 @@ function App() {
         onClose={() => { setOpenStop(null); setTabBarPeeking(false); }}
         onSave={saveStop}
         onRegisterEdit={fn => { stopSheetEditRef.current = fn; }}
-        onTabBarToggle={() => setTabBarVisible(v => !v)}
+        onTabBarToggle={() => setTabBarVisible(true)}
         dayOptions={(trip?.days || []).map((d, i) => ({ date: d.date, idx: i }))}
         currentDayDate={trip?.days?.[dayIdx]?.date || ''}
         />
@@ -12431,7 +12431,7 @@ function App() {
         onSave={saveHotelDetailSheet}
         onDelete={deleteHotelDetailSheet}
         onRegisterEdit={fn => { hotelSheetEditRef.current = fn; }}
-        onTabBarToggle={() => setTabBarVisible(v => !v)}
+        onTabBarToggle={() => setTabBarVisible(true)}
       />
 
       {hotelSheet !== null && (
