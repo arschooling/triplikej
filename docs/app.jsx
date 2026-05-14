@@ -2509,7 +2509,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v166</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v167</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7829,22 +7829,11 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
             )}
           </>
         ) : (
-          /* 개인 여행: 지출 크게(빨간색), 수입 있으면 그 아래 */
+          /* 개인 여행: 수입 위, 지출 아래 */
           Object.keys(personal).length > 0 ? (
             <>
-              <div style={{ marginBottom: Object.values(personal).some(v => v.in > 0) ? 14 : 0 }}>
-                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>지출</div>
-                <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
-                  {Object.entries(personal).filter(([,{out}]) => out > 0).map(([cur, {out}]) => (
-                    <div key={cur}>
-                      <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.25)', marginBottom:3 }}>{cur}</div>
-                      <div style={{ fontFamily:SERIF, fontSize:26, color:'#E07B6A', letterSpacing:'-0.02em', lineHeight:1 }}>{fmtAmt(out, cur)}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
               {Object.values(personal).some(v => v.in > 0) && (
-                <div style={{ borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:12 }}>
+                <div style={{ marginBottom:14 }}>
                   <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8 }}>수입</div>
                   <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
                     {Object.entries(personal).filter(([,{in: inc}]) => inc > 0).map(([cur, {in: inc}]) => (
@@ -7856,6 +7845,17 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
                   </div>
                 </div>
               )}
+              <div style={{ borderTop: Object.values(personal).some(v => v.in > 0) ? '1px solid rgba(255,255,255,0.08)' : 'none', paddingTop: Object.values(personal).some(v => v.in > 0) ? 12 : 0 }}>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>지출</div>
+                <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
+                  {Object.entries(personal).filter(([,{out}]) => out > 0).map(([cur, {out}]) => (
+                    <div key={cur}>
+                      <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.25)', marginBottom:3 }}>{cur}</div>
+                      <div style={{ fontFamily:SERIF, fontSize:26, color:'#E07B6A', letterSpacing:'-0.02em', lineHeight:1 }}>{fmtAmt(out, cur)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </>
           ) : (
             <div style={{ fontFamily:SANS, fontSize:13, color:'rgba(255,255,255,0.3)', textAlign:'center', padding:'6px 0' }}>기록 없음</div>
@@ -12404,7 +12404,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v166</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v167</div>
         </div>
       </div>
       <button onClick={async () => {
