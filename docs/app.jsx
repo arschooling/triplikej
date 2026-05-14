@@ -2509,7 +2509,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v164</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v165</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7735,53 +7735,73 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
       <div style={{ margin:'0 16px 14px', background:COLORS.panel, borderRadius:20, padding:'20px 20px 18px' }}>
         {hasShared ? (
           <>
-            {/* 1단: 개인 / 공동 — 2컬럼 그리드 */}
+            {/* 상단: 개인 수입(좌) | 개인 지출(우) */}
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
-              {/* 왼쪽: 개인 수입과 지출 */}
               <div>
-                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:9 }}>개인</div>
-                {(() => {
-                  const allCurs = [...new Set([...Object.keys(personal), ...Object.keys(shared).filter(c => shared[c].out > 0)])];
-                  if (allCurs.length === 0) return <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.18)' }}>—</div>;
-                  return allCurs.map(cur => {
-                    const myOut = (personal[cur]?.out || 0) + (shared[cur]?.out || 0) / splitN;
-                    const myInc = personal[cur]?.in || 0;
-                    return (
-                      <div key={cur} style={{ marginBottom:6 }}>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:9 }}>개인 수입</div>
+                {Object.entries(personal).filter(([,{in:inc}]) => inc > 0).length > 0
+                  ? Object.entries(personal).filter(([,{in:inc}]) => inc > 0).map(([cur, {in:inc}]) => (
+                      <div key={cur} style={{ marginBottom:5 }}>
                         <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.22)', marginBottom:2 }}>{cur}</div>
-                        {myOut > 0 && <div style={{ fontFamily:SERIF, fontSize:20, color:'#E07B6A', letterSpacing:'-0.02em', lineHeight:1.1 }}>{fmtAmt(cur==='KRW' ? Math.round(myOut) : myOut, cur)}</div>}
-                        {myInc > 0 && <div style={{ fontFamily:MONO, fontSize:11, color:'#7EC88A', marginTop: myOut > 0 ? 2 : 0 }}>수입 {fmtAmt(myInc, cur)}</div>}
-                        {myOut === 0 && myInc === 0 && <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.18)' }}>—</div>}
+                        <div style={{ fontFamily:SERIF, fontSize:20, color:'#7EC88A', letterSpacing:'-0.02em', lineHeight:1.1 }}>{fmtAmt(inc, cur)}</div>
                       </div>
-                    );
-                  });
-                })()}
+                    ))
+                  : <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.18)' }}>—</div>
+                }
               </div>
-              {/* 오른쪽: 공동 수입과 지출 */}
+              <div>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:9 }}>개인 지출</div>
+                {Object.entries(personal).filter(([,{out}]) => out > 0).length > 0
+                  ? Object.entries(personal).filter(([,{out}]) => out > 0).map(([cur, {out}]) => (
+                      <div key={cur} style={{ marginBottom:5 }}>
+                        <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.22)', marginBottom:2 }}>{cur}</div>
+                        <div style={{ fontFamily:SERIF, fontSize:20, color:'#E07B6A', letterSpacing:'-0.02em', lineHeight:1.1 }}>{fmtAmt(out, cur)}</div>
+                      </div>
+                    ))
+                  : <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.18)' }}>—</div>
+                }
+              </div>
+            </div>
+
+            {/* 중단: 공동 수입(좌) | 공동 지출(우) */}
+            <div style={{ borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:14, display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
+              <div>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:9 }}>공동 수입</div>
+                {Object.entries(shared).filter(([,{in:inc}]) => inc > 0).length > 0
+                  ? Object.entries(shared).filter(([,{in:inc}]) => inc > 0).map(([cur, {in:inc}]) => (
+                      <div key={cur} style={{ marginBottom:5 }}>
+                        <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.22)', marginBottom:2 }}>{cur}</div>
+                        <div style={{ fontFamily:SERIF, fontSize:20, color:'#7EC88A', letterSpacing:'-0.02em', lineHeight:1.1 }}>{fmtAmt(inc, cur)}</div>
+                      </div>
+                    ))
+                  : <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.18)' }}>—</div>
+                }
+              </div>
               <div>
                 <div style={{ display:'flex', alignItems:'center', gap:5, marginBottom:9 }}>
-                  <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase' }}>공동</div>
+                  <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase' }}>공동 지출</div>
                   {hasSharedOut && (
                     <button onClick={() => { setSplitOpen(true); onSheetChange?.(true); }} style={{
                       background:'none', border:'none', cursor:'pointer', padding:0, fontSize:11, lineHeight:1, opacity:0.45,
                     }}>➗</button>
                   )}
                 </div>
-                {Object.entries(shared).map(([cur, {out, in: inc}]) => (
-                  <div key={cur} style={{ marginBottom:6 }}>
-                    <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.22)', marginBottom:2 }}>{cur}</div>
-                    {out > 0 && <div style={{ fontFamily:SERIF, fontSize:20, color:'#7BAEED', letterSpacing:'-0.02em', lineHeight:1.1 }}>{fmtAmt(out, cur)}</div>}
-                    {inc > 0 && <div style={{ fontFamily:MONO, fontSize:11, color:'#7EC88A', marginTop: out > 0 ? 2 : 0 }}>수입 {fmtAmt(inc, cur)}</div>}
-                    {out === 0 && inc === 0 && <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.18)' }}>—</div>}
-                  </div>
-                ))}
+                {Object.entries(shared).filter(([,{out}]) => out > 0).length > 0
+                  ? Object.entries(shared).filter(([,{out}]) => out > 0).map(([cur, {out}]) => (
+                      <div key={cur} style={{ marginBottom:5 }}>
+                        <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.22)', marginBottom:2 }}>{cur}</div>
+                        <div style={{ fontFamily:SERIF, fontSize:20, color:'#7BAEED', letterSpacing:'-0.02em', lineHeight:1.1 }}>{fmtAmt(out, cur)}</div>
+                      </div>
+                    ))
+                  : <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.18)' }}>—</div>
+                }
               </div>
             </div>
 
-            {/* 2단: 내 부담금 */}
+            {/* 하단: 개인 부담금 */}
             {hasSharedOut && (
               <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:14 }}>
-                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>내 부담금 (1/{splitN})</div>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>개인 부담금 (1/{splitN})</div>
                 <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
                   {[...new Set([
                     ...Object.keys(shared).filter(c => shared[c].out > 0),
@@ -12377,7 +12397,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v164</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v165</div>
         </div>
       </div>
       <button onClick={async () => {
