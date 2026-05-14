@@ -2509,7 +2509,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v154</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v156</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7465,8 +7465,8 @@ function BudgetCalcSheet({ open, onClose, onEnter, onTabBarToggle }) {
   );
 }
 
-function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter, onTabBarToggle }) {
-  const [n, setN]         = React.useState(String(defaultN));
+function SplitSheet({ open, onClose, totalKrw, splitN, onChangeSplitN, onTabBarToggle }) {
+  const [n, setN]         = React.useState(String(splitN));
   const [entered, setEntered] = React.useState(false);
   const [sheetY, setSheetY]   = React.useState(0);
   const [sheetUp, setSheetUp] = React.useState(0);
@@ -7480,7 +7480,7 @@ function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter, onTabBarToggle
 
   React.useEffect(() => {
     if (!open) { setEntered(false); setSheetY(0); sheetYRef.current=0; setSheetUp(0); sheetUpRef.current=0; setExpanded(false); expandedRef.current=false; setClosing(false); return; }
-    setN(String(defaultN));
+    setN(String(splitN));
     setSheetY(0); sheetYRef.current=0; setSheetUp(0); sheetUpRef.current=0;
     setExpanded(false); expandedRef.current=false; setClosing(false);
     requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
@@ -7571,16 +7571,10 @@ function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter, onTabBarToggle
             <div style={{ fontFamily:SERIF, fontSize:22, color:'#fff', letterSpacing:'-0.01em' }}>{fmtAmt(perPerson, 'KRW')}</div>
           </div>
         </div>
-        <div style={{ display:'flex', gap:8 }}>
-          <button onClick={() => { onEnter('in', perPerson); onClose(); }} style={{
-            flex:1, padding:'14px 0', border:`1px solid ${COLORS.line}`, borderRadius:14,
-            background:COLORS.card, fontFamily:SANS, fontSize:13, fontWeight:600, color:COLORS.ink, cursor:'pointer',
-          }}>수입으로 입력</button>
-          <button onClick={() => { onEnter('out', perPerson); onClose(); }} style={{
-            flex:1, padding:'14px 0', border:'none', borderRadius:14,
-            background:COLORS.accent, fontFamily:SANS, fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer',
-          }}>지출로 입력</button>
-        </div>
+        <button onClick={() => { onChangeSplitN?.(count); onClose(); }} style={{
+          width:'100%', padding:'14px 0', border:'none', borderRadius:14,
+          background:COLORS.accent, fontFamily:SANS, fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer',
+        }}>확인</button>
       </div>
       </div>
     </div>,
@@ -7588,11 +7582,18 @@ function SplitSheet({ open, onClose, totalKrw, defaultN, onEnter, onTabBarToggle
   );
 }
 
-function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
+function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle }) {
   const budget  = trip.budget || {};
   const entries = budget.entries || [];
   const outCats = budget.outCats || BUDGET_OUT_CATS_DEFAULT;
   const inCats  = budget.inCats  || BUDGET_IN_CATS_DEFAULT;
+  const splitN  = budget.splitN  || Math.max(2, (trip.members||[]).length);
+
+  // 개인경비는 본인 것만, 공동경비는 모두 표시
+  const visibleEntries = React.useMemo(() =>
+    entries.filter(e => e.scope !== 'personal' || !e.createdBy || e.createdBy === myUid),
+    [entries, myUid]
+  );
 
   const [addOpen,    setAddOpen]    = React.useState(false);
   const [editIdx,    setEditIdx]    = React.useState(null);
@@ -7628,12 +7629,12 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
 
   // onSheetChange는 각 open/close 함수에서 직접 동기 호출 (탭바 딜레이 방지)
 
-  // entries 단일 패스로 모든 통계 계산
+  // visibleEntries 단일 패스로 모든 통계 계산
   const budgetStats = React.useMemo(() => {
     const byCurrency = {};
     let krwTotalOut = 0, krwTotalIn = 0, hasShared = false;
     let krwSharedOut = 0, krwPersonalOut = 0, krwSharedIn = 0, krwPersonalIn = 0;
-    entries.forEach(e => {
+    visibleEntries.forEach(e => {
       const cur = e.currency || 'KRW';
       const krw = toKrw(e.amount, cur);
       const scope = e.scope || 'personal';
@@ -7653,19 +7654,20 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
       }
     });
     return { krwTotalOut, krwTotalIn, byCurrency, hasShared, krwSharedOut, krwPersonalOut, krwSharedIn, krwPersonalIn };
-  }, [entries]);
+  }, [visibleEntries]);
   const { krwTotalOut, krwTotalIn, byCurrency, hasShared, krwSharedOut, krwPersonalOut, krwSharedIn, krwPersonalIn } = budgetStats;
 
   const entriesByDate = React.useMemo(() => {
     const indexed = entries.map((e, i) => ({ ...e, _i: i }));
     const byDate = {};
     indexed.forEach(e => {
+      if (e.scope === 'personal' && e.createdBy && e.createdBy !== myUid) return;
       const d = e.date || '날짜 없음';
       if (!byDate[d]) byDate[d] = [];
       byDate[d].push(e);
     });
     return Object.keys(byDate).sort((a, b) => b.localeCompare(a)).map(date => ({ date, items: byDate[date] }));
-  }, [entries]);
+  }, [entries, myUid]);
 
   const currentCats = form.type === 'out' ? outCats : inCats;
 
@@ -7712,6 +7714,7 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
       note: form.note, currency: cur,
       scope: form.scope || 'shared',
       date: form.date || new Date().toISOString().slice(0,10),
+      createdBy: editIdx !== null ? (entries[editIdx].createdBy || myUid || '') : (myUid || ''),
     };
     const updated = editIdx !== null
       ? entries.map((e,i) => i===editIdx ? entry : e)
@@ -7820,6 +7823,29 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
             </div>
           </div>
         )}
+
+        {/* 정산 섹션 */}
+        {hasShared && krwSharedOut > 0 && (
+          <div style={{ marginTop:16, paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ fontFamily:MONO, fontSize:10, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>
+              내 부담 (1/{splitN})
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:0 }}>
+              <div>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.3)', marginBottom:3 }}>공동 1인</div>
+                <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.82)', fontWeight:600 }}>{fmtAmt(Math.round(krwSharedOut/splitN),'KRW')}</div>
+              </div>
+              <div>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.3)', marginBottom:3 }}>개인 지출</div>
+                <div style={{ fontFamily:MONO, fontSize:13, color:'rgba(255,255,255,0.82)', fontWeight:600 }}>{fmtAmt(Math.round(krwPersonalOut),'KRW')}</div>
+              </div>
+              <div>
+                <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.3)', marginBottom:3 }}>총 부담</div>
+                <div style={{ fontFamily:SERIF, fontSize:15, color:'#fff', fontWeight:700, letterSpacing:'-0.01em' }}>{fmtAmt(Math.round(krwSharedOut/splitN + krwPersonalOut),'KRW')}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 추가 버튼 */}
@@ -7847,7 +7873,7 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
       </div>
 
       {/* 내역 목록 — 날짜별 그룹 */}
-      {entries.length === 0 ? (
+      {visibleEntries.length === 0 ? (
         <div style={{ padding:'60px 0', textAlign:'center' }}>
           <div style={{ fontFamily:SERIF, fontSize:22, color:COLORS.ink, marginBottom:8 }}>아직 기록이 없어요</div>
           <div style={{ fontFamily:SANS, fontSize:13.5, color:COLORS.mute }}>여행 수입과 지출을 기록해 보세요</div>
@@ -8092,8 +8118,8 @@ function BudgetScreen({ trip, onEditBudget, onSheetChange, onTabBarToggle }) {
         onTabBarToggle={onTabBarToggle}/>
       <SplitSheet open={splitOpen} onClose={() => { setSplitOpen(false); if (!sheetOpen && !calcOpen) onSheetChange?.(false); }}
         totalKrw={Math.round(krwSharedOut)}
-        defaultN={Math.max(2, (trip.members||[]).length)}
-        onEnter={(type, amount) => openAddWithAmount(type, amount)}
+        splitN={splitN}
+        onChangeSplitN={(n) => onEditBudget({ splitN: n })}
         onTabBarToggle={onTabBarToggle}/>
     </div>
   );
@@ -12209,7 +12235,7 @@ function App() {
     label = 'Map';
   }
   else if (tab === 'food')   { screen = <FoodScreen trip={trip} onEditFood={food => editTrip({ food })} onDeleteFood={(idx) => { const snap = { food: trip.food }; const food = trip.food.filter((_, i) => i !== idx); editTrip({ food }); scheduleUndo(() => editTrip(snap)); }} editing={editing} setEditing={setEditing}/>; label='Food'; }
-  else if (tab === 'budget') { screen = <BudgetScreen trip={trip} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })} onSheetChange={v => { setBudgetSheetOpen(v); if (!v) setTabBarVisible(true); }} onTabBarToggle={() => setTabBarVisible(v => !v)}/>; label='Budget'; }
+  else if (tab === 'budget') { screen = <BudgetScreen trip={trip} myUid={authUser?.uid} onEditBudget={b => editTrip({ budget: { ...(trip.budget||{}), ...b } })} onSheetChange={v => { setBudgetSheetOpen(v); if (!v) setTabBarVisible(true); }} onTabBarToggle={() => setTabBarVisible(v => !v)}/>; label='Budget'; }
   else                       { screen = <PrepScreen trip={trip} onEditPrep={editPrep} onScheduleUndo={scheduleUndo} editing={editing} setEditing={setEditing}/>; label='Prep'; }
 
   const dayHue = dayIdx !== null && trip
