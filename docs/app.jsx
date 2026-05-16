@@ -2509,7 +2509,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v175</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v176</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7217,9 +7217,9 @@ function PrepScreen({ trip, onEditPrep, onScheduleUndo, editing, setEditing }) {
         const isCollapsed = collapsedCats.has(cat.id);
         const sortOrder = catSortOrder[cat.id] || null;
         return (
-          <div key={cat.id} {...(() => { const p = makeCatDragProps(ci); const {ref, onTouchStart, onTouchMove, onTouchEnd, style: ds} = p; return {ref, onTouchStart, onTouchMove, onTouchEnd, style:{...ds, padding:'0 16px', marginBottom: isCollapsed ? 8 : 20}}; })()}>
+          <div key={cat.id} {...(() => { const p = makeCatDragProps(ci); return {ref: p.ref, style:{...p.style, padding:'0 16px', marginBottom: isCollapsed ? 8 : 20}}; })()}>
             {/* 카테고리 헤더 */}
-            <div style={{ display:'flex', alignItems:'center', gap:4, marginBottom: isCollapsed ? 0 : 8, paddingLeft:2 }}>
+            <div {...(() => { const p = makeCatDragProps(ci); return {onTouchStart: p.onTouchStart, onTouchMove: p.onTouchMove, onTouchEnd: p.onTouchEnd}; })()} style={{ display:'flex', alignItems:'center', gap:4, marginBottom: isCollapsed ? 0 : 8, paddingLeft:2 }}>
               {editing && renamingCat === ci ? (
                 <input autoFocus value={cat.name}
                   onChange={e => renameCat(ci, e.target.value)}
@@ -12581,7 +12581,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v175</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v176</div>
         </div>
       </div>
       <button onClick={async () => {
