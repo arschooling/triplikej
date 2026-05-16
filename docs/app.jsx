@@ -2509,7 +2509,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v174</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v175</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -6826,6 +6826,7 @@ function PrepScreen({ trip, onEditPrep, onScheduleUndo, editing, setEditing }) {
   const catDragRef = React.useRef(null);
   const catTimer = React.useRef(null);
   const catEls = React.useRef({});
+  const catRects = React.useRef({});
 
   const tripId = trip?.id || '';
   const [collapsedCats, setCollapsedCats] = React.useState(() => {
@@ -6940,8 +6941,13 @@ function PrepScreen({ trip, onEditPrep, onScheduleUndo, editing, setEditing }) {
       clearTimeout(catTimer.current);
       const startY = e.touches[0].clientY;
       catTimer.current = setTimeout(() => {
-        const el = catEls.current[ci];
-        const catH = el ? el.getBoundingClientRect().height : 80;
+        const rects = {};
+        for (let i = 0; i < cats.length; i++) {
+          const el = catEls.current[i];
+          if (el) rects[i] = el.getBoundingClientRect();
+        }
+        catRects.current = rects;
+        const catH = rects[ci]?.height || 80;
         if (window.navigator?.vibrate) window.navigator.vibrate(14);
         setCatDrag({ fromI: ci, toI: ci, fingerY: startY, startY, catH });
       }, 430);
@@ -6951,9 +6957,9 @@ function PrepScreen({ trip, onEditPrep, onScheduleUndo, editing, setEditing }) {
       const d = catDragRef.current; if (!d) return;
       const y = e.touches[0].clientY;
       let target = d.toI;
+      const rects = catRects.current;
       for (let i = 0; i < cats.length; i++) {
-        const el = catEls.current[i]; if (!el) continue;
-        const rect = el.getBoundingClientRect();
+        const rect = rects[i]; if (!rect) continue;
         if (y >= rect.top && y < rect.bottom) {
           target = y < rect.top + rect.height / 2 ? i : i + 1;
           break;
@@ -6975,7 +6981,7 @@ function PrepScreen({ trip, onEditPrep, onScheduleUndo, editing, setEditing }) {
       let shift = 0;
       if (fromI < toI && ci >= fromI + 1 && ci < toI) shift = -catH;
       else if (fromI > toI && ci >= toI && ci < fromI) shift = catH;
-      return { transform:`translateY(${shift}px)`, transition:'transform 0.22s ease', position:'relative' };
+      return { transform:`translateY(${shift}px)`, transition:'transform 0.28s cubic-bezier(0.34,1.56,0.64,1)', position:'relative' };
     })(),
   });
 
@@ -12575,7 +12581,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v174</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v175</div>
         </div>
       </div>
       <button onClick={async () => {
