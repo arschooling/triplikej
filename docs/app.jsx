@@ -2509,7 +2509,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v172</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v173</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -6819,6 +6819,13 @@ function PrepScreen({ trip, onEditPrep, onScheduleUndo, editing, setEditing }) {
   const [pasteOpen,    setPasteOpen]    = React.useState(false);
   const [pasteText,    setPasteText]    = React.useState('');
   const [copyToast,    setCopyToast]    = React.useState(false);
+  const [addingCat,    setAddingCat]    = React.useState(false);
+  const [newCatName,   setNewCatName]   = React.useState('');
+  // ── Category drag ─────────────────────────────────────────
+  const [catDrag, setCatDrag] = React.useState(null);
+  const catDragRef = React.useRef(null);
+  const catTimer = React.useRef(null);
+  const catEls = React.useRef({});
 
   const tripId = trip?.id || '';
   const [collapsedCats, setCollapsedCats] = React.useState(() => {
@@ -12485,7 +12492,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v172</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v173</div>
         </div>
       </div>
       <button onClick={async () => {
