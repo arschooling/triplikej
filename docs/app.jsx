@@ -2509,7 +2509,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v176</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v177</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7226,7 +7226,7 @@ function PrepScreen({ trip, onEditPrep, onScheduleUndo, editing, setEditing }) {
                   onBlur={() => setRenamingCat(null)}
                   onKeyDown={e => e.key === 'Enter' && setRenamingCat(null)}
                   style={{ flex:1, border:`1px solid ${COLORS.line}`, borderRadius:8,
-                    padding:'4px 8px', fontFamily:MONO, fontSize:13, letterSpacing:'0.12em',
+                    padding:'4px 8px', fontFamily:MONO, fontSize:15, letterSpacing:'0.12em',
                     textTransform:'uppercase', background:COLORS.card, color:COLORS.ink, outline:'none' }}/>
               ) : (
                 <button onClick={() => toggleCollapse(cat.id)} style={{
@@ -7235,7 +7235,7 @@ function PrepScreen({ trip, onEditPrep, onScheduleUndo, editing, setEditing }) {
                   <span style={{ display:'inline-flex', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition:'transform 0.18s' }}>
                     <Icon name="chevron-d" size={11} color={COLORS.mute} stroke={2.5}/>
                   </span>
-                  <span style={{ fontFamily:MONO, fontSize:13, letterSpacing:'0.12em', textTransform:'uppercase', color:COLORS.mute }}>
+                  <span style={{ fontFamily:MONO, fontSize:15, letterSpacing:'0.12em', textTransform:'uppercase', color:COLORS.mute }}>
                     {cat.name}{isCollapsed && (cat.items||[]).length > 0 ? ` (${(cat.items||[]).length})` : ''}
                   </span>
                 </button>
@@ -12581,7 +12581,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v176</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v177</div>
         </div>
       </div>
       <button onClick={async () => {
