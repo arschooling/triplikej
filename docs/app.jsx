@@ -2513,7 +2513,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v184</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v185</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7777,10 +7777,19 @@ function BudgetImportExportSheet({ open, onClose, entries, myUid, onImport }) {
   }, [entries]);
 
   const copyTsv = () => {
-    navigator.clipboard.writeText(toTsv).then(() => {
-      setCopyDone(true);
-      setTimeout(() => setCopyDone(false), 2000);
-    });
+    const done = () => { setCopyDone(true); setTimeout(() => setCopyDone(false), 2000); };
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = toTsv; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); done(); } catch(_) {}
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(toTsv).then(done).catch(fallback);
+    } else {
+      fallback();
+    }
   };
 
   const parseImport = () => {
@@ -7842,11 +7851,14 @@ function BudgetImportExportSheet({ open, onClose, entries, myUid, onImport }) {
             <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, marginBottom:8 }}>
               {entries.length}개 항목 · TSV 형식 (구글 스프레드시트에 바로 붙여넣기 가능)
             </div>
-            <pre style={{
-              background:COLORS.soft, borderRadius:12, padding:'12px', fontSize:11,
-              fontFamily:MONO, color:COLORS.ink, overflow:'auto', maxHeight:180,
-              whiteSpace:'pre', margin:'0 0 12px', boxSizing:'border-box',
-            }}>{toTsv}</pre>
+            <textarea readOnly value={toTsv}
+              onFocus={e => e.target.select()}
+              style={{
+                width:'100%', height:150, padding:'12px', borderRadius:12, border:'none',
+                fontSize:11, fontFamily:MONO, color:COLORS.ink, background:COLORS.soft,
+                resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.5,
+                margin:'0 0 12px', whiteSpace:'pre',
+              }}/>
             <button onClick={copyTsv} style={{
               width:'100%', padding:'13px', border:'none', borderRadius:14,
               background: copyDone ? COLORS.ink : COLORS.accent,
@@ -12755,7 +12767,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v184</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v185</div>
         </div>
       </div>
       <button onClick={async () => {
