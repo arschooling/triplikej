@@ -349,6 +349,7 @@ const Icon = ({ name, size=16, color='currentColor', stroke=1.6 }) => {
     case 'file':       return <svg {...p}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>;
     case 'moon':      return <svg {...p}><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>;
     case 'gear':      return <svg {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    case 'sheet':     return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>;
     default: return null;
   }
 };
@@ -2512,7 +2513,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v183</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v184</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7746,6 +7747,164 @@ function SplitSheet({ open, onClose, shared, splitN, onChangeSplitN, onTabBarTog
   );
 }
 
+// ─── Budget Import/Export Sheet ────────────────────────────
+function BudgetImportExportSheet({ open, onClose, entries, myUid, onImport }) {
+  const [tab, setTab]               = React.useState('export');
+  const [importText, setImportText] = React.useState('');
+  const [copyDone, setCopyDone]     = React.useState(false);
+  const [importResult, setImportResult] = React.useState(null);
+
+  React.useEffect(() => {
+    if (open) { setTab('export'); setImportText(''); setImportResult(null); setCopyDone(false); }
+  }, [open]);
+
+  const COLS = ['날짜', '구분', '카테고리', '범위', '금액', '통화', '메모'];
+
+  const toTsv = React.useMemo(() => {
+    const rows = [COLS.join('\t')];
+    entries.forEach(e => {
+      rows.push([
+        e.date || '',
+        e.type === 'in' ? '수입' : '지출',
+        e.cat || '',
+        (e.scope || 'shared') === 'personal' ? '개인' : '공동',
+        e.amount ?? '',
+        e.currency || 'KRW',
+        e.note || '',
+      ].join('\t'));
+    });
+    return rows.join('\n');
+  }, [entries]);
+
+  const copyTsv = () => {
+    navigator.clipboard.writeText(toTsv).then(() => {
+      setCopyDone(true);
+      setTimeout(() => setCopyDone(false), 2000);
+    });
+  };
+
+  const parseImport = () => {
+    const lines = importText.trim().split('\n').filter(l => l.trim());
+    if (!lines.length) return;
+    const firstCells = lines[0].split('\t');
+    const startIdx = (firstCells[0].trim() === '날짜' || firstCells[0].toLowerCase().trim() === 'date') ? 1 : 0;
+    const imported = [];
+    let errors = 0;
+    for (let i = startIdx; i < lines.length; i++) {
+      const cells = lines[i].split('\t');
+      if (cells.length < 5) { errors++; continue; }
+      const [dateStr, typeStr, catStr, scopeStr, amountStr, currencyStr, ...noteParts] = cells;
+      const amount = parseFloat(String(amountStr).replace(/,/g, ''));
+      if (isNaN(amount)) { errors++; continue; }
+      const typeMap = { '수입':'in', '지출':'out', 'in':'in', 'out':'out' };
+      const type  = typeMap[(typeStr||'').trim()] || 'out';
+      const scope = ['개인','personal'].includes((scopeStr||'').trim()) ? 'personal' : 'shared';
+      const dateMatch = (dateStr||'').match(/\d{4}-\d{2}-\d{2}/);
+      const date = dateMatch ? dateMatch[0] : new Date().toISOString().slice(0,10);
+      imported.push({
+        id: Date.now().toString() + '_' + i,
+        type, amount,
+        cat: (catStr||'').trim() || '기타',
+        scope, date,
+        currency: (currencyStr||'').trim() || 'KRW',
+        note: noteParts.join('\t').trim(),
+        createdBy: myUid,
+      });
+    }
+    if (imported.length > 0) {
+      onImport(imported);
+      setImportResult({ count: imported.length, errors });
+      setImportText('');
+    } else {
+      setImportResult({ count: 0, errors });
+    }
+  };
+
+  const tabBtnStyle = (t) => ({
+    flex:1, padding:'8px 0', border:'none', borderRadius:8, cursor:'pointer',
+    background: tab===t ? COLORS.card : 'transparent',
+    fontFamily:SANS, fontSize:13, fontWeight: tab===t ? 600 : 400,
+    color: tab===t ? COLORS.ink : COLORS.mute, transition:'all 150ms',
+  });
+
+  return (
+    <BottomSheet open={open} onClose={onClose} title="스프레드시트 연동">
+      <div style={{ display:'flex', gap:0, margin:'0 16px 16px', background:COLORS.soft, borderRadius:10, padding:3 }}>
+        <button onClick={() => setTab('export')} style={tabBtnStyle('export')}>내보내기</button>
+        <button onClick={() => setTab('import')} style={tabBtnStyle('import')}>가져오기</button>
+      </div>
+
+      {tab === 'export' ? (
+        <div style={{ padding:'0 16px 24px' }}>
+          {entries.length === 0 ? (
+            <div style={{ textAlign:'center', padding:'40px 0', color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>내보낼 항목이 없어요</div>
+          ) : (<>
+            <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, marginBottom:8 }}>
+              {entries.length}개 항목 · TSV 형식 (구글 스프레드시트에 바로 붙여넣기 가능)
+            </div>
+            <pre style={{
+              background:COLORS.soft, borderRadius:12, padding:'12px', fontSize:11,
+              fontFamily:MONO, color:COLORS.ink, overflow:'auto', maxHeight:180,
+              whiteSpace:'pre', margin:'0 0 12px', boxSizing:'border-box',
+            }}>{toTsv}</pre>
+            <button onClick={copyTsv} style={{
+              width:'100%', padding:'13px', border:'none', borderRadius:14,
+              background: copyDone ? COLORS.ink : COLORS.accent,
+              color: copyDone ? COLORS.bg : '#fff',
+              fontFamily:SANS, fontSize:14, fontWeight:600, cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center', gap:8, transition:'all 200ms',
+            }}>
+              <Icon name={copyDone ? 'check' : 'copy'} size={15} color={copyDone ? COLORS.bg : '#fff'} stroke={2}/>
+              {copyDone ? '복사됨!' : '클립보드에 복사'}
+            </button>
+            <div style={{ fontFamily:SANS, fontSize:12, color:COLORS.mute, marginTop:10, textAlign:'center' }}>
+              복사 후 구글 스프레드시트에서 Ctrl+V (Mac: Cmd+V)
+            </div>
+          </>)}
+        </div>
+      ) : (
+        <div style={{ padding:'0 16px 24px' }}>
+          <div style={{ fontFamily:SANS, fontSize:12.5, color:COLORS.mute, marginBottom:10, lineHeight:1.6 }}>
+            구글 스프레드시트에서 셀을 선택해 복사(Ctrl+C)한 뒤 아래에 붙여넣기 하세요.<br/>
+            <span style={{ fontWeight:600, color:COLORS.ink }}>열 순서:</span>{' '}
+            날짜 · 구분 · 카테고리 · 범위 · 금액 · 통화 · 메모
+          </div>
+          <textarea
+            value={importText}
+            onChange={e => { setImportText(e.target.value); setImportResult(null); }}
+            placeholder={'날짜\t구분\t카테고리\t범위\t금액\t통화\t메모\n2025-01-15\t지출\t식비\t공동\t25000\tKRW\t점심'}
+            style={{
+              width:'100%', height:140, padding:'12px', borderRadius:12,
+              border:`1.5px solid ${COLORS.line}`, fontFamily:MONO, fontSize:11.5,
+              color:COLORS.ink, background:COLORS.soft, resize:'none',
+              outline:'none', boxSizing:'border-box', lineHeight:1.5,
+            }}
+          />
+          {importResult && (
+            <div style={{
+              marginTop:8, padding:'10px 14px', borderRadius:10,
+              background: importResult.count > 0 ? 'rgba(100,180,100,0.12)' : 'rgba(200,80,80,0.1)',
+              fontFamily:SANS, fontSize:13,
+              color: importResult.count > 0 ? '#2e7d32' : COLORS.accent,
+            }}>
+              {importResult.count > 0
+                ? `✓ ${importResult.count}개 항목 가져오기 완료${importResult.errors > 0 ? ` (${importResult.errors}개 건너뜀)` : ''}`
+                : `유효한 데이터를 찾을 수 없어요${importResult.errors > 0 ? ` (${importResult.errors}개 건너뜀)` : ''}`}
+            </div>
+          )}
+          <button onClick={parseImport} style={{
+            width:'100%', padding:'13px', border:'none', borderRadius:14, marginTop:10,
+            background: importText.trim() ? COLORS.ink : COLORS.soft,
+            color: importText.trim() ? COLORS.bg : COLORS.mute,
+            fontFamily:SANS, fontSize:14, fontWeight:600,
+            cursor: importText.trim() ? 'pointer' : 'default', transition:'all 150ms',
+          }}>가져오기</button>
+        </div>
+      )}
+    </BottomSheet>
+  );
+}
+
 function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle }) {
   const budget  = trip.budget || {};
   const entries = budget.entries || [];
@@ -7769,10 +7928,11 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
   const [splitOpen,     setSplitOpen]     = React.useState(false);
   const [sheetEntered,  setSheetEntered]  = React.useState(false);
   const [datePickOpen,  setDatePickOpen]  = React.useState(false);
+  const [ioOpen,        setIoOpen]        = React.useState(false);
 
   const closeSheet = () => {
     setAddOpen(false); setEditIdx(null); setDelConfirm(false);
-    if (!calcOpen && !splitOpen) onSheetChange?.(false);
+    if (!calcOpen && !splitOpen && !ioOpen) onSheetChange?.(false);
   };
 
   const reorderEntries = (from, to) => {
@@ -8045,6 +8205,12 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
         }}>
           <Icon name="calculator" size={16} color={COLORS.ink} stroke={1.8}/>
         </button>
+        <button onClick={() => { setIoOpen(true); onSheetChange?.(true); }} style={{
+          width:46, padding:'12px 0', background:COLORS.card, border:`1px solid ${COLORS.line}`, borderRadius:14,
+          cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+        }}>
+          <Icon name="sheet" size={16} color={COLORS.ink} stroke={1.8}/>
+        </button>
       </div>
 
       {/* 내역 목록 — 날짜별 그룹 */}
@@ -8291,11 +8457,17 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
       <BudgetCalcSheet open={calcOpen} onClose={() => { setCalcOpen(false); if (!sheetOpen && !splitOpen) onSheetChange?.(false); }}
         onEnter={(type, amount) => { setCalcOpen(false); openAddWithAmount(type, amount); }}
         onTabBarToggle={onTabBarToggle}/>
-      <SplitSheet open={splitOpen} onClose={() => { setSplitOpen(false); if (!sheetOpen && !calcOpen) onSheetChange?.(false); }}
+      <SplitSheet open={splitOpen} onClose={() => { setSplitOpen(false); if (!sheetOpen && !calcOpen && !ioOpen) onSheetChange?.(false); }}
         shared={shared}
         splitN={splitN}
         onChangeSplitN={(n) => onEditBudget({ splitN: n })}
         onTabBarToggle={onTabBarToggle}/>
+      <BudgetImportExportSheet
+        open={ioOpen}
+        onClose={() => { setIoOpen(false); if (!sheetOpen && !calcOpen && !splitOpen) onSheetChange?.(false); }}
+        entries={visibleEntries}
+        myUid={myUid}
+        onImport={(imported) => onEditBudget({ entries: [...entries, ...imported] })}/>
     </div>
   );
 }
@@ -12583,7 +12755,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v183</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v184</div>
         </div>
       </div>
       <button onClick={async () => {
