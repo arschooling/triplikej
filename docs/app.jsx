@@ -2513,7 +2513,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v187</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v188</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7882,7 +7882,7 @@ function BudgetImportExportSheet({ open, onClose, entries, myUid, onImport }) {
   });
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="스프레드시트 연동">
+    <BottomSheet open={open} onClose={onClose} onConfirm={onClose} title="스프레드시트 연동">
       <div style={{ display:'flex', gap:0, margin:'0 16px 16px', background:COLORS.soft, borderRadius:10, padding:3 }}>
         <button onClick={() => setTab('export')} style={tabBtnStyle('export')}>내보내기</button>
         <button onClick={() => setTab('import')} style={tabBtnStyle('import')}>가져오기</button>
@@ -12812,7 +12812,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v187</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v188</div>
         </div>
       </div>
       <button onClick={async () => {
