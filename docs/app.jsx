@@ -2513,7 +2513,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v192</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v193</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -8135,14 +8135,20 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
               <div>
                 <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:9 }}>개인 지출</div>
                 {(() => {
-                  const curs = Object.keys(personal).filter(c => personal[c].out > 0);
+                  const curs = [...new Set([
+                    ...Object.keys(personal).filter(c => personal[c].out > 0),
+                    ...Object.keys(shared).filter(c => shared[c].out > 0),
+                  ])];
                   if (curs.length === 0) return <div style={{ fontFamily:MONO, fontSize:12, color:'rgba(255,255,255,0.18)' }}>—</div>;
-                  return curs.map(cur => (
-                    <div key={cur} style={{ marginBottom:5 }}>
-                      <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.22)', marginBottom:2 }}>{cur}</div>
-                      <div style={{ fontFamily:SERIF, fontSize:28, color:'#E07B6A', letterSpacing:'-0.02em', lineHeight:1.1 }}>{fmtAmt(cur==='KRW' ? Math.round(personal[cur].out) : personal[cur].out, cur)}</div>
-                    </div>
-                  ));
+                  return curs.map(cur => {
+                    const total = (personal[cur]?.out || 0) + (shared[cur]?.out || 0) / splitN;
+                    return (
+                      <div key={cur} style={{ marginBottom:5 }}>
+                        <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.22)', marginBottom:2 }}>{cur}</div>
+                        <div style={{ fontFamily:SERIF, fontSize:28, color:'#E07B6A', letterSpacing:'-0.02em', lineHeight:1.1 }}>{fmtAmt(cur==='KRW' ? Math.round(total) : total, cur)}</div>
+                      </div>
+                    );
+                  });
                 })()}
               </div>
             </div>
@@ -8187,11 +8193,8 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
               <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:14 }}>
                 <div style={{ fontFamily:MONO, fontSize:9.5, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>개인 부담금 (1/{splitN})</div>
                 <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
-                  {[...new Set([
-                    ...Object.keys(shared).filter(c => shared[c].out > 0),
-                    ...Object.keys(personal).filter(c => personal[c].out > 0),
-                  ])].map(cur => {
-                    const myShare = (shared[cur]?.out || 0) / splitN + (personal[cur]?.out || 0);
+                  {Object.keys(shared).filter(c => shared[c].out > 0).map(cur => {
+                    const myShare = (shared[cur]?.out || 0) / splitN;
                     return (
                       <div key={cur}>
                         <div style={{ fontFamily:MONO, fontSize:8.5, color:'rgba(255,255,255,0.3)', marginBottom:3 }}>{cur}</div>
@@ -12815,7 +12818,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v192</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v193</div>
         </div>
       </div>
       <button onClick={async () => {
