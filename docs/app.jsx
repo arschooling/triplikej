@@ -2513,7 +2513,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v184</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v186</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -7777,40 +7777,83 @@ function BudgetImportExportSheet({ open, onClose, entries, myUid, onImport }) {
   }, [entries]);
 
   const copyTsv = () => {
-    navigator.clipboard.writeText(toTsv).then(() => {
-      setCopyDone(true);
-      setTimeout(() => setCopyDone(false), 2000);
-    });
+    const done = () => { setCopyDone(true); setTimeout(() => setCopyDone(false), 2000); };
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = toTsv; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); done(); } catch(_) {}
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(toTsv).then(done).catch(fallback);
+    } else {
+      fallback();
+    }
   };
 
   const parseImport = () => {
-    const lines = importText.trim().split('\n').filter(l => l.trim());
+    const raw = importText.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const lines = raw.split('\n').filter(l => l.trim());
     if (!lines.length) return;
-    const firstCells = lines[0].split('\t');
-    const startIdx = (firstCells[0].trim() === '날짜' || firstCells[0].toLowerCase().trim() === 'date') ? 1 : 0;
+
+    // 헤더 행 감지 및 열 순서 결정
+    const FIELD_ALIASES = {
+      date:     ['날짜','date'],
+      type:     ['구분','type'],
+      cat:      ['카테고리','category','cat','분류'],
+      scope:    ['범위','scope'],
+      amount:   ['금액','amount','가격'],
+      currency: ['통화','currency'],
+      note:     ['메모','note','memo','비고'],
+    };
+    const firstCells = lines[0].split('\t').map(c => c.trim().toLowerCase());
+    let colIdx = {}; // field → column index
+    const isHeader = firstCells.some(c =>
+      Object.values(FIELD_ALIASES).some(aliases => aliases.includes(c))
+    );
+    let startIdx = 0;
+    if (isHeader) {
+      startIdx = 1;
+      firstCells.forEach((c, i) => {
+        for (const [field, aliases] of Object.entries(FIELD_ALIASES)) {
+          if (aliases.includes(c) && colIdx[field] === undefined) colIdx[field] = i;
+        }
+      });
+    } else {
+      // 헤더 없으면 기본 열 순서: 날짜·구분·카테고리·범위·금액·통화·메모
+      ['date','type','cat','scope','amount','currency','note'].forEach((f,i) => colIdx[f] = i);
+    }
+
+    const getCell = (cells, field) => (cells[colIdx[field]] || '').trim();
+
     const imported = [];
     let errors = 0;
     for (let i = startIdx; i < lines.length; i++) {
       const cells = lines[i].split('\t');
-      if (cells.length < 5) { errors++; continue; }
-      const [dateStr, typeStr, catStr, scopeStr, amountStr, currencyStr, ...noteParts] = cells;
-      const amount = parseFloat(String(amountStr).replace(/,/g, ''));
-      if (isNaN(amount)) { errors++; continue; }
-      const typeMap = { '수입':'in', '지출':'out', 'in':'in', 'out':'out' };
-      const type  = typeMap[(typeStr||'').trim()] || 'out';
-      const scope = ['개인','personal'].includes((scopeStr||'').trim()) ? 'personal' : 'shared';
-      const dateMatch = (dateStr||'').match(/\d{4}-\d{2}-\d{2}/);
-      const date = dateMatch ? dateMatch[0] : new Date().toISOString().slice(0,10);
+      const amountRaw = getCell(cells, 'amount').replace(/,/g, '');
+      const amount = parseFloat(amountRaw);
+      if (!amountRaw || isNaN(amount)) { errors++; continue; }
+
+      const typeStr = getCell(cells, 'type').toLowerCase();
+      const type    = (typeStr === '수입' || typeStr === 'in') ? 'in' : 'out';
+      const scopeStr = getCell(cells, 'scope');
+      const scope   = (scopeStr === '개인' || scopeStr.toLowerCase() === 'personal') ? 'personal' : 'shared';
+      const dateStr  = getCell(cells, 'date');
+      const dateMatch = dateStr.match(/\d{4}-\d{2}-\d{2}/);
+      const date     = dateMatch ? dateMatch[0] : new Date().toISOString().slice(0,10);
+
       imported.push({
         id: Date.now().toString() + '_' + i,
         type, amount,
-        cat: (catStr||'').trim() || '기타',
+        cat:      getCell(cells, 'cat') || '기타',
         scope, date,
-        currency: (currencyStr||'').trim() || 'KRW',
-        note: noteParts.join('\t').trim(),
+        currency: getCell(cells, 'currency') || 'KRW',
+        note:     getCell(cells, 'note'),
         createdBy: myUid,
       });
     }
+
     if (imported.length > 0) {
       onImport(imported);
       setImportResult({ count: imported.length, errors });
@@ -7842,11 +7885,14 @@ function BudgetImportExportSheet({ open, onClose, entries, myUid, onImport }) {
             <div style={{ fontFamily:MONO, fontSize:11, color:COLORS.mute, marginBottom:8 }}>
               {entries.length}개 항목 · TSV 형식 (구글 스프레드시트에 바로 붙여넣기 가능)
             </div>
-            <pre style={{
-              background:COLORS.soft, borderRadius:12, padding:'12px', fontSize:11,
-              fontFamily:MONO, color:COLORS.ink, overflow:'auto', maxHeight:180,
-              whiteSpace:'pre', margin:'0 0 12px', boxSizing:'border-box',
-            }}>{toTsv}</pre>
+            <textarea readOnly value={toTsv}
+              onFocus={e => e.target.select()}
+              style={{
+                width:'100%', height:150, padding:'12px', borderRadius:12, border:'none',
+                fontSize:11, fontFamily:MONO, color:COLORS.ink, background:COLORS.soft,
+                resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.5,
+                margin:'0 0 12px', whiteSpace:'pre',
+              }}/>
             <button onClick={copyTsv} style={{
               width:'100%', padding:'13px', border:'none', borderRadius:14,
               background: copyDone ? COLORS.ink : COLORS.accent,
@@ -12755,7 +12801,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v184</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v186</div>
         </div>
       </div>
       <button onClick={async () => {
