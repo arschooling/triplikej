@@ -2513,7 +2513,7 @@ function TripsScreen({ trips, onSelect, onAdd, onRestore, onShare, onDelete, loa
         paddingTop:'calc(16px + env(safe-area-inset-top,0px))',
         paddingLeft:20, paddingRight:112, paddingBottom:16,
       }}>
-        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v190</span></div>
+        <div style={{ fontFamily:SERIF, fontSize:34, color:COLORS.ink, letterSpacing:'-0.02em' }}>My Trips<span style={{fontFamily:'monospace',fontSize:11,color:COLORS.mute,marginLeft:8}}>v191</span></div>
       </div>
       {loading && trips.length === 0
         ? <div style={{ textAlign:'center', padding:60, color:COLORS.mute, fontFamily:SANS, fontSize:14 }}>{t('loading')}</div>
@@ -8310,9 +8310,12 @@ function BudgetScreen({ trip, myUid, onEditBudget, onSheetChange, onTabBarToggle
                             {e.note || e.cat}
                           </div>
                           <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                            {(e.scope||'personal')==='shared' && (
+                            {(e.scope||'personal')==='shared' ? (
                               <div style={{ fontFamily:MONO, fontSize:9, color:'#4F6BED', background:'rgba(79,107,237,0.1)',
                                 borderRadius:4, padding:'1px 5px', letterSpacing:'0.05em' }}>공동</div>
+                            ) : (
+                              <div style={{ fontFamily:MONO, fontSize:9, color:'#3A9B4C', background:'rgba(58,155,76,0.1)',
+                                borderRadius:4, padding:'1px 5px', letterSpacing:'0.05em' }}>개인</div>
                             )}
                             {e.note && (
                               <div style={{ fontFamily:MONO, fontSize:9.5, color:COLORS.mute }}>{e.cat}</div>
@@ -12818,7 +12821,7 @@ function App() {
           <div>tripId: {activeTripId ? activeTripId.slice(0,12)+'…' : 'none'}</div>
           <div>trip: {trip ? 'exists, days='+( trip.days?.length||0) : 'null'}</div>
           <div>userTrips: {userTrips.length}개</div>
-          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v190</div>
+          <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>v191</div>
         </div>
       </div>
       <button onClick={async () => {
