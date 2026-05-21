@@ -8890,10 +8890,10 @@ function LoginScreen({ errorMsg, onLoginStart }) {
       </div>
       <button onClick={handleLogin} disabled={loading}
         style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 28px',
-          background: loading ? COLORS.softer : '#fff',
-          border:`1.5px solid ${COLORS.line}`, borderRadius:16, cursor:'pointer',
+          background: '#fff',
+          border:'1.5px solid rgba(0,0,0,0.12)', borderRadius:16, cursor:'pointer',
           boxShadow:'0 2px 12px rgba(0,0,0,0.08)', width:'100%', maxWidth:300,
-          fontFamily:SANS, fontSize:15, fontWeight:500, color:COLORS.ink,
+          fontFamily:SANS, fontSize:15, fontWeight:500, color:'#1A1816',
           justifyContent:'center', transition:'opacity 0.2s', opacity: loading ? 0.6 : 1,
         }}>
         <svg width="20" height="20" viewBox="0 0 48 48">
